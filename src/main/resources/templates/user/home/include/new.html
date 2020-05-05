@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
-<div th:fragment="new" class="w-100">
+<div th:fragment="new" class="w-100" th:with="isUserOnSu = ${user != authUser}">
     <div class="card border-0 mb-2 w-100">
         <div class="card-body bg-light">
             <button id="toggleNewGrid" class="btn btn-transparent text-dark float-right"><i class="fas fa-th"></i> Affichage</button>
@@ -10,7 +10,7 @@
             <div id="newScroll" class="text-center text-nowrap col-12 overflow-auto text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
 
-                    <a th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                    <a th:if="${!isUserOnSu}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                        title="Vous devez signer un document présent sur votre poste">
                         <div class="crop">
@@ -19,7 +19,7 @@
                         <h6>Auto signature</h6>
                     </a>
 
-                    <a th:unless="${globalProperties.hideSendSignRequest}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                    <a th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#sendSignRequestModal" style="width: 150px; height: 200px;"
                        title="Demander la signature d'un document présent sur votre poste">
                         <div class="crop">

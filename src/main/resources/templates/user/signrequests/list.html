@@ -104,12 +104,12 @@
                                     <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
+                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
                                             <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter
                                             </a>
-                                            <a th:if="${@dataService.getDataFromSignRequest(signRequest) != null}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
+                                            <a th:if="${@dataService.getDataFromSignRequest(signRequest) != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
                                                 <i class="fas fa-copy pr-2"></i> Dupliquer
                                             </a>
                                             <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
@@ -155,7 +155,7 @@
                                     <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
+                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
                                             <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter

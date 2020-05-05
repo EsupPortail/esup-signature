@@ -14,7 +14,6 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -26,8 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -208,10 +205,10 @@ public class UserController {
 		return "redirect:/user/users/shares";
 	}
 
-	@PostMapping("/change")
-	public String change(@RequestParam("suEppn") String suEppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-		if(userService.switchUser(suEppn)) {
-			redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + suEppn);
+	@GetMapping("/change-share")
+	public String change(@ModelAttribute User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+		if(userService.switchToShareUser(eppn)) {
+			redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
 		}
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;

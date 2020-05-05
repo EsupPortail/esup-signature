@@ -74,6 +74,12 @@
                             <i class="fas fa-paperclip"></i> Pièces jointes <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
                         </button>
                         <div class="border ml-3 mr-3 "></div>
+                        <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
+                            <div class="alert alert-success m-0 " style="width: 300px;padding: 3px;">
+                                <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                                <button id="dateButton" title="Inserer la date" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
+                            </div>
+                        </div>
                     </th:block>
 
                     <div id="openButtons" class="fixed-action-btns active" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">

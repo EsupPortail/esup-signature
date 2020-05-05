@@ -23,7 +23,6 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.SecurityService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -101,7 +100,7 @@ public class IndexController {
 			SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
 			User suUser = signRequestService.checkShare(signRequest);
 			if(suUser != null) {
-				if(userService.switchUser(suUser.getEppn())) {
+				if(userService.switchToShareUser(suUser.getEppn())) {
 					redirectAttributes.addFlashAttribute("messageWarning", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
 				}
 				return "redirect:"+ forwardUri;

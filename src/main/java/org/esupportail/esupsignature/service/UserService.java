@@ -424,12 +424,12 @@ public class UserService {
 		return null;
 	}
 
-	public Boolean switchUser(String suEppn) {
-		if(suEppn.isEmpty()) {
+	public Boolean switchToShareUser(String eppn) {
+		if(eppn == null || eppn.isEmpty()) {
 			setSuEppn(null);
 		}else {
-			if(checkShare(getUserByEppn(suEppn), getUserFromAuthentication())) {
-				setSuEppn(suEppn);
+			if(checkShare(getUserByEppn(eppn), getUserFromAuthentication())) {
+				setSuEppn(eppn);
 				return true;
 			}
 		}

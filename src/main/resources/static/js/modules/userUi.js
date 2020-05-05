@@ -127,7 +127,7 @@ export class UserSignatureCrop {
         this.zoomInButton = document.getElementById('zoomin');
         this.zoomOutButton = document.getElementById('zoomout');
         this.vanillaUpload = document.getElementById('vanilla-upload');
-        this.vanillaRotate = document.querySelector('.vanilla-rotate');
+        this.vanillaRotate = document.getElementsByClassName('vanilla-rotate');
         this.vanillaCrop = document.getElementById('vanilla-crop');
         this.vanillaCroppie = new Croppie(this.vanillaCrop, {
             viewport : {
@@ -149,11 +149,15 @@ export class UserSignatureCrop {
     }
 
     initListeners() {
-        this.vanillaRotate.click(e => this.rotate(this.vanillaCroppie));
+        Array.prototype.forEach.call(this.vanillaRotate, e => this.rotateListener(e));
         this.zoomInButton.addEventListener('click', e => this.zoomIn());
         this.zoomOutButton.addEventListener('click', e => this.zoomOut());
         this.vanillaUpload.addEventListener('change', e=> this.readFile(this.vanillaUpload));
         this.vanillaCrop.addEventListener('update', e => this.update());
+    }
+
+    rotateListener(item) {
+        item.addEventListener('click', e => this.rotate(item));
     }
 
     addEventListener(name, handler) {
@@ -191,7 +195,10 @@ export class UserSignatureCrop {
     }
 
     rotate(elem) {
-        this.vanillaCroppie.rotate(parseInt($(elem).data('deg')));
+        console.log(elem);
+        let rotation = parseInt($(elem).data('deg'));
+        console.info('rotate ' + rotation)
+        this.vanillaCroppie.rotate(rotation);
     }
 
     zoomIn() {

@@ -55,30 +55,54 @@
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-tools"></i> <span class="nav-item-label d-none d-md-inline">Outils</span>
                     </a>
-                    <div class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown" style="min-width: 250px;">
-                        <a class="btn text-white btn-transparent text-left m-1 col-11 d-none" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
-                            <i class="fas fa-user-cog"></i> Modifier mes paramètres
-                        </a>
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11 d-none"
+                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"
                            data-toggle="modal"
                            data-target="#fastSignRequestModal"
                            title="Vous devez signer un document présent sur votre poste">
                             <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>
                         </a>
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1 col-11  d-none"
+                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"
                            data-toggle="modal"
                            data-target="#sendSignRequestModal"
                            title="Demander la signature d'un document présent sur votre poste">
                             <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>
                         </a>
                         <div class="dropdown-divider"></div>
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
+                            <i class="fas fa-user-cog"></i> Modifier mes paramètres
+                        </a>
+                        <div class="dropdown-divider"></div>
                         <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary'"
                            title="Valider la signature d'un document" href="/user/validation"
-                           class="btn text-white btn-transparent text-left m-1 col-11">
+                           class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
                             <i class="fas fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>
                         </a>
                     </div>
                 </li>
+
+                <li class="nav-item dropdown">
+                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarShareDropdown"
+                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-md-inline">Délégation</span>
+                    </a>
+                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarShareDropdown" >
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
+                            <i class="fas fa-users-cog"></i> Gérer mes délégations
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a role="button" th:href="'/user/users/change-share'" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
+                            <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <th:block th:each="suUser : ${suUsers}">
+                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
+                                <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
+                            </a>
+                        </th:block>
+                    </div>
+                </li>
+
             </ul>
             <ul class="navbar-nav" th:if="${user.name != null}">
                 <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" title="Menu admin">
@@ -103,16 +127,17 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="card position-fixed user-infos collapse overflow-y-scroll drop-shadows"
+    <div th:if="${user.name != null}" id="user-infos" class="card position-absolute user-infos collapse overflow-y-scroll drop-shadows"
          style="right: 0; margin-top:-3px; margin-right: 5px">
         <div id="myDocs" class="card-body user-infos text-center">
+            <div id="manageShare" class="d-none">
             <h3 th:if="${isUserOnSu}">
                 Vous avez activé la délégation
             </h3>
             <h5 th:unless="${isUserOnSu}">
                 <b>Délégations</b>
             </h5>
-            <form id="changeSuEppn" th:action="'/user/users/change'" method="post">
+            <form id="changeSuEppn" th:action="'/user/users/change-share'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
                     <option th:unless="${isUserOnSu}" selected disabled>Choisir un
@@ -129,9 +154,10 @@
             <a th:unless="${isUserOnSu}" class="btn btn-sm light btn-outline-dark mt-1"
                aria-label="Paramètres utilisateur "
                title="Paramètres" href="/user/users/shares">
-                <i class="fas fa-share"></i> Gérer mes délégations
+                <i class="fas fa-share-alt"></i> Gérer mes délégations
             </a>
             <hr>
+            </div>
             <h5><b>Vos informations</b></h5>
             <table class="table table-sm table-borderless text-left">
                 <tbody>
@@ -183,13 +209,11 @@
                 <tr>
                     <th>Magasin de certificats</th>
                     <td>
-                        <div th:if="${user.keystore != null}" class="alert alert-secondary">
-                            Votre magasin de certificats :
+                            Keystore PKCS12 :
                             <br>
                             <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
                                 <span th:text="${user.keystore.fileName}"></span>
                             </a>
-                        </div>
                         <div th:if="${user.keystore == null}" class="alert alert-danger">
                             Pas de magasin de certificats
                         </div>
@@ -322,6 +346,4 @@
         </div>
     </div>
 </div>
-
-
 </html>

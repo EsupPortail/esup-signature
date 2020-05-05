@@ -31,6 +31,7 @@ public class User {
     private String email;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
     @Transient
