@@ -11,3 +11,5 @@ update sign_request_params set sign_image_number = 0;
 alter table sign_request_params alter column sign_image_number set not null;
 alter table user_account drop column sign_image_id;
 alter table user_account drop column last_sign_image_id;
+
+alter table user_account_sign_images add column sign_images_order integer;

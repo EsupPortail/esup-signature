@@ -4,6 +4,7 @@ export class HomeUi {
         console.info("Starting home UI");
         this.workflowFilterButton = $('#workflowFilterButton');
         this.formFilterButton = $('#formFilterButton');
+        this.globalFilterButton = $('#globalFilterButton');
         this.noFilterButton = $('#noFilterButton');
         this.menuToggled = false;
         this.initListeners();
@@ -13,6 +14,7 @@ export class HomeUi {
         $('#toggleNewGrid').on('click', e => this.toggleNewMenu());
         $('#newScroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
+        this.globalFilterButton.on('click', e => this.globalWorkflows(e));
         this.formFilterButton.on('click', e => this.filterForms(e));
         this.noFilterButton.on('click', e => this.filterNothing(e));
     }
@@ -28,9 +30,20 @@ export class HomeUi {
         this.menuToggled = !this.menuToggled;
     }
 
+    globalWorkflows(e) {
+        this.workflowFilterButton.addClass('disabled');
+        this.formFilterButton.addClass('disabled');
+        this.globalFilterButton.removeClass('disabled');
+        this.noFilterButton.addClass('disabled');
+        $('.workflowButton').addClass('d-none');
+        $('.formButton').addClass('d-none');
+        $('.globalButton').removeClass('d-none');
+    }
+
     filterWorkflows(e) {
         this.workflowFilterButton.removeClass('disabled');
         this.formFilterButton.addClass('disabled');
+        this.globalFilterButton.addClass('disabled');
         this.noFilterButton.addClass('disabled');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').addClass('d-none');
@@ -40,6 +53,7 @@ export class HomeUi {
     filterForms(e) {
         this.workflowFilterButton.addClass('disabled');
         this.formFilterButton.removeClass('disabled');
+        this.globalFilterButton.addClass('disabled');
         this.noFilterButton.addClass('disabled');
         $('.workflowButton').addClass('d-none');
         $('.formButton').removeClass('d-none');
