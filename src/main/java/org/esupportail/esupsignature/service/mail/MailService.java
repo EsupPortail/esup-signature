@@ -46,12 +46,14 @@ public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
+    @Resource
     private GlobalProperties globalProperties;
+
     private MailConfig mailConfig;
+
     private JavaMailSenderImpl mailSender;
 
-    public MailService(GlobalProperties globalProperties, MailConfig mailConfig, JavaMailSenderImpl mailSender) {
-        this.globalProperties = globalProperties;
+    public MailService(MailConfig mailConfig, JavaMailSenderImpl mailSender) {
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
     }

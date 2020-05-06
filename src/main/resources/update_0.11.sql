@@ -12,4 +12,6 @@ alter table sign_request_params alter column sign_image_number set not null;
 alter table user_account drop column sign_image_id;
 alter table user_account drop column last_sign_image_id;
 
-alter table user_account_sign_images add column sign_images_order integer;
+alter table user_account_sign_images add column sign_images_order int4;
+update user_account_sign_images set sign_images_order = 0;
+alter table user_account_sign_images alter column sign_images_order set not null;

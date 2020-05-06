@@ -42,11 +42,8 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
+	@Resource
 	private GlobalProperties globalProperties;
-
-	public NexuProcessController(GlobalProperties globalProperties) {
-		this.globalProperties = globalProperties;
-	}
 
 	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {

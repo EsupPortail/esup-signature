@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -65,6 +66,14 @@ public class DataController {
 	public List<User> getSuUsers() {
 		return userService.getSuUsers(getAuthUser());
 	}
+
+	@ModelAttribute(value = "globalProperties")
+	public GlobalProperties getGlobalProperties() {
+		return this.globalProperties;
+	}
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private DataService dataService;

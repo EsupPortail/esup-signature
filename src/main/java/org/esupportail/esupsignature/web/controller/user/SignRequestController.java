@@ -53,12 +53,6 @@ public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
-    private GlobalProperties globalProperties;
-
-    public SignRequestController(GlobalProperties globalProperties) {
-        this.globalProperties = globalProperties;
-    }
-
     @ModelAttribute("userMenu")
     public String getActiveRole() {
         return "active";
@@ -88,6 +82,9 @@ public class SignRequestController {
     public GlobalProperties getGlobalProperties() {
         return this.globalProperties;
     }
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private UserService userService;
@@ -473,8 +470,10 @@ public class SignRequestController {
             }
             signBookService.addSignRequest(signBook, signRequest);
             signBookService.pendingSignBook(signBook, user);
-            signRequest.setComment(comment);
-            signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+            if(!comment.isEmpty()) {
+                signRequest.setComment(comment);
+                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+            }
             redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
