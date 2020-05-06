@@ -1068,6 +1068,10 @@ float:left;
 }
 
 @media (max-width: 768px) {
+    #returnButton {
+        display: none;
+    }
+
     #logo {
         margin-left: 5px;
     }
@@ -1128,7 +1132,7 @@ float:left;
     }
 }
 
-@media (max-width: 565px) {
+@media (max-width: 575px) {
 
     .sidebar-label {
         display: inline !important;
@@ -1204,4 +1208,7 @@ float:left;
     .d-xxl-block {
         display: block !important;
     }
+}
+.select-mode > div.ss-single-selected {
+    height: 50px;
 }

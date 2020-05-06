@@ -14,7 +14,7 @@ export class WorkspacePdf {
         this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.currentSignRequestParams.signPageNumber, signImages);
         this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         //this.signPageNumber = document.getElementById('signPageNumber');
-        this.mode = 'read';
+        this.mode = 'sign';
         this.xmlHttpMain = new XMLHttpRequest();
         this.initListeners();
     }
@@ -25,12 +25,9 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
         this.pdfViewer.addEventListener('render', e => this.initForm());
         document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
-
-
-        document.getElementById('commentModeButton').addEventListener('click', e => this.enableCommentMode());
+        document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
         if(this.signable) {
-            document.getElementById('fillModeButton').addEventListener('click', e => this.enableFillMode());
-            document.getElementById('signModeButton').addEventListener('click', e => this.enableSignMode());
+            document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
             if(this.currentSignType !== "pdfImageStamp") {
                 document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
             }
@@ -64,10 +61,9 @@ export class WorkspacePdf {
     }
 
     static validateForm() {
-        //TODO FIX
         let valid = true;
         $("#signForm :input").each(function() {
-            var input = $(this).get(0);
+            let input = $(this).get(0);
             if (!input.checkValidity()) {
                 valid = false;
             }
@@ -78,20 +74,31 @@ export class WorkspacePdf {
         return valid;
     }
 
+    disableForm() {
+        $("#signForm :input").each(function(i, e) {
+            console.log("disable ");
+            console.log(e);
+            e.disabled = true;
+        });
+    }
+
     initWorkspace() {
-        //this.signPosition.currentScale = this.pdfViewer.scale;
-        this.mode = 'sign';
+        console.info("init workspace");
+        if(localStorage.getItem('mode') == null) {
+            localStorage.setItem('mode', this.mode);
+        }
         console.info("init to " + this.mode + " mode");
-        if(this.mode === 'comment') {
+        if(localStorage.getItem('mode') === 'comment') {
             this.enableCommentMode();
         } else {
             this.enableSignMode();
-        }
-        if(this.signable && this.currentSignType === 'visa') {
-            if(this.mode === 'sign') {
-                this.signPosition.toggleVisual();
+            if(this.signable && this.currentSignType === 'visa') {
+                if(this.mode === 'sign') {
+                    this.signPosition.toggleVisual();
+                }
             }
         }
+
         // this.refreshComments();
         // if(this.signable) {
         //     this.signPosition.resetSign();
@@ -104,17 +111,14 @@ export class WorkspacePdf {
     }
 
     initForm(e) {
+        console.info("init form");
         $("#signForm :input").each(function () {
             $(this).on('change', e => WorkspacePdf.launchValidate());
         });
-        if(this.mode === 'sign') {
-            //this.pdfViewer.promizeToggleFields(false);
+        if(this.mode === 'read' || this.mode === 'comment') {
+            this.disableForm();
         }
-        if(this.mode === 'comment') {
-            $(".annotationLayer").each(function () {
-                $(this).hide();
-            })
-        }
+
     }
 
     static launchValidate() {
@@ -214,7 +218,8 @@ export class WorkspacePdf {
         document.getElementById("postit").style.left = $('#commentPosX').val() + "px";
         document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
         $("#postit").show();
-
+        $("#comment").removeAttr('disabled');
+        $("#saveCommentButton").removeAttr('disabled');
     }
 
     hideComment() {
@@ -223,18 +228,6 @@ export class WorkspacePdf {
         }
         this.signPosition.pointItEnable = true;
         $("#postit").hide();
-    }
-
-    enableFillMode() {
-        console.info("enable fill mode");
-        this.disableAllModes();
-        this.mode = 'fill';
-        this.signPosition.pointItEnable = false;
-        $('#fillModeButton').toggleClass('btn-outline-info');
-        $('#rotateleft').prop('disabled', false);
-        $('#rotateright').prop('disabled', false);
-        this.pdfViewer.renderForm = true;
-        this.pdfViewer.renderPage(1);
     }
 
     enableReadMode() {
@@ -250,8 +243,17 @@ export class WorkspacePdf {
         this.pdfViewer.renderPage(1);
     }
 
+    toggleCommentMode() {
+        if(this.mode === 'comment') {
+            this.enableReadMode();
+            return;
+        }
+        this.enableCommentMode()
+    }
+
     enableCommentMode() {
         console.info("enable comments mode");
+        localStorage.setItem('mode', 'comment');
         this.disableAllModes();
         this.mode = 'comment';
         this.signPosition.pointItEnable = true;
@@ -264,8 +266,17 @@ export class WorkspacePdf {
         this.refreshComments();
     }
 
+    toggleSignMode() {
+        if(this.mode === 'sign') {
+            this.enableReadMode();
+            return;
+        }
+        this.enableSignMode();
+    }
+
     enableSignMode() {
         console.info("enable sign mode");
+        localStorage.setItem('mode', 'sign');
         this.disableAllModes();
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
@@ -298,7 +309,6 @@ export class WorkspacePdf {
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
-        $('#fillModeButton').removeClass('btn-outline-info');
         $('#signButtons').addClass('d-none');
         $('#signZoomIn').addClass('d-none');
         $('#signZoomOut').addClass('d-none');

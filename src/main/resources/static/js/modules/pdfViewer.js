@@ -68,6 +68,12 @@ export class PdfViewer {
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
+        if (window.innerWidth < 1200) {
+            newScale = 0.9;
+        }
+        if (window.innerWidth < 992) {
+            newScale = 0.8;
+        }
         if (window.innerWidth < 768) {
             newScale = 0.7;
         }
@@ -143,7 +149,7 @@ export class PdfViewer {
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();
-        this.fireEvent('render', ['end']);
+
     }
 
     promiseRenderForm(isField) {
@@ -245,6 +251,7 @@ export class PdfViewer {
                 }
             }
         }
+        this.fireEvent('render', ['end']);
     }
 
     renderPdfFormWithFields(items) {

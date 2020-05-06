@@ -6,8 +6,10 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import globalUi from "/js/main.js";
-    globalUi.hideSideBar();
-    globalUi.disableSideBarButton();
+    $(document).ready(function () {
+        globalUi.hideSideBar();
+        globalUi.disableSideBarButton();
+    });
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

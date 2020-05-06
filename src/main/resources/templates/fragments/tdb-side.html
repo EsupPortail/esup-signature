@@ -1,6 +1,10 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<script type="module">
+    import globalUi from "/js/main.js";
+    globalUi.resetMode();
+</script>
 <nav th:fragment="tdb-side" id="sidebar" class="scrollbar-lite">
     <div class="ml-1 mt-1">
         <a th:classappend="${status == statusFilter} ? 'btn-dark' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests">Tout voir</a>

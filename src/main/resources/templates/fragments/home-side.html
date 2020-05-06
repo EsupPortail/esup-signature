@@ -1,6 +1,10 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<script type="module">
+    import globalUi from "/js/main.js";
+    globalUi.resetMode();
+</script>
 <nav th:fragment="home-side" id="sidebar">
     <div class="ml-1 mt-3">
         <button id="noFilterButton" th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}" title="Tout voir" type="button" class="mb-1 col-12 btn btn-light text-left">

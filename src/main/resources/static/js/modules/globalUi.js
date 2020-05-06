@@ -56,13 +56,18 @@ export class GlobalUi {
             window.history.back();
         });
         window.addEventListener('resize', e => this.adjustUi());
+        $(document).ready(e => this.adjustUi());
+    }
+
+    resetMode() {
+        localStorage.setItem('mode', 'sign');
     }
 
     adjustUi() {
         if (window.innerWidth < 992) {
             this.hideSideBar();
         } else {
-            if(this.sideBarStatus === 'on') {
+            if(this.sideBarStatus === 'off') {
                 this.showSideBar();
             }
         }

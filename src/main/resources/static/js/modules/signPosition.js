@@ -141,7 +141,7 @@ export class SignPosition {
 
     touchIt(e) {
         if (this.pointItEnable) {
-            e.preventDefault();
+            //e.preventDefault();
             this.pointItMove = true;
             console.log("touch");
             let rect = pdf.getBoundingClientRect();
