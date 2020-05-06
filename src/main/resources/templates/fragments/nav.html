@@ -209,11 +209,13 @@
                 <tr>
                     <th>Magasin de certificats</th>
                     <td>
+                        <div th:unless="${user.keystore == null}" class="alert alert-danger">
                             Keystore PKCS12 :
                             <br>
                             <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
                                 <span th:text="${user.keystore.fileName}"></span>
                             </a>
+                        </div>
                         <div th:if="${user.keystore == null}" class="alert alert-danger">
                             Pas de magasin de certificats
                         </div>
