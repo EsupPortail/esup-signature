@@ -53,21 +53,27 @@
                 <li class="nav-item dropdown">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-tools"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
+                        <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"
-                           data-toggle="modal"
-                           data-target="#fastSignRequestModal"
-                           title="Vous devez signer un document présent sur votre poste">
-                            <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>
+                        <a th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
+                           data-target="#wizardModal"
+                           title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"
+                           onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">
+                                <i class="fas fa-magic"></i> Assistant de création de demande
                         </a>
-                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"
-                           data-toggle="modal"
-                           data-target="#sendSignRequestModal"
-                           title="Demander la signature d'un document présent sur votre poste">
-                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>
-                        </a>
+<!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
+<!--                           data-toggle="modal"-->
+<!--                           data-target="#fastSignRequestModal"-->
+<!--                           title="Vous devez signer un document présent sur votre poste">-->
+<!--                            <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>-->
+<!--                        </a>-->
+<!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
+<!--                           data-toggle="modal"-->
+<!--                           data-target="#sendSignRequestModal"-->
+<!--                           title="Demander la signature d'un document présent sur votre poste">-->
+<!--                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
+<!--                        </a>-->
                         <div class="dropdown-divider"></div>
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
                             <i class="fas fa-user-cog"></i> Modifier mes paramètres
@@ -239,7 +245,7 @@
 
 </header>
 
-<div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+<div class="modal fade" id="fastSignRequestModal" th:unless="${globalProperties.hideAutoSign}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -279,6 +285,23 @@
                     <button type="submit" id="fast-form-submit" class="btn btn-success float-right">Valider</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="wizardModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Assistant de création de demande</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="wizIframe" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+            </div>
         </div>
     </div>
 </div>

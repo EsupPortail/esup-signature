@@ -30,15 +30,15 @@
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
 
-                    <a th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"
-                        data-target="#wizardModal" style="width: 150px; height: 200px;"
-                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"
-                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">
-                        <div class="crop">
-                            <i class="fas fa-magic fa-4x "></i>
-                        </div>
-                        <h6>Assistant de création de demande</h6>
-                    </a>
+<!--                    <a th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"-->
+<!--                        data-target="#wizardModal" style="width: 150px; height: 200px;"-->
+<!--                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"-->
+<!--                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">-->
+<!--                        <div class="crop">-->
+<!--                            <i class="fas fa-magic fa-4x "></i>-->
+<!--                        </div>-->
+<!--                        <h6>Assistant de création de demande</h6>-->
+<!--                    </a>-->
 
                     <th:block th:each="workflow : ${workflows}">
                         <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
@@ -52,7 +52,15 @@
                             <h6 th:text="'Circuit : ' + ${workflow.name}"></h6>
                         </a>
                     </th:block>
-
+                    <th:block th:if="${workflows.size() == 0}">
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton newHr d-none"
+                           style="width: 150px; height: 200px;"
+                        >
+                            <div class="crop">
+                            </div>
+                            <h6>Aucun circuit</h6>
+                        </a>
+                    </th:block>
                     <hr class="newHr d-none">
 
                     <h5 class="newToggled d-none">Formulaires</h5>
@@ -67,27 +75,21 @@
                             <h6 th:text="${form.title}"></h6>
                         </a>
                     </th:block>
+                    <th:block th:if="${forms.size() == 0}">
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton newHr d-none"
+                           style="width: 150px; height: 200px;"
+                           >
+                            <div class="crop">
+                            </div>
+                            <h6>Aucun formulaire</h6>
+                        </a>
+                    </th:block>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="wizardModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Assistant de création de demande</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <iframe id="wizIframe" frameborder="0" style="width: 100%; height: 500px;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalLabel" aria-hidden="true">

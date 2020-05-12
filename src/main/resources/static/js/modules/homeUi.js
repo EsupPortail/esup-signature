@@ -67,6 +67,8 @@ export class HomeUi {
         $('.workflowButton').removeClass('d-none');
         $('.formButton').removeClass('d-none');
         $('.globalButton').removeClass('d-none');
+        $('.newHr').addClass('d-none');
+
     }
 
     activeHorizontalScrolling(event){
