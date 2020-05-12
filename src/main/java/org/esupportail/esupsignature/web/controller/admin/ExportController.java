@@ -4,6 +4,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -50,6 +51,14 @@ public class ExportController {
 	public User getAuthUser() {
 		return userService.getUserFromAuthentication();
 	}
+
+	@ModelAttribute(value = "globalProperties")
+	public GlobalProperties getGlobalProperties() {
+		return this.globalProperties;
+	}
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private UserService userService;

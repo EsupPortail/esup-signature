@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
@@ -67,6 +68,14 @@ public class DocumentAdminController {
 	public List<User> getSuUsers(User authUser) {
 		return userService.getSuUsers(authUser);
 	}
+
+	@ModelAttribute(value = "globalProperties")
+	public GlobalProperties getGlobalProperties() {
+		return this.globalProperties;
+	}
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@GetMapping("/form")
 	public String creatDocument(Model model) {

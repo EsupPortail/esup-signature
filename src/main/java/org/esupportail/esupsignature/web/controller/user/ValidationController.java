@@ -4,6 +4,7 @@ import eu.europa.esig.dss.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.web.service.FOPService;
 import org.esupportail.esupsignature.dss.web.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
@@ -58,6 +59,14 @@ public class ValidationController {
 	public User getAuthUser() {
 		return userService.getUserFromAuthentication();
 	}
+
+	@ModelAttribute(value = "globalProperties")
+	public GlobalProperties getGlobalProperties() {
+		return this.globalProperties;
+	}
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private UserService userService;

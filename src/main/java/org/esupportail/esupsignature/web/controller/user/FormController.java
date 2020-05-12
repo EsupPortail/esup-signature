@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.DataRepository;
@@ -23,6 +24,14 @@ import java.util.List;
 @Controller
 @RequestMapping("/user")
 public class FormController {
+
+    @ModelAttribute(value = "globalProperties")
+    public GlobalProperties getGlobalProperties() {
+        return this.globalProperties;
+    }
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private FormRepository formRepository;

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -45,6 +46,14 @@ public class WizardController {
     public User getUser() {
         return userService.getCurrentUser();
     }
+
+    @ModelAttribute(value = "globalProperties")
+    public GlobalProperties getGlobalProperties() {
+        return this.globalProperties;
+    }
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private UserService userService;
