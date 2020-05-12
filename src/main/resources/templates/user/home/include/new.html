@@ -52,15 +52,16 @@
                             <h6 th:text="'Circuit : ' + ${workflow.name}"></h6>
                         </a>
                     </th:block>
+
                     <th:block th:if="${workflows.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton newHr d-none"
-                           style="width: 150px; height: 200px;"
-                        >
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 noWorkflow d-none"
+                           style="width: 150px; height: 200px;">
                             <div class="crop">
                             </div>
                             <h6>Aucun circuit</h6>
                         </a>
                     </th:block>
+
                     <hr class="newHr d-none">
 
                     <h5 class="newToggled d-none">Formulaires</h5>
@@ -76,9 +77,8 @@
                         </a>
                     </th:block>
                     <th:block th:if="${forms.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton newHr d-none"
-                           style="width: 150px; height: 200px;"
-                           >
+                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 noForm d-none"
+                           style="width: 150px; height: 200px;">
                             <div class="crop">
                             </div>
                             <h6>Aucun formulaire</h6>

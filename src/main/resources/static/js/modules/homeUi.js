@@ -27,6 +27,8 @@ export class HomeUi {
         $('.newHr').toggleClass('d-none');
         $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
         $('.newToggled').toggleClass('d-none');
+        $('.noForm').toggleClass('d-none');
+        $('.noWorkflow').toggleClass('d-none');
         this.menuToggled = !this.menuToggled;
     }
 
@@ -38,6 +40,8 @@ export class HomeUi {
         $('.workflowButton').addClass('d-none');
         $('.formButton').addClass('d-none');
         $('.globalButton').removeClass('d-none');
+        $('.noForm').addClass('d-none');
+        $('.noWorkflow').addClass('d-none');
     }
 
     filterWorkflows(e) {
@@ -45,9 +49,12 @@ export class HomeUi {
         this.formFilterButton.addClass('disabled');
         this.globalFilterButton.addClass('disabled');
         this.noFilterButton.addClass('disabled');
+        $('.noWorkflow').removeClass('d-none');
+        $('.noForm').addClass('d-none');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').addClass('d-none');
         $('.globalButton').addClass('d-none');
+
     }
 
     filterForms(e) {
@@ -55,6 +62,8 @@ export class HomeUi {
         this.formFilterButton.removeClass('disabled');
         this.globalFilterButton.addClass('disabled');
         this.noFilterButton.addClass('disabled');
+        $('.noForm').removeClass('d-none');
+        $('.noWorkflow').addClass('d-none');
         $('.workflowButton').addClass('d-none');
         $('.formButton').removeClass('d-none');
         $('.globalButton').addClass('d-none');
@@ -67,7 +76,8 @@ export class HomeUi {
         $('.workflowButton').removeClass('d-none');
         $('.formButton').removeClass('d-none');
         $('.globalButton').removeClass('d-none');
-        $('.newHr').addClass('d-none');
+        $('.noWorkflow').addClass('d-none');
+        $('.noForm').addClass('d-none');
 
     }
 
