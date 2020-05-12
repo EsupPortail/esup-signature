@@ -65,10 +65,16 @@ public class WorkflowService {
     private FileService fileService;
 
     public void initCreatorWorkflow() {
+        User creator;
         if (userRepository.countByEppn("creator") == 0) {
-            User creator = userService.createUser("creator", "Createur de la demande", "", "");
+            creator = userService.createUser("creator", "Createur de la demande", "", "");
+        } else {
+            creator = userRepository.findByEppn("creator").get(0);
+        }
+        if(workflowRepository.countByName("Ma signature") == 0) {
             Workflow workflow = new Workflow();
             workflow.setName("Ma signature");
+            workflow.setDescription("Signature du créateur de la demande");
             workflow.setCreateDate(new Date());
             workflow.setCreateBy("System");
             workflow.setSourceType(DocumentIOType.none);
@@ -164,7 +170,7 @@ public class WorkflowService {
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {
-        if (workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail()) || workflow.getCreateBy().equals("System")) {
+        if ((workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals("System")) {
             return true;
         } else {
             return false;

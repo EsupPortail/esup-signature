@@ -184,7 +184,6 @@ public class WizardController {
 
     @PostMapping(value = "/wiz5/{id}")
     public String saveWorkflow(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
-        //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
         try {
             signBookService.saveWorkflow(name, user, signBook);

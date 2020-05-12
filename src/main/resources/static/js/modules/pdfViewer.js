@@ -223,6 +223,7 @@ export class PdfViewer {
         if(this.savedFields.size > 0) {
             this.page.getAnnotations().then(items => this.restoreValues(items));
         }
+        this.fireEvent('render', ['end']);
     }
 
     restoreValues(items) {
@@ -251,7 +252,6 @@ export class PdfViewer {
                 }
             }
         }
-        this.fireEvent('render', ['end']);
     }
 
     renderPdfFormWithFields(items) {

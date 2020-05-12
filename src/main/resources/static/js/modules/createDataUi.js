@@ -18,6 +18,7 @@ export class CreateDataUi {
     }
 
     initChangeControl() {
+        console.info("init change control")
         let inputs = $("#newData :input");
         $.each(inputs, function() {
             console.log($(this));

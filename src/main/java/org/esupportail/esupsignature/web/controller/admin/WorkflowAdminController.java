@@ -173,7 +173,7 @@ public class WorkflowAdminController {
     	//User user = userService.getCurrentUser();
     	Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflowService.checkUserManageRights(user, workflow)) {
-			redirectAttrs.addFlashAttribute("messageCustom", "Non autorisé");
+			redirectAttrs.addFlashAttribute("messageError", "Non autorisé");
 			return "redirect:/admin/workflows/" + id;
 		}
 		workflowRepository.delete(workflow);

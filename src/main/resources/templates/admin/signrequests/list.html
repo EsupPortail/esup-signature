@@ -52,7 +52,7 @@
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
                                     <td class="text-break" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
+                                    <td class="text-break" th:unless="${signRequest.parentSignBook != null}">Signature simple</td>
                                     <td><p class="text-break" th:title="${signRequest.title}"
                                                         th:text="${signRequest.title}"></p></td>
                                     <td><span

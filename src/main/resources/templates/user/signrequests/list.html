@@ -44,7 +44,7 @@
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr>
                                 <td class="text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                <td class="text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature rapide</td>
+                                <td class="text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature simple</td>
                                 <td class="text-break"><span th:text="${signRequest.viewTitle}"></span></td>
                                 <td class="d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                 <td class="d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
