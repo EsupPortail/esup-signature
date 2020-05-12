@@ -35,7 +35,6 @@
                                         <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger"><i class="fas fa-users"></i></span>
                                         <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fas fa-user"></i></span>
                                         <br/>
-                                        <span th:if="${workflowStep.name != null}" th:text="${workflowStep.name}"></span>
                                         <table class="table table-sm table-hover table-borderless">
                                         <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <tr>
