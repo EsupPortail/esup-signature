@@ -263,7 +263,7 @@ public class SignRequest {
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
-        if(getSignRequestParams().size() > currentStepNumber - 1) {
+        if(currentStepNumber > 0 && getSignRequestParams().size() > currentStepNumber - 1) {
             return getSignRequestParams().get(currentStepNumber - 1);
         } else {
             SignRequestParams signRequestParams = new SignRequestParams();

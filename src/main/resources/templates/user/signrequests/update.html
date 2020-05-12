@@ -40,16 +40,16 @@
                     </ul>
                 </div>
             </div>
-            <th:block th:unless="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">
-            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-primary waves-effect">
-                    <i class="fas fa-ellipsis-v"></i>
-                </a>
-                <ul id="collapseExample" class="list-unstyled">
-                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>
-                </ul>
-            </div>
-            </th:block>
+<!--            <th:block th:unless="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">-->
+<!--            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">-->
+<!--                <a class="btn-floating btn-lg bg-primary waves-effect">-->
+<!--                    <i class="fas fa-ellipsis-v"></i>-->
+<!--                </a>-->
+<!--                <ul id="collapseExample" class="list-unstyled">-->
+<!--                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--            </th:block>-->
             <div class="card mb-1 col-lg-8 mx-auto" th:if="${signRequest.status.name() != 'exported'}">
                 <div class="card-body">
                     <h5>Liste des documents originaux</h5>

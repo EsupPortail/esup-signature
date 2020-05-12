@@ -55,7 +55,7 @@ public class ScheduledTaskService {
 	//@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() {
-		Iterable<Workflow> workflows = workflowRepository.findAll();
+		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		for(Workflow workflow : workflows) {
 			workflowService.importFilesFromSource(workflow, getSchedulerUser());
 		}

@@ -464,12 +464,11 @@ public class SignRequestController {
                 return "redirect:/user/signrequests";
             }
             signBookService.addSignRequest(signBook, signRequest);
-            signBookService.pendingSignBook(signBook, user);
+            //signBookService.pendingSignBook(signBook, user);
             if(!comment.isEmpty()) {
                 signRequest.setComment(comment);
                 signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
             }
-            redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -611,16 +610,21 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute User user, User authUser, @PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletRequest request) {
+                          @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
-        if (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.completed)) {
-            signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
+        if(signRequest.getParentSignBook() != null) {
+            if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
+                signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+            }
         } else {
-            logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
+            if (signRequest.getStatus().equals(SignRequestStatus.draft)) {
+                signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
+
+            }
         }
-        return "redirect:/user/signrequests/" + id + "/?form";
+        redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
+        return "redirect:/user/signrequests/" + id;
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
