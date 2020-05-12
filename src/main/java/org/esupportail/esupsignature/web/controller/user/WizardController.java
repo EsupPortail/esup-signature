@@ -25,6 +25,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -69,13 +72,9 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz2", produces = "text/html")
-    public String wiz2(@RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
-        logger.info("Choix des fichiers");
-        if(signBookRepository.countByName(name) > 0) {
-            redirectAttributes.addFlashAttribute("messageError", "Un circuit portant ce nom existe déjà");
-            return "redirect:/user/wizard/wiz1";
-        }
-        logger.info("init new signBook : " + name);
+    public String wiz2(@ModelAttribute User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
+        logger.info(user.getEppn() + " init new signBook : " + name);
+        logger.debug("Choix des fichiers");
         model.addAttribute("name", name);
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
@@ -85,15 +84,15 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(@ModelAttribute User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
-        logger.info("Choix d'un workflow");
-        SignBook signBook = signBookService.getSignBook(name, user);
+    public ModelAndView wiz3(@ModelAttribute User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) throws EsupSignatureException, IOException, EsupSignatureIOException {
+        logger.debug("Choix d'un workflow");
+        List<SignBook> signBooks = signBookRepository.findByCreateBy(user);
+        SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
-            modelAndView.addObject("name", name);
             modelAndView.addObject("workflowId", workflow.getId());
             return modelAndView;
         }
@@ -106,9 +105,8 @@ public class WizardController {
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,
                        Model model) {
-        //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getCreateBy().equals(user.getEppn())) {
+        if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
@@ -139,7 +137,7 @@ public class WizardController {
                        Model model) throws EsupSignatureUserException {
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getCreateBy().equals(user.getEppn())) {
+        if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
                 WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
@@ -169,7 +167,7 @@ public class WizardController {
     public String saveForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
         //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getCreateBy().equals(user.getEppn())) {
+        if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
         }
         return "user/wizard/wiz5";
@@ -191,9 +189,8 @@ public class WizardController {
 
     @GetMapping(value = "/wizend/{id}")
     public String wizEnd(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-        //User user = userService.getCurrentUser();
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getCreateBy().equals(user.getEppn())) {
+        if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             return "user/wizard/wizend";
         } else {

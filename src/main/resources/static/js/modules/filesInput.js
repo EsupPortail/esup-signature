@@ -22,24 +22,11 @@ export class FilesInput {
 
     initListeners() {
         $("#fileUpload").on('click', e => this.fileUpload());
-
-        //
-        //
-        // this.input.on('fileuploaded', function (event, file, previewId, index, reader) {
-        //     location.reload();
-        // });
         if(!this.async) {
+            console.info("set async");
             this.input.on('fileloaded', e => this.uploadFile());
         }
-
-        //
-        // this.input.on('filedeleted', function (event, id, index) {
-        //     location.reload();
-        // });
-
         this.input.on('fileloaded', e => this.checkUniqueFile());
-
-
         $('#unique :checkbox').change(e => this.changerUploadMethod());
 
     }

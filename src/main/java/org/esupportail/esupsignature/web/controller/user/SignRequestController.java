@@ -192,7 +192,6 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
-        ////User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
@@ -224,7 +223,7 @@ public class SignRequestController {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
+                if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                     if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
@@ -234,18 +233,14 @@ public class SignRequestController {
                         signImages.add(fileService.getBase64Image(signImage));
                     }
                     model.addAttribute("signImages", signImages);
-                    //model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
                     int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignable() && signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
-                        //model.addAttribute("signable", false);
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
                         signRequest.setSignable(false);
                     }
-//                    model.addAttribute("signWidth", 100);
-//                    model.addAttribute("signHeight", 75);
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             } else {

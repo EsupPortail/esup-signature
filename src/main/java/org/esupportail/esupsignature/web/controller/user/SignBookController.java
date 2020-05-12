@@ -275,10 +275,9 @@ public class SignBookController {
         return ok;
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-unique/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute User user, @PathVariable("name") String name,
+    public Object addDocumentToNewSignRequestUnique(@ModelAttribute User user, @PathVariable("name") String name,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
         logger.info("start add documents in " + name);
         SignBook signBook = signBookService.getSignBook(name, user);

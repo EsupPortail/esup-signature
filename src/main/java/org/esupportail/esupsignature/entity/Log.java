@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
@@ -22,10 +21,7 @@ public class Log {
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date logDate;
 
-    private String eppn;
-//
-//    @NotNull
-//    private String test;
+	private String eppn;
 
     private String eppnFor;
 

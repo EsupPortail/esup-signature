@@ -52,8 +52,8 @@
                                 <td class="d-none d-lg-table-cell">
                                     <table th:if="${signRequest.parentSignBook != null}"
                                            class="table table-sm">
-                                        <tbody>
-                                        <th:block th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.currentStepNumber - 1).recipients}">
+                                        <tbody th:if="${signRequest.parentSignBook.workflowSteps.size() > 0}">
+                                        <th:block  th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.currentStepNumber - 1).recipients}">
                                             <tr>
                                                 <td width="100%"
                                                     th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>

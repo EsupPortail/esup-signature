@@ -74,7 +74,8 @@ public class SignBookService {
             signBookRepository.save(signBook);
             return signBook;
         } else {
-            throw new EsupSignatureException("Un circuit porte déjà le nom : " + name);
+            return signBookRepository.findByName(name).get(0);
+//            throw new EsupSignatureException("Un circuit porte déjà le nom : " + name);
         }
     }
 
@@ -120,6 +121,11 @@ public class SignBookService {
 
     public boolean preAuthorizeManage(Long id, User user) {
         SignBook signBook = signBookRepository.findById(id).get();
+        return checkUserManageRights(user, signBook);
+    }
+
+    public boolean preAuthorizeManage(String name, User user) throws EsupSignatureException {
+        SignBook signBook = getSignBook(name, user);
         return checkUserManageRights(user, signBook);
     }
 
