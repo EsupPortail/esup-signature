@@ -18,7 +18,7 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = "app.scheduling.enable=false")
+@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
 public class LdapServiceTest {
 
     @Autowired(required = false)

@@ -17,7 +17,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = "app.scheduling.enable=false")
+@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
 public class ExtValueServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ExtValueServiceTest.class);

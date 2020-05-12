@@ -22,7 +22,7 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = "app.scheduling.enable=false")
+@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
 public class FsAccessServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(FsAccessServiceTest.class);
