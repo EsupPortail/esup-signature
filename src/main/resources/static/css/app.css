@@ -319,6 +319,7 @@ input:checked + .slider:before {
     width: calc(100vw - 275px);
     margin-top: 86px;
     margin-left: 260px;
+    padding-left: 5px;
 }
 
 .content-full {
