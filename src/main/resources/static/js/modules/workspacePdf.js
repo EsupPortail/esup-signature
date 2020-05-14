@@ -233,6 +233,7 @@ export class WorkspacePdf {
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
+        localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
         this.pdfViewer.scale = 1;
         $('#readModeButton').toggleClass('btn-outline-secondary');
@@ -244,7 +245,7 @@ export class WorkspacePdf {
 
     toggleCommentMode() {
         if(this.mode === 'comment') {
-            this.enableReadMode();
+            this.enableSignMode();
             return;
         }
         this.enableCommentMode()

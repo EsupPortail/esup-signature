@@ -912,7 +912,7 @@ float:left;
 }
 
 .toast {
-    z-index: 1000;
+    z-index: 10000;
 }
 
 .waves-effect {

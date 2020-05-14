@@ -244,7 +244,7 @@ public class SignRequestController {
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             } else {
-                if(signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign)) {
+                if(signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign))) {
                     signRequest.setSignable(true);
                 }
                 model.addAttribute("documentType", "other");
@@ -442,7 +442,7 @@ public class SignRequestController {
     public String sendSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                                  @RequestParam(name = "comment", required = false) String comment,
+//                                  @RequestParam(name = "comment", required = false) String comment,
                                   @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
@@ -464,10 +464,10 @@ public class SignRequestController {
             }
             signBookService.addSignRequest(signBook, signRequest);
             //signBookService.pendingSignBook(signBook, user);
-            if(!comment.isEmpty()) {
-                signRequest.setComment(comment);
-                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
-            }
+//            if(!comment.isEmpty()) {
+//                signRequest.setComment(comment);
+//                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+//            }
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
@@ -621,6 +621,10 @@ public class SignRequestController {
                 signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
 
             }
+        }
+        if(!comment.isEmpty()) {
+            signRequest.setComment(comment);
+            signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
         }
         redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
         return "redirect:/user/signrequests/" + id;
