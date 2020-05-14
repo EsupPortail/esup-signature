@@ -153,7 +153,7 @@ public class SignBookController {
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
+        if(user.equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
