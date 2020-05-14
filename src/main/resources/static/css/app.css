@@ -483,6 +483,10 @@ width: 100%;
 height: 100%;
 }
 
+.postit-small {
+    height: 30px !important;
+}
+
 .postit {
 list-style:none;
 padding:3px;

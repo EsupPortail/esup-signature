@@ -41,7 +41,7 @@ export class GlobalUi {
         // }, true);
 
         $(".postit-global").on('click', function () {
-            $(this).toggleClass("h-50");
+            $(this).toggleClass("postit-small");
         });
 
         $(document).click(function (event) {

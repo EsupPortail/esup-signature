@@ -256,7 +256,7 @@ public class SignBookService {
     }
 
     public boolean checkUserViewRights(User user, SignBook signBook) {
-        if(signBook.getCreateBy().equals(user.getEppn()) || (getCurrentWorkflowStep(signBook) != null && recipientService.recipientsContainsUser(getCurrentWorkflowStep(signBook).getRecipients(), user) > 0)) {
+        if(signBook.getCreateBy().equals(user) || (getCurrentWorkflowStep(signBook) != null && recipientService.recipientsContainsUser(getCurrentWorkflowStep(signBook).getRecipients(), user) > 0)) {
             return true;
         }
         return false;
