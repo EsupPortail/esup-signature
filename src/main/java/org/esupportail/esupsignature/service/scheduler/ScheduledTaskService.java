@@ -61,7 +61,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -75,7 +75,7 @@ public class ScheduledTaskService {
 		}
 	}
 	
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();

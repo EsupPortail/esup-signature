@@ -444,8 +444,7 @@ public class SignRequestController {
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                   @RequestParam(name = "comment", required = false) String comment,
                                   @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
-        //User user = userService.getCurrentUser();
-        logger.info(user.getFirstname() + " " + user.getName() + "envoi d'une demande de signature à " + recipientsEmails);
+        logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             if(allSignToComplete == null) {
                 allSignToComplete = false;

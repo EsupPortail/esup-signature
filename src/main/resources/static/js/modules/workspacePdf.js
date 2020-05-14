@@ -41,7 +41,7 @@ export class WorkspacePdf {
         this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
 
         // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
-        $(document).mousemove(e => this.moveAction(e));
+        $('#pdf').mousemove(e => this.moveAction(e));
 
         this.postits.forEach((postit, index) => {
             let postitButton = $('#postit' + postit.id);
@@ -75,7 +75,7 @@ export class WorkspacePdf {
     }
 
     disableForm() {
-        $("#signForm :input").each(function(i, e) {
+        $("#signForm :input").not(':input[type=button], :input[type=submit], :input[type=reset]').each(function(i, e) {
             console.log("disable ");
             console.log(e);
             e.disabled = true;
@@ -219,7 +219,6 @@ export class WorkspacePdf {
         document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
         $("#postit").show();
         $("#comment").removeAttr('disabled');
-        $("#saveCommentButton").removeAttr('disabled');
     }
 
     hideComment() {
@@ -289,6 +288,10 @@ export class WorkspacePdf {
         $('#signZoomOut').removeClass('d-none');
         $('#signNextImage').removeClass('d-none');
         $('#signPrevImage').removeClass('d-none');
+        // $('#signZoomIn').prop('disabled', false);
+        // $('#signZoomOut').prop('disabled', false);
+        // $('#signNextImage').prop('disabled', false);
+        // $('#signPrevImage').prop('disabled', false);
         $('#signModeButton').toggleClass('btn-outline-success');
         $('#signTools').show();
 
