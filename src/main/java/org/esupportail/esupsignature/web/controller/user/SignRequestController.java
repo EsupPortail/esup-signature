@@ -237,7 +237,7 @@ public class SignRequestController {
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
-                    if(signRequest.getSignable() && signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
                         model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
                         signRequest.setSignable(false);
                     }
