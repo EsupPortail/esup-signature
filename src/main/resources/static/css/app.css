@@ -733,7 +733,7 @@ float:left;
 
 .btn-floating {
     position: relative;
-    z-index: 1;
+    z-index: 10;
     display: inline-block;
     padding: 0;
     margin: 0px;
@@ -789,7 +789,7 @@ float:left;
     position: fixed;
     right: 50px;
     bottom: 80px;
-    z-index: 1000;
+    z-index: 8;
     overflow: hidden;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -804,7 +804,7 @@ float:left;
     position: fixed;
     right: 50px;
     bottom: 80px;
-    z-index: 1000;
+    z-index: 8;
     overflow: hidden;
     height: 500px;
     display: -webkit-box;
@@ -819,7 +819,8 @@ float:left;
 .fixed-action-btn ul {
     position: absolute;
     right: 0;
-    bottom: 0px;
+    bottom: 0;
+    z-index: 9;
     left: 0;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -845,7 +846,7 @@ float:left;
 }
 
 .fixed-action-btn ul li {
-    z-index: 0;
+    z-index: 10;
     display: -webkit-box;
     display: -ms-flexbox;
     margin-right: auto;
@@ -858,7 +859,7 @@ float:left;
     right: 50px;
     bottom: 80px;
     margin-bottom: 0;
-    z-index: 1000;
+    z-index: 5;
     overflow: hidden;
     height: 500px;
     display: -webkit-box;
@@ -911,7 +912,7 @@ float:left;
 }
 
 .toast {
-    z-index: 10000;
+    z-index: 1000;
 }
 
 .waves-effect {
@@ -1065,7 +1066,7 @@ float:left;
     width:500px;
     height:auto;
     display:block;
-    z-index:999;
+    z-index:2;
 }
 
 @media (max-width: 768px) {
