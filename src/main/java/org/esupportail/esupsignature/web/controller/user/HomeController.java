@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/user/")
@@ -61,6 +59,11 @@ public class HomeController {
     @ModelAttribute(value = "suUsers", binding = false)
     public List<User> getSuUsers() {
         return userService.getSuUsers(getAuthUser());
+    }
+
+    @ModelAttribute(value = "messageNews", binding = false)
+    public List<Message> getMessageNews() {
+        return userService.getMessages(getAuthUser());
     }
 
     @Resource

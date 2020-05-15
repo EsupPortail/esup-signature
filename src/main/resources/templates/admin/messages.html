@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Messages</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-simple-btn" >
+                <a data-toggle="modal" data-target="#newMessage" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h5>Messages</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <th:block th:each="message :${messages}">
+                        <li class="list-group-item" th:text="${message.text} + ' ' + ${message.endDate}"></li>
+                    </th:block>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="newMessage" tabindex="-1" role="dialog"
+         aria-labelledby="#newMessage'" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Création d'une nouvelle demande</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="'/admin/add-message'" method="post">
+                    <div class="form-group">
+                        <label for="text">Text du message</label>
+                        <textarea class="form-control" type="text" name="text" id="text" required="required"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Date de fin de diffusion</label>
+                        <input class="form-control" type="date" name="endDate" id="endDate" required="required" />
+                    </div>
+                        <input type="submit" class="btn btn-success">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.hibernate.annotations.Synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -219,6 +220,14 @@ public class UserController {
 		if(userService.switchToShareUser(eppn)) {
 			redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
 		}
+		String referer = httpServletRequest.getHeader("Referer");
+		return "redirect:"+ referer;
+	}
+
+	@GetMapping("/mark-as-read/{id}")
+	public String markAsRead(@ModelAttribute User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
+    	logger.info(authUser.getEppn() + " mark " + id + " as read");
+		userService.disableMessage(authUser, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}

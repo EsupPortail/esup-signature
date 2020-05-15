@@ -18,16 +18,21 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.MessageRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @RequestMapping("/admin")
 @Controller
@@ -57,12 +62,33 @@ public class IndexAdminController {
 	private GlobalProperties globalProperties;
 
 	@Resource
+	private MessageRepository messageRepository;
+
+	@Resource
 	private UserService userService;
 
 	@GetMapping
 	public String index(RedirectAttributes redirectAttrs, Model model) {
 
 		return "redirect:/admin/signrequests";
+	}
+
+	@GetMapping("/messages")
+	public String messages(Model model) {
+		List<Message> messages = new ArrayList<>();
+		messageRepository.findAll().forEach(messages::add);
+		model.addAttribute("messages", messages);
+		return "admin/messages";
+	}
+
+	@PostMapping("/add-message")
+	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException {
+		Message message = new Message();
+		Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+		message.setEndDate(date);
+		message.setText(text);
+		messageRepository.save(message);
+		return "redirect:/admin/messages";
 	}
 
 }

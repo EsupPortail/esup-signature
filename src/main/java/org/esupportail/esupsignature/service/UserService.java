@@ -7,10 +7,7 @@ import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.ldap.PersonLdapRepository;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
@@ -23,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -54,6 +52,9 @@ public class UserService {
 
 	@Resource
 	private PersonLdapRepository personLdapRepository;
+
+	@Resource
+	private MessageRepository messageRepository;
 
 	@Resource
 	private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
@@ -473,4 +474,18 @@ public class UserService {
 		userShareRepository.save(userShare);
 	}
 
+    public List<Message> getMessages(User authUser) {
+		return messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date());
+    }
+
+	public void disableLastMessage(User authUser) {
+		if(messageRepository.countByUsersNotContainsAndEndDateAfter(authUser, new Date()) > 0) {
+			messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date()).get(0).getUsers().add(authUser);
+		}
+	}
+
+	public void disableMessage(User authUser, long id) {
+		Message message = messageRepository.findById(id).get();
+		message.getUsers().add(authUser);
+	}
 }

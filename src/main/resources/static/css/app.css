@@ -927,6 +927,23 @@ float:left;
     z-index: 10000;
 }
 
+.toast-sm {
+    min-width: 300px;
+    margin: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.toast-xl {
+    min-width: 80vw;
+    min-height: 80vh;
+    margin: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
 .waves-effect {
     display: inline-block;
     overflow: hidden;
@@ -1034,7 +1051,18 @@ float:left;
     pointer-events:none;
 }
 
-.blinking {
+.blinking-white {
+    animation:blinkingText 1.2s infinite;
+}
+@keyframes blinkingText {
+    0%{     color: #FFF;    }
+    49%{    color: #FFF; }
+    60%{    color: transparent; }
+    99%{    color:transparent;  }
+    100%{   color: #FFF;    }
+}
+
+.blinking-black {
     animation:blinkingText 1.2s infinite;
 }
 @keyframes blinkingText {

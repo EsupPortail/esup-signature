@@ -83,6 +83,11 @@ public class SignRequestController {
         return this.globalProperties;
     }
 
+    @ModelAttribute(value = "messageNews", binding = false)
+    public List<Message> getMessageNews() {
+        return userService.getMessages(getAuthUser());
+    }
+
     @Resource
     private GlobalProperties globalProperties;
 
