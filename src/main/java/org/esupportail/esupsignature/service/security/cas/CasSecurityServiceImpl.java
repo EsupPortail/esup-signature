@@ -143,11 +143,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 		return ldapUserDetailsService;
 	}
 	
-	public SingleSignOutFilter singleLogoutFilter() {
-		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
-		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");
-		return singleSignOutFilter;
-	}
+//	public SingleSignOutFilter singleLogoutFilter() {
+//		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
+//		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");
+//		return singleSignOutFilter;
+//	}
 
 	public LogoutFilter requestSingleLogoutFilter() {
 		SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();

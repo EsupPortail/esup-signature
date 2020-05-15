@@ -462,7 +462,7 @@ public class PdfService {
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
                 PDFont font = PDType1Font.HELVETICA;
-                PDResources resources = new PDResources();
+                PDResources resources = pdAcroForm.getDefaultResources();
                 resources.put(COSName.getPDFName("Helv"), font);
                 resources.put(COSName.getPDFName("Helvetica"), font);
                 pdAcroForm.setDefaultResources(resources);
