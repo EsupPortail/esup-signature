@@ -15,7 +15,7 @@
 				</button>
 			</div>
 			<div class="toast-body">
-				<p th:text="${messageNew.text}"></p>
+				<p th:utext="${messageNew.text}"></p>
 				<button th:onclick="'markAsRead('+ ${messageNew.id} +');'" class="btn btn-light btn-outline-dark ml-2 fixed-bottom mb-2" data-dismiss="toast" aria-label="Close">Marquer comme lu</button>
 			</div>
 		</div>
