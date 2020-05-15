@@ -108,16 +108,21 @@
                         </th:block>
                     </div>
                 </li>
-
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" title="Menu admin">
+                    <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"><i class="fas fa-crown"></i> <span class="nav-item-label d-none d-xxl-inline">Admin</span></a>
+                </li>
             </ul>
             <ul class="navbar-nav" th:if="${user.name != null}">
-                <li class="nav-item" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" title="Menu admin">
-                    <a href="/admin/signrequests" th:class="'nav-link ' + ${adminMenu}"><i class="fas fa-crown"></i></a>
-                </li>
                 <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
                     <a th:href="@{/su-logout}" class="nav-link bg-dark text-white"><i class="fas fa-user-secret"></i></a>
                 </li>
-
+<!--                <li class="nav-item text-white" >-->
+<!--                <a th:unless="${isUserOnSu}" class="btn text-white btn-transparent"-->
+<!--                   aria-label="Paramètres utilisateur "-->
+<!--                   title="Paramètres" href="/user/users/?form">-->
+<!--                    <i class="fas fa-user-cog"></i>-->
+<!--                </a>-->
+<!--                </li>-->
                 <li class="nav-item text-white">
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
@@ -133,8 +138,7 @@
             </ul>
         </div>
     </nav>
-    <div th:if="${user.name != null}" id="user-infos" class="card position-absolute user-infos collapse overflow-y-scroll drop-shadows"
-         style="right: 0; margin-top:-3px; margin-right: 5px">
+    <div th:if="${user.name != null}" id="user-infos" class="card position-absolute user-infos collapse overflow-y-scroll drop-shadows">
         <div id="myDocs" class="card-body user-infos text-center">
             <div id="manageShare" class="d-none">
             <h3 th:if="${isUserOnSu}">
