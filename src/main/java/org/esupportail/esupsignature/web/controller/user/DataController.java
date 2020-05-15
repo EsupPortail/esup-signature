@@ -258,17 +258,20 @@ public class DataController {
 	@PostMapping("{id}/send")
 	public String sendDataById(@ModelAttribute User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
-		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
-		try {
-			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-		} catch (EsupSignatureException e) {
-			logger.error(e.getMessage(), e);
-			redirectAttributes.addFlashAttribute("messageError", e.getMessage());
+		if(data.getStatus().equals(SignRequestStatus.draft)) {
+			try {
+				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
+				redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
+				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+			} catch (EsupSignatureException e) {
+				logger.error(e.getMessage(), e);
+				redirectAttributes.addFlashAttribute("messageError", e.getMessage());
+			}
+		} else {
+			redirectAttributes.addFlashAttribute("messageError", "Attention, la procédure est déjà démarée");
 		}
-		redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
-		return "redirect:/user/datas/" + id + "/update";
+		return "redirect:/user/signrequests/";
 	}
 
 	@DeleteMapping("{id}")
