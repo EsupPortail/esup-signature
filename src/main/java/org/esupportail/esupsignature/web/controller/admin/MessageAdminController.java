@@ -88,7 +88,7 @@ public class MessageAdminController {
 	public String messages(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 		messageRepository.deleteById(id);
 		redirectAttributes.addFlashAttribute("messageError", "Message supprimé");
-		return "redirect:admin/messages";
+		return "redirect:/admin/messages";
 	}
 
 }

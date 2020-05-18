@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,20 +21,18 @@ public class TomcatAjpConfig {
     }
 
     @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainer() {
-        return server -> {
-            if (server instanceof TomcatServletWebServerFactory) {
-                ((TomcatServletWebServerFactory) server).addAdditionalTomcatConnectors(redirectConnector());
-            }
-        };
-    }
+    public TomcatServletWebServerFactory servletContainer() {
 
-    private Connector redirectConnector() {
-        Connector ajpConnector = new Connector("AJP/1.3");
-        ajpConnector.setPort(tomcatAjpProperties.getPort());
-        ajpConnector.setSecure(false);
-        ajpConnector.setAllowTrace(false);
-        ajpConnector.setScheme("http");
-        return ajpConnector;
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        if (tomcatAjpProperties.getPort() != null) {
+            Connector ajpConnector = new Connector("AJP/1.3");
+            ajpConnector.setPort(tomcatAjpProperties.getPort());
+            ajpConnector.setSecure(false);
+            ajpConnector.setAllowTrace(false);
+            ajpConnector.setScheme("http");
+            ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setSecretRequired(false);
+            tomcat.addAdditionalTomcatConnectors(ajpConnector);
+        }
+        return tomcat;
     }
 }

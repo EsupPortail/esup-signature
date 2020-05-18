@@ -802,7 +802,7 @@ public class SignRequestService {
 		SignBook signBook = signRequest.getParentSignBook();
 		if(signBook != null) {
 			User toUser = userService.getUserFromAuthentication();
-			List<UserShare> userShares = userShareRepository.findByToUsersAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
+			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
 			Data data = dataRepository.findBySignBook(signBook).get(0);
 			if(data != null) {
 				for (UserShare userShare : userShares) {

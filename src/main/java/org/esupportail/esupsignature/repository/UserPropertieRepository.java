@@ -12,6 +12,6 @@ public interface UserPropertieRepository extends CrudRepository<UserPropertie, L
 	List<UserPropertie> findByUser(User user);
 	List<UserPropertie> findByUserAndStepAndForm(User user, int step, Form form);
 	List<UserPropertie> findByForm(Form form);
-	List<UserPropertie> findByUserAndStepAndRecipientsAndForm(User user, int step, List<String> recipients, Form form);
+	List<UserPropertie> findByUserAndStepAndRecipientsInAndForm(User user, int step, List<String> recipients, Form form);
 	List<UserPropertie> findByUserAndTargetEmailAndForm(User user, String targetEmail, Form form);
 }

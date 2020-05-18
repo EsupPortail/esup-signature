@@ -318,7 +318,7 @@ public class UserService {
 
 	public List<User> getSuUsers(User authUser) {
 		List<User> suUsers = new ArrayList<>();
-		for (UserShare userShare : userShareRepository.findByToUsers(Arrays.asList(authUser))) {
+		for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
 			if(!suUsers.contains(userShare.getUser())) {
 				suUsers.add(userShare.getUser());
 			}
@@ -438,7 +438,7 @@ public class UserService {
 	}
 
 	public Boolean checkShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsers(fromUser, Arrays.asList(toUser));
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
 		if(userShares.size() > 0) {
 			return true;
 		}
@@ -451,7 +451,7 @@ public class UserService {
 		if(fromUser.equals(toUser)) {
 			return true;
 		}
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersAndShareType(fromUser, Arrays.asList(toUser), shareType);
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
 		if(shareType.equals(UserShare.ShareType.sign) && userShares.size() > 0) {
 			return true;
 		}
