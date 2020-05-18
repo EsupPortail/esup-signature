@@ -139,7 +139,6 @@ public class DSSBeanConfig {
 
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() throws IOException {
-		Security.addProvider(new BouncyCastleProvider());
 		File keystoreFile = new File(dssProperties.getKsFilename());
 		KeyStoreCertificateSource keyStoreCertificateSource = null;
 		if(!keystoreFile.exists()) {
