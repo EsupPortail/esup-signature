@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.repository.impl;
 
-import org.eclipse.persistence.internal.jpa.JPAQuery;
-import org.eclipse.persistence.internal.jpa.querydef.PredicateImpl;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.FormRepositoryCustom;
@@ -10,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository

@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import eu.europa.esig.dss.ASiCContainerType;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.SignatureLevel;
+import eu.europa.esig.dss.enumerations.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.AssertTrue;

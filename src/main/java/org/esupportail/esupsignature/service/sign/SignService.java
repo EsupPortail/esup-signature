@@ -1,12 +1,17 @@
 package org.esupportail.esupsignature.service.sign;
 
 import eu.europa.esig.dss.*;
-import eu.europa.esig.dss.asic.ASiCWithCAdESSignatureParameters;
-import eu.europa.esig.dss.asic.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.asic.signature.ASiCWithCAdESService;
-import eu.europa.esig.dss.asic.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
+import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
+import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.model.*;
+import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
@@ -15,10 +20,10 @@ import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
+import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.validation.TimestampToken;
-import eu.europa.esig.dss.x509.CertificateToken;
+import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.esupportail.esupsignature.config.sign.SignConfig;
@@ -218,14 +223,14 @@ public class SignService {
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-		pAdESSignatureParameters.setSignatureImageParameters(imageParameters);
+		pAdESSignatureParameters.setImageParameters(imageParameters);
 		//signature size 32767 is max for PDF/A-2B
-		pAdESSignatureParameters.setSignatureSize(32767);
+		pAdESSignatureParameters.setContentSize(32767);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
 		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
-		pAdESSignatureParameters.setSignatureName(user.getEppn());
+		pAdESSignatureParameters.setSignerName(user.getFirstname() + " " + user.getName());
 		return pAdESSignatureParameters;
 	}
 	
@@ -274,7 +279,7 @@ public class SignService {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
-		parameters.bLevel().setSigningDate(form.getSigningDate());
+		//parameters.bLevel().setSigningDate(form.getSigningDate());
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 
 		if (form.getContentTimestamp() != null) {
@@ -354,7 +359,7 @@ public class SignService {
 		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
+		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
 		logger.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
@@ -366,7 +371,7 @@ public class SignService {
 		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
-		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);
+		DSSDocument signedDocument = service.signDocument(toSignDocuments, parameters, signatureValue);
 		logger.info("End signDocument with multiple documents");
 		return signedDocument;
 	}
@@ -379,7 +384,7 @@ public class SignService {
 		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocument, parameters, signatureValue);
+		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
 		logger.info("End signDocument with one document");
 		return signedDocument;
 	}
@@ -432,7 +437,7 @@ public class SignService {
 				break;
 			case PAdES:
 				PAdESSignatureParameters padesParams = new PAdESSignatureParameters();
-				padesParams.setSignatureSize(9472 * 2); // double reserved space for signature
+				padesParams.setContentSize(9472 * 2); // double reserved space for signature
 				parameters = padesParams;
 				break;
 			case XAdES:

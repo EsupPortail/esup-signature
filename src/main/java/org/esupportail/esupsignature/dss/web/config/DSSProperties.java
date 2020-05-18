@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.dss.web.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix="dss")
 public class DSSProperties {
 
@@ -17,6 +19,10 @@ public class DSSProperties {
     private String serverSigningKeystoreType;
     private String serverSigningKeystoreFilename;
     private String serverSigningKeystorePassword;
+    private String lotlUrl;
+    private String lotlCountryCode;
+    private String ojUrl;
+    private List<String> trustedCertificatUrlList;
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -114,4 +120,35 @@ public class DSSProperties {
         this.serverSigningKeystorePassword = serverSigningKeystorePassword;
     }
 
+    public String getLotlUrl() {
+        return lotlUrl;
+    }
+
+    public void setLotlUrl(String lotlUrl) {
+        this.lotlUrl = lotlUrl;
+    }
+
+    public String getLotlCountryCode() {
+        return lotlCountryCode;
+    }
+
+    public void setLotlCountryCode(String lotlCountryCode) {
+        this.lotlCountryCode = lotlCountryCode;
+    }
+
+    public String getOjUrl() {
+        return ojUrl;
+    }
+
+    public void setOjUrl(String ojUrl) {
+        this.ojUrl = ojUrl;
+    }
+
+    public List<String> getTrustedCertificatUrlList() {
+        return trustedCertificatUrlList;
+    }
+
+    public void setTrustedCertificatUrlList(List<String> trustedCertificatUrlList) {
+        this.trustedCertificatUrlList = trustedCertificatUrlList;
+    }
 }

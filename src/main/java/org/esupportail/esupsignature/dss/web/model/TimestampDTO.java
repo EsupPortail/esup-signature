@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import eu.europa.esig.dss.x509.TimestampType;
+import eu.europa.esig.dss.enumerations.*;
 
 public class TimestampDTO {
 

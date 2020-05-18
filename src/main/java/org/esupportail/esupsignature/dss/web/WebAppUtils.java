@@ -1,11 +1,11 @@
 package org.esupportail.esupsignature.dss.web;
 
-import eu.europa.esig.dss.DSSDocument;
-import eu.europa.esig.dss.DSSException;
-import eu.europa.esig.dss.InMemoryDocument;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.spi.x509.CertificatePool;
 import eu.europa.esig.dss.utils.Utils;
-import eu.europa.esig.dss.validation.TimestampToken;
-import eu.europa.esig.dss.x509.CertificatePool;
+import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import org.esupportail.esupsignature.dss.web.model.TimestampDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dss.web.model;
 
-import eu.europa.esig.dss.EncryptionAlgorithm;
+import eu.europa.esig.dss.enumerations.*;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;

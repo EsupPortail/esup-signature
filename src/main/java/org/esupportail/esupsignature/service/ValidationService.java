@@ -1,7 +1,8 @@
 package org.esupportail.esupsignature.service;
 
-import eu.europa.esig.dss.DSSException;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.SignatureValidationContext;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
@@ -30,7 +31,7 @@ public class ValidationService {
             SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(inputStream));
             logger.info("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
-            documentValidator.setValidationLevel(ValidationLevel.ARCHIVAL_DATA);
+            documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             Reports reports = null;
             try (InputStream is = defaultPolicy.getInputStream()) {
                 reports = documentValidator.validateDocument(is);
