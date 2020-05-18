@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.model;
+package org.esupportail.esupsignature.dss.model;
 
 public class SignDocumentResponse {
 

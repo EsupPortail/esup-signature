@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.config;
+package org.esupportail.esupsignature.dss.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

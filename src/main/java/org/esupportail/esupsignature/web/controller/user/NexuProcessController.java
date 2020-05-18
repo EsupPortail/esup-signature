@@ -5,7 +5,7 @@ import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.ToBeSigned;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.web.model.*;
+import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;

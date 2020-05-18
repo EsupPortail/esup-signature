@@ -2,11 +2,10 @@ package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.SignatureValidationContext;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
-import org.esupportail.esupsignature.dss.web.WebAppUtils;
+import org.esupportail.esupsignature.dss.DssUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
+import java.util.Objects;
 
 @Service
 public class ValidationService {
@@ -28,9 +29,10 @@ public class ValidationService {
 
     public Reports validate(InputStream inputStream) {
         try {
-            SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(WebAppUtils.toDSSDocument(inputStream));
+            SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(inputStream)));
             logger.info("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
+            documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             Reports reports = null;
             try (InputStream is = defaultPolicy.getInputStream()) {

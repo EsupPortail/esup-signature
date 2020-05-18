@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web;
+package org.esupportail.esupsignature.dss;
 
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
@@ -6,7 +6,7 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.spi.x509.CertificatePool;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
-import org.esupportail.esupsignature.dss.web.model.TimestampDTO;
+import org.esupportail.esupsignature.dss.model.TimestampDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,11 +16,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class WebAppUtils {
+public final class DssUtils {
 
-	private static final Logger logger = LoggerFactory.getLogger(WebAppUtils.class);
+	private static final Logger logger = LoggerFactory.getLogger(DssUtils.class);
 
-	private WebAppUtils() {
+	private DssUtils() {
 	}
 
 	public static DSSDocument toDSSDocument(InputStream inputStream) {

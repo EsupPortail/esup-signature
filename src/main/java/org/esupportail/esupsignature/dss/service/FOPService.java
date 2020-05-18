@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.service;
+package org.esupportail.esupsignature.dss.service;
 
 import eu.europa.esig.dss.DSSXmlErrorListener;
 import eu.europa.esig.dss.DomUtils;

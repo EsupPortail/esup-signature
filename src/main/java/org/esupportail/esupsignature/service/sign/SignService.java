@@ -27,11 +27,11 @@ import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.esupportail.esupsignature.config.sign.SignConfig;
-import org.esupportail.esupsignature.dss.web.WebAppUtils;
-import org.esupportail.esupsignature.dss.web.model.AbstractSignatureForm;
-import org.esupportail.esupsignature.dss.web.model.ExtensionForm;
-import org.esupportail.esupsignature.dss.web.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.dss.web.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
+import org.esupportail.esupsignature.dss.model.ExtensionForm;
+import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
+import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -93,8 +93,8 @@ public class SignService {
 		ASiCContainerType containerType = extensionForm.getContainerType();
 		SignatureForm signatureForm = extensionForm.getSignatureForm();
 
-		DSSDocument signedDocument = WebAppUtils.toDSSDocument(extensionForm.getSignedFile());
-		List<DSSDocument> originalDocuments = WebAppUtils.toDSSDocuments(extensionForm.getOriginalFiles());
+		DSSDocument signedDocument = DssUtils.toDSSDocument(extensionForm.getSignedFile());
+		List<DSSDocument> originalDocuments = DssUtils.toDSSDocuments(extensionForm.getOriginalFiles());
 
 		DocumentSignatureService service = getSignatureService(containerType, signatureForm);
 
@@ -116,7 +116,7 @@ public class SignService {
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		ToBeSigned toBeSigned = null;
 		try {
-			DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+			DSSDocument toSignDocument = DssUtils.toDSSDocument(form.getDocumentToSign());
 			toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		} catch (Exception e) {
 			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
@@ -134,7 +134,7 @@ public class SignService {
 
 		ToBeSigned toBeSigned = null;
 		try {
-			List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
+			List<DSSDocument> toSignDocuments = DssUtils.toDSSDocuments(form.getDocumentsToSign());
 			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
 		} catch (Exception e) {
 			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
@@ -149,7 +149,7 @@ public class SignService {
 
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		AbstractSignatureParameters parameters = fillParameters(form);
-		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+		DSSDocument toSignDocument = DssUtils.toDSSDocument(form.getDocumentToSign());
 
 		TimestampToken contentTimestamp = service.getContentTimestamp(toSignDocument, parameters);
 
@@ -164,7 +164,7 @@ public class SignService {
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
 		AbstractSignatureParameters parameters = fillParameters(form);
 
-		TimestampToken contentTimestamp = service.getContentTimestamp(WebAppUtils.toDSSDocuments(form.getDocumentsToSign()), parameters);
+		TimestampToken contentTimestamp = service.getContentTimestamp(DssUtils.toDSSDocuments(form.getDocumentsToSign()), parameters);
 
 		logger.info("End getContentTimestamp with  multiple documents");
 		return contentTimestamp;
@@ -283,7 +283,7 @@ public class SignService {
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 
 		if (form.getContentTimestamp() != null) {
-			parameters.setContentTimestamps(Arrays.asList(WebAppUtils.toTimestampToken(form.getContentTimestamp())));
+			parameters.setContentTimestamps(Arrays.asList(DssUtils.toTimestampToken(form.getContentTimestamp())));
 		}
 		CertificateToken signingCertificate = DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate());
 		parameters.setSigningCertificate(signingCertificate);
@@ -356,7 +356,7 @@ public class SignService {
 		logger.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		fillParameters(parameters, signatureDocumentForm);
-		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
+		DSSDocument toSignDocument = DssUtils.toDSSDocument(signatureDocumentForm.getDocumentToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
@@ -368,7 +368,7 @@ public class SignService {
 	public DSSDocument certSignDocument(SignatureMultipleDocumentsForm form, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
-		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
+		List<DSSDocument> toSignDocuments = DssUtils.toDSSDocuments(form.getDocumentsToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocuments, parameters, signatureValue);
@@ -381,7 +381,7 @@ public class SignService {
 	public DSSDocument nexuSignDocument(SignatureDocumentForm form, AbstractSignatureParameters parameters) {
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		DSSDocument toSignDocument = WebAppUtils.toDSSDocument(form.getDocumentToSign());
+		DSSDocument toSignDocument = DssUtils.toDSSDocument(form.getDocumentToSign());
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
 		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
@@ -395,7 +395,7 @@ public class SignService {
 		logger.info("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
 		AbstractSignatureParameters parameters = fillParameters(form);
-		List<DSSDocument> toSignDocuments = WebAppUtils.toDSSDocuments(form.getDocumentsToSign());
+		List<DSSDocument> toSignDocuments = DssUtils.toDSSDocuments(form.getDocumentsToSign());
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
 		DSSDocument signedDocument = (DSSDocument) service.signDocument(toSignDocuments, parameters, signatureValue);

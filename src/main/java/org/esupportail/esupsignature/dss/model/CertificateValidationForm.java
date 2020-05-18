@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.model;
+package org.esupportail.esupsignature.dss.model;
 
 import org.springframework.web.multipart.MultipartFile;
 

@@ -55,7 +55,7 @@
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
 				<RevocationDataFreshness Level="FAIL" />
-				<KeyUsage Level="WARN">
+				<KeyUsage Level="INFORM">
 					<Id>nonRepudiation</Id>
 				</KeyUsage>
 				<SerialNumberPresent Level="WARN" />
@@ -196,7 +196,7 @@
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
 				<RevocationDataFreshness Level="FAIL" />
-				<KeyUsage Level="WARN">
+				<KeyUsage Level="INFORM">
 					<Id>nonRepudiation</Id>
 				</KeyUsage>
 				<SerialNumberPresent Level="WARN" />

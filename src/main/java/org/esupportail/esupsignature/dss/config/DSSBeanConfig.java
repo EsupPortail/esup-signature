@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dss.web.config;
+package org.esupportail.esupsignature.dss.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
@@ -17,7 +17,6 @@ import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
-import eu.europa.esig.dss.spi.tsl.TrustProperties;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
@@ -53,9 +52,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.Security;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(DSSProperties.class)
@@ -210,7 +206,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier() {
+	public CommonTrustedCertificateSource myTrustedCertificateSource() {
 		CommonTrustedCertificateSource certSource = new CommonTrustedCertificateSource();
 		for(String trustedCertificatUrl : dssProperties.getTrustedCertificatUrlList()) {
 			log.info("adding trusted certificat : " + trustedCertificatUrl);
@@ -222,10 +218,14 @@ public class DSSBeanConfig {
 			}
 			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
 			certSource.addCertificate(certificateToken);
-
 		}
+		return certSource;
+	}
+
+	@Bean
+	public CertificateVerifier certificateVerifier() {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
-		certificateVerifier.setTrustedCertSources(trustedListSource(), certSource);
+		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
 		certificateVerifier.setCrlSource(cachedCRLSource());
 		certificateVerifier.setOcspSource(cachedOCSPSource());
 		certificateVerifier.setDataLoader(dataLoader());
