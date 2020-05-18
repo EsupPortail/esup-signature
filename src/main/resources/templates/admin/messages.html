@@ -18,15 +18,61 @@
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
-            <div class="card">
-                <div class="card-header">
-                    <h5>Messages</h5>
-                </div>
-                <ul class="list-group list-group-flush">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                <table class="table table-borderless table-hover">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>Message</th>
+                        <th>Date de fin</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
                     <th:block th:each="message :${messages}">
-                        <li class="list-group-item" th:text="${message.text} + ' ' + ${message.endDate}"></li>
+                    <tr>
+                        <td th:utext="${message.text}"></td>
+                        <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
+                        <td>
+                            <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${message.id }" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <div class="modal modal-warning fade in" th:id="modal-warning+${message.id}">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="alert alert-danger text-center">Confirmez-vous la
+                                                    suppression ?
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline pull-left"
+                                                        data-dismiss="modal">Non
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-outline pull-left btn-danger">
+                                                    Oui
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
                     </th:block>
-                </ul>
+                    </tbody>
+                </table>
+
+                </div>
             </div>
         </div>
     </div>
@@ -41,7 +87,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form th:action="'/admin/add-message'" method="post">
+                    <form th:action="'/admin/messages/add'" method="post">
                     <div class="form-group">
                         <label for="text">Text du message</label>
                         <textarea class="form-control" type="text" name="text" id="text" required="required"></textarea>
