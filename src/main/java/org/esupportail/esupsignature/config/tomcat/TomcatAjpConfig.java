@@ -2,11 +2,8 @@ package org.esupportail.esupsignature.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
-import org.esupportail.esupsignature.config.security.WebSecurityProperties;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
