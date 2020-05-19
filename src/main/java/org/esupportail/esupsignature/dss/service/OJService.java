@@ -36,18 +36,29 @@ public class OJService {
 
 	public void getCertificats() throws IOException {
 		log.info("start offline refreshing oj keystore");
-		dssBeanConfig.job().onlineRefresh();
+		dssBeanConfig.job().offlineRefresh();
+		refresh();
 		ojContentKeyStore.addAllCertificatesToKeyStore(trustedListsCertificateSource.getCertificates());
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		OutputStream fos = new FileOutputStream(dssBeanConfig.getDssProperties().getKsFilename());
 		ojContentKeyStore.store(fos);
 		Utils.closeQuietly(fos);
-		log.info("refreshing oj keystore OK");
+		log.info("init trusted lists OK");
 	}
 	
 	public void refresh() throws IOException {
-		log.info("start online refreshing oj keystore");
-		dssBeanConfig.job().onlineRefresh();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
+		if(lotlInfo.getValidationCacheInfo().isRefreshNeeded()
+				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
+				|| lotlInfo.getDownloadCacheInfo().isDesynchronized()
+				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+			log.info("start online refreshing oj keystore");
+			dssBeanConfig.job().onlineRefresh();
+		} else {
+			log.info("no online refresh needed for trusted lists");
+
+		}
 	}
 
 }

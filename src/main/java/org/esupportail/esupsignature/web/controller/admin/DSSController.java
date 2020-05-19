@@ -61,7 +61,7 @@ public class DSSController {
 
 	@Resource
 	@Qualifier("european-trusted-list-certificate-source")
-	private TrustedListsCertificateSource trustedCertificateSource;
+	private TrustedListsCertificateSource trustedListsCertificateSource;
 
 	@Resource
 	private KeystoreService keystoreService;
@@ -77,7 +77,7 @@ public class DSSController {
 
 	@GetMapping
 	public String tlInfoPage(Model model, HttpServletRequest request) {
-		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		model.addAttribute("summary", summary);
 		return "admin/dss/tl-summary";
 	}
@@ -118,7 +118,7 @@ public class DSSController {
 	}
 
 	private LOTLInfo getLOTLInfoById(String lotlId) {
-		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
 		for (LOTLInfo lotlInfo : lotlInfos) {
 			Identifier identifier = lotlInfo.getIdentifier();
@@ -131,7 +131,7 @@ public class DSSController {
 	}
 
 	private TLInfo getTLInfoById(String tlId) {
-		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
 		for (LOTLInfo lotlInfo : lotlInfos) {
 			TLInfo tlInfo = getTLInfoByIdFromList(tlId, lotlInfo.getTLInfos());
@@ -157,7 +157,7 @@ public class DSSController {
 	}
 
 	private String getActualOjUrl() {
-		TLValidationJobSummary summary = trustedCertificateSource.getSummary();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		if (summary != null) {
 			List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
 			for (LOTLInfo lotlInfo : lotlInfos) {
