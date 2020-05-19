@@ -51,7 +51,6 @@ public class OJService {
 		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
 		if(lotlInfo.getValidationCacheInfo().isRefreshNeeded()
 				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
-				|| lotlInfo.getDownloadCacheInfo().isDesynchronized()
 				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
 			log.info("start online refreshing oj keystore");
 			dssBeanConfig.job().onlineRefresh();

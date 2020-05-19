@@ -19,8 +19,6 @@
 						<span th:text="#{label.eu.oj.certificates.page}"></span>
 					</span>
     				<span th:text="#{label.trusted.certificates.from.OJ}"></span>
-				</div>
-				<div class="card-body" th:if="${keystoreCertificates != null}">
 					<div class="eu-official-journal">
 						<p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
 						<p th:if="${actualOjUrl == null}" class="text-danger" th:text="#{label.eu.oj.unable.retrieve}"></p>
@@ -29,8 +27,12 @@
 							<a th:href="${actualOjUrl}" target="_blank" th:title="#{label.eu.oj.page}">link</a>
 						</p>
 					</div>
+				</div>
+				<div class="card-body" th:if="${keystoreCertificates != null}">
+					<h5>Custom certificats</h5>
 					<div class="certificates">
-						<th:block th:each="certificateDTO, i : ${keystoreCertificates}">
+
+						<th:block th:each="certificateDTO, i : ${customCertificates}">
 							<div th:replace="fragments/certificate :: certificateDTO(certificateDTO=${certificateDTO})"></div>
 							<hr th:if="${! i.last}" />
 						</th:block>

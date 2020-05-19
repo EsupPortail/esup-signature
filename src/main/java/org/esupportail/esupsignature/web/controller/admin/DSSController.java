@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import eu.europa.esig.dss.model.identifier.Identifier;
 import eu.europa.esig.dss.spi.tsl.*;
+import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.utils.Utils;
@@ -64,19 +65,23 @@ public class DSSController {
 	private TrustedListsCertificateSource trustedListsCertificateSource;
 
 	@Resource
+	private CommonTrustedCertificateSource myTrustedCertificateSource;
+
+	@Resource
 	private KeystoreService keystoreService;
 
 	@GetMapping(value = "/oj")
-	public String showCertificates(Model model, HttpServletRequest request) {
-		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(lotlSource.getCertificateSource().getCertificates()));
+	public String showCertificates(Model model) {
+		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(trustedListsCertificateSource.getCertificates()));
 		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) lotlSource.getSigningCertificatesAnnouncementPredicate();
 		model.addAttribute("currentOjUrl", ojUriInfo.getOfficialJournalURL());
 		model.addAttribute("actualOjUrl", getActualOjUrl());
+		model.addAttribute("customCertificates", keystoreService.getCertificatesDTOFromKeyStore(myTrustedCertificateSource.getCertificates()));
 		return "admin/dss/oj-certificates";
 	}
 
 	@GetMapping
-	public String tlInfoPage(Model model, HttpServletRequest request) {
+	public String tlInfoPage(Model model) {
 		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		model.addAttribute("summary", summary);
 		return "admin/dss/tl-summary";
@@ -84,7 +89,7 @@ public class DSSController {
 
 
 	@GetMapping(value = "/lotl/{id}")
-	public String lotlInfoPage(@PathVariable(value = "id") String id, Model model, HttpServletRequest request) throws EsupSignatureException {
+	public String lotlInfoPage(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
 		LOTLInfo lotlInfo = getLOTLInfoById(id);
 		if (lotlInfo == null) {
 			throw new EsupSignatureException(String.format("The LOTL with the specified id [%s] is not found!", id));
@@ -94,7 +99,7 @@ public class DSSController {
 	}
 
 	@GetMapping(value = "/tl/{id}")
-	public String tlInfoPageByCountry(@PathVariable(value = "id") String id, Model model, HttpServletRequest request) throws EsupSignatureException {
+	public String tlInfoPageByCountry(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
 		TLInfo tlInfo = getTLInfoById(id);
 		if (tlInfo == null) {
 			throw new EsupSignatureException(String.format("The TL with the specified id [%s] is not found!", id));
