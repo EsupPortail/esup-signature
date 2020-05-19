@@ -245,9 +245,8 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/update-step/{id}/{step}")
 	public String changeStepSignType(@ModelAttribute User user, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType, @RequestParam(name="description") String description) {
-		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
-		if(user.getEppn().equals(workflow.getCreateBy())) {
+		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("System")) {
 			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 			workflowService.changeSignType(workflowStep, null, signType);
 			workflowStep.setDescription(description);

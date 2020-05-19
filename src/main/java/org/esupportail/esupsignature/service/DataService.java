@@ -165,6 +165,13 @@ public class DataService {
                     step++;
                 }
             }
+            for(WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                for(Recipient recipient : workflowStep.getRecipients()) {
+                    if (recipient.getUser().getEppn().equals("creator")) {
+                        recipient.setUser(user);
+                    }
+                }
+            }
             return workflow;
         } catch (Exception e) {
             logger.error("workflow not found", e);

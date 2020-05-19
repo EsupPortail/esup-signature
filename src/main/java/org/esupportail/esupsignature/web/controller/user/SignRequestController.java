@@ -427,16 +427,21 @@ public class SignRequestController {
 
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType) throws EsupSignatureIOException {
+                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         //User user = userService.getCurrentUser();
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
-            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            signRequestService.addRecipients(signRequest, user);
+            if(signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
+                SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
+                signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+                signRequestService.addRecipients(signRequest, user);
 
-            signRequestService.pendingSignRequest(signRequest, signType, false);
-            return "redirect:/user/signrequests/" + signRequest.getId();
+                signRequestService.pendingSignRequest(signRequest, signType, false);
+                return "redirect:/user/signrequests/" + signRequest.getId();
+            } else {
+                redirectAttributes.addFlashAttribute("messageError", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+                return "redirect:" + request.getHeader("Referer");
+            }
         } else {
             logger.warn("no file to import");
         }

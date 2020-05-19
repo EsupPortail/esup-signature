@@ -202,6 +202,16 @@ public class SignRequestService {
 		return signRequest;
 	}
 
+	public boolean checkSignTypeDocType(SignType signType, MultipartFile multipartFile) {
+		boolean check = true;
+		if(!multipartFile.getContentType().toLowerCase().contains("pdf") && !multipartFile.getContentType().toLowerCase().contains("jpeg")) {
+			if(signType.equals(SignType.pdfImageStamp)) {
+				check = false;
+			}
+		}
+		return check;
+	}
+
 	public void addDocsToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {

@@ -117,7 +117,6 @@ public class DataController {
 
 	@GetMapping
 	public String list(@ModelAttribute User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
-//		User user1 = (User) model.getAttribute("user");
 		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
 		model.addAttribute("datas", datas);
 		return "user/datas/list";
@@ -125,7 +124,6 @@ public class DataController {
 
 	@GetMapping("{id}")
 	public String show(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
-		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if (user.getEppn().equals(data.getOwner())) {
@@ -142,7 +140,6 @@ public class DataController {
 
 	@GetMapping("form/{id}")
 	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
 		if(autorizedForms.contains(form) && userService.checkServiceShare(UserShare.ShareType.create, form)) {
@@ -182,7 +179,6 @@ public class DataController {
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/update")
 	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-		//User user = userService.getCurrentUser();
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
