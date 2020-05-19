@@ -75,7 +75,7 @@ public class ScheduledTaskService {
 		}
 	}
 	
-	@Scheduled(fixedRate = 300000)
+//	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();

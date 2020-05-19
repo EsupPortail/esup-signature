@@ -36,7 +36,7 @@ public class OJService {
 
 	public void getCertificats() throws IOException {
 		log.info("start offline refreshing oj keystore");
-		dssBeanConfig.job().offlineRefresh();
+		dssBeanConfig.job().onlineRefresh();
 		ojContentKeyStore.addAllCertificatesToKeyStore(trustedListsCertificateSource.getCertificates());
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		OutputStream fos = new FileOutputStream(dssBeanConfig.getDssProperties().getKsFilename());
