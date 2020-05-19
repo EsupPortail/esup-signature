@@ -148,6 +148,9 @@
                                 import {default as SelectUser} from "/js/modules/selectUser.js";
                                 new SelectUser("recipientEmailsSelect_[[${step.stepNumber}]]", "[[${step.stepNumber}]]*", [[${step.maxRecipients}]]);
                             </script>
+                            <p class="small">
+                                Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
+                            </p>
                         </div>
                     </th:block>
                     <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
@@ -162,9 +165,6 @@
                             new SelectUser("targetEmailsSelect");
                         </script>
                     </div>
-                    <p class="small">
-                        Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                    </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
