@@ -196,9 +196,9 @@ public class DSSBeanConfig {
 		lotlSource.setCertificateSource(ojContentKeyStore());
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
 		lotlSource.setPivotSupport(true);
-		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-		lotlSource.setTrustServicePredicate(new GrantedTrustService());
+//		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
+//		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
+//		lotlSource.setTrustServicePredicate(new GrantedTrustService());
 		return lotlSource;
 	}
 
