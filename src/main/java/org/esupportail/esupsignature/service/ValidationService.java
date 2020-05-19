@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -37,6 +39,9 @@ public class ValidationService {
             Reports reports = null;
             try (InputStream is = defaultPolicy.getInputStream()) {
                 reports = documentValidator.validateDocument(is);
+                for(String id : reports.getSimpleReport().getSignatureIdList()) {
+                    reports.getSimpleReport().getErrors(id).remove("Unable to build a certificate chain until a trusted list!");
+                }
             } catch (IOException e) {
                 logger.error("Unable to parse policy : " + e.getMessage(), e);
             }

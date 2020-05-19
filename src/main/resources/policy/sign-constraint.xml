@@ -176,7 +176,7 @@
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="WARN" />
+			<ProspectiveCertificateChain Level="FAIL" />
 			<!-- 			<TrustedServiceTypeIdentifier Level="WARN"> -->
 			<!-- 				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
 			<!-- 			</TrustedServiceTypeIdentifier> -->
@@ -310,7 +310,7 @@
 		</SignedAttributes>
 	</CounterSignatureConstraints>
 	<Timestamp>
-		<TimestampDelay Level="FAIL" Unit="DAYS" Value="365" />
+		<TimestampDelay Level="FAIL" Unit="DAYS" Value="1" />
 		<RevocationTimeAgainstBestSignatureTime	Level="WARN" />
 		<BestSignatureTimeBeforeIssuanceDateOfSigningCertificate Level="FAIL" />
 		<Coherence Level="WARN" />
@@ -419,7 +419,7 @@
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="WARN" />
+			<ProspectiveCertificateChain Level="FAIL" />
 			<SigningCertificate>
 				<Recognition Level="FAIL" />
 				<Signature Level="FAIL" />

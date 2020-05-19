@@ -21,9 +21,13 @@
         <a th:classappend="${activeMenu == 'su'} ? 'bg-secondary'"  title="Messages" href="/admin/messages" class="btn btn-light col-12 mb-1 text-left">
             <i class="fas fa-envelope"></i> <span class="sidebar-label">Messages</span>
         </a>
+        <a title="Doc des APIs" type="button" href="/admin/dss" class="mb-1 col-12 btn btn-light text-left">
+            <i class="fas fa-certificate"></i> <span class="sidebar-label">DSS certs</span>
+        </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
+
     </div>
 </nav>
 </html>
