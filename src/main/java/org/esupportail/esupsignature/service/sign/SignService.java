@@ -202,7 +202,7 @@ public class SignService {
 		}
 
 		fileDocumentImage = new InMemoryDocument(signImage, "sign.png");
-		signSize = pdfService.getSignSize(signImage);
+//		signSize = pdfService.getSignSize(signImage);
 
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
