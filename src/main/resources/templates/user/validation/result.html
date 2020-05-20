@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -14,7 +19,7 @@
                 </ol>
             </div>
         </nav>
-        <div id="content" class="content col-lg-8">
+        <div id="content" class="content col-lg-10">
             <div class="fixed-action-btn" >
                 <a title="Download report" class="btn-floating btn-lg bg-primary" href="/user/validation/download-detailed-report" role="button">
                     <i class="fas fa-download"></i></a>
