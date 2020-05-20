@@ -17,6 +17,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +29,9 @@ import java.util.List;
 public class DataService {
 
     private static final Logger logger = LoggerFactory.getLogger(DataService.class);
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Resource
     private DataRepository dataRepository;
@@ -134,6 +139,7 @@ public class DataService {
         Workflow workflow;
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+
         try {
             if (modelWorkflow instanceof DefaultWorkflow) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
@@ -167,6 +173,7 @@ public class DataService {
             }
             for(WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
                 for(Recipient recipient : workflowStep.getRecipients()) {
+                    entityManager.detach(recipient);
                     if (recipient.getUser().getEppn().equals("creator")) {
                         recipient.setUser(user);
                     }

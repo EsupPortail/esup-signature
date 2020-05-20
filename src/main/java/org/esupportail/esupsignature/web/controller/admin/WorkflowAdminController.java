@@ -172,10 +172,10 @@ public class WorkflowAdminController {
     public String delete(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
     	//User user = userService.getCurrentUser();
     	Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflowService.checkUserManageRights(user, workflow)) {
-			redirectAttrs.addFlashAttribute("messageError", "Non autorisé");
-			return "redirect:/admin/workflows/" + id;
-		}
+//		if (!workflowService.checkUserManageRights(user, workflow)) {
+//			redirectAttrs.addFlashAttribute("messageError", "Non autorisé");
+//			return "redirect:/admin/workflows/" + id;
+//		}
 		workflowRepository.delete(workflow);
         return "redirect:/admin/workflows";
     }
