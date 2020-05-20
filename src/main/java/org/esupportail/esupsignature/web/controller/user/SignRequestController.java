@@ -345,11 +345,6 @@ public class SignRequestController {
                             }
                         }
                     }
-                    //dataRepository.save(data);
-                    //return new ResponseEntity(HttpStatus.OK);
-                } else {
-                    //fill pdf
-                    logger.info("fill pdf");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -428,7 +423,6 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
-        //User user = userService.getCurrentUser();
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             if(signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
@@ -436,7 +430,7 @@ public class SignRequestController {
                 signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
                 signRequestService.addRecipients(signRequest, user);
 
-                signRequestService.pendingSignRequest(signRequest, signType, false);
+                signRequestService.pendingSignRequest(signRequest, signType, false, user);
                 return "redirect:/user/signrequests/" + signRequest.getId();
             } else {
                 redirectAttributes.addFlashAttribute("messageError", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());

@@ -192,7 +192,7 @@ public class SignService {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		int[] signSize;
-		File signImage;
+		InputStream signImage;
 		if(addDate) {
 			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
 			String text = "Le " + dateFormat.format(new Date());
@@ -201,8 +201,8 @@ public class SignService {
 			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
 		}
 
-		fileDocumentImage = new InMemoryDocument(new FileInputStream(signImage), "sign.png");
-		signSize = pdfService.getSignSize(new FileInputStream(signImage));
+		fileDocumentImage = new InMemoryDocument(signImage, "sign.png");
+		signSize = pdfService.getSignSize(signImage);
 
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);

@@ -80,7 +80,7 @@ public class PdfService {
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-            File signImage = null;
+            InputStream signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
             String text = "";
             if (signType.equals(SignType.visa)) {
                 try {
@@ -102,7 +102,7 @@ public class PdfService {
                 }
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
-            BufferedImage bufferedImage = ImageIO.read(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream());
+            BufferedImage bufferedImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -131,7 +131,6 @@ public class PdfService {
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
-            signImage.delete();
             return in;
         } catch (IOException e) {
             logger.error("error to add image", e);
@@ -139,51 +138,51 @@ public class PdfService {
         return null;
     }
 
-    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
-        //signRequestService.setStep("Apposition de la signature");
-        PdfParameters pdfParameters;
-        try {
-            PDDocument pdDocument = PDDocument.load(document.getInputStream());
-            pdfParameters = getPdfParameters(pdDocument);
-            PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-            PDImageXObject pdImage;
-
-            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-            float height = pdPage.getMediaBox().getHeight();
-            float width = pdPage.getMediaBox().getWidth();
-            File signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, text.length() * 10, 20);
-            BufferedImage bufferedImage = ImageIO.read(signImage);
-            if (pdfParameters.getRotation() == 0) {
-                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-                tx.translate(0, -bufferedImage.getHeight(null));
-                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                bufferedImage = op.filter(bufferedImage, null);
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-                contentStream.drawImage(pdImage, xPos, yPos, bufferedImage.getWidth(), bufferedImage.getHeight());
-            } else {
-                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-                contentStream.transform(new Matrix(at));
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.drawImage(pdImage, xPos, yPos - 37, bufferedImage.getWidth(), bufferedImage.getWidth());
-            }
-            contentStream.close();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            pdDocument.setAllSecurityToBeRemoved(true);
-            pdDocument.save(out);
-            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-            pdDocument.close();
-            signImage.delete();
-            return in;
-        } catch (IOException e) {
-            logger.error("error to add image", e);
-        }
-        return null;
-    }
+//    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
+//        //signRequestService.setStep("Apposition de la signature");
+//        PdfParameters pdfParameters;
+//        try {
+//            PDDocument pdDocument = PDDocument.load(document.getInputStream());
+//            pdfParameters = getPdfParameters(pdDocument);
+//            PDPage pdPage = pdDocument.getPage(pageNumber - 1);
+//            PDImageXObject pdImage;
+//
+//            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+//            float height = pdPage.getMediaBox().getHeight();
+//            float width = pdPage.getMediaBox().getWidth();
+//            File signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, text.length() * 10, 20);
+//            BufferedImage bufferedImage = ImageIO.read(signImage);
+//            if (pdfParameters.getRotation() == 0) {
+//                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+//                tx.translate(0, -bufferedImage.getHeight(null));
+//                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//                bufferedImage = op.filter(bufferedImage, null);
+//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+//                ImageIO.write(bufferedImage, "png", flipedSignImage);
+//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+//                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+//                contentStream.drawImage(pdImage, xPos, yPos, bufferedImage.getWidth(), bufferedImage.getHeight());
+//            } else {
+//                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+//                contentStream.transform(new Matrix(at));
+//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+//                ImageIO.write(bufferedImage, "png", flipedSignImage);
+//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+//                contentStream.drawImage(pdImage, xPos, yPos - 37, bufferedImage.getWidth(), bufferedImage.getWidth());
+//            }
+//            contentStream.close();
+//            ByteArrayOutputStream out = new ByteArrayOutputStream();
+//            pdDocument.setAllSecurityToBeRemoved(true);
+//            pdDocument.save(out);
+//            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+//            pdDocument.close();
+//            signImage.delete();
+//            return in;
+//        } catch (IOException e) {
+//            logger.error("error to add image", e);
+//        }
+//        return null;
+//    }
 
 
 

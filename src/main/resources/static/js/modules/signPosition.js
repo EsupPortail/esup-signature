@@ -14,6 +14,7 @@ export class SignPosition {
         this.signImages = signImages;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
+        this.fontSize = 12;
         this.pointItMove = false;
         this.dateActive = false;
         this.visualActive = true;
@@ -110,6 +111,8 @@ export class SignPosition {
 
     updateSignZoom(signScale) {
         console.info("sign zoom to : " + signScale);
+        $('#textVisa').css('font-size', this.fontSize * this.currentScale * signScale + "px");
+        $('#textDate').css('font-size', this.fontSize * this.currentScale * signScale + "px");
         this.signWidth = Math.round(this.signWidth / this.signScale * signScale);
         this.signHeight = Math.round(this.signHeight / this.signScale * signScale);
         this.cross.css('width', this.signWidth);
@@ -198,8 +201,8 @@ export class SignPosition {
         this.borders.css('width', this.signWidth);
         this.borders.css('height', this.signHeight);
         this.cross.css('background-size', this.signWidth);
-        $('#textVisa').css('font-size', 8 * this.currentScale + "px");
-        $('#textDate').css('font-size', 8 * this.currentScale + "px");
+        $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        $('#textDate').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         this.updateSignButtons(this.getUiXpos(), this.getUiYpos());
     }
 
@@ -239,7 +242,7 @@ export class SignPosition {
         var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            this.borders.append("<span id='textDate' class='align-top' style='font-weight : bold;font-size:" + 8 * this.currentScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+            this.borders.append("<span id='textDate' class='align-top' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
             textDate = document.getElementById("textDate");

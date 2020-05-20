@@ -319,6 +319,10 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
+#textDate {
+    font-family: "DejaVu Sans Condensed";
+}
+
 .wrapper {
     display: block;
 }
@@ -343,7 +347,7 @@ input:checked + .slider:before {
     min-width: 260px;
     max-width: 260px;
     min-height: 100vh;
-    /*background: #555555;*/
+    background: #FFF;
     overflow-y: auto;
     overflow-x: fragments;
     -moz-box-shadow: 2px 2px 4px 4px rgba(0, 0, 0, 0.2);

@@ -190,34 +190,34 @@ public class FileService {
 	    }
 	}
 
-	public File addTextToImage(InputStream imageStream, String text, int width, int height) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, String text, int width, int height) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
 		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.setColor(new Color(255,255,255,0 ));
-		graphics2D.fillRect(0, 0, width, height);
+//		graphics2D.setColor(new Color(255,255,255,0 ));
+//		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
 		graphics2D.drawImage(signImage, 0, 0, null);
-		graphics2D.setRenderingHint(
-				RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-		graphics2D.setColor(Color.black);
+		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//		graphics2D.setColor(Color.black);
 		if(text != null && !text.isEmpty()) {
 			Map<TextAttribute, Object> map = new Hashtable<>();
-			int fontSize = 18;
-			map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-			Font font = new Font("Helvetica", Font.PLAIN, fontSize);
+			int fontSize = 36;
+			//map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+			Font font = new Font("DejaVu Sans Condensed", Font.PLAIN, fontSize);
 			font = font.deriveFont(map);
 			graphics2D.setFont(font);
-			int x = 0;
-			int y = fontSize;
+			graphics2D.setPaint(Color.black);
 			for (String line : text.split("\n")) {
-				graphics2D.drawString(line, x, y += graphics2D.getFontMetrics().getHeight());
+				FontMetrics fm = graphics2D.getFontMetrics();
+				int x = 0;
+				int y = fm.getHeight();
+				graphics2D.drawString(line, x, y);
 			}
 		}
+		graphics2D.dispose();
 		File fileImage = getTempFile("sign.png");
 		ImageIO.write(image, "png", fileImage);
-		graphics2D.dispose();
-		return fileImage;
+		return new FileInputStream(fileImage);
 	}
 
 	public InputStream svgToPng(InputStream svgInputStream) throws IOException {

@@ -303,13 +303,13 @@ public class SignRequestService {
 
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete) {
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
-			sendEmailAlerts(signRequest);
+			sendEmailAlerts(signRequest, user);
 		} else {
 			logger.warn("already pending");
 		}
@@ -494,10 +494,10 @@ public class SignRequestService {
 		return checkRecipients == 0 || !signRequest.getAllSignToComplete();
 	}
 
-	public void sendEmailAlerts(SignRequest signRequest) {
+	public void sendEmailAlerts(SignRequest signRequest, User user) {
 		for (Recipient recipient : signRequest.getRecipients()) {
 			User recipientUser = recipient.getUser();
-			if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
+			if (!recipientUser.equals(user) && (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser))) {
 				userService.sendSignRequestEmailAlert(recipientUser, signRequest);
 			}
 		}
