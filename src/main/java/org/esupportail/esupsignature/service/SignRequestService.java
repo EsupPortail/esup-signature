@@ -86,6 +86,9 @@ public class SignRequestService {
 	private SignRequestParamsRepository signRequestParamsRepository;
 
 	@Resource
+	private BigFileService bigFileService;
+
+	@Resource
 	private FsAccessFactory fsAccessFactory;
 
 	@Resource
@@ -339,7 +342,6 @@ public class SignRequestService {
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 					signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
-					//addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 				}
 			}
 			if (signRequest.getParentSignBook() == null || (signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
@@ -347,6 +349,9 @@ public class SignRequestService {
 			}
 			addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
 		}else {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+				bigFileService.setBinaryFileStream(toSignDocuments.get(0).getBigFile(), filledInputStream, filledInputStream.available());
+			}
 			certSign(signRequest, user, password, addDate, visual);
 		}
 		SignRequestParams params = signRequest.getCurrentSignRequestParams();
@@ -384,9 +389,9 @@ public class SignRequestService {
 
 	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
 		SignatureForm signatureForm;
-		List<Document> toSignFiles = new ArrayList<>();
+		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
-			toSignFiles.add(document);
+			toSignDocuments.add(document);
 		}
 		step = "Initialisation de la procédure";
 		try {
@@ -398,7 +403,7 @@ public class SignRequestService {
 
 			step = "Formatage des documents";
 
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, visual);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 
@@ -434,7 +439,7 @@ public class SignRequestService {
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
 			DSSDocument dssDocument;
-			if(toSignFiles.size() > 1) {
+			if(toSignDocuments.size() > 1) {
 				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
 			} else {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
