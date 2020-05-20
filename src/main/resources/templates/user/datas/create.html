@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <div th:replace="fragments/side"></div>
+        <div class="content" id="v-pills-tabContent">
+            <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav-full">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/user/datas">Mes documents</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Formulaire : <span
+                            th:text="${form.name}"></span>
+                    </li>
+                </ol>
+            </nav>
+            <div class="tools">
+                <div class="d-flex mb-1">
+                    <button title="Annuler" class="btn btn-light btn-outline-danger ml-1" aria-label="Précédent"
+                            onclick="window.history.back();">
+                        <i class="fas fa-door-open"></i>
+                    </button>
+                    <button title="Enregistrer les modifications"
+                            th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button"
+                            onclick="document.getElementById('newDataSubmit').click();"
+                            class="btn btn-light btn-outline-success ml-1">
+                        <i class="fas fa-save"></i><br/>
+                    </button>
+                    <div th:if="${data.status != null}" th:switch="${data.status.name()}">
+                        <th:block th:case="'draft'">
+                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
+                               th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
+                               class="btn btn btn-outline-dark btn-light ml-1">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            <button title="Envoyer le document"
+                                    th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}"
+                                    type="button" data-toggle="modal" data-target="#sendModal"
+                                    class="btn btn-success ml-1 ">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <!--                            <button th:if="${data.signBook != null && data.signBook.signRequests.size() > 0}" type="button" data-toggle="modal"-->
+                            <!--                                    data-target="#nextStepModal"-->
+                            <!--                                    class="ml-1 btn btn-success">-->
+                            <!--                                <i class="fas fa-check"></i><br/>Etape suivante-->
+                            <!--                            </button>-->
+                        </th:block>
+                    </div>
+                    <!--                    <div th:if="${data.signBook != null && data.signBook.signRequests.size() > 0} class="alert alert-success ml-1" style="max-height: 40px;">-->
+                    <!--                        Vous devez signer ce document-->
+                    <!--                    </div>-->
+                    <a th:if="${toSign}" type="submit" title="Signer le document" class="ml-1 btn btn-success"
+                       th:href="'/user/signrequests/' + ${data.signBook.signRequests.get(0).id}">
+                        <i class="fas fa-signature"></i> <span class="sidebar-label">Signer</span>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body container">
+                <form id="newData" th:action="'/user/' + ${user.eppn} + '/data/form/' + ${form.id}" method="post">
+                    <input id="newDataSubmit" type="submit" style="display: none;"/>
+                    <div class="form-group ">
+                        <label for="name">Nom du document</label>
+                        <input id="name" class="form-control" type="text" name="name" th:placeholder="${form.name}"
+                               required/>
+                    </div>
+                    <th:block th:each="field : ${fields}">
+                        <div class="form-group">
+                            <div th:switch="${#strings.toString(field.type)}">
+                                <input th:case="checkbox" type="checkbox" class="form-check-input"
+                                       th:name="${field.name}" th:placeholder="${field.name}"/> <label
+                                    th:for="${field.name}" th:text="${field.name}"></label> <input
+                                    th:case="'text'" type="text" class="form-control"
+                                    th:name="${field.name}" th:value="${field.defaultValue}"
+                                    th:placeholder="${field.label}"/>
+                            </div>
+                        </div>
+                    </th:block>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

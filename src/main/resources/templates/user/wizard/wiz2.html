@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {FilesInput} from "/js/modules/filesInput.js";
+    new FilesInput($("#multipartFiles"), [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+</script>
+<body>
+<div id="stepper1" class="bs-stepper linear">
+    <div class="bs-stepper-header" role="tablist">
+        <div class="step" data-target="#test-l-1">
+            <span class="bs-stepper-circle bg-success"><i class="fas fa-magic"></i></span>
+            <span class="bs-stepper-label">Nom</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step active" data-target="#test-l-2">
+            <span class="bs-stepper-circle"><i class="fas fa-copy"></i></span>
+            <span class="bs-stepper-label">Copie des fichiers</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
+            <span class="bs-stepper-label">Création du circuit</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
+            <span class="bs-stepper-label">Sauvegarde</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
+            <span class="bs-stepper-label">Fin</span>
+        </div>
+    </div>
+</div>
+<h4 class="d-flex justify-content-center mt-4">Dépot des fichiers</h4>
+<form id="wiz2Form" th:action="'/user/wizard/wiz3'" method="post">
+    <input type="hidden" name="name" th:value="${name}">
+    <input th:if="${workflow != null}" type="hidden" name="workflowId" th:value="${workflow.id}">
+    <div class="col-lg-12">
+        <div class="file-loading">
+            <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
+        </div>
+        <div id="wiz2Form" class="form-check d-none">
+            <label>Regrouper les documents dans une archive lors de la signature</label>
+            <label class="switch">
+                <input type="checkbox" name="unique">
+                <span class="slider round"></span>
+            </label>
+        </div>
+    </div>
+    <button type="button" onclick="window.history.back();" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
+        <i class="fas fa-angle-left"></i> Précédent
+    </button>
+    <button type="button" id="fileUpload" class="btn btn-success" style="position: absolute;right: 10px;bottom: 10px;">
+        Suivant <i class="fas fa-angle-right"></i>
+    </button>
+</form>
+</body>
+</html>

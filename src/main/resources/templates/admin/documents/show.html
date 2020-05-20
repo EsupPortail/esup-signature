@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<div id="ribbon" class="card">
+    <div class="card-body">
+        <button th:if="${form == null}" class="mr-2 btn btn-outline-dark btn-light float-left" data-toggle="modal" data-target="#generateForm">
+            <i class="fas fa-plus fa-2x"></i> <br/> Générer le formulaire à partir du modèle
+        </button>
+        <button type="button" class="btn  btn-danger float-right" value="Retour" onclick="location.href='/'" title="Quitter">
+            <i class="fas fa-times fa-1x"></i>
+        </button>
+		<div th:if="${form != null}">
+			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/' + ${form.id}">
+				<i class="fas fa-eye fa-2x"></i> <br/> Aperçu du formulaire
+			</a>
+			<a class="btn btn-light btn-outline-dark" th:href="'/admin/forms/update/' + ${form.id}">
+				<i class="fas fa-cogs fa-2x"></i> <br/> Paramètres du formulaire
+			</a>
+		</div>
+
+    </div>
+</div>
+<main role="main" class="container">
+    <div class="card">
+        <div class="card-header"><h2>Modèle</h2></div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <tr>
+                    <td style="width: 25%">Nom du fichier modèle</td>
+                    <td th:text="${document.fileName}"></td>
+                </tr>
+                <tr>
+                    <td>Type de fichier</td>
+                    <td th:text="${document.contentType}"></td>
+                </tr>
+            </table>
+
+            <div th:if="${form == null}">
+				<div class="alert alert-info">
+					Vous pouvez maintenant générer un formulaire correspondant au PDF modèle
+				</div>
+            </div>
+			<div th:if="${form != null}">
+				<div class="alert alert-info">
+					Le formulaire correspondant au PDF à été généré
+				</div>
+			</div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+
+<div id="generateForm" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Génération du formulaire</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form th:if="${form == null}" th:action="'/admin/documents/' + ${document.id} + '/generate'">
+                <div class="modal-body">
+
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Nom</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="code" class="col-form-label">Code</label>
+                        <input type="text" id="code" name="code" class="form-control" required>
+                    </div>
+                    <div class="alert alert-info">
+                        Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer les droits sur les formulaires.
+                        Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable des champs.
+                        Ex : pour les ordres de mission, mettre "ordre_mission"
+                    </div>
+                    <div class="form-group">
+                        <label for="targetType" class="col-form-label">Type de destination</label>
+                        <select class="form-control" id="targetType" name="targetType">
+                            <th:block th:each="targetType : ${targetTypes}">
+                                <option th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Destination des documents</label>
+                        <input type="text" name="targetURI" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de workflow</label>
+                        <select class="form-control" id="workflowType" name="workflowType">
+                            <th:block th:each="workflowType : ${workflowTypes}">
+                                <option th:value="${workflowType.name}" th:text="${workflowType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-success" value="Génerer formulaire">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</html>

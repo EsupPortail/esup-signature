@@ -1,5 +1,6 @@
 *
 !src/
+!src/**
 !LICENCE
 !README.md
 !NOTICE

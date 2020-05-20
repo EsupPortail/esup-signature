@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {HomeUi} from "/js/modules/homeUi.js";
+    new HomeUi();
+</script>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/home-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Accueil</li>
+            </ol>
+        </nav>
+        <div id="content" class="content flex align-content-center">
+            <div class="row">
+                <div th:replace="user/home/include/new"></div>
+                <div id="toSignList" class="d-flex col-12">
+                    <div class="col-12 col-lg-8 card mb-2 mx-auto">
+                        <div id="myDocs" class="card-body">
+                            <h5 class="text-center"><b>Demandes à signer</b></h5>
+                            <table th:if="${signRequests.getNumberOfElements() > 0}"
+                                   class="table table-sm table-borderless table-hover">
+                                <tbody>
+                                <th:block th:each="signRequest : ${signRequests}">
+                                    <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                        <td class="text-break w-5 d-none d-md-inline"><i class="fas fa-book p-2"></i></td>
+                                        <td class="text-break w-35" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                        <td class="text-break w-35" th:unless="${signRequest.parentSignBook != null}" th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-15 d-none d-md-inline">
+                                            <span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
+                                        </td>
+                                        <td class="text-break w-10"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </td>
+                                        <td class="text-center">
+                                             <a aria-label="Accéder à la demande"
+                                               class="btn btn-sm text-dark"
+                                               title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
+                                                    class="fas fa-eye"></i> </a>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                            <div th:unless="${signRequests.getNumberOfElements() > 0}"
+                                 class="alert alert-secondary">
+                                Aucun document à signer pour le moment
+                            </div>
+                        </div>
+                    </div>
+<!--                    <div class="card mb-2" th:if="${datas.size() > 0}">-->
+<!--                        <div id="myDocs" class="card-body">-->
+<!--                            <h5 class="text-center"><b>Bouillons</b></h5>-->
+<!--                            <table class="table table-sm table-borderless">-->
+<!--                                <tbody>-->
+<!--                                <th:block th:each="data : ${datas}">-->
+<!--                                    <tr>-->
+<!--                                        <td class="text-break w-50" th:text="${data.name}"></td>-->
+<!--                                        <td class="text-break w-40"-->
+<!--                                            th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>-->
+<!--                                        <td class="text-center w-10">-->
+<!--                                            <a title="Voir" th:href="'/user/datas/' + ${data.id} + '/update'"-->
+<!--                                               class="btn btn-warning">-->
+<!--                                                <i class="fas fa-pencil-alt"></i>-->
+<!--                                            </a>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </th:block>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

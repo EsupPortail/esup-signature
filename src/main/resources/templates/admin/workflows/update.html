@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="sourceTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.DocumentIOType>"*/-->
+<!--/*@thymesVar id="targetTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.DocumentIOType>"*/-->
+<head th:replace="fragments/head"></head>
+<script type="module">
+    import {WorkflowUi} from "/js/modules/workflowUi.js";
+    new WorkflowUi();
+</script>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Liste des circuits</a></li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span
+                        th:text="${workflow.name}"></span>
+                </li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn" >
+                <a role="button" title="Enregistrer" class="btn-floating btn-lg bg-success wave-effect"
+                        onclick="document.getElementById('updateSignBook').submit();">
+                    <i class="fas fa-save"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10">
+                <div class="card-body">
+                    <form th:object="${workflow}" th:action="'/admin/workflows/update/' + ${workflow.id}" method="post" id="updateSignBook">
+                        <input type="hidden" th:field="*{id}">
+                        <div class="form-group">
+                            <label><strong>Description</strong></label>
+                            <input class="form-control" type="text" th:field="*{description}">
+                        </div>
+                        <div class="form-group" id="managers">
+                            <label for="managersSelect"><strong>Gestionnaire(s) du circuit</strong>
+                                <button class="btn btn-sm btn-transparent" data-target="#collapseHelp1" data-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                                <div class="collapse" id="collapseHelp1">
+                                    <div class="alert alert-info">
+                                        Liste des personnes pouvant utiliser ce circuit
+                                    </div>
+                                </div>
+                            </label>
+                            <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
+                                <th:block th:each="manager : ${workflow.managers}">
+                                    <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceTypeSelect">
+                                <strong> Protocole pour la source des documents </strong>
+                            </label>
+                            <select class="form-control" id="sourceTypeSelect" th:field="*{sourceType}" size="1">
+                                <th:block th:each="sourceType : ${sourceTypes}">
+                                    <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}"
+                                            th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group" id="documentsSourceUriDiv">
+                            <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
+                            <input id="documentsSourceUri" th:field="*{documentsSourceUri}"
+                                   placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
+                                   value=""
+                                   autocomplete="on">
+                        </div>
+                        <div class="form-group">
+                            <label for="targetTypeSelect">
+                                <strong> Protocole pour la destination des documents </strong>
+                            </label>
+                            <select class="form-control" id="targetTypeSelect" th:field="*{targetType}" size="1">
+                                <th:block th:each="targetType : ${targetTypes}">
+                                    <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}"
+                                            th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group" id="documentsTargetUriDiv">
+                            <label for="documentsTargetUri"><strong>Lien pour la destination des
+                                documents</strong></label>
+                            <input id="documentsTargetUri" th:field="*{documentsTargetUri}"
+                                   placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
+                                   value=""
+                                   autocomplete="on">
+                        </div>
+                        <div class="form-group" id="description">
+                            <label for="_description_id"><strong>Description</strong></label>
+                            <textarea id="_description_id" name="description" class="form-control" rows="5"
+                                      cols="50"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+<div th:replace="fragments/message :: message"></div>
+</body>
+</html>

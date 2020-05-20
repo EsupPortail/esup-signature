@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<script type="module">
+    import {default as SelectUser} from "/js/modules/selectUser.js";
+    new SelectUser("stepRecipientsEmails");
+</script>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item active"><a href="/admin">Liste des circuits de visas</a></li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit
+                    : <span th:text="${workflow.name}"></span>
+                </li>
+            </ol>
+        </nav>
+        <div id="content" class="content col-lg-8">
+            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-primary waves-effect">
+                    <i class="fas fa-ellipsis-v"></i>
+                </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li>
+                        <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-dark waves-effect">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                    </li>
+                    <li>
+                    <a role="button" title="Ajouter une étape" class="btn-floating bg-warning waves-effect" data-toggle="modal" data-target="#addStep">
+                        <i class="fas fa-shoe-prints"></i>
+                    </a>
+                    </li>
+                    <li>
+                        <form id="delete" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
+                        <a role="button" title="Supprimer" type="submit" onclick="$('#delete').submit();" class="btn-floating bg-danger waves-effect">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Description</dt>
+                        <dd th:text="${workflow.description}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Circuit de signatures</dt>
+                        <dd>
+                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
+                            <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
+                                Vous pouvez ajouter des étapes
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>
+                        <dd>
+                            <div class="alert alert-secondary">
+                                <th:block th:if="${workflow.managers.size() > 0}" th:each="manager : ${workflow.managers}">
+                                    <i class="fas fa-users-cog"></i> <span th:text="${manager}"></span>
+                                    <br/>
+                                </th:block>
+                                <span th:unless="${workflow.managers.size() > 0}">Pas de gestionnaires</span>
+                            </div>
+                        </dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Protocole pour la source des documents</dt>
+                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.sourceType}}"></dd>
+                    </dl>
+                    <div th:if="${workflow.sourceType.name() != 'none'}">
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-lg-5">Lien pour la source des documents</dt>
+                            <dd th:text="${workflow.documentsSourceUri}"></dd>
+                        </dl>
+                    </div>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Protocole pour la destination des documents
+                        </dt>
+                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.targetType}}"></dd>
+                    </dl>
+                    <div th:if="${workflow.targetType.name() != 'none'}">
+                        <dl class="row border-bottom m-0">
+                            <dt class="col-lg-5">Lien pour la destination des documents</dt>
+                            <dd th:text="${workflow.documentsTargetUri}"></dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <form th:action="'/admin/workflows/add-step/' + ${id}" method="post">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <select name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple" required="required">
+                                    </select>
+                                </div>
+                                <div class="form-group" id="_allSignToComplete_div_id">
+                                    <label for="_allSignToComplete">
+                                        <strong> Tous les participants doivent-ils signer ? </strong>
+                                        <button data-target="#collapseHelpAllSign" data-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
+                                            <span class="fas fa-info-circle text-info"></span>
+                                        </button>
+                                        <div class="collapse" id="collapseHelpAllSign">
+                                            <div class="alert alert-info">
+                                                <small>
+                                                    <ul>
+                                                        <li>
+                                                            Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+                                                        </li>
+                                                        <li>
+                                                            Non : Une seule signature suffit
+                                                        </li>
+                                                    </ul>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="col-lg-8">
+                                        <label class="switch">
+                                            <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="_signType_div_id">
+                                    <label for="_signType_id"> <strong> Type de signature
+                                        par défaut
+                                        <button data-target="#collapseHelpSignType"
+                                                data-toggle="collapse" type="button"
+                                                class="btn btn-sm btn-transparent">
+                                            <i class="fas fa-info-circle text-info"></i>
+                                        </button>
+                                    </strong>
+                                        <div class="collapse" id="collapseHelpSignType">
+                                            <div class="alert alert-info">
+                                                <ul>
+                                                    <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                                        uploader au niveau de vos paramètres
+                                                    </li>
+                                                    <li>Apposition de la signature : ajoute simplement
+                                                        l'image de votre signature sur un PDF à l'endroit voulu
+                                                    </li>
+                                                    <li>PAdES/XAdES avec NexU : s'appuie l'application NexU
+                                                        qui permet l'utilisation d'un certificat matériel
+                                                    </li>
+                                                    <li>Confirmation de lecture : permet de valider la
+                                                        lecture d'un document
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="col-lg-8">
+                                        <select id="_signType_id" name="signType" class="form-control" size="1">
+                                            <th:block th:each="signType : ${signTypes}">
+                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-success">Ajouter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+<div th:replace="fragments/message :: message"></div>
+</body>
+</html>

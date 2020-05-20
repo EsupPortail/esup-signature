@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item active">Liste des circuits de visas</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+<!--            <div class="fixed-action-btn" >-->
+<!--                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button"-->
+<!--                   class="btn-floating btn-lg bg-primary wave-effect">-->
+<!--                    <i class="fas fa-plus"></i>-->
+<!--                </a>-->
+<!--            </div>-->
+            <div class="card col-lg-8 mx-auto">
+                <div class="card-body">
+                    <ul>
+                    <th:block th:each="form : ${forms}">
+                        <li>
+                            <a th:href="'/admin/export/form/' + ${form.name} + '/datas/csv'" th:text="'Export ' + ${form.title}" download></a>
+                            (<a th:href="'/admin/export/form/' + ${form.name} + '/datas/json'" target="_blank">json</a>)
+                        </li>
+                    </th:block>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

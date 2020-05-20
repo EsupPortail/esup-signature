@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="prefillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
+<!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.workflow.DefaultWorkflow>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liste des formulaires</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div id="addButton" class="fixed-action-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-primary waves-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-primary waves-effect" onclick="location.href='/admin/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
+                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-toggle="modal" data-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
+                </ul>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <table th:if="${forms.size() > 0}" class="table table-striped table-hover table-borderless table-responsive">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col" class="w-100">Titre</th>
+                                <th scope="col">Nom</th>
+                                <th scope="col">Version</th>
+                                <th scope="col">Actif</th>
+                                <th scope="col">Rôle</th>
+                                <th class="show text-center" scope="col">Voir</th>
+                                <th class="edit text-center" scope="col">Modifier</th>
+                                <th class="dete text-center" scope="col">Supprimer</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="form : ${forms}">
+                                <td th:text="${form.title}"></td>
+                                <td th:text="${form.name}"></td>
+                                <td th:text="${form.version}"></td>
+                                <td>
+                                    <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
+                                    <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
+                                </td>
+                                <td th:text="${form.role}"></td>
+                                <td class="show text-center">
+                                    <a type="button" th:href="'/admin/forms/' + ${form.id}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                </td>
+                                <td class="edit text-center">
+                                    <a type="button" th:href="'/admin/forms/update/' + ${form.id}" class="btn btn-warning">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </a>
+                                </td>
+                                <td class="delete text-center">
+                                    <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-danger">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    <div class="modal modal-warning fade in" th:id="modal-warning+${form.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">Confirmez-vous la
+                                                            suppression ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left"
+                                                                data-dismiss="modal">Non
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="btn btn-outline pull-left btn-danger">
+                                                            Oui
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
+                        Aucun formulaire pour le moment
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="modal fade" id="newForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="addModel"
+                  th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+                  method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Nom</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Titre</label>
+                        <input type="text" id="title" name="title" class="form-control" required>
+                    </div>
+                        <div class="form-group">
+                            <label for="inputGroupFile01" class="col-form-label">Modèle PDF Form</label>
+                            <div class="custom-file">
+                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                                       data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile"
+                                       type="file" required/>
+                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
+                                    Choisir un fichier
+                                </label>
+                            </div>
+                        </div>
+                    <div class="form-group">
+                        <label for="roleName" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                        <input type="text" id="roleName" name="roleName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                        <select class="form-control" id="prefillType" name="prefillType">
+                            <th:block th:each="prefillType : ${prefillTypes}">
+                                <option th:value="${prefillType.name}"
+                                        th:text="${prefillType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer
+                        les droits sur les formulaires.
+                        Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable
+                        des champs.
+                        Ex : pour les ordres de mission, mettre "ordre_mission"
+                    </div>
+                    <div class="form-group">
+                        <label for="targetType" class="col-form-label">Type de destination</label>
+                        <select class="form-control" id="targetType" name="targetType">
+                            <th:block th:each="targetType : ${targetTypes}">
+                                <option th:value="${targetType}"
+                                        th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" class="col-form-label">Destination des documents</label>
+                        <input type="text" name="targetURI" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de workflow</label>
+                        <select class="form-control" id="workflowType" name="workflowType">
+                            <th:block th:each="workflowType : ${workflowTypes}">
+                                <option th:value="${workflowType.name}"
+                                        th:text="${workflowType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <input type="submit" class="btn btn-success" value="Valider">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>
