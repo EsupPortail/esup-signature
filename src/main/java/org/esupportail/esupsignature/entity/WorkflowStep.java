@@ -18,13 +18,25 @@ public class WorkflowStep {
 
     private String name;
 
+    private String description;
+
+    private Integer stepNumber;
+
+    private Integer maxRecipients = 99;
+
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
+
+    private Boolean changeable = false;
 
     private Boolean allSignToComplete = false;
 
     @Enumerated(EnumType.STRING)
     private SignType signType;
+
+    private String parentType;
+
+    private Long parentId;
 
     public Long getId() {
         return id;
@@ -72,5 +84,53 @@ public class WorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
+    }
+
+    public Boolean getChangeable() {
+        return changeable;
+    }
+
+    public void setChangeable(Boolean changeable) {
+        this.changeable = changeable;
+    }
+
+    public Integer getMaxRecipients() {
+        return maxRecipients;
+    }
+
+    public void setMaxRecipients(Integer maxRecipients) {
+        this.maxRecipients = maxRecipients;
+    }
+
+    public String getParentType() {
+        return parentType;
+    }
+
+    public void setParentType(String parentType) {
+        this.parentType = parentType;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
     }
 }

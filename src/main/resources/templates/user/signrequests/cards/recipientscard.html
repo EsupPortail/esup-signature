@@ -2,15 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="recipientscard" th:if="${signRequest.parentSignBook == null}">
-    <div class="card rounded-0 mb-1">
-        <div class="card-header">
-            Paramètres de signature
-            <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#signRequestParams">
-                <i class="fa fa-plus"></i> Modifier les paramètres
-            </button>
-        </div>
+    <div class="card mb-1 col-lg-8 mx-auto">
         <div id="collapseLogs" class="show" aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
+                <h5>Paramètres de signature</h5>
                 <div class="alert alert-dark">
                     <span th:text="#{'signbook.signtype.' + ${signRequest.signType}}"></span>
                     <br>
@@ -20,7 +15,7 @@
                 <table class="table table-sm table-bordered table-hover">
                     <thead>
                     <tr>
-                        <th class="none">Nom</th>
+                        <th>Nom</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -34,69 +29,46 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="signRequestParams" tabindex="-1" role="dialog" aria-labelledby="signRequestParamsModalLabel" aria-hidden="true">
+    <div class="modal fade" id="signRequestParams" tabindex="-1" role="dialog"
+         aria-labelledby="signRequestParamsModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addRecipient">Paramètres de signature</h5>
+                    <h3 class="modal-title">Paramètres de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
-                        <label for="recipientsEmail">Choisir les participants</label>
-                        <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
-                            <th:block th:each="recipient : ${signRequest.recipients}">
-                                <option selected="selected" th:value="${recipient.user.email}" th:text="${recipient.user.email}"></option>
-                            </th:block>
-                        </select>
-                        <br/>
-                        <label>
-                            Tous les participants doivent-ils signer ?
-                        </label>
-                        <label class="switch">
-                            <input type="checkbox" name="allSignToComplete" th:checked="${signRequest.allSignToComplete}"/>
-                            <span class="slider round"></span>
-                        </label>
-                        <br/>
-                        <label>Type de signature :</label>
-                        <select name="signType" class="form-control">
-                            <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signRequest.signType == signType}"></option>
-                            </th:block>
-                        </select>
-                        <script language="JavaScript">
-                            new SlimSelect({
-                                select: "#recipientsEmails",
-                                placeholder: 'Choisir un ou plusieurs participants',
-                                searchText: 'Aucun résultat',
-                                searchPlaceholder: 'Rechercher',
-                                searchHighlight: true,
-                                searchFilter: (option, search) => {
-                                    return true;
-                                },
-                                ajax: function (search, callback) {
-                                    if (search.length < 3) {
-                                        callback('Merci de saisir au moins 3 caractères')
-                                    }
-                                    fetch('/user/users/searchUser?searchString=' + search)
-                                        .then(function (response) {
-                                            return response.json()
-                                        })
-                                        .then(function (json) {
-                                            let data = []
-                                            for (let i = 0; i < json.length; i++) {
-                                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: json[i].mail});
-                                            }
-                                            callback(data)
-                                        })
-                                        .catch(function (error) {
-                                            callback(false)
-                                        })
-                                }
-                            });
-                        </script>
+                        <div class="form-group" id="_signType_div_id">
+                            <label for="recipientsEmails">Choisir les participants</label>
+                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
+                                    required="required">
+                                <th:block th:each="recipient : ${signRequest.recipients}">
+                                    <option selected="selected" th:value="${recipient.user.email}"
+                                            th:text="${recipient.user.email}"></option>
+                                </th:block>
+                            </select>
+                            <br/><br/>
+                            <label>
+                                Tous les participants doivent-ils signer ?
+                            </label>
+                            <label class="switch">
+                                <input type="checkbox" name="allSignToComplete"
+                                       th:checked="${signRequest.allSignToComplete}"/>
+                                <span class="slider round"></span>
+                            </label>
+                            <br/>
+                            <label>Type de signature :</label>
+                            <select name="signType" class="form-control">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"
+                                            th:selected="${signRequest.signType == signType}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
@@ -107,4 +79,9 @@
         </div>
     </div>
 </div>
+<script type="module">
+    import {default as SelectUser} from "/js/modules/selectUser.js";
+
+    new SelectUser("recipientsEmail");
+</script>
 </html>

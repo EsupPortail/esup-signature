@@ -1,0 +1,47 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<nav th:fragment="sign-side" id="sidebar" class="scrollbar-lite">
+    <div class="ml-1 mt-3">
+        <div class="hr sidebar-label">Changer de mode</div>
+        <!--
+        <select id="select-innerHTML" name="changeMode" class="mb-2 select-mode"></select>
+<script language="JavaScript">
+        let select = new SlimSelect({
+        select: '#select-innerHTML',
+        showSearch: false,
+        valuesUseText: false, // Use text instead of innerHTML for selected values - default false
+        data: [
+        {innerHTML: '<i class="fas fa-eye p-2"></i> <b>Mode lecture</b>', text: 'Lecture', value: 'read'},
+        {innerHTML: '<i class="fas fa-signature text-success p-2"></i> <b>Signer</b>', text: 'Signer', value: 'sign'},
+        {innerHTML: '<i class="fas fa-comment text-warning p-2"></i> <b>Commentaires</b>', text: 'Commentaires', value: 'comment'},
+        {innerHTML: '<i class="fas fa-pencil-alt text-info p-2"></i> <b>Remplir</b>', text: 'Remplir', value: 'write'}
+        ]
+        })
+</script>
+-->
+
+        <button data-toggle="modal" data-target="#signAllModal"
+                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"
+                th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
+            <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
+        </button>
+        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
+            <i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success"></i> <span class="sidebar-label">Remplir et signer</span>
+        </button>
+        <button th:if="${documentType == 'pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
+            <i class="fas fa-comment text-warning"></i> <span class="sidebar-label">Commentaires</span>
+            <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
+        </button>
+
+        <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
+
+        <th:block th:if="${signRequest.parentSignBook == null}">
+            <div th:replace="user/signrequests/includes/statusdetails"></div>
+        </th:block>
+        <th:block th:if="${signRequest.parentSignBook != null}">
+            <div th:replace="user/signrequests/cards/stepscard"></div>
+        </th:block>
+    </div>
+</nav>
+</html>

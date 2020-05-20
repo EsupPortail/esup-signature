@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="commentscard">
-    <div class="card rounded-0 mb-1">
+    <div class="card mb-1">
         <div class="card-header">
             Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
             <button type="button" class="btn btn-sm btn-primary float-right" data-toggle="modal" data-target="#sendComment">
-                <i class="fa fa-plus"></i> Ajouter un commentaire
+                <i class="fas fa-plus"></i> Ajouter un commentaire
             </button>
         </div>
         <div id="collapseComments" class="show"
@@ -35,7 +35,7 @@
             <div class="modal-content">
                 <form th:action="'/user/signrequests/comment/' + ${id}" method="post">
                     <div class="modal-header">
-                        <h5 class="modal-title">Ajouter un commentaire</h5>
+                        <h3 class="modal-title">Ajouter un commentaire</h3>
                     </div>
                     <div class="modal-body">
                         <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment" required></textarea>

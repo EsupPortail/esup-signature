@@ -2,32 +2,31 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <style th:text="${css}"></style>
 </head>
-<body class="bg-light">
-<div class="container">
-    <div class="card m-4 rounded-0">
-        <div class="card-header bg-dark">
-            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+<body class="bg-light" style="box-sizing:border-box;margin-top:0;margin-bottom:0;margin-right:0;margin-left:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;text-align:left;background-color:#f8f9fa!important;" >
+<div class="container" style="box-sizing:border-box;width:100%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto;" >
+    <div class="card m-4" style="box-sizing:border-box;position:relative;display:flex;-ms-flex-direction:column;flex-direction:column;min-width:0;word-wrap:break-word;background-color:#fff;background-clip:border-box;border-width:1px;border-style:solid;border-color:rgba(0,0,0,.125);border-radius:.25rem;margin-top:1.5rem !important;margin-bottom:1.5rem !important;margin-right:1.5rem !important;margin-left:1.5rem !important;" >
+        <div class="card-header bg-dark" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;margin-bottom:0;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:rgba(0,0,0,.125);background-color:#343a40!important;" >
+            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" style="box-sizing:border-box;vertical-align:middle;border-style:none;margin-right:auto!important;margin-left:auto!important;" />
         </div>
-        <div class="card-body">
-            <h4>Bonjour</h4>
-            <h5>En pièce jointe vos documents signés</h5>
-            <table>
-                <tr>
-                    <th>Titre du document</th>
-                    <th>Auteur</th>
+        <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
+            <h4 style="box-sizing:border-box;margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2;font-size:1.5rem;" >Bonjour</h4>
+            <h5 style="box-sizing:border-box;margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2;font-size:1.25rem;" >En pièce jointe vos documents signés</h5>
+            <table style="box-sizing:border-box;border-collapse:collapse;" >
+                <tr style="box-sizing:border-box;" >
+                    <th style="box-sizing:border-box;text-align:inherit;" >Titre du document</th>
+                    <th style="box-sizing:border-box;text-align:inherit;" >Auteur</th>
                 </tr>
-                <th:block th:each="signRequest : ${signRequests}">
-                    <tr>
-                        <td th:text="${signRequest.title}"></td>
-                        <td th:text="${user.name}"></td>
+                <th:block th:each="signRequest : ${signRequests}" style="box-sizing:border-box;" >
+                    <tr style="box-sizing:border-box;" >
+                        <td th:text="${signRequest.title}" style="box-sizing:border-box;" ></td>
+                        <td th:text="${user.name}" style="box-sizing:border-box;" ></td>
                     </tr>
                 </th:block>
             </table>
         </div>
-        <div class="card-footer bg-secondary">
-            <span class="text-white">Université de Ville</span>
+        <div class="card-footer bg-secondary" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;border-top-width:1px;border-top-style:solid;border-top-color:rgba(0,0,0,.125);background-color:#6c757d!important;" >
+            <span class="text-white" style="box-sizing:border-box;color:#fff!important;" >Université xxx</span>
         </div>
     </div>
 </div>

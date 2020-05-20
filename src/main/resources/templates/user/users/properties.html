@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/user-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Favoris</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body text-center">
+                    <table class="table table-hover table-borderless table-striped">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Service</th>
+                            <th>Etape</th>
+                            <th>Signataire</th>
+                            <th>Destinataire</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="userProperties : ${userProperties}">
+                            <tr>
+                                <td>
+                                    <span th:text="${userProperties.form.name}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.step}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.recipients}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.targetEmail}"></span>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "sign_request_params")
 public class SignRequestParams {
 
 	@Id
@@ -16,14 +17,28 @@ public class SignRequestParams {
     private Integer version;
 
 	private String pdSignatureFieldName;
-	
+
+	private int signImageNumber;
+
 	private int signPageNumber;
-	
-	private int xPos;
 
-	private int yPos;
+    private int signWidth = 150;
 
-	public int getSignPageNumber() {
+    private int signHeight = 75;
+
+	private int xPos = 0;
+
+	private int yPos = 0;
+
+    public int getSignImageNumber() {
+        return signImageNumber;
+    }
+
+    public void setSignImageNumber(int signImageNumber) {
+        this.signImageNumber = signImageNumber;
+    }
+
+    public int getSignPageNumber() {
         return this.signPageNumber;
     }
 
@@ -39,35 +54,35 @@ public class SignRequestParams {
 		this.pdSignatureFieldName = pdSignatureFieldName;
 	}
 
-	public int getxPos() {
-		return xPos;
-	}
+    public int getSignWidth() {
+        return signWidth;
+    }
 
-	public void setxPos(int xPos) {
-		this.xPos = xPos;
-	}
+    public void setSignWidth(int signWidth) {
+        this.signWidth = signWidth;
+    }
 
-	public int getyPos() {
-		return yPos;
-	}
+    public int getSignHeight() {
+        return signHeight;
+    }
 
-	public void setyPos(int yPos) {
-		this.yPos = yPos;
-	}
+    public void setSignHeight(int signHeight) {
+        this.signHeight = signHeight;
+    }
 
-	public int getXPos() {
+    public int getxPos() {
         return this.xPos;
     }
 
-	public void setXPos(int xPos) {
+	public void setxPos(int xPos) {
         this.xPos = xPos;
     }
 
-	public int getYPos() {
+	public int getyPos() {
         return this.yPos;
     }
 
-	public void setYPos(int yPos) {
+	public void setyPos(int yPos) {
         this.yPos = yPos;
     }
 

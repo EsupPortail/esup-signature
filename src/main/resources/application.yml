@@ -1,0 +1,143 @@
+global:
+    root-url: https://esup-signature.univ-ville.fr
+    nexu-url: http://localhost:9795
+    nexu-version: 1.23-SNAPSHOT
+    nexu-download-url: /downloads/nexu-bundle-${nexuVersion}.zip
+    hide-wizard: false
+    hide-auto-sign: false
+    hide-send-sign-request: false
+
+#tomcat:
+#    ajp:
+#        port: 6009
+
+spring:
+    data:
+        ldap:
+            repositories:
+                enabled: true
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        hikari:
+            auto-commit: false
+        password: esup
+        url: jdbc:postgresql://localhost:5432/esupsignature
+        username: esupsignature
+    jpa:
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                format_sql: true
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
+        show-sql: false
+    ldap:
+        base: dc=univ-ville,dc=fr
+        password: ********
+        urls: ldap://ldap.univ-ville.fr
+        username: cn=consult,dc=univ-ville,dc=fr
+    mail:
+        host: smtp.univ-ville.fr
+    messages:
+        basename: i18n/messages
+        encoding: UTF-8
+        fallback-to-system-locale: false
+#    security:
+#        oauth2:
+#            client:
+#                registration:
+#                    google:
+#                        client-id: *
+#                        client-secret: *
+#                        redirect-uri: https://esup-signature.univ-ville.fr/login/oauth2/code/google
+#                        scope: profile, email
+    servlet:
+        multipart:
+            enabled: true
+            max-file-size: 1280KB
+            max-request-size: 1280KB
+            resolve-lazily: true
+    thymeleaf:
+        cache: false
+        encoding: UTF-8
+        mode: HTML
+
+mail:
+    from: no-reply.esup-signature@univ-ville.fr
+
+dss:
+    cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
+    cache-data-source-url: jdbc:hsqldb:mem:cachedb
+    cache-password:
+    cache-username: sa
+    default-validation-policy: policy/sign-constraint.xml
+    server-signing-keystore-filename: validate_service.p12
+    server-signing-keystore-password: password
+    server-signing-keystore-type: PKCS12
+    tsp-server: http://tsa.belgium.be/connect
+    ks-filename: /opt/tomcat-esup-signature/temp/oj_keystore.p12
+    ks-password: dss-password
+    ks-type: PKCS12
+    lotl-country-code: EU
+    lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
+    oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
+    trusted-certificat-url-list: https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
+
+fs:
+#    smb-login: esup-signature
+#    smb-password: ********
+#    smb-uri: smb://smb.univ-ville.fr
+    vfs-uri: /tmp
+#    cmis-uri: https://esup-signature.univ-ville.fr/nuxeo
+#    cmis-login: Administrator
+#    cmis-password: Administrator
+#    cmis-respository-id: default
+#    cmis-root-path: /default-domain/workspaces
+
+pdf:
+    convert-to-pdf-a: true
+    height: 842
+    path-to-g-s: /usr/bin/gs
+    pdf-a-level: 2
+    pdf-to-image-dpi: 72
+    sign-width-threshold: 150
+    width: 595
+
+security:
+    cas:
+        domain: univ-ville.fr
+        group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
+        group-mapping-role-manager: ROLE_FOR.ESUP-SIGNATURE.MANAGER
+        key: EsupSignatureUnivVilleCAS
+        service: https://esup-signature.univ-ville.fr/login/cas
+        title: Compte Université (CAS)
+        url: https://cas.univ-ville.fr
+#    shib:
+#        credentials-request-header: MEMBER
+#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
+#        group-mapping-role-manager: cn=for.esup-signature.manager,ou=groups,dc=univ-ville
+#        idp-url: https://idp.univ-ville.fr
+#        principal-request-header: REMOTE_USER
+#        title: Compte d’un autre établissement (Shibboleth)
+    ws:
+        ws-access-authorize-ips: 127.0.0.1
+
+server:
+    error:
+        include-stacktrace: always
+    port: 8080
+
+sign:
+    cades-digest-algorithm: SHA256
+    cades-signature-level: CAdES_BASELINE_T
+    container-type: ASiC_E
+    default-signature-form: XAdES
+    pades-digest-algorithm: SHA256
+    pades-signature-level: PAdES_BASELINE_T
+    password-timeout: 60000
+    signature-packaging: ENVELOPED
+    xades-digest-algorithm: SHA256
+    xades-signature-level: XAdES_BASELINE_T

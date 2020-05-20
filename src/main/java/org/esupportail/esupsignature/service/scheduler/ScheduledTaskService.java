@@ -1,27 +1,31 @@
 package org.esupportail.esupsignature.service.scheduler;
 
-import org.esupportail.esupsignature.dss.web.service.OJService;
+import eu.europa.esig.dss.tsl.job.TLValidationJob;
+import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 
+@ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
+@EnableScheduling
 @Component
 public class ScheduledTaskService {
 
@@ -40,27 +44,24 @@ public class ScheduledTaskService {
 	private WorkflowRepository workflowRepository;
 
 	@Resource
-	private SignRequestService signRequestService;
-
-	@Resource
-	private SignRequestRepository signRequestRepository;
-
-	@Resource
 	private UserService userService;
-	
+
 	@Resource
 	private OJService oJService;
+
+	@Resource
+	private TLValidationJob job;
 
 	//@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() {
-		Iterable<Workflow> workflows = workflowRepository.findAll();
+		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		for(Workflow workflow : workflows) {
 			workflowService.importFilesFromSource(workflow, getSchedulerUser());
 		}
 	}
 
-	//@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -74,20 +75,25 @@ public class ScheduledTaskService {
 		}
 	}
 	
-	@Scheduled(fixedRate = 10000)
+//	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				userService.sendEmailAlert(user);
+				userService.sendEmailAlertSummary(user);
 			}
 		}
 	}
-						   
-	@Scheduled(initialDelay = 8640000, fixedRate = 8640000)
-	public void refreshOJKeystore() {
+
+	@Scheduled(initialDelay = 1000, fixedDelay=Long.MAX_VALUE)
+	public void getOJKeystore() throws IOException {
+		oJService.getCertificats();
+	}
+
+	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
+	public void refreshOJKeystore() throws IOException {
 		oJService.refresh();
 	}
 	

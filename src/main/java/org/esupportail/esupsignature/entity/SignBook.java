@@ -30,7 +30,10 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    private String createBy;
+    @OneToOne(fetch = FetchType.LAZY)
+    private User createBy;
+
+    private String createByEppn;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -46,7 +49,7 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
@@ -99,12 +102,20 @@ public class SignBook {
         this.createDate = createDate;
     }
 
-    public String getCreateBy() {
+    public User getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(User createBy) {
         this.createBy = createBy;
+    }
+
+    public String getCreateByEppn() {
+        return createByEppn;
+    }
+
+    public void setCreateByEppn(String createByEppn) {
+        this.createByEppn = createByEppn;
     }
 
     public Date getUpdateDate() {

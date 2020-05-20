@@ -2,9 +2,10 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
-import eu.europa.esig.dss.SignatureForm;
-import eu.europa.esig.dss.ToBeSigned;
-import org.esupportail.esupsignature.dss.web.model.*;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.model.ToBeSigned;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -16,14 +17,10 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.MediaType;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -37,21 +34,19 @@ import java.util.List;
 
 @Controller
 @SessionAttributes(value = { "signatureDocumentForm", "signRequestId", "parameters"})
-@RequestMapping(value = "/user/nexu-sign")
+@RequestMapping("/user/nexu-sign")
 @Transactional
+@EnableConfigurationProperties(GlobalProperties.class)
 public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-	@Value("${root.url}")
-	private String rootUrl;
+	@Resource
+	private GlobalProperties globalProperties;
 
-	@Value("${nexuUrl}")
-	private String nexuUrl;
-
-	@ModelAttribute("user")
+	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 
 	@Resource
@@ -69,9 +64,9 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@PathVariable("id") Long id, Model model,
+	public String showSignatureParameters(@ModelAttribute User user, @PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-    	User user = userService.getUserFromAuthentication();
+    	//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -84,8 +79,9 @@ public class NexuProcessController {
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
-			model.addAttribute("rootUrl", rootUrl);
-			model.addAttribute("nexuUrl", nexuUrl);
+			model.addAttribute("rootUrl", globalProperties.getRootUrl());
+			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
+			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {
@@ -96,7 +92,7 @@ public class NexuProcessController {
 
 	@GetMapping(value = "/get-data-to-sign", produces = "application/javascript")
 	@ResponseBody
-	public String getDataToSign(Model model, @RequestParam String data,
+	public String getDataToSign(@ModelAttribute User user, Model model, @RequestParam String data,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
 			@ModelAttribute("signRequestId") Long signRequestId, HttpServletRequest request) throws IOException {
 		logger.info("get data to sign for : " + signRequestId);
@@ -105,7 +101,7 @@ public class NexuProcessController {
 		signatureDocumentForm.setBase64Certificate(params.getSigningCertificate());
 		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
 		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-    	User user = userService.getUserFromAuthentication();
+    	//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			ToBeSigned dataToSign;
@@ -141,12 +137,12 @@ public class NexuProcessController {
 
 	@GetMapping(value = "/sign-document", produces = "application/javascript")
 	@ResponseBody
-	public String signDocument(@RequestParam String data,
+	public String signDocument(@ModelAttribute User user, @RequestParam String data,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId, HttpServletRequest request) throws EsupSignatureException, IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		SignatureValueAsString signatureValue = objectMapper.readValue(data, SignatureValueAsString.class);
-				User user = userService.getUserFromAuthentication();
+				//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
 			SignDocumentResponse signedDocumentResponse;
@@ -154,7 +150,7 @@ public class NexuProcessController {
 			try {
 				Document signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
 				if(signedFile != null) {
-					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", user, "SUCCESS", signRequest.getComment());
+					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
 
 					signRequestService.applyEndOfStepRules(signRequest, user);
 				}

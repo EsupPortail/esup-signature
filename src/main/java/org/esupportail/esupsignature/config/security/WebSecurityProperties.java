@@ -2,13 +2,13 @@ package org.esupportail.esupsignature.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix="security")
+@ConfigurationProperties(prefix="security.ws")
 public class WebSecurityProperties {
 
-    private String[] nfcWsAccessAuthorizeIps;
-    public String[] getNfcWsAccessAuthorizeIps() {
-        return nfcWsAccessAuthorizeIps;
+    private String[] wsAccessAuthorizeIps;
+    public String[] getWsAccessAuthorizeIps() {
+        return wsAccessAuthorizeIps;
     }
-    public void setNfcWsAccessAuthorizeIps(String[] nfcWsAccessAuthorizeIps) { this.nfcWsAccessAuthorizeIps = nfcWsAccessAuthorizeIps; }
+    public void setWsAccessAuthorizeIps(String[] wsAccessAuthorizeIps) { this.wsAccessAuthorizeIps = wsAccessAuthorizeIps; }
 
 }

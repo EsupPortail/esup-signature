@@ -1,64 +1,72 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import org.esupportail.esupsignature.ldap.PersonAttributMapper;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.ldap.PersonLdap;
+import org.esupportail.esupsignature.ldap.PersonLdapRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.ldap.filter.AndFilter;
-import org.springframework.ldap.filter.EqualsFilter;
-import org.springframework.ldap.filter.LikeFilter;
-import org.springframework.ldap.filter.OrFilter;
-import org.springframework.ldap.support.LdapUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@ConditionalOnProperty(prefix = "spring.ldap", name = "base")
 public class LdapPersonService {
-	
-	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	@Autowired
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Resource
     private LdapTemplate ldapTemplate;
-    
-    private Map<String, LdapTemplate> ldapTemplates = new HashMap<String, LdapTemplate>();
-    
-	public void setLdapTemplate(LdapTemplate ldapTemplate) {
-		this.ldapTemplate = ldapTemplate;
-	}
 
-	public void setLdapTemplates(Map<String, LdapTemplate> ldapTemplates) {
-		this.ldapTemplates = ldapTemplates;
-	}
-	
-	public List<String> getLdapTemplatesNames() {
-		return new ArrayList<String>(ldapTemplates.keySet());
-	}
+    @Resource
+    private PersonLdapRepository personLdapRepository;
 
-	public List<PersonLdap> search(String searchString, String ldapTemplateName) {
-		LdapTemplate ldapTemplateSelected = ldapTemplate;
-		if(ldapTemplateName != null && !ldapTemplateName.isEmpty() && ldapTemplates.containsKey(ldapTemplateName)) {
-			ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
-			if(ldapTemplateSelected != null) {
-				AndFilter filter = new AndFilter();
-				filter.and(new EqualsFilter("objectclass", "person"));
-				OrFilter orFilter = new OrFilter();
-				orFilter.or(new LikeFilter("displayName", "*" + searchString + "*"));
-				orFilter.or(new LikeFilter("cn", "*" + searchString + "*"));
-				orFilter.or(new LikeFilter("uid", "*" + searchString + "*"));
-				filter.and(orFilter);
-				List<PersonLdap> results = ldapTemplateSelected.search(LdapUtils.emptyLdapName(), filter.encode(), new PersonAttributMapper());
-				return results;
-			}
-		} else {
-			log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
-		}
-		return new ArrayList<>();
-	}
-	
+    @Resource
+    private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
+
+    private Map<String, LdapTemplate> ldapTemplates;
+
+    @Autowired
+    public LdapPersonService(Map<String, LdapTemplate> ldapTemplates) {
+        this.ldapTemplates = ldapTemplates;
+    }
+
+    public List<PersonLdap> search(String searchString, String ldapTemplateName) {
+        LdapTemplate ldapTemplateSelected = ldapTemplate;
+        if (ldapTemplateName != null && !ldapTemplateName.isEmpty() && ldapTemplates.containsKey(ldapTemplateName)) {
+            ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
+        }
+        if (ldapTemplateSelected != null) {
+            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
+            List<PersonLdap> filteredPersons = new ArrayList<>();
+            for(PersonLdap personLdap : results) {
+                if(personLdap.getEduPersonAffiliation().contains("member") || personLdap.getEduPersonAffiliation().contains("staff")) {
+                    filteredPersons.add(personLdap);
+                }
+            }
+            return filteredPersons;
+        } else {
+            log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
+        }
+        return new ArrayList<>();
+    }
+
+
+    public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
+        List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
+        if(organizationalUnitLdap.size() > 0) {
+            return organizationalUnitLdap.get(0);
+        }
+        return null;
+    }
+
 }

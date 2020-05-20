@@ -2,30 +2,40 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <style th:text="${css}"></style>
 </head>
-<body class="bg-light">
-<div class="container">
-    <div class="card m-4 rounded-0">
-        <div class="card-header bg-dark">
-            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" />
+<body class="bg-light" style="box-sizing:border-box;margin-top:0;margin-bottom:0;margin-right:0;margin-left:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;text-align:left;background-color:#f8f9fa!important;" >
+<div class="container" style="box-sizing:border-box;width:90%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto;" >
+    <div class="card rounded-0 m-1" style="box-sizing:border-box;position:relative;display:flex;-ms-flex-direction:column;flex-direction:column;min-width:0;word-wrap:break-word;background-color:#fff;background-clip:border-box;border-width:1px;border-style:solid;border-color:rgba(0,0,0,.125);border-radius:0!important;margin-top:.25rem !important;margin-bottom:.25rem !important;margin-right:.25rem !important;margin-left:.25rem !important;" >
+        <div class="card-header rounded-0 bg-dark" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;margin-bottom:0;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:rgba(0,0,0,.125);background-color:#343a40!important;border-radius:0!important;" >
+            <img height="40" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" style="box-sizing:border-box;vertical-align:middle;border-style:none;float:left;margin-right:auto;margin-left:auto;" />
+            <img height="40" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" style="box-sizing:border-box;vertical-align:middle;border-style:none;float:right;margin-right:auto;margin-left:auto;" />
         </div>
-        <div class="card-body">
-            <h4>Bonjour,</h4>
-            <h5>La demande de signature "<b><span th:text="${signBook.name}"></span></b>" a été refusée par :</h5>
-            <ul>
-                <th:block th:each="workflowStep : ${signBook.workflowSteps}">
-                    <th:block th:each="recipient : ${workflowStep.recipients}">
-                        <li th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></li>
+        <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Votre demande de signature a été refusée.</p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.name}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+                Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                <br style="box-sizing:border-box;" >
+            </p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Refusée par : </p>
+            <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                <th:block th:each="workflowStep : ${signBook.workflowSteps}" style="box-sizing:border-box;" >
+                    <th:block th:each="recipient : ${workflowStep.recipients}" style="box-sizing:border-box;" >
+                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
                     </th:block>
                 </th:block>
             </ul>
-            <p>
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-primary">Voir la demande concernée</a>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Motif du refus : </p>
+            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                <span th:text="${comment}" style="box-sizing:border-box;" ></span>
             </p>
         </div>
-        <div class="card-footer bg-secondary">
-            <span class="text-white">Université de Ville</span>
+        <div class="card-footer rounded-0 bg-secondary justify-content-center text-center" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;border-top-width:1px;border-top-style:solid;border-top-color:rgba(0,0,0,.125);background-color:#6c757d!important;border-radius:0!important;-ms-flex-pack:center!important;justify-content:center!important;text-align:center!important;" >
+            <span class="text-white text-center" style="box-sizing:border-box;text-align:center!important;color:#fff!important;" >Université xxx</span>
         </div>
     </div>
 </div>

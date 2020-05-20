@@ -102,35 +102,6 @@ public class FileService {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-	public InputStream notFoundImageToInputStream(String type) throws IOException {
-		return stringToImageFile("TEST", type);
-	}
-	
-	public InputStream stringToImageFile(String text, String type) throws IOException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-        BufferedImage  image = new BufferedImage(200, 150, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-        Font font = new Font("Helvetica", Font.PLAIN, 40); 
-        graphics2D.setColor(Color.white);
-	    graphics2D.fillRect(0, 0, 200, 150);
-	    graphics2D.setColor(Color.black);
-	    Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
-	    map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-	    font = font.deriveFont(map);
-	    graphics2D.setFont(font);
-	    graphics2D.setRenderingHint(
-	            RenderingHints.KEY_TEXT_ANTIALIASING,
-	            RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-	    int lineWeight = 15;
-	    for (String line : text.split("\n")) {
-	    	graphics2D.drawString(line, 5, lineWeight += graphics2D.getFontMetrics().getHeight());
-	        //graphics2D.drawString(text, 0, 40);
-	    }
-	    graphics2D.dispose();
-	    ImageIO.write(image, type, os);
-		return new ByteArrayInputStream(os.toByteArray());
-	}
-
 	public void copyFile(File source, File dest) throws IOException {
 	    InputStream is = null;
 	    OutputStream os = null;
@@ -168,26 +139,23 @@ public class FileService {
 				(b2 - tolerance <= b1) && (b1 <= b2 + tolerance));
 	}
 	
-	public BufferedImage makeColorTransparent(BufferedImage im)
-	   {
+	public BufferedImage makeColorTransparent(BufferedImage im) {
 		final ImageFilter filter = new RGBImageFilter() {
 
 			@Override
 			public int filterRGB(int x, int y, int rgb) {
 				final Color filterColor = new Color(rgb);
 
-				if(colorsAreSimilar(filterColor, Color.WHITE, 40)) {
+				if(colorsAreSimilar(filterColor, Color.WHITE, 20)) {
 					return 0x00FFFFFF & rgb;
 				} else {
 					return rgb;
 				}
 			}
 		};
-
-	      final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
-	      return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
-	      
-	   }
+		final ImageProducer ip = new FilteredImageSource(im.getSource(), filter);
+		return toBufferedImage(Toolkit.getDefaultToolkit().createImage(ip));
+	}
 	
 	public static BufferedImage toBufferedImage(Image image) 
 	  { 
@@ -222,38 +190,40 @@ public class FileService {
 	    }
 	}
 
-	public File addTextToImage(InputStream imageStream, String text) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, String text, int width, int height) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(300, 150, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.setColor(new Color(255,255,255,0 ));
-		graphics2D.fillRect(0, 0, 300, 150);
+//		graphics2D.setColor(new Color(255,255,255,0 ));
+//		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
 		graphics2D.drawImage(signImage, 0, 0, null);
-		Map<TextAttribute, Object> map = new Hashtable<TextAttribute, Object>();
-		int fontSize = 18;
-		map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-		Font font = new Font("Helvetica", Font.PLAIN, fontSize);
-		font = font.deriveFont(map);
-		graphics2D.setFont(font);
-		graphics2D.setRenderingHint(
-				RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_GASP);
-		graphics2D.setColor(Color.black);
-		int x = 0;
-		int y = fontSize;
-		for (String line : text.split("\n")) {
-			graphics2D.drawString(line, x, y += graphics2D.getFontMetrics().getHeight());
+		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+//		graphics2D.setColor(Color.black);
+		if(text != null && !text.isEmpty()) {
+			Map<TextAttribute, Object> map = new Hashtable<>();
+			int fontSize = 36;
+			//map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+			Font font = new Font("DejaVu Sans Condensed", Font.PLAIN, fontSize);
+			font = font.deriveFont(map);
+			graphics2D.setFont(font);
+			graphics2D.setPaint(Color.black);
+			for (String line : text.split("\n")) {
+				FontMetrics fm = graphics2D.getFontMetrics();
+				int x = 0;
+				int y = fm.getHeight();
+				graphics2D.drawString(line, x, y);
+			}
 		}
+		graphics2D.dispose();
 		File fileImage = getTempFile("sign.png");
 		ImageIO.write(image, "png", fileImage);
-		graphics2D.dispose();
-		return fileImage;
+		return new FileInputStream(fileImage);
 	}
 
-		public InputStream svgToPng(InputStream svgInputStream) throws IOException {
-			File file = getTempFile("sceau.png");
-			ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
-			return new FileInputStream(file);
-		}
+	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
+		File file = getTempFile("sceau.png");
+		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
+		return new FileInputStream(file);
+	}
 
 }

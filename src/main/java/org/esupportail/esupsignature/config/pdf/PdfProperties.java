@@ -5,9 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "pdf")
 public class PdfProperties {
 
-    private int width = 594;
+    private int width = 595;
     private int height = 842;
-    private int pdfToImageDpi = 150;
+    private int pdfToImageDpi = 72;
     private int signWidthThreshold = 150;
     private String pathToGS = "/usr/bin/gs";
     private boolean convertToPdfA = true;

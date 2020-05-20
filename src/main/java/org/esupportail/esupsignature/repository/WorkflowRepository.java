@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
+    List<Workflow> findAll();
     List<Workflow> findByName(String name);
     List<Workflow> findByCreateBy(String eppn);
     @Query("select w from Workflow w join w.managers m where m = :email")

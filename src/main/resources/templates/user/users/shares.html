@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<head th:replace="fragments/head :: head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/user-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Délégations</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn" >
+                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newShareModal" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body text-center">
+                    <table class="table table-hover table-striped table-borderless">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Type</th>
+                            <th>Service</th>
+                            <th>Utilisateurs</th>
+                            <th>Date de début</th>
+                            <th>Date de fin</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="userShare : ${userShares}">
+                            <tr>
+                                <td>
+                                    <span th:if="${userShare.shareType.name() == 'sign'}">Signature</span>
+                                    <span th:if="${userShare.shareType.name() == 'create'}">Creation</span>
+                                </td>
+                                <td>
+                                    <span th:text="${userShare.form.title}"></span>
+                                </td>
+                                <td>
+                                    <th:block th:each="toUser : ${userShare.toUsers}">
+                                        <span th:text="${toUser.firstname} + ' ' + ${toUser.name}"></span>
+                                    </th:block>
+                                </td>
+                                <td>
+                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy')}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy')}"></span>
+                                </td>
+                                <td>
+                                    <button type="button" title="Supprimer"
+                                            data-toggle="modal" data-target="#modal-warning"
+                                            th:attr="data-target='#modal-warning'+${userShare.id }"
+                                            class="btn btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <div class="modal modal-warning fade in"
+                                         th:id="modal-warning+${userShare.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/user/users/del-share/' + ${userShare.id}"
+                                                      th:method="delete">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">Confirmez-vous la
+                                                            suppression ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left"
+                                                                data-dismiss="modal">Fermer
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="btn btn-outline pull-left btn-danger">Valider
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="newShareModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une délégation</h5>
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="shareForm" th:action="'/user/users/add-share'" method="post">
+                <div class="modal-body">
+                        <div class="form-group">
+                            <label for="selectType">Type de délégation</label>
+                            <select id="selectType" class="slim-select" name="type" required>
+                                <option value="" disabled selected>Choisir un type</option>
+                                <option value="sign">Signature</option>
+                                <option value="create">Création</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectService">Service à déléguer</label>
+                            <select id="selectService" class="slim-select" name="service" required>
+                                <option value="" disabled selected>Choisir un service</option>
+                                <th:block th:each="form : ${forms}">
+                                    <option th:value="${form.id}" th:text="${form.title}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectUsers">Choix des utilisateurs</label>
+                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectUsers">Date de début</label>
+                            <input type="text" name="beginDate" class="form-control datepicker">
+                        </div>
+                        <div class="form-group">
+                            <label for="selectUsers">Date de fin</label>
+                            <input type="text" name="endDate" class="form-control datepicker">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>
+                    <input type="submit" class="btn btn-success" value="Valider">
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

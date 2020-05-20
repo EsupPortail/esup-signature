@@ -4,38 +4,48 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<base href="/">
-		
-		<script src="/webjars/jquery/3.4.1/jquery.min.js"></script>
-		<script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-		<script src="/webjars/croppie/2.6.3/croppie.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/js/plugins/piexif.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/js/plugins/sortable.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/js/plugins/purify.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/js/fileinput.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/themes/explorer-fas/theme.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/themes/fas/theme.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.0.1/js/locales/fr.js"></script>
+
+		<script th:src="@{/webjars/jquery/3.4.1/jquery.min.js}"></script>
+		<script th:src="@{/webjars/bootstrap/4.3.1/js/bootstrap.min.js}"></script>
+		<script th:src="@{/webjars/croppie/2.6.3/croppie.min.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/js/plugins/piexif.min.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/js/plugins/sortable.min.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/js/plugins/purify.min.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/js/fileinput.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/themes/explorer-fas/theme.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/themes/fas/theme.js}"></script>
+		<script th:src="@{/webjars/bootstrap-fileinput/5.0.1/js/locales/fr.js}"></script>
+		<script th:src="@{/webjars/momentjs/2.24.0/min/moment-with-locales.min.js}"></script>
+		<script th:src="@{/webjars/summernote/0.8.10/summernote-lite.js}"></script>
+
 		<script src="https://cdn.jsdelivr.net/npm/signature_pad@2.3.2/dist/signature_pad.min.js"></script>
-		<script src="/webjars/pdfjs-dist/build/pdf.js"></script>
-		<script th:src="@{/js/pdf.worker.js}"></script>
-		<script src="/webjars/pdfjs-dist/web/pdf_viewer.js"></script>
+		<script th:src="@{/webjars/Eonasdan-bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.js}"></script>
+<!--		<script th:src="@{/webjars/pdfjs-dist/build/pdf.js}"></script>-->
+<!--		<script th:src="@{/js/customs/pdf.worker.old.js}"></script>-->
+<!--		<script th:src="@{/webjars/pdfjs-dist/web/pdf_viewer.js}"></script>-->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.js"></script>
+		<script th:src="@{/js/customs/pdf.worker.2.4.456.js}"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf_viewer.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.21.0/slimselect.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
-		<script th:src="@{/js/fileinput-custom.js}"></script>
-		<script th:src="@{/js/app.js}"></script>
-		<script src="https://cdn.rawgit.com/jwarby/jquery-awesome-cursor/master/dist/jquery.awesome-cursor.min.js"></script>
-		
-		<link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.min.css" />
-		<link rel="stylesheet" href="/webjars/font-awesome/5.8.2/css/all.min.css" />
-		<link rel="stylesheet" href="/webjars/croppie/2.6.3/croppie.css" />
-		<link rel="stylesheet" href="/webjars/bootstrap-fileinput/5.0.1/css/fileinput.min.css" />
-		<link rel="stylesheet" href="/webjars/pdfjs-dist/web/pdf_viewer.css" />
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.21.0/slimselect.min.css" rel="stylesheet"></link>
-		<link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet" />
-		<link rel="stylesheet" href="/css/app.css" />
+		<script th:src="@{/js/customs/fileinput-custom.js}"></script>
+		<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+		<script type="module" th:src="@{/js/main.js}"></script>
 
-		<link rel="icon" type="image/png" href="/images/favicon.ico" />
-		
+		<link rel="stylesheet" th:href="@{/webjars/bootstrap/4.3.1/css/bootstrap.min.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/font-awesome/5.8.2/css/all.min.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/croppie/2.6.3/croppie.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/bootstrap-fileinput/5.0.1/css/fileinput.min.css}" />
+		<link rel="stylesheet" th:href="@{/webjars/summernote/0.8.10/summernote-lite.css}" />
+<!--		<link rel="stylesheet" th:href="@{/webjars/pdfjs-dist/web/pdf_viewer.css}" />-->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf_viewer.css" />
+		<link rel="stylesheet" th:href="@{/webjars/Eonasdan-bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css}" />
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.21.0/slimselect.min.css" rel="stylesheet"/>
+		<link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+		<link rel="stylesheet" th:href="@{/css/app.css}" />
+		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
+
 		<title>Esup Signature</title>
 	</head>
 </html>

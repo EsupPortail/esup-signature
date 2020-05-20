@@ -29,7 +29,10 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    private String createBy;
+    @OneToOne(fetch = FetchType.LAZY)
+    private User createBy;
+
+    private String createByEppn;
 
     private String exportedDocumentURI;
 
@@ -42,6 +45,11 @@ public class SignRequest {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<Document> attachments = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
@@ -56,10 +64,10 @@ public class SignRequest {
 
     private Boolean allSignToComplete = false;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
     @JsonIgnore
@@ -72,7 +80,11 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
-    transient User creator;
+    transient Date endDate;
+
+    @JsonIgnore
+    @Transient
+    transient Boolean signable = false;
 
     public Long getId() {
         return id;
@@ -114,12 +126,20 @@ public class SignRequest {
         this.createDate = createDate;
     }
 
-    public String getCreateBy() {
+    public User getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(User createBy) {
         this.createBy = createBy;
+    }
+
+    public String getCreateByEppn() {
+        return createByEppn;
+    }
+
+    public void setCreateByEppn(String createByEppn) {
+        this.createByEppn = createByEppn;
     }
 
     public String getExportedDocumentURI() {
@@ -144,6 +164,14 @@ public class SignRequest {
 
     public void setSignedDocuments(List<Document> signedDocuments) {
         this.signedDocuments = signedDocuments;
+    }
+
+    public List<Document> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<Document> attachments) {
+        this.attachments = attachments;
     }
 
     public SignRequestStatus getStatus() {
@@ -218,11 +246,50 @@ public class SignRequest {
         this.comment = comment;
     }
 
-    public User getCreator() {
-        return creator;
+    public Boolean getSignable() {
+        return signable;
     }
 
-    public void setCreator(User creator) {
-        this.creator = creator;
+    public void setSignable(Boolean signable) {
+        this.signable = signable;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(currentStepNumber > 0 && getSignRequestParams().size() > currentStepNumber - 1) {
+            return getSignRequestParams().get(currentStepNumber - 1);
+        } else {
+            SignRequestParams signRequestParams = new SignRequestParams();
+            signRequestParams.setSignImageNumber(0);
+            signRequestParams.setSignPageNumber(1);
+            signRequestParams.setxPos(0);
+            signRequestParams.setyPos(0);
+            return signRequestParams;
+        }
+    }
+
+    public List<Document> getLiteOriginalDocuments() {
+        List<Document> liteDocuments = new ArrayList<>();
+        for (Document document : this.originalDocuments) {
+            document.setBigFile(null);
+            liteDocuments.add(document);
+        }
+        return liteDocuments;
+    }
+
+    public List<Document> getLiteSignedDocuments() {
+        List<Document> liteDocuments = new ArrayList<>();
+        for (Document document : this.signedDocuments) {
+            document.setBigFile(null);
+            liteDocuments.add(document);
+        }
+        return liteDocuments;
     }
 }

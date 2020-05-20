@@ -1,0 +1,14 @@
+spring:
+  # Templates reloading during development
+  thymeleaf:
+    prefix: file:src/main/resources/templates/
+    cache: false
+
+  # Static resources reloading during development
+  resources:
+    static-locations: file:src/main/resources/static/
+    cache: false
+      period:
+
+  profiles:
+    active: dev

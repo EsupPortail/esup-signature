@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<style th:text="${css}"></style>
+</head>
+<body class="bg-light">
+<div class="container">
+	<div class="card rounded-0 m-1">
+		<div class="card-header rounded-0 bg-dark">
+			<img height="40" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+			<img height="40" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
+		</div>
+		<div class="card-body">
+			<p>Bonjour,</p>
+			<p>Voici la liste des demandes de signatures en attente : </p>
+			<table class="table table-borderless">
+				<thead class="thead-dark">
+				<tr>
+					<th class="text-white">Nom</th>
+					<th class="text-white">Date de création</th>
+					<th class="text-white">Créé par</th>
+					<th class="text-white">Consulter</th>
+				</tr>
+				</thead>
+				<tbody>
+				<th:block th:each="signRequest : ${signRequests}">
+					<tr>
+						<td th:text="${signRequest.title}"></td>
+						<td th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+						<td th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}">
+						</td>
+						<td>
+							<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
+						</td>
+					</tr>
+				</th:block>
+				</tbody>
+			</table>
+		</div>
+		<div class="card-footer rounded-0 bg-secondary justify-content-center text-center">
+			<span class="text-white text-center">Université xxx</span>
+		</div>
+	</div>
+</div>
+</body>
+</html>

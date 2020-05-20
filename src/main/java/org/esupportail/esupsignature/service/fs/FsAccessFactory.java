@@ -7,6 +7,8 @@ import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class FsAccessFactory {
@@ -37,5 +39,19 @@ public class FsAccessFactory {
 			break;
 		}
 		return fsAccessService;
+	}
+
+	public List<FsAccessService> getFsAccessServices() {
+		List<FsAccessService> fsAccessServices = new ArrayList<>();
+		if(smbAccessImpl != null) {
+			fsAccessServices.add(smbAccessImpl);
+		}
+		if(vfsAccessImpl != null) {
+			fsAccessServices.add(vfsAccessImpl);
+		}
+		if(cmisAccessImpl != null) {
+			fsAccessServices.add(cmisAccessImpl);
+		}
+		return fsAccessServices;
 	}
 }

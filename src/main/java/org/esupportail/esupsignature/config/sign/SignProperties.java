@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.config.sign;
 
-import eu.europa.esig.dss.*;
+import eu.europa.esig.dss.enumerations.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "sign")

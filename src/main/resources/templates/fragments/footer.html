@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<footer th:fragment="footer" id="footer" class="footer bg-secondary fixed-bottom text-center">
-	<span class="text-white">Consortium Esup - 2019</span>
-	<a rel="noreferrer" target="_blank" style="background-color: #e30037;" class="btn text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
-</footer>
-<div th:replace="fragments/message :: message"></div>
+<div th:fragment="footer" id="footer">
+	<div th:replace="fragments/message :: message"></div>
+	<footer  class="footer bg-secondary fixed-bottom text-center">
+		<span class="text-white">Université xxx - <span th:text="${#dates.year(#dates.createNow())}"></span></span>
+<!--		<a rel="noreferrer" aria-label="Guide utilisateur" target="_blank" style="background-color: #e30037;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>-->
+		<a rel="noreferrer" aria-label="Guide utilisateur" target="_blank" style="background-color: #e30037;" class="btn btn-sm text-white float-right mt-1 mr-1" href=""><i class="fas fa-question"></i></a>
+	</footer>
+</div>
 </html>

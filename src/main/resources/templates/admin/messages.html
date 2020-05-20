@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/admin-side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Messages</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-simple-btn" >
+                <a data-toggle="modal" data-target="#newMessage" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                <table class="table table-borderless table-hover">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th>Message</th>
+                        <th>Date de fin</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="message :${messages}">
+                    <tr>
+                        <td th:utext="${message.text}"></td>
+                        <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
+                        <td>
+                            <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${message.id }" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <div class="modal modal-warning fade in" th:id="modal-warning+${message.id}">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="alert alert-danger text-center">Confirmez-vous la
+                                                    suppression ?
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline pull-left"
+                                                        data-dismiss="modal">Non
+                                                </button>
+                                                <button type="submit"
+                                                        class="btn btn-outline pull-left btn-danger">
+                                                    Oui
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="newMessage" tabindex="-1" role="dialog"
+         aria-labelledby="#newMessage'" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Création d'une nouvelle demande</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="'/admin/messages/add'" method="post">
+                    <div class="form-group">
+                        <label for="text">Text du message</label>
+                        <textarea class="form-control" type="text" name="text" id="text" required="required"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">Date de fin de diffusion</label>
+                        <input class="form-control" type="date" name="endDate" id="endDate" required="required" />
+                    </div>
+                        <input type="submit" class="btn btn-success">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#text').summernote({
+                tabsize: 2,
+                height: 250,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+        });
+    </script>
+</main>
+</body>
+</html>

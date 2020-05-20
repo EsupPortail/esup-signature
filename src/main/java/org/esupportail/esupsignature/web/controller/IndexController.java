@@ -17,17 +17,21 @@
  */
 package org.esupportail.esupsignature.web.controller;
 
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.SecurityService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -36,45 +40,74 @@ import java.util.List;
 @RequestMapping("/")
 @Controller
 public class IndexController {
-	
-	@ModelAttribute("active")
-	public String getActiveMenu() {
-		return "index";
+
+	@ModelAttribute("userMenu")
+	public String getActiveRole() {
+		return "active";
 	}
-	
-	@Autowired
-	private List<SecurityService> securityConfigs;
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "home";
+	}
+
+	@Resource
+	private List<SecurityService> securityServices;
 	
 	@Resource
 	private UserService userService;
-	
-	@ModelAttribute("user")
+
+	@Resource
+	private SignRequestService signRequestService;
+
+	@Resource
+	private SignRequestRepository signRequestRepository;
+
+	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
-		return userService.getUserFromAuthentication();
+		return userService.getCurrentUser();
 	}
 	
 	@GetMapping
-	public String index(Model model) {
-		User user = userService.getUserFromAuthentication();
+	public String index(@ModelAttribute User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("System")) {
-			return "redirect:/user/signrequests/";
+			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
-				model.addAttribute("securityConfigs", securityConfigs);
-				return "index";
+				model.addAttribute("securityServices", securityServices);
+				return "signin";
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
-				return "index";			
+				return "signin";
 			}
 		}
 
 	}
-	
-	@RequestMapping("/login/**")
-	public String loginRedirection(HttpServletRequest request, Model uiModel) {
-		return "redirect:/";			
+
+	@GetMapping("/login/**")
+	public String loginRedirection() {
+		return "redirect:/";
+	}
+
+	@PostMapping("/denied/**")
+	@GetMapping("/denied/**")
+	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
+		String[] uriParams = forwardUri.split("/");
+		if(uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
+			SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+			User suUser = signRequestService.checkShare(signRequest);
+			if(suUser != null) {
+				if(userService.switchToShareUser(suUser.getEppn())) {
+					redirectAttributes.addFlashAttribute("messageWarning", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+				}
+				return "redirect:"+ forwardUri;
+			}
+		}
+		//TODO check shares
+		return "denied";
 	}
 
 }

@@ -1,41 +1,23 @@
 <!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.springframework.org/security/tags">
-<head th:replace="fragments/head :: head"></head>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<head th:replace="fragments/head"></head>
 <body>
-	<nav th:replace="fragments/menu :: menu(activeMenu)"></nav>
-	<main role="main" class="container">
-		<div class="alert alert-dark">
-			<h5>Bienvenue sur l'application Esup-Signature.</h5>
-			<ul>
-				<li>
-					Pour effectuer des signatures calligraphiques sur un PDF il faut déposer un fichier image de votre signature dans vos paramètres.
-				<li>
-					Pour utiliser la signature électronique, il est possible d'importer un keystore au format PKCS12 dans votre profil.
-					<br />
-					Vous pouvez générer des certificats sur la plateforme <a target="_blank" href="https://www.digicert.com/sso">https://www.digicert.com/sso</a> (voir <a target="_blank" href="https://services.renater.fr/tcs/certcentral/orders/request-certificate">https://services.renater.fr/tcs/certcentral/orders/request-certificate</a> pour plus de détails).
-				</li>
-				<li>
-					Enfin il est possible d'utiliser une clé matérielle. Pour cela vous devez installer l'application NexU disponible ici : <a target="_blank" href="https://github.com/nowina-solutions/nexu/releases/download/nexu-1.22/nexu-bundle-1.22.zip">NexU</a>
-				</li>
-			</ul>
-			<p>
-				Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.
-			</p>
-		</div>
-	<div class="card">
-		<div class="card-body text-center">
-			<div class="d-none" sec:authorize="isAuthenticated()">
-				<span th:if="${auth != null}" th:text="${auth}"></span>
-			</div>
-			<div sec:authorize="isAnonymous()">
-				<h3>Se connecter avec :</h3>
-				<th:block th:each="securityConfig : ${securityConfigs}">
-					<button type="button" th:data-url="${securityConfig.loginUrl}" onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.name}" class="btn btn-primary btn-lg col-6 mb-2"></button>
-				</th:block>
-			</div>
-		</div>
-	</div>
-	</main>
-	<footer th:replace="fragments/footer :: footer"></footer>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/home-side"></nav>
+        <div id="content" class="content">
+            <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav-full">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active">Accueil</li>
+                </ol>
+            </nav>
+            <h1>ESUP-SIGNATURE</h1>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

@@ -20,8 +20,10 @@ public class Log {
 	@Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date logDate;
-	
+
 	private String eppn;
+
+    private String eppnFor;
 
 	private String action;
 	
@@ -32,7 +34,8 @@ public class Log {
 	private String returnCode;
 	
 	private String ip;
-	
+
+    @Column(columnDefinition = "TEXT")
 	private String comment;
 
     private Integer pageNumber;
@@ -41,9 +44,19 @@ public class Log {
 
     private Integer posY;
 
+    private Integer stepNumber;
+
 	private Long signRequestId;
 
-	public Date getLogDate() {
+    public Long getSignRequestId() {
+        return this.signRequestId;
+    }
+
+    public void setSignRequestId(Long signRequestId) {
+        this.signRequestId = signRequestId;
+    }
+
+    public Date getLogDate() {
         return this.logDate;
     }
 
@@ -59,7 +72,15 @@ public class Log {
         this.eppn = eppn;
     }
 
-	public String getAction() {
+    public String getEppnFor() {
+        return eppnFor;
+    }
+
+    public void setEppnFor(String eppnFor) {
+        this.eppnFor = eppnFor;
+    }
+
+    public String getAction() {
         return this.action;
     }
 
@@ -107,14 +128,6 @@ public class Log {
         this.comment = comment;
     }
 
-	public Long getSignRequestId() {
-        return this.signRequestId;
-    }
-
-	public void setSignRequestId(long signRequestId) {
-        this.signRequestId = signRequestId;
-    }
-
 	public Long getId() {
         return this.id;
     }
@@ -153,5 +166,13 @@ public class Log {
 
     public void setPosY(int posY) {
         this.posY = posY;
+    }
+
+    public Integer getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
     }
 }

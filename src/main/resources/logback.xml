@@ -33,6 +33,14 @@
         <appender-ref ref="CONSOLE"/>
     </logger>
 
+    <logger name="org.verapdf" level="info" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <logger name="org.apache.pdfbox" level="info" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="info" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>

@@ -5,11 +5,21 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "security.cas")
 public class CasProperties {
 
+    private String title;
     private String key;
     private String url;
     private String service;
     private String groupMappingRoleAdmin;
     private String groupMappingRoleManager;
+    private String domain;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
     public String getKey() {
         return key;
@@ -49,5 +59,13 @@ public class CasProperties {
 
     public void setGroupMappingRoleManager(String groupMappingRoleManager) {
         this.groupMappingRoleManager = groupMappingRoleManager;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 }

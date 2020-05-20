@@ -1,80 +1,65 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import globalUi from "/js/main.js";
+    globalUi.hideSideBar();
+    globalUi.disableSideBarButton();
+    import {FilesInput} from "/js/modules/filesInput.js";
+    new FilesInput($("#multipartFiles"), "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+</script>
 <body>
-<header th:replace="fragments/menu :: menu(activeMenu)"></header>
+<header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="sidebar">
-            <div class="m-1">
-                <button title="Accueil" type="button" onclick="location.href='/'" class="mb-1 col-12 btn btn-transparent text-left">
-                    <i class="fas fa-home"></i> <span class="sidebar-label">Accueil</span>
-                </button>
-                <div th:if="${user.eppn == signRequest.createBy}">
-                    <div th:if="${signRequest.status.name() == 'draft'}">
-                        <div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
-                            <th:block th:if="${signRequest.recipients.size() > 0 && user.eppn == signRequest.createBy && #lists.size(signRequest.originalDocuments) > 0}">
-                                <button title="Lancer la procedure de signature" type="button" class="mb-1 col-12 btn btn-primary text-left" data-toggle="modal" data-target="#sendModal">
-                                    <i class="fa fa-paper-plane " aria-hidden="true"></i><span class="sidebar-label"> Lancer la procedure de signature</span>
-                                </button>
-                            </th:block>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${signRequest.status.name() == 'exported'}">
-                    <a class="btn btn-success col-12 mb-1 text-left" th:href="'/ws/get-last-file?name=' + ${signRequest.token}"><i class="fa fa-download"></i> Télécharger le document signé</a>
-                </div>
-                <div th:if="${user.eppn == signRequest.createBy}">
-                    <th:block th:if="${signRequest.status.name() == 'signed' || signRequest.status.name() == 'completed' || signRequest.status.name() == 'checked'}">
-                        <a class="col-12 btn btn-light mb-1 text-left" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
-                            <i class="fas fa-download"></i><span class="sidebar-label"> Enregistrer le document signé sous</span>
-                        </a>
-                        <a title="Export SEDA" class="col-12 btn btn-light mb-1 text-left" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
-                            <i class="fa fa-file-archive"></i><span class="sidebar-label"> Export SEDA</span>
-                        </a>
-                        <a class="col-12 btn btn-light mb-1 text-left" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                            <i class="fas fa-shield-alt "></i><span class="sidebar-label"> Contrôler le document</span>
-                        </a>
-                    </th:block>
-                </div>
-                <button class="btn btn-light col-12 mb-1 text-left" onclick="window.history.back();">
-                    <i class="fas fa-arrow-left"></i><span class="sidebar-label"> Retour</span>
-                </button>
-            </div>
+        <nav th:insert="fragments/side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
+                <li class="breadcrumb-item" aria-current="page"><a th:href="'/user/signrequests/' + ${signRequest.id}">Demande de signature : <span th:text="${signRequest.title}"></span></a></li>
+                <li class="breadcrumb-item active">Détails de la demande</a></li>
+            </ol>
         </nav>
-        <div id="content" class="content">
-            <div aria-expanded="true" class="collapse" id="collapseHelp">
-                <div class="alert alert-info">
-                    Cet écran permet d'effectuer plusieurs types d'actions sur votre demande :
-                    <ul>
-                        <li>Ajouter des documents à votre demande et l'envoyer</li>
-                        <li>Consulter les documents à signer</li>
-                        <li>Signer une demande</li>
-                        <li>Consulter / télécharger les documents signés</li>
+        <div id="content" class="content content-full">
+            <div class="col-lg-10" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}">
+                <div id="endButtons" class="fixed-action-btn"  onmouseover="$('#endButtons').toggleClass('active');" onmouseout="$('#endButtons').toggleClass('active');">
+                    <a class="btn-floating btn-lg bg-primary waves-effect">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </a>
+                    <ul id="endCollapse" class="list-unstyled">
+                        <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
+                            <i class="fas fa-save"></i>
+                        </a></li>
+                        <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                            <i class="fas fa-file-export"></i>
+                        </a></li>
+                        <li><a th:if="${signRequest.status.name() != 'exported'}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                            <i class="fas fa-shield-alt "></i>
+                        </a></li>
                     </ul>
                 </div>
             </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/user/signrequests">Liste des demandes</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Demande de signature : <span th:text="${signRequest.title}"></span>
-                    </li>
-                </ol>
-            </nav>
-            <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>
-            <div class="card rounded-0 mb-1" th:if="${signRequest.status.name() != 'exported' && signRequest.parentSignBook == null}">
-                <div class="card-header">
-                    Liste des documents originaux
-                    <th:block th:if="${user.eppn == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
-                        <button th:if="${signRequest.status.name() == 'draft' && user.eppn == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
+<!--            <th:block th:unless="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported'}">-->
+<!--            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">-->
+<!--                <a class="btn-floating btn-lg bg-primary waves-effect">-->
+<!--                    <i class="fas fa-ellipsis-v"></i>-->
+<!--                </a>-->
+<!--                <ul id="collapseExample" class="list-unstyled">-->
+<!--                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>-->
+<!--                </ul>-->
+<!--            </div>-->
+<!--            </th:block>-->
+            <div class="card mb-1 col-lg-8 mx-auto" th:if="${signRequest.status.name() != 'exported'}">
+                <div class="card-body">
+                    <h5>Liste des documents originaux</h5>
+                    <th:block th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'draft')}">
+                        <button th:if="${signRequest.status.name() == 'draft' && user == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
                                 onclick="$('.clickable').click();">
-                            <i class="fa fa-plus" aria-hidden="true"></i> Ajouter un document
+                            <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un document
                         </button>
                     </th:block>
-                </div>
-                <div class="card-body">
-                    <div th:if="${user.eppn == signRequest.createBy}">
+                    <div th:if="${user == signRequest.createBy}">
                         <div th:if="${(signRequest.status.name() == 'draft' || signRequest.status.name() == 'completed')}">
                             <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
                                 <div th:if="${#lists.size(signRequest.originalDocuments) == 0}">
@@ -86,7 +71,7 @@
                         </div>
                     </div>
                     <div class="file-loading">
-                        <input id="multipartFile" name="multipartFiles" type="file" multiple="multiple"/>
+                        <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
                     </div>
                 </div>
             </div>
@@ -103,26 +88,26 @@
         <div class="modal-content">
             <form th:action="'/user/signrequests/pending/' + ${id}">
                 <div class="modal-header">
-                    <h5 class="modal-title">Envoi pour signature</h5>
+                    <h3 class="modal-title">Démarrer le circuit</h3>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger">
                         Attention, les paramètres de la demande ne pourront plus etre changés une fois celle-ci envoyée
                     </div>
                     <br/>
-                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                    <label for="content">Vous <b>pouvez</b> ajouter un commentaire</label>
+                    <textarea id="comment" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="fa fa-paper-plane" aria-hidden="true"></i> Envoyer
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Envoyer
                     </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-<script th:replace="user/signrequests/includes/scriptshow :: scriptshow"></script>
 
 <div class="modal fade" id="refuseModal" tabindex="-1" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -135,7 +120,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                    <label for="refuseComment">Vous <b>devez</b> ajouter un commentaire</label>
+                    <textarea id="refuseComment" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
@@ -145,6 +131,6 @@
         </div>
     </div>
 </div>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

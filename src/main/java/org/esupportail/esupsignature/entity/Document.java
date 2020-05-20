@@ -40,7 +40,9 @@ public class Document {
 
     public InputStream getInputStream() {
         try {
-            return this.bigFile.getBinaryFile().getBinaryStream();
+            if(this.bigFile != null) {
+                return this.bigFile.getBinaryFile().getBinaryStream();
+            }
         } catch (SQLException e) {
             logger.error("unable to get inputStream", e);
         }
@@ -110,6 +112,5 @@ public class Document {
 	public void setVersion(Integer version) {
         this.version = version;
     }
-
 
 }

@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="logscard">
-    <div class="card rounded-0 mb-1">
-        <div class="card-header">
-            Logs
-        </div>
+    <div class="card mb-1 col-lg-8 mx-auto">
         <div id="collapseLogs" class="show" aria-labelledby="headingOne"
              data-parent="#accordion">
             <div class="card-body">
-                <table class="table table-responsive table-sm table-striped table-hover">
-                    <thead>
+                <h5>Logs</h5>
+                <table class="table table-sm table-striped table-hover table-borderless">
+                    <thead class="thead-dark">
                     <tr>
-                        <th class="none">Date</th>
-                        <th class="none">Eppn</th>
-                        <th class="none">Action</th>
-                        <th class="none">Statut initial</th>
-                        <th class="none">Statut final</th>
+                        <th>Date</th>
+                        <th>Eppn</th>
+                        <th>Action</th>
+                        <th>Statut initial</th>
+                        <th>Statut final</th>
+                        <th>Commentaire</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -26,6 +26,7 @@
                             <td><span th:text="${log.action}"></span></td>
                             <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
                             <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                            <td><span th:text="${log.comment}"></span></td>
                         </tr>
                     </th:block>
                     </tbody>

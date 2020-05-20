@@ -10,12 +10,11 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDField;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
@@ -35,6 +34,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
@@ -72,26 +72,15 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    @Resource
-    private SignRequestService signRequestService;
-
-    public InputStream stampImage(Document toSignFile, SignRequest signRequest, SignType signType, SignRequestParams params, User user, boolean addDate) {
-        signRequestService.setStep("Apposition de la signature");
+    public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
         PdfParameters pdfParameters;
         try {
-            PDDocument pdDocument = PDDocument.load(toSignFile.getInputStream());
+            PDDocument pdDocument = PDDocument.load(inputStream);
             pdfParameters = getPdfParameters(pdDocument);
-            PDPage pdPage = pdDocument.getPage(params.getSignPageNumber() - 1);
-            PDImageXObject pdImage;
-
+            PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-            float height = pdPage.getMediaBox().getHeight();
-            float width = pdPage.getMediaBox().getWidth();
-
-            int xPos = params.getXPos();
-            int yPos = params.getYPos();
             DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-            File signImage = null;
+            InputStream signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
             String text = "";
             if (signType.equals(SignType.visa)) {
                 try {
@@ -99,7 +88,7 @@ public class PdfService {
                     if (addDate) {
                         text +="Le " + dateFormat.format(new Date());
                     }
-                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text);
+                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
                 } catch (IOException e) {
                     logger.error(e.getMessage(), e);
                 }
@@ -111,50 +100,91 @@ public class PdfService {
                 if (addDate) {
                     text +="Le " + dateFormat.format(new Date());
                 }
-                signImage = fileService.addTextToImage(user.getSignImage().getInputStream(), text);
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             }
-            int topHeight = 0;
             BufferedImage bufferedImage = ImageIO.read(signImage);
-            int[] size = getSignSize(bufferedImage);
-            if (pdfParameters.getRotation() == 0) {
-                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-                tx.translate(0, -bufferedImage.getHeight(null));
-                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-                bufferedImage = op.filter(bufferedImage, null);
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight, size[0], size[1]);
-            } else {
-                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-                contentStream.transform(new Matrix(at));
-                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-                ImageIO.write(bufferedImage, "png", flipedSignImage);
-                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-                contentStream.drawImage(pdImage, xPos, yPos + topHeight - 37, size[0], size[1]);
-            }
+            ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(bufferedImage, "png", signImageByteArrayOutputStream);
+            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
+            float tx = 0;
+            float ty = 0;
+            float x_adjusted = signRequestParams.getxPos();
+            float y_adjusted = signRequestParams.getyPos();
 
+            if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
+                y_adjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+            } else {
+                y_adjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+            }
+            if (pdfParameters.isLandScape()) {
+                tx = pdfParameters.getWidth();
+            } else {
+                ty = pdfParameters.getHeight();
+            }
+            if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
+                contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
+            }
+            contentStream.drawImage(pdImage, x_adjusted, y_adjusted, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
-            try {
-                if(signRequest.getSignedDocuments().size() == 0) {
-                    return convertGS(writeMetadatas(in, toSignFile.getFileName(), signRequest));
-                } else {
-                    return in;
-                }
-            } catch (Exception e) {
-                logger.error("unable to convert to pdf A", e);
-            }
+            return in;
         } catch (IOException e) {
             logger.error("error to add image", e);
         }
         return null;
     }
+
+//    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
+//        //signRequestService.setStep("Apposition de la signature");
+//        PdfParameters pdfParameters;
+//        try {
+//            PDDocument pdDocument = PDDocument.load(document.getInputStream());
+//            pdfParameters = getPdfParameters(pdDocument);
+//            PDPage pdPage = pdDocument.getPage(pageNumber - 1);
+//            PDImageXObject pdImage;
+//
+//            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+//            float height = pdPage.getMediaBox().getHeight();
+//            float width = pdPage.getMediaBox().getWidth();
+//            File signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, text.length() * 10, 20);
+//            BufferedImage bufferedImage = ImageIO.read(signImage);
+//            if (pdfParameters.getRotation() == 0) {
+//                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
+//                tx.translate(0, -bufferedImage.getHeight(null));
+//                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//                bufferedImage = op.filter(bufferedImage, null);
+//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+//                ImageIO.write(bufferedImage, "png", flipedSignImage);
+//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+//                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
+//                contentStream.drawImage(pdImage, xPos, yPos, bufferedImage.getWidth(), bufferedImage.getHeight());
+//            } else {
+//                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
+//                contentStream.transform(new Matrix(at));
+//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
+//                ImageIO.write(bufferedImage, "png", flipedSignImage);
+//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
+//                contentStream.drawImage(pdImage, xPos, yPos - 37, bufferedImage.getWidth(), bufferedImage.getWidth());
+//            }
+//            contentStream.close();
+//            ByteArrayOutputStream out = new ByteArrayOutputStream();
+//            pdDocument.setAllSecurityToBeRemoved(true);
+//            pdDocument.save(out);
+//            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+//            pdDocument.close();
+//            signImage.delete();
+//            return in;
+//        } catch (IOException e) {
+//            logger.error("error to add image", e);
+//        }
+//        return null;
+//    }
+
+
 
     public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
 
@@ -171,7 +201,7 @@ public class PdfService {
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             info.setTitle(fileName);
             info.setSubject(fileName);
-            info.setAuthor(signRequest.getCreateBy());
+            info.setAuthor(signRequest.getCreateBy().getEppn());
             info.setCreator("GhostScript");
             info.setProducer("esup-signature");
             info.setKeywords("pdf, signed, " + fileName);
@@ -222,7 +252,6 @@ public class PdfService {
     }
 
     public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
-        signRequestService.setStep("Conversion du document");
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
@@ -356,12 +385,12 @@ public class PdfService {
         contentStream.endText();
     }
 
-    public int[] getSignSize(BufferedImage bimg) throws IOException {
+    public int[] getSignSize(BufferedImage bimg) {
         int signWidth;
         int signHeight;
         if (bimg.getWidth() <= pdfConfig.getPdfProperties().getSignWidthThreshold() * 2) {
-            signWidth = bimg.getWidth() / 2;
-            signHeight = bimg.getHeight() / 2;
+            signWidth = bimg.getWidth();
+            signHeight = bimg.getHeight();
         } else {
             signWidth = pdfConfig.getPdfProperties().getSignWidthThreshold();
             double percent = ((double) pdfConfig.getPdfProperties().getSignWidthThreshold() / (double) bimg.getWidth());
@@ -373,33 +402,6 @@ public class PdfService {
     public int[] getSignSize(InputStream signFile) throws IOException {
         BufferedImage bimg = ImageIO.read(signFile);
         return getSignSize(bimg);
-    }
-
-    public int[] getSignFieldCoord(PDDocument pdDocument, long signNumber) {
-        try {
-            PDPage pdPage = pdDocument.getPage(0);
-            List<PDSignatureField> pdSignatureFields = pdDocument.getSignatureFields();
-            //pdSignatureFields = pdSignatureFields.stream().sorted(Comparator.comparing(PDSignatureField::getPartialName)).collect(Collectors.toList());
-            if (pdSignatureFields.size() < signNumber + 1) {
-                return null;
-            }
-            PDSignatureField pdSignatureField = pdSignatureFields.get((int) signNumber);
-            if (pdSignatureField.getValue() == null) {
-                int[] pos = new int[2];
-                pos[0] = (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX();
-                pos[1] = (int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight();
-                return pos;
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        } finally {
-            try {
-                pdDocument.close();
-            } catch (IOException e) {
-                logger.error(e.getMessage(), e);
-            }
-        }
-        return null;
     }
 
     private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
@@ -437,9 +439,10 @@ public class PdfService {
                             }
                         }
                         PDPage pdPage = pdDocument.getPage(annotationPages.get(0) - 1);
+                        signRequestParams.setSignImageNumber(0);
                         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-                        signRequestParams.setXPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
-                        signRequestParams.setYPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
+                        signRequestParams.setxPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
+                        signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
                         signRequestParams.setSignPageNumber(annotationPages.get(0));
                         signRequestParamsList.add(signRequestParams);
                     }
@@ -449,7 +452,69 @@ public class PdfService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 		}
-		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getXPos())).sorted(Comparator.comparingInt(value -> value.getYPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getxPos())).sorted(Comparator.comparingInt(value -> value.getyPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+    }
+
+    public InputStream fill(InputStream pdfFile, Map<String, String> datas) {
+        try {
+            PDDocument pdDocument = PDDocument.load(pdfFile);
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if(pdAcroForm != null) {
+                PDFont font = PDType1Font.HELVETICA;
+                PDResources resources = pdAcroForm.getDefaultResources();
+                resources.put(COSName.getPDFName("Helv"), font);
+                resources.put(COSName.getPDFName("Helvetica"), font);
+                pdAcroForm.setDefaultResources(resources);
+                List<PDField> fields = pdAcroForm.getFields();
+                for(PDField pdField : fields) {
+                    String filedName = pdField.getPartialName().split("\\$|#|!")[0];
+                    if(datas.containsKey(filedName)) {
+                        if (pdField instanceof PDCheckBox) {
+                            if (datas.get(filedName) != null && datas.get(filedName).equals("on")) {
+                                ((PDCheckBox) pdField).check();
+                            }
+                        } else if (pdField instanceof PDRadioButton) {
+                            PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+                            try {
+                                pdRadioButton.setValue(datas.get(filedName));
+                            } catch (NullPointerException e) {
+                                logger.debug("radio buton is null");
+                            }
+                        } else {
+                            if (!(pdField instanceof PDSignatureField)) {
+                                pdField.setValue(datas.get(filedName));
+                            }
+                        }
+                    }
+                    if (!pdField.isReadOnly()) {
+                        pdField.setReadOnly(true);
+                    } else {
+                        pdField.setReadOnly(false);
+                        pdField.setRequired(true);
+                    }
+                }
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdDocument.setAllSecurityToBeRemoved(true);
+            pdDocument.save(out);
+            pdDocument.close();
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (IOException e) {
+            logger.error("file read error", e);
+        }
+        return null;
+    }
+
+    public PDFieldTree getFields(PDDocument pdDocument) {
+        try {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            PDFieldTree fields = new PDFieldTree(pdAcroForm);
+            pdDocument.close();
+            return fields;
+        } catch (IOException e) {
+            logger.error("file read error", e);
+        }
+        return null;
     }
 
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
@@ -507,18 +572,17 @@ public class PdfService {
         return bufferedImage;
     }
 
+    private InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(image, type, os);
+        return new ByteArrayInputStream(os.toByteArray());
+    }
+
     public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
         BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
         InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
         bufferedImage.flush();
         return inputStream;
     }
-
-    public InputStream bufferedImageToInputStream(BufferedImage image, String type) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImageIO.write(image, type, os);
-        return new ByteArrayInputStream(os.toByteArray());
-    }
-
 
 }

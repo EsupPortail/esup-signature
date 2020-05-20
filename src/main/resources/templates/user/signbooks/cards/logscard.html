@@ -1,36 +1,31 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="logscard">
-    <div class="card rounded-0 mb-1">
-        <div class="card-header">
-            Logs
-        </div>
-        <div id="collapseLogs" class="show" aria-labelledby="headingOne"
-             data-parent="#accordion">
-            <div class="card-body">
-                <table class="table table-sm table-striped table-hover table-bordered">
-                    <thead>
+    <div class="card col-lg-11 mb-1">
+        <div class="card-body">
+            <h5 class="text-center"><b>Logs</b></h5>
+            <table class="table table-sm table-hover">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Date</th>
+                    <th>Eppn</th>
+                    <th>Action</th>
+                    <th>Statut initial</th>
+                    <th>Statut final</th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="log : ${logs}">
                     <tr>
-                        <th>Date</th>
-                        <th>Eppn</th>
-                        <th>Action</th>
-                        <th>Statut initial</th>
-                        <th>Statut final</th>
+                        <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                        <td><span th:text="${log.eppn}"></span></td>
+                        <td><span th:text="${log.action}"></span></td>
+                        <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
+                        <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
                     </tr>
-                    </thead>
-                    <tbody>
-                    <th:block th:each="log : ${logs}">
-                        <tr>
-                            <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                            <td><span th:text="${log.eppn}"></span></td>
-                            <td><span th:text="${log.action}"></span></td>
-                            <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
-                            <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
-                        </tr>
-                    </th:block>
-                    </tbody>
-                </table>
-            </div>
+                </th:block>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

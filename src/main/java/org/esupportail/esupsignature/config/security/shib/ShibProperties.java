@@ -5,11 +5,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "security.shib")
 public class ShibProperties {
 
-
+    private String title;
+    private String idpUrl;
     private String principalRequestHeader;
     private String credentialsRequestHeader;
     private String groupMappingRoleAdmin;
     private String groupMappingRoleManager;
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getIdpUrl() {
+        return idpUrl;
+    }
+
+    public void setIdpUrl(String idpUrl) {
+        this.idpUrl = idpUrl;
+    }
 
     public String getPrincipalRequestHeader() {
         return principalRequestHeader;

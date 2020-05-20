@@ -5,10 +5,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name = "UserAccount")
+@Table(name = "user_account")
 public class User {
 	
 	@Id
@@ -27,9 +29,10 @@ public class User {
 
     @Column(unique=true)
     private String email;
-    
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
-    private Document signImage = new Document();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OrderColumn
+    private List<Document> signImages = new ArrayList<>();
 
     @Transient
     private String ip;
@@ -58,6 +61,9 @@ public class User {
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roles = new ArrayList<>();
 
 	public Long getId() {
         return this.id;
@@ -111,15 +117,15 @@ public class User {
         this.email = email;
     }
 
-	public Document getSignImage() {
-        return this.signImage;
+    public List<Document> getSignImages() {
+        return signImages;
     }
 
-	public void setSignImage(Document signImage) {
-        this.signImage = signImage;
+    public void setSignImages(List<Document> signImages) {
+        this.signImages = signImages;
     }
 
-	public String getIp() {
+    public String getIp() {
         return this.ip;
     }
 
@@ -169,5 +175,13 @@ public class User {
 
 	public void setLastSendAlertDate(Date lastSendAlertDate) {
         this.lastSendAlertDate = lastSendAlertDate;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 }

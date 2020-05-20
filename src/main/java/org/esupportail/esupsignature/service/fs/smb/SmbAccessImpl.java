@@ -37,6 +37,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
+import javax.annotation.Resource;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -51,7 +52,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(SmbAccessImpl.class);
 
-	@Autowired
+	@Resource
 	FileService fileService;
 
 	private NtlmPasswordAuthentication userAuthenticator;
@@ -314,13 +315,9 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				}
 			}
 			newFile.createNewFile();
-
 			OutputStream outstr = newFile.getOutputStream();
-
 			FileCopyUtils.copy(inputStream, outstr);
-
 			success = true;
-
 		} catch (SmbException e) {
 			logger.info("can't upload file : " + e.getMessage(), e);
 		} catch (IOException e) {
@@ -375,6 +372,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		FsFile fsFile = new FsFile(new FileInputStream(tempFile), smbFile.getName(), URLConnection.guessContentTypeFromName(smbFile.getName()));
 		fsFile.setPath(path);
 		fsFile.setCreateDate(new Date(smbFile.getDate()));
+		tempFile.delete();
 		return fsFile;
 	}
 

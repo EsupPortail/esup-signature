@@ -7,37 +7,39 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.6.RELEASE</version>
+		<version>2.3.0.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>0.9.0.BUILD-SNAPSHOT</version>
+	<version>0.11.BUILD-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
-		<bouncycastle.version>1.60</bouncycastle.version>
+		<bouncycastle.version>1.64</bouncycastle.version>
 		<aspectj.version>1.9.3</aspectj.version>
 		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.5</slf4j.version>
-		<spring.version>5.2.2.RELEASE</spring.version>
-		<spring-security.version>5.2.0.RELEASE</spring-security.version>
-		<spring-data.version>2.2.3.RELEASE</spring-data.version>
-		<dss.framework.version>5.4.3</dss.framework.version>
-		<hsqldb.version>2.4.1</hsqldb.version>
+		<spring.version>5.2.6.RELEASE</spring.version>
+		<spring-security.version>5.3.2.RELEASE</spring-security.version>
+		<spring-data.version>2.3.0.RELEASE</spring-data.version>
+		<dss.framework.version>5.6</dss.framework.version>
+		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
+		<hikaricp.version>3.4.2</hikaricp.version>
+		<hsqldb.version>2.5.0</hsqldb.version>
 		<nexu.version>1.22</nexu.version>
-		<pdfbox.version>2.0.16</pdfbox.version>
+		<pdfbox.version>2.0.19</pdfbox.version>
 	</properties>
 	<repositories>
 		<repository>
 			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
-			<url>http://maven.springframework.org/release</url>
+			<url>https://maven.springframework.org/release</url>
 		</repository>
 		<repository>
 			<id>cefdigital</id>
-			<name>CEF Digital</name>
+			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
 	</repositories>
@@ -59,6 +61,10 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -86,6 +92,7 @@
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -120,19 +127,18 @@
 			<artifactId>thymeleaf-spring-data-dialect</artifactId>
 			<version>3.4.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.webjars/popper.js -->
+
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>popper.js</artifactId>
 		   <version>1.14.1</version>
 		</dependency>
-		 
-		<!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
 
+		<!-- https://mvnrepository.com/artifact/org.webjars.npm/pdfjs-dist -->
 		<dependency>
-			<groupId>org.webjars.bowergithub.mozilla</groupId>
+			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>2.2.2</version>
+			<version>2.3.200</version>
 		</dependency>
 
 		<dependency>
@@ -140,7 +146,13 @@
 		    <artifactId>jquery</artifactId>
 		    <version>3.4.1</version>
 		</dependency>
-				
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>momentjs</artifactId>
+			<version>2.24.0</version>
+		</dependency>
+
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>bootstrap</artifactId>
@@ -171,6 +183,18 @@
 		    <version>0.30</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
+			<version>4.17.47</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>summernote</artifactId>
+			<version>0.8.10</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
 		<dependency>
 		    <groupId>org.imgscalr</groupId>
@@ -196,10 +220,17 @@
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>net.sf.flexjson</groupId>
 			<artifactId>flexjson</artifactId>
 			<version>2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20190722</version>
 		</dependency>
 
 		<dependency>
@@ -214,7 +245,14 @@
 		<dependency>
 		    <groupId>org.hsqldb</groupId>
 		    <artifactId>hsqldb</artifactId>
-		</dependency>				
+			<version>${hsqldb.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<version>${hikaricp.version}</version>
+		</dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -327,6 +365,9 @@
 			<artifactId>super-csv</artifactId>
 			<version>2.4.0</version>
 		</dependency>
+
+		<!-- DSS Framework dependencies -->
+
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-model</artifactId>
@@ -342,29 +383,36 @@
 			<artifactId>dss-token</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-reports</artifactId>
-			<version>${dss.framework.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>eu.europa.ec.joinup.sd-dss</groupId>-->
+<!--			<artifactId>dss-reports</artifactId>-->
+<!--			<version>${dss.framework.version}</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-service</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
+
+		<!-- Web Services -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-remote-services</artifactId>
+			<artifactId>dss-signature-remote</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-rest</artifactId>
+			<artifactId>dss-signature-rest</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-soap</artifactId>
+			<artifactId>dss-signature-rest-client</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-signature-soap</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
 		<dependency>
@@ -374,7 +422,27 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-validation-rest-client</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-validation-soap</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-certificate-validation-rest</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-certificate-validation-rest-client</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-certificate-validation-soap</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
 		<dependency>
@@ -389,25 +457,47 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-server-signing-rest-client</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-timestamp-remote-soap</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-timestamp-remote-rest</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-timestamp-remote-rest-client</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-tsl-validation</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
-		<!-- <artifactId>dss-utils-apache-commons</artifactId> -->
-		<!-- <version>${dss.framework.version}</version> -->
-		<!-- </dependency> -->
+
+		<!-- 			<dependency> -->
+		<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
+		<!-- 				<artifactId>dss-utils-apache-commons</artifactId> -->
+		<!-- 				<version>${dss.framework.version}</version> -->
+		<!-- 			</dependency> -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-utils-google-guava</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
 
-		<!-- <dependency> -->
-		<!-- <groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
-		<!-- <artifactId>dss-crl-parser-x509crl</artifactId> -->
-		<!-- <version>${dss.framework.version}</version> -->
-		<!-- </dependency> -->
+		<!-- 			<dependency> -->
+		<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
+		<!-- 				<artifactId>dss-crl-parser-x509crl</artifactId> -->
+		<!-- 				<version>${dss.framework.version}</version> -->
+		<!-- 			</dependency> -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-crl-parser-stream</artifactId>
@@ -424,6 +514,14 @@
 			<artifactId>dss-pades-openpdf</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-cookbook</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+
+<!--		OTHER dependencies -->
 		
 		<dependency>
 		    <groupId>com.sun.xml.bind</groupId>
@@ -450,6 +548,11 @@
 			<version>1.1.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -490,21 +593,21 @@
 			<optional>true</optional>
 		</dependency>
 
-		<dependency>
-			<groupId>fr.gouv.vitam</groupId>
-			<artifactId>sedalib</artifactId>
-			<version>2.3.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.gov.nationalarchives</groupId>
-			<artifactId>droid-core</artifactId>
-			<version>6.5-VITAM</version>
-		</dependency>
-		<dependency>
-			<groupId>uk.gov.nationalarchives</groupId>
-			<artifactId>droid-container</artifactId>
-			<version>6.5-VITAM</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>fr.gouv.vitam</groupId>-->
+<!--			<artifactId>sedalib</artifactId>-->
+<!--			<version>2.3.0-SNAPSHOT</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>uk.gov.nationalarchives</groupId>-->
+<!--			<artifactId>droid-core</artifactId>-->
+<!--			<version>6.5-VITAM</version>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>uk.gov.nationalarchives</groupId>-->
+<!--			<artifactId>droid-container</artifactId>-->
+<!--			<version>6.5-VITAM</version>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -515,6 +618,22 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>2.9.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>17.0.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
 	</dependencies>

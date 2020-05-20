@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="commentscard">
-    <div class="card rounded-0 mb-1">
-        <div class="card-header">
-            Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span>
-        </div>
+    <div class="card mb-1 col-lg-8 mx-auto">
         <div id="collapseComments" class="show"
              aria-labelledby="headingOne" data-parent="#accordion">
             <div class="card-body">
+                <h5>Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span></h5>
                 <ul class="list-group">
                     <th:block th:each="comment : ${comments}">
                         <div class="d-flex w-100 justify-content-between">
@@ -16,7 +14,8 @@
                                 <small>
                                     le : <span th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                                     <br>
-                                    Action effectuée : <span th:text="#{'signbook.status.' + ${comment.finalStatus}}"></span>
+                                    Action effectuée : <span
+                                        th:text="#{'signbook.status.' + ${comment.finalStatus}}"></span>
                                 </small>
                                 <p th:text="${comment.comment}"></p>
 

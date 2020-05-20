@@ -10,23 +10,21 @@ import javax.servlet.http.HttpServletRequest;
 
 public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenticationFilter {
 	
-	private final Logger log = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	private String credentialsRequestHeader4thisClass;
 
-	@Resource
-	private UserService userService;
 /*	
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authResult) throws IOException, ServletException {
         super.successfulAuthentication(request, response, authResult);
         String eppn = authResult.getName();
-        log.info("User " + eppn + " authenticated");
+        log.info("UserUi " + eppn + " authenticated");
         String email = request.getHeader("mail");
         String name = request.getHeader("sn");
         String firstName = request.getHeader("givenName");
         userService.createUser(eppn, name, firstName, email);
-        log.info("User " + eppn + " created");
+        log.info("UserUi " + eppn + " created");
     }
 	*/
 	/* 
@@ -52,10 +50,5 @@ public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenti
         super.setCredentialsRequestHeader(credentialsRequestHeader);
         this.credentialsRequestHeader4thisClass = credentialsRequestHeader;
     }
-
-	public void setUserService(UserService userService) {
-		this.userService = userService;
-	}
-   
 
 }

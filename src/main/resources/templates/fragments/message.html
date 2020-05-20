@@ -1,38 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="message" id="messageModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Message</h3>
+<div th:fragment="message" style="">
+	<script language="JavaScript">
+		function markAsRead(id) {
+			$.get("/user/users/mark-as-read/" + id);
+		}
+	</script>
+	<th:block th:each="messageNew : ${messageNews}">
+		<div th:id="'toast_' + ${messageNew.id}" class="toast toast-xl" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
+			<div class="toast-header bg-light">
+				<strong class="mr-auto text-white blinking-black">Nouveauté !</strong>
+				<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+					<i class="fas fa-times"></i>
+				</button>
 			</div>
-			<div class="modal-body">
-			<div th:if="${messageError != null}">
-				<div id="dialog" title="Information" class="text-danger">
-					<div class="alert alert-danger" th:text="${messageError}"></div>
-				</div>
+			<div class="toast-body">
+				<p th:utext="${messageNew.text}"></p>
+				<button th:onclick="'markAsRead('+ ${messageNew.id} +');'" class="btn btn-light btn-outline-dark ml-2 fixed-bottom mb-2" data-dismiss="toast" aria-label="Close">Marquer comme lu</button>
 			</div>
+		</div>
+		<script>
+			$('#toast_[[${messageNew.id}]]').toast('show');
 
-			<div th:if="${messageInfo != null}">
-				<div id="dialog" title="Information" class="text-danger">
-					<div class="alert alert-info" th:text="${messageInfo}"></div>
-				</div>
-			</div>
+		</script>
+	</th:block>
 
-			<div th:if="${messageCustom != null}">
-				<!-- div class="alert alert-info" data-dismiss="alert"-->
-				<div id="dialog" title="Information" class="text-danger">
-					<div class="alert alert-info">
-						<pre th:text="${messageCustom}"></pre>
-					</div>
-				</div>
-			</div>
-			</div>
-			<div class="modal-footer">
-        		<button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-         	</div>
+	<th:block th:if="${messageError != null}">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000" >
+		<div class="toast-header bg-danger">
+			<strong class="mr-auto text-white blinking-white">Erreur</strong>
+			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="toast-body">
+			<span th:text="${messageError}"></span>
 		</div>
 	</div>
+	<script>$('#toast').toast('show');</script>
+	</th:block>
+<th:block th:if="${messageWarn != null}" >
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="60000">
+		<div class="toast-header text-dark bg-warning">
+			<strong class="mr-auto blinking-black">Attention</strong>
+			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="toast-body">
+			<span th:text="${messageWarn}"></span>
+		</div>
+	</div>
+	<script>$('#toast').toast('show');</script>
+	</th:block>
+<th:block th:if="${messageSuccess != null}">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000">
+		<div class="toast-header bg-success">
+			<strong class="mr-auto text-white">Confirmation</strong>
+			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="toast-body">
+			<span th:text="${messageSuccess}"></span>
+		</div>
+	</div>
+	<script>$('#toast').toast('show');</script>
+	</th:block>
+	<th:block th:if="${messageInfo != null}">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000">
+		<div class="toast-header">
+			<strong class="mr-auto text-dark">Information</strong>
+			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="toast-body">
+			<span th:text="${messageInfo}"></span>
+		</div>
+	</div>
+	<script>$('#toast').toast('show');</script>
+	</th:block>
+	<th:block th:if="${messageCustom != null}">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
+		<div class="toast-header">
+			<strong class="mr-auto text-dark">Message</strong>
+			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times"></i>
+			</button>
+		</div>
+		<div class="toast-body">
+			<pre th:text="${messageCustom}"></pre>
+		</div>
+	</div>
+	<script>$('#toast').toast('show');</script>
+	</th:block>
 </div>
-</body>
 </html>

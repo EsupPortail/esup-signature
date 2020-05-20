@@ -6,6 +6,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationProvider;
@@ -32,23 +33,35 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	@Resource
 	private RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 
-	public String getName() {
+	@Resource
+	private ClientRegistrationRepository clientRegistrationRepository;
+
+	@Override
+	public String getTitle() {
 		return "France Connect";
 	}
-	
+
+	@Override
 	public String getLoginUrl() {
 		return "/login/oauth2entry";
 	}
-	
-	@Resource
-	private ClientRegistrationRepository clientRegistrationRepository;
-	
-	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		HttpSessionOAuth2AuthorizationRequestRepository repository = new HttpSessionOAuth2AuthorizationRequestRepository();
-		return repository; 
-	}
-	
 
+	@Override
+	public String getLogoutUrl() {
+		return "";
+	}
+
+	@Override
+	public String getDomain() {
+		return "";
+	}
+
+	@Override
+	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
+		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
+	}
+
+	@Override
 	public OAuth2LoginAuthenticationFilter getAuthenticationProcessingFilter() {
 		OAuth2LoginAuthenticationFilter auth2LoginAuthenticationFilter = new OAuth2LoginAuthenticationFilter(clientRegistrationRepository, authorizedClientService(clientRegistrationRepository), OAuth2LoginAuthenticationFilter.DEFAULT_FILTER_PROCESSES_URI);
 		auth2LoginAuthenticationFilter.setAuthenticationSuccessHandler(oAuthAuthenticationSuccessHandler);
@@ -57,9 +70,33 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 		auth2LoginAuthenticationFilter.setAuthenticationManager(oAuthAuthenticationManager());
 		RequestMatcher authenticationNullMatcher = request -> SecurityContextHolder.getContext().getAuthentication() == null;
 		auth2LoginAuthenticationFilter.setRequiresAuthenticationRequestMatcher(new AndRequestMatcher(new AntPathRequestMatcher("/login/oauth2/code/google"), authenticationNullMatcher));
-		
+
 		return auth2LoginAuthenticationFilter;
-		
+	}
+
+	@Override
+	public UserDetailsService getUserDetailsService() {
+		return null;
+	}
+	/* A GARDER POUR MULTIPLE AUTH OU FRANCE CONNECT
+	@Bean
+	public ClientRegistrationRepository clientRegistrationRepository() {
+        String clientId = "";
+		String clientSecret = "";
+    	ClientRegistration registration = CommonOAuth2Provider.GOOGLE.getBuilder("google")
+		        .clientId(clientId)
+		        .clientSecret(clientSecret)
+		        .scope("profile", "email")
+		        .redirectUriTemplate("http://esup-signature.univ-ville.fr:8080/login/oauth2/code/google")
+		        .build();
+
+        return new InMemoryClientRegistrationRepository(Arrays.asList(registration));
+    }
+    */
+
+	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+		HttpSessionOAuth2AuthorizationRequestRepository repository = new HttpSessionOAuth2AuthorizationRequestRepository();
+		return repository; 
 	}
 
     public OAuth2AuthorizedClientService authorizedClientService(
@@ -72,14 +109,9 @@ public class OAuthSecurityServiceImpl implements SecurityService {
             OAuth2AuthorizedClientService authorizedClientService) {
         return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
     }
-	
-	@Bean
-	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
-		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
-	}
-	
+
 	public AuthenticationManager oAuthAuthenticationManager() {
-		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
+		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(auth2LoginAuthenticationProvider());
 		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
 		return authenticationManager;
