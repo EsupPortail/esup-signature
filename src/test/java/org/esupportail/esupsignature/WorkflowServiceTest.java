@@ -21,7 +21,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
+@TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class WorkflowServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowServiceTest.class);
@@ -36,8 +36,8 @@ public class WorkflowServiceTest {
             try {
                 ((DefaultWorkflow) defaultWorkflow).generateWorkflowSteps(new User(), new Data(), Arrays.asList(""));
                 logger.info("Test Workflow : " + defaultWorkflow.getName() + " OK");
-            } catch (EsupSignatureUserException e) {
-                logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO");
+            } catch (Exception e) {
+                logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO", e);
                 workflowTest = false;
             }
         }

@@ -17,7 +17,7 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
+@TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class MailServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MailServiceTest.class);

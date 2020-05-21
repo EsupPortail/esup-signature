@@ -47,17 +47,20 @@ public class OJService {
 	}
 	
 	public void refresh() throws IOException {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
-		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
-		if(lotlInfo.getValidationCacheInfo().isRefreshNeeded()
-				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
-				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded()) {
+		if(checkOjFreshness()) {
 			log.info("start online refreshing oj keystore");
 			dssBeanConfig.job().onlineRefresh();
 		} else {
 			log.info("no online refresh needed for trusted lists");
-
 		}
+	}
+
+	public boolean checkOjFreshness() {
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
+		return lotlInfo.getValidationCacheInfo().isRefreshNeeded()
+				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
+				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded();
 	}
 
 }
