@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature;
 
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.service.mail.MailService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -12,12 +10,10 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
@@ -31,6 +27,7 @@ public class MailServiceTest {
 
     @Test
     public void testMail() {
+        assumeTrue("ldap not configured",  mailService.getMailConfig() != null && mailService.getMailConfig().getMailFrom()!= null && mailService.getMailSender() != null);
         try {
             mailService.sendTest(Arrays.asList(mailService.getMailConfig().getMailFrom()));
         } catch (Exception e) {
