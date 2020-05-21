@@ -18,7 +18,7 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
+@TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class LdapServiceTest {
 
     @Autowired(required = false)
@@ -27,7 +27,7 @@ public class LdapServiceTest {
     @Autowired(required = false)
     private LdapPersonService ldapPersonService;
 
-    @Test(timeout = 1000)
+    @Test(timeout = 5000)
     public void testLdap() {
         assumeTrue("ldap not configured", ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().equals(""));
         ldapPersonService.getOrganizationalUnitLdap("0");

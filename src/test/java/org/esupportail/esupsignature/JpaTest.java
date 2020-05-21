@@ -43,7 +43,7 @@ import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestPropertySource(properties = {"app.scheduling.enable=false", "spring.jpa.hibernate.ddl-auto=none"})
+@TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class JpaTest {
 
     @PersistenceContext
