@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -45,7 +46,7 @@ public class MailService {
 
     private JavaMailSenderImpl mailSender;
 
-    public MailService(MailConfig mailConfig, JavaMailSenderImpl mailSender) {
+    public MailService(@Autowired(required = false) MailConfig mailConfig, @Autowired(required = false) JavaMailSenderImpl mailSender) {
         this.mailConfig = mailConfig;
         this.mailSender = mailSender;
     }
@@ -276,5 +277,9 @@ public class MailService {
 
     public MailConfig getMailConfig() {
         return mailConfig;
+    }
+
+    public JavaMailSenderImpl getMailSender() {
+        return mailSender;
     }
 }
