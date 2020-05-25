@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.annotation.Resource;
 import java.util.Arrays;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
@@ -42,7 +42,7 @@ public class WorkflowServiceTest {
             }
         }
         if(!workflowTest) {
-            fail();
+            assertTrue("Attention, un des workflows est mal configuré", workflowTest);
         }
     }
 

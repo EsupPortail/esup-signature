@@ -181,7 +181,7 @@ public class UserService {
 				String firstName = personLdap.get(0).getGivenName();
 				return createUser(eppn, name, firstName, mail);
 			} else {
-				throw new EsupSignatureUserException("ldap user not found");
+				throw new EsupSignatureUserException("ldap user not found : " + mail);
 			}
 		} else {
 			return getGenericUser(mail, "");
