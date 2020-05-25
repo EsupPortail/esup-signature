@@ -81,11 +81,11 @@ export class GlobalUi {
     }
 
     disableBodyScroll() {
-        $('body').addClass('disable-body-scrollbar');
+        //$('body').addClass('disable-body-scrollbar');
     }
 
     enableBodyScroll() {
-        $('body').removeClass('disable-body-scrollbar');
+        //$('body').removeClass('disable-body-scrollbar');
     }
 
     changeFileInputName(e) {
