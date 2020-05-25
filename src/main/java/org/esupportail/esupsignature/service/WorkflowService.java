@@ -159,10 +159,10 @@ public class WorkflowService {
                         fsAccessService.remove(fsFile);
                     }
                 } else {
-                    logger.info("aucun fichier à importer depuis : " + fsAccessService.getUri() + "/" + workflow.getDocumentsSourceUri());
+                    logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
                 }
             } catch (EsupSignatureFsException | EsupSignatureException | EsupSignatureIOException e) {
-                throw new EsupSignatureRuntimeException("error on import from " + fsAccessService.getUri() + "/" + workflow.getDocumentsSourceUri());
+                throw new EsupSignatureRuntimeException("error on import from " + workflow.getDocumentsSourceUri());
             }
             fsAccessService.close();
         }

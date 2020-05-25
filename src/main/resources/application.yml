@@ -87,6 +87,8 @@ dss:
     trusted-certificat-url-list: https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
 
 fs:
+    archive-type : smb
+    archive-uri : smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat/Archive
     smb-login: esup-signature
     smb-password: BT28ap3R!
     smb-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat
