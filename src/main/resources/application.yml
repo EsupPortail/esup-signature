@@ -110,7 +110,6 @@ security:
     cas:
         domain: univ-ville.fr
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
-        group-mapping-role-manager: ROLE_FOR.ESUP-SIGNATURE.MANAGER
         key: EsupSignatureUnivVilleCAS
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)
@@ -118,7 +117,6 @@ security:
 #    shib:
 #        credentials-request-header: MEMBER
 #        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
-#        group-mapping-role-manager: cn=for.esup-signature.manager,ou=groups,dc=univ-ville
 #        idp-url: https://idp.univ-ville.fr
 #        principal-request-header: REMOTE_USER
 #        title: Compte d’un autre établissement (Shibboleth)
