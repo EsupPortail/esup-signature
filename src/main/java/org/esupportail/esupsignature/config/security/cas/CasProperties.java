@@ -10,7 +10,6 @@ public class CasProperties {
     private String url;
     private String service;
     private String groupMappingRoleAdmin;
-    private String groupMappingRoleManager;
     private String domain;
 
     public String getTitle() {
@@ -51,14 +50,6 @@ public class CasProperties {
 
     public void setGroupMappingRoleAdmin(String groupMappingRoleAdmin) {
         this.groupMappingRoleAdmin = groupMappingRoleAdmin;
-    }
-
-    public String getGroupMappingRoleManager() {
-        return groupMappingRoleManager;
-    }
-
-    public void setGroupMappingRoleManager(String groupMappingRoleManager) {
-        this.groupMappingRoleManager = groupMappingRoleManager;
     }
 
     public String getDomain() {
