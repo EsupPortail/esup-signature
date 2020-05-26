@@ -112,7 +112,6 @@ security:
     cas:
         domain: univ-rouen.fr
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
-        group-mapping-role-manager: ROLE_FOR.ESUP-SIGNATURE.MANAGER
         key: EsupSignatureUnivRouenCAS
         service: http://dsi-7.univ-rouen.fr/login/cas
         title: Compte Université de Rouen Normandie (CAS)
@@ -120,7 +119,6 @@ security:
     shib:
         credentials-request-header: MEMBER
         group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-rouen
-        group-mapping-role-manager: cn=for.esup-signature.manager,ou=groups,dc=univ-rouen
         idp-url: https://idp.univ-rouen.fr
         principal-request-header: REMOTE_USER
         title: Compte d’un autre établissement (Shibboleth)

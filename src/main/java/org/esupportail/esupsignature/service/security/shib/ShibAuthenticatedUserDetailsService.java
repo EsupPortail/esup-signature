@@ -67,7 +67,8 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				}
 			}
 		} catch (Exception e) {
-			logger.warn("unable to find credentials", e);
+			logger.warn("unable to find credentials");
+			logger.debug("unable to find credentials", e);
 		}
 		try {
 			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {

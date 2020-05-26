@@ -129,7 +129,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
 		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
-		mappingGroupesRoles.put(casProperties.getGroupMappingRoleManager(), "ROLE_MANAGER");
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
 
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
