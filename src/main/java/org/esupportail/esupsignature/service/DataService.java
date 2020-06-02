@@ -30,9 +30,6 @@ public class DataService {
 
     private static final Logger logger = LoggerFactory.getLogger(DataService.class);
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Resource
     private DataRepository dataRepository;
 
@@ -120,7 +117,7 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
-        Workflow workflow = getWorkflowByDataAndUser(data, recipientEmails, user);
+        Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
         workflow.setName(workflow.getName() + "_" + form.getName());
         signBookService.importWorkflow(signBook, workflow);
         signBookService.nextWorkFlowStep(signBook);
@@ -135,56 +132,7 @@ public class DataService {
         return signBook;
     }
 
-    public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) throws EsupSignatureException {
-        Workflow workflow;
-        List<WorkflowStep> workflowSteps = new ArrayList<>();
-        Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
 
-        try {
-            if (modelWorkflow instanceof DefaultWorkflow) {
-                DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, data, recipientEmails));
-                defaultWorkflow.initWorkflowSteps();
-                defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
-                workflow = defaultWorkflow;
-            } else {
-                workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(workflow.getWorkflowSteps());
-                if(recipientEmails != null) {
-                    for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                        if (workflowStep.getChangeable()) {
-                            workflowStep.getRecipients().clear();
-                            List<Recipient> recipients = workflowService.getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
-                            for (Recipient recipient : recipients) {
-                                recipientRepository.save(recipient);
-                                workflowStep.getRecipients().add(recipient);
-                            }
-                        }
-                    }
-                    workflowSteps.addAll(workflow.getWorkflowSteps());
-                }
-            }
-            if (recipientEmails != null) {
-                int step = 1;
-                for (WorkflowStep workflowStep : workflowSteps) {
-                    userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
-                    step++;
-                }
-            }
-            for(WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                for(Recipient recipient : workflowStep.getRecipients()) {
-                    entityManager.detach(recipient);
-                    if (recipient.getUser().getEppn().equals("creator")) {
-                        recipient.setUser(user);
-                    }
-                }
-            }
-            return workflow;
-        } catch (Exception e) {
-            logger.error("workflow not found", e);
-            throw new EsupSignatureException("workflow not found", e);
-        }
-    }
 
     public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");

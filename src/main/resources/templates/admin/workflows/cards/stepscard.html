@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
+<!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <div th:fragment="stepscard">
     <div class="alert alert-light">
             <div th:if="${workflow.workflowSteps != null}" style="height: 100%; display: flex; align-items: center; justify-content: center;">
@@ -10,7 +11,7 @@
                         <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
                             <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 2px solid #555555;">
-                                <form th:id="'del_' + ${iterator.index}" th:action="'/admin/workflows/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                <form th:id="'del_' + ${iterator.index}" th:action="'/admin/workflows/remove-step/' + ${workflow.id} + '/' + ${iterator.index}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');" class="btn btn-danger float-right">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -51,7 +52,7 @@
                                                     <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1" role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}" aria-hidden="true">
                                                         <div class="modal-dialog modal-lg" role="document">
                                                             <div class="modal-content">
-                                                                <form class="form-group" th:action="'/admin/workflows/add-step-recipents/' + ${id} + '/' + ${workflowStep.id}" method="post">
+                                                                <form class="form-group" th:action="'/admin/workflows/add-step-recipents/' + ${workflow.id} + '/' + ${workflowStep.id}" method="post">
                                                                     <div class="modal-header">
                                                                         <h3 class="modal-title">Ajout de destinataire(s)</h3>
                                                                     </div>
@@ -80,7 +81,7 @@
                                             </tr>
                                             <th:block th:each="recipient : ${workflowStep.recipients}">
                                                 <tr>
-                                                    <form th:action="'/admin/workflows/remove-step-recipent/' + ${id} + '/' + ${workflowStep.id}" th:method="'delete'">
+                                                    <form th:action="'/admin/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}" th:method="'delete'">
                                                         <input type="hidden" name="recipientId" th:value="${recipient.id}" />
                                                         <td>
                                                             <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>

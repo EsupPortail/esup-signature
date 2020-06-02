@@ -52,7 +52,7 @@ public class ScheduledTaskService {
 	@Resource
 	private TLValidationJob job;
 
-	//@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();

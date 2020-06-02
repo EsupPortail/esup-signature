@@ -190,7 +190,7 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/" + id;
+			return "redirect:/admin/workflows/";
 		}
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
@@ -211,7 +211,7 @@ public class WorkflowAdminController {
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
-		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
+		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
@@ -266,20 +266,18 @@ public class WorkflowAdminController {
 		}
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
-		for(int i = workflowStep.getStepNumber() - 1; i < workflow.getWorkflowSteps().size(); i++) {
+		for(int i = 0; i < workflow.getWorkflowSteps().size(); i++) {
 			workflow.getWorkflowSteps().get(i).setStepNumber(i + 1);
 		}
 		workflowRepository.save(workflow);
 		workflowStepRepository.delete(workflowStep);
-		return "redirect:/admin/workflows/" + id;
+		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@PostMapping(value = "/add-params/{id}")
 	public String addParams(@ModelAttribute User user, @PathVariable("id") Long id,
 			RedirectAttributes redirectAttrs) {
-		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
-
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/admin/workflows/" + id;
@@ -296,7 +294,7 @@ public class WorkflowAdminController {
 
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/" + id;
+			return "redirect:/admin/workflows/";
 		}
 		List<FsFile> fsFiles = workflowService.importFilesFromSource(workflow, user);
 		if(fsFiles.size() == 0) {
@@ -304,7 +302,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
 		}
-		return "redirect:/admin/workflows/" + id;
+		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 }

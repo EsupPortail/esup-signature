@@ -31,6 +31,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.fs.UploadActionType;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -127,18 +128,32 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 
 	public SmbFile cd(String path) {
 		try {
+			SmbFile smbFile = getSmbFileFromPath(path);
+
 			this.open();
 			if (path == null || path.length() == 0) {
 				return root;
 			}
-			SmbFile smbFile = new SmbFile(this.getUri() + path, cifsContext);
+
 			if(smbFile.exists()) {
 				return smbFile;
 			}
-		} catch (SmbException | MalformedURLException e) {
+		} catch (URISyntaxException | SmbException | MalformedURLException e) {
 			logger.error("unable to open" + e.getMessage());
 		}
 		return null;
+	}
+
+	@NotNull
+	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException {
+		SmbFile smbFile;
+		URI uri = new URI(path);
+		if(uri.getScheme().equals("smb")) {
+			smbFile = new SmbFile(path, cifsContext);
+		} else {
+			smbFile = new SmbFile(this.getUri() + path, cifsContext);
+		}
+		return smbFile;
 	}
 
 	@Override

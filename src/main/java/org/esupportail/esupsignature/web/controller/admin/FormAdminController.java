@@ -146,7 +146,7 @@ public class FormAdminController {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getClassesWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
 		model.addAttribute("prefillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
 	}

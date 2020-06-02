@@ -18,12 +18,18 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.xmlgraphics.xmp.Metadata;
+import org.apache.xmlgraphics.xmp.schemas.pdf.PDFXAdapter;
+import org.apache.xmlgraphics.xmp.schemas.pdf.PDFXXMPSchema;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
+import org.apache.xmpbox.type.Attribute;
 import org.apache.xmpbox.type.BadFieldValueException;
+import org.apache.xmpbox.xml.DomXmpParser;
+import org.apache.xmpbox.xml.XmpParsingException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.Document;
@@ -47,9 +53,15 @@ import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -184,7 +196,57 @@ public class PdfService {
 //        return null;
 //    }
 
+    public Map<String, String> readMetadatas(InputStream inputStream) {
+        Map<String, String> metadatas = new HashMap<>();
+        try {
+            PDDocument pdDocument = PDDocument.load(inputStream);
+            PDDocumentInformation info = pdDocument.getDocumentInformation();
+            if(checkMetadataKeys(info.getMetadataKeys())) {
+                for (String metaName : info.getMetadataKeys()) {
+                    metadatas.put(metaName, info.getPropertyStringValue(metaName).toString());
+                }
+            } else {
+                try {
+                    PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
+                    PDMetadata metadata = new PDMetadata(pdDocument);
+                    DomXmpParser domXmpParser = new DomXmpParser();
+                    XMPMetadata xmpMetadata = domXmpParser.parse(metadata.exportXMPMetadata());
+                    if(checkMetadataKeys(xmpMetadata.getDublinCoreSchema().getAllAttributes())) {
+                        setMetadatasAttributes(metadatas, xmpMetadata);
+                    }
+                } catch (Exception e) {
+                    logger.error("error on search metadatas", e);
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error on write metadatas", e);
+        }
+        return metadatas;
+    }
 
+    private void setMetadatasAttributes(Map<String, String> metadatas, XMPMetadata xmpMetadata) {
+        for(Attribute attribute : xmpMetadata.getDublinCoreSchema().getAllAttributes()) {
+            metadatas.put(attribute.getName(), attribute.getValue());
+        }
+    }
+
+    public boolean checkMetadataKeys(Set<String> keys) {
+        for(String key : keys) {
+            if(key.startsWith("sign_")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkMetadataKeys(List<Attribute> attributes) {
+        for(Attribute attribute : attributes) {
+            if(attribute.getName().startsWith("sign_")) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
 

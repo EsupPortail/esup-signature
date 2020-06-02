@@ -81,7 +81,7 @@ public class FormService {
 	}
 
 	public List<Form> getAllForms(){
-		List<Form> list = new ArrayList<Form>();
+		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(e -> list.add(e));
 		return list;
 	}

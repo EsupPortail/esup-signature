@@ -35,6 +35,16 @@ public class FileService {
 		return file;
 	}
 
+	public ByteArrayOutputStream copyInputStream(InputStream inputStream) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			inputStream.transferTo(baos);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return baos;
+	}
+
 	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {
 			return new MockMultipartFile(name, name, mimeType, file);
