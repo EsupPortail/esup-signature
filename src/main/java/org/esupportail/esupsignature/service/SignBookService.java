@@ -107,7 +107,7 @@ public class SignBookService {
     }
 
     public boolean checkUserManageRights(User user, SignBook signBook) {
-        if (signBook.getCreateBy().equals(user) || signBook.getCreateBy().getEppn().equals("System")) {
+        if (signBook.getCreateBy().equals(user) || signBook.getCreateBy().getEppn().equals("system")) {
             return true;
         } else {
             return false;

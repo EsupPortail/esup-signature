@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.repository;
+package org.esupportail.esupsignature.repository.custom;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;

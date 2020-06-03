@@ -1,13 +1,14 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.repository.custom.WorkflowRepositoryCustom;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
+public interface WorkflowRepository extends CrudRepository<Workflow, Long>, WorkflowRepositoryCustom {
     List<Workflow> findAll();
     List<Workflow> findByName(String name);
     List<Workflow> findByCreateBy(String eppn);

@@ -71,7 +71,7 @@ public class IndexController {
 	@GetMapping
 	public String index(@ModelAttribute User user, Model model) {
 		model.addAttribute("user", user);
-		if(user != null && !user.getEppn().equals("System")) {
+		if(user != null && !user.getEppn().equals("system")) {
 			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();

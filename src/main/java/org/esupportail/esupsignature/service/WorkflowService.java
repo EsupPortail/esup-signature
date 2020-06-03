@@ -87,13 +87,13 @@ public class WorkflowService {
             workflow.setName("Ma signature");
             workflow.setDescription("Signature du créateur de la demande");
             workflow.setCreateDate(new Date());
-            workflow.setCreateBy("System");
+            workflow.setCreateBy("system");
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
-            workflowStep.setParentType("System");
+            workflowStep.setParentType("system");
             Recipient recipient = recipientService.createRecipient(workflowStep.getId(), creator);
             recipientRepository.save(recipient);
             workflowStep.getRecipients().add(recipient);
@@ -124,13 +124,11 @@ public class WorkflowService {
         }
     }
 
-    public List<Workflow> getWorkflowsForUser(User user) {
-        List<Workflow> workflows = workflowRepository.findByCreateBy(user.getEppn());
-        for (Workflow workflow : workflowRepository.findByManagersContains(user.getEmail())) {
-            if (!workflows.contains(workflow)) {
-                workflows.add(workflow);
-            }
-        }
+    public Set<Workflow> getWorkflowsForUser(User user) {
+        Set<Workflow> workflows = new HashSet<>();
+        workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
+        workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
+        workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
         return workflows;
     }
 
@@ -199,7 +197,7 @@ public class WorkflowService {
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {
-        if ((workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals("System")) {
+        if ((workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals("system")) {
             return true;
         } else {
             return false;

@@ -37,7 +37,9 @@ public class Workflow {
     private Date updateDate;
 
     private String updateBy;
-    
+
+    private String role;
+
     private Boolean external = false;
 
     private Boolean publicUsage = false;
@@ -195,5 +197,13 @@ public class Workflow {
 
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

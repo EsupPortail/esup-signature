@@ -116,7 +116,7 @@ public class WorkflowAdminController {
 		newWorkflow.setName(name);
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(name, user,false);
+			workflow = workflowService.createWorkflow(name, userService.getSystemUser(),false);
 		} catch (EsupSignatureException e) {
 			redirectAttrs.addAttribute("messageError", "Ce circuit existe déjà");
 			return "redirect:/admin/workflows/";
@@ -128,10 +128,10 @@ public class WorkflowAdminController {
     public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflowService.checkUserManageRights(user, workflow)) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/" + workflow.getName();
-		}
+//		if (!workflowService.checkUserManageRights(user, workflow)) {
+//			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+//			return "redirect:/admin/workflows/" + workflow.getName();
+//		}
 		uiModel.addAttribute("workflow", workflow);
 		uiModel.addAttribute("users", userRepository.findAll());
 		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
@@ -146,25 +146,25 @@ public class WorkflowAdminController {
 						 @Valid Workflow workflow,
 						 @RequestParam(required = false) List<String> managers) throws EsupSignatureUserException {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
-		if(workflowToUpdate.getCreateBy().equals(user.getEppn())) {
-			if(managers != null && managers.size() > 0) {
-				workflowToUpdate.getManagers().clear();
-				for(String manager : managers) {
-					User managerUser = userService.getUserByEmail(manager);
-					if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
-						workflowToUpdate.getManagers().add(managerUser.getEmail());
-					}
+		if(managers != null && managers.size() > 0) {
+			workflowToUpdate.getManagers().clear();
+			for(String manager : managers) {
+				User managerUser = userService.getUserByEmail(manager);
+				if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
+					workflowToUpdate.getManagers().add(managerUser.getEmail());
 				}
 			}
-			workflowToUpdate.setSourceType(workflow.getSourceType());
-			workflowToUpdate.setTargetType(workflow.getTargetType());
-			workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
-			workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-			workflowToUpdate.setDescription(workflow.getDescription());
-			workflowToUpdate.setUpdateBy(user.getEppn());
-			workflowToUpdate.setUpdateDate(new Date());
-			workflowRepository.save(workflowToUpdate);
 		}
+		workflowToUpdate.setSourceType(workflow.getSourceType());
+		workflowToUpdate.setTargetType(workflow.getTargetType());
+		workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+		workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+		workflowToUpdate.setDescription(workflow.getDescription());
+		workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
+		workflowToUpdate.setRole(workflow.getRole());
+		workflowToUpdate.setUpdateBy(user.getEppn());
+		workflowToUpdate.setUpdateDate(new Date());
+		workflowRepository.save(workflowToUpdate);
         return "redirect:/admin/workflows/" + workflowToUpdate.getName();
 
     }
@@ -242,7 +242,7 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowRepository.findById(id).get();
-		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("System")) {
+		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
 			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 			workflowService.changeSignType(workflowStep, null, signType);
 			workflowStep.setDescription(description);

@@ -3,13 +3,12 @@ package org.esupportail.esupsignature.repository;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.esupportail.esupsignature.repository.custom.SignBookRepositoryCustom;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom  {
+public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom {
     List<SignBook> findByName(String name);
     List<SignBook> findByCreateBy(User createBy);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);

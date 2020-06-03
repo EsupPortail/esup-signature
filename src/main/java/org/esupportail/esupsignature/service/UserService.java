@@ -113,7 +113,7 @@ public class UserService {
 
 	public User getSystemUser() {
 		User user = new User();
-		user.setEppn("System");
+		user.setEppn("system");
 		return user;
 	}
 
