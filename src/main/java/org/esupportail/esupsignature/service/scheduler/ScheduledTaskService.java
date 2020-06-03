@@ -53,7 +53,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 300000)
+	@Scheduled(fixedRate = 30000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");

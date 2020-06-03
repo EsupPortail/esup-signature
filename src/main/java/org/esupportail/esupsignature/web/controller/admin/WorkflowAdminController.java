@@ -297,11 +297,11 @@ public class WorkflowAdminController {
 			redirectAttrs.addFlashAttribute("messageCustom", "access error");
 			return "redirect:/admin/workflows/";
 		}
-		List<FsFile> fsFiles = workflowService.importFilesFromSource(workflow, user);
-		if(fsFiles.size() == 0) {
+		int nbImportedFiles = workflowService.importFilesFromSource(workflow, user);
+		if(nbImportedFiles == 0) {
 			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
 		} else {
-			redirectAttrs.addFlashAttribute("messageInfo", fsFiles.size() + " ficher(s) importé(s)");
+			redirectAttrs.addFlashAttribute("messageInfo", nbImportedFiles + " ficher(s) importé(s)");
 		}
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}

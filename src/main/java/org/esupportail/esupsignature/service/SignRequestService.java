@@ -537,9 +537,9 @@ public class SignRequestService {
 			String documentUri = null;
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = getLastSignedDocument(signRequest);
-				if(signRequest.getParentSignBook() != null) {
-					targetUrl += "/" + signRequest.getParentSignBook().getName();
-				}
+//				if(signRequest.getParentSignBook() != null) {
+//					targetUrl += "/" + signRequest.getParentSignBook().getName();
+//				}
 				try {
 					logger.info("send to " + documentIOType.name() + " in " + targetUrl);
 					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
@@ -552,6 +552,8 @@ public class SignRequestService {
 							clearAllDocuments(signRequest);
 							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", "SUCCESS");
 						}
+					} else {
+						throw new EsupSignatureException("file is not exported");
 					}
 				} catch (EsupSignatureFsException e) {
 					throw new EsupSignatureException("write fsaccess error : ", e);

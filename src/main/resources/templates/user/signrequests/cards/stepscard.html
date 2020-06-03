@@ -55,7 +55,8 @@
                             <div class="bs-stepper-line"></div>
                             <div class="step border border-dark rounded" th:title="${signRequest.parentSignBook.documentsTargetUri}" th:classappend="${signRequest.parentSignBook.status.name() != 'exported'} ? 'div-disable'">
                                 <div title="Export" th:classappend="${signRequest.parentSignBook.status.name() == 'exported'} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
-                                <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.targetType}"></div>
+                                Export vers :
+                                <div class="bs-stepper-label text-break" th:text="#{'signbook.documentiotype.' + ${signRequest.parentSignBook.targetType}}"></div>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status.name() == 'completed'}">

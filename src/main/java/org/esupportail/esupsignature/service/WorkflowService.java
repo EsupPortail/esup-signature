@@ -134,8 +134,9 @@ public class WorkflowService {
         return workflows;
     }
 
-    public List<FsFile> importFilesFromSource(Workflow workflow, User user) {
+    public int importFilesFromSource(Workflow workflow, User user) {
         List<FsFile> fsFiles = new ArrayList<>();
+        int nbImportedFiles = 0;
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {
             logger.debug("retrieve from " + workflow.getSourceType() + " in " + workflow.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getSourceType());
@@ -160,6 +161,8 @@ public class WorkflowService {
                         workflowRecipientsEmails.add(user.getEmail());
                         ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
                         SignBook signBook = signBookService.createSignBook("Import automatique " + signRequestService.generateUniqueId() + "_" + workflow.getName(), user, false);
+                        signBook.setTargetType(workflow.getTargetType());
+                        signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);
@@ -181,6 +184,7 @@ public class WorkflowService {
                         signBookService.nextWorkFlowStep(signBook);
                         signBookService.pendingSignBook(signBook, user);
                         //fsAccessService.remove(fsFile);
+                        nbImportedFiles++;
                         break; //a virer
                     }
                 } else {
@@ -191,7 +195,7 @@ public class WorkflowService {
             }
             fsAccessService.close();
         }
-        return fsFiles;
+        return nbImportedFiles;
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {
