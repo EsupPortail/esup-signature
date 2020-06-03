@@ -285,9 +285,11 @@ public class SignBookService {
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment) {
         Log log = new Log();
         log.setSignRequestId(signBook.getId());
-        log.setEppn(userService.getUserFromAuthentication().getEppn());
-        log.setEppnFor(userService.getSuEppn());
-        log.setIp(userService.getUserFromAuthentication().getIp());
+        if(userService.getUserFromAuthentication() != null) {
+            log.setEppn(userService.getUserFromAuthentication().getEppn());
+            log.setEppnFor(userService.getSuEppn());
+            log.setIp(userService.getUserFromAuthentication().getIp());
+        }
         log.setInitialStatus(signBook.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);

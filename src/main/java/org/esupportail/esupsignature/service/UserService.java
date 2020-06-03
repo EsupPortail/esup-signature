@@ -117,6 +117,21 @@ public class UserService {
 		return user;
 	}
 
+	public User getSchedulerUser() {
+		if(userRepository.countByEppn("scheduler") > 0) {
+			return userRepository.findByEppn("scheduler").get(0);
+		} else {
+			User user = new User();
+			user.setEppn("scheduler");
+			user.setIp("127.0.0.1");
+			user.setFirstname("Automate");
+			user.setName("Esup-Signature");
+			user.setEmail("esup-signature@univ-rouen.fr");
+			userRepository.save(user);
+			return user;
+		}
+	}
+
 	public User getGenericUser(String name, String firstname) {
 		User user = new User();
 		user.setName(name);
@@ -148,8 +163,8 @@ public class UserService {
 	}
 
 	public User getUserByEppn(String eppn) {
-		if(eppn.equals("Scheduler")) {
-			return ScheduledTaskService.getSchedulerUser();
+		if(eppn.equals("scheduler")) {
+			return getSchedulerUser();
 		}
 		if(eppn.split("@").length == 1) {
 			for(SecurityService securityService : this.securityServices) {

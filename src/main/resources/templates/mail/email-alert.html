@@ -31,7 +31,7 @@
 						<span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
 					</td>
 					<td th:with="personLdap = ${userService.findPersonLdapByUser(signRequest.createBy)}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
-						<span th:if="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
+						<span th:if="${personLdap != null && userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
 					</td>
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}" style="background-color:#343a40; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border:1px solid transparent; border-radius:0.2rem; display:inline-block; font-size:0.875rem; font-weight:400; line-height:1.5; padding:0.25rem 0.5rem; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; border-color:#343a40; margin-right:auto; margin-left:auto" bgcolor="#343a40" align="center" valign="middle">Accéder au document</a>

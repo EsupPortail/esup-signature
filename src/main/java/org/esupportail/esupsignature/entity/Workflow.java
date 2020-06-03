@@ -24,7 +24,6 @@ public class Workflow {
 	@Column(unique=true)
 	private String name;
 
-    @Size(max = 500)
     private String description;
 
     @Temporal(TemporalType.TIMESTAMP)

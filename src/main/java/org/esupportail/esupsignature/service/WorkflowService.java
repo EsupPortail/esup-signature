@@ -214,11 +214,6 @@ public class WorkflowService {
         return workflowStep.getId();
     }
 
-    public Long toggleNeedAllSign(Workflow workflow, int step) {
-        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
-        return toggleAllSignToCompleteForWorkflowStep(workflowStep);
-    }
-
     public Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
         if(workflowStep.getAllSignToComplete()) {
             workflowStep.setAllSignToComplete(false);

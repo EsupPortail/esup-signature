@@ -478,7 +478,7 @@ public class SignRequestService {
 			if (signBookService.isStepAllDocsDone(signRequest.getParentSignBook())) {
 				if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
 					if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-						if (!signRequest.getParentSignBook().getCreateBy().equals("Scheduler")) {
+						if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
 							mailService.sendCompletedMail(signRequest.getParentSignBook());
 						}
 						signBookService.completeSignBook(signRequest.getParentSignBook(), user);
@@ -618,9 +618,11 @@ public class SignRequestService {
 		User user = userService.getUserFromAuthentication();
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
-		log.setEppn(user.getEppn());
-		log.setEppnFor(userService.getCurrentUser().getEppn());
-		log.setIp(user.getIp());
+		if(user != null) {
+			log.setEppn(user.getEppn());
+			log.setEppnFor(userService.getCurrentUser().getEppn());
+			log.setIp(user.getIp());
+		}
 		log.setInitialStatus(signRequest.getStatus().toString());
 		log.setLogDate(new Date());
 		log.setAction(action);
