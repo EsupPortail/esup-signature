@@ -455,7 +455,7 @@ public class SignRequestController {
             }
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            SignBook signBook = signBookService.createSignBook(multipartFiles[0].getOriginalFilename(), user, false);
+            SignBook signBook = signBookService.createSignBook("Demande simple", multipartFiles[0].getOriginalFilename(), user, false);
             signBook.setCurrentWorkflowStepNumber(1);
             try {
                 signBookRepository.save(signBook);
@@ -467,6 +467,7 @@ public class SignRequestController {
                 return "redirect:/user/signrequests";
             }
             signBookService.addSignRequest(signBook, signRequest);
+            //enable for auto pending
             //signBookService.pendingSignBook(signBook, user);
 //            if(!comment.isEmpty()) {
 //                signRequest.setComment(comment);

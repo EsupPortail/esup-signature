@@ -62,8 +62,8 @@ public class SignBookService {
         return list;
     }
 
-    public SignBook createSignBook(String name, User user, boolean external) throws EsupSignatureException {
-        name = generateName(name, user);
+    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) throws EsupSignatureException {
+        String name = generateName(prefix, suffix, user);
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
@@ -79,13 +79,11 @@ public class SignBookService {
         }
     }
 
-    public SignBook getSignBook(String name, User user) throws EsupSignatureException {
-        if (signBookRepository.countByName(name) == 0) {
-            logger.info("create new signBook : " + name);
-            return createSignBook(name, user, false);
-        } else {
+    public SignBook getSignBook(String name) throws EsupSignatureException {
+        if (signBookRepository.countByName(name) > 0) {
             return signBookRepository.findByName(name).get(0);
         }
+        return null;
     }
 
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {
@@ -125,7 +123,7 @@ public class SignBookService {
     }
 
     public boolean preAuthorizeManage(String name, User user) throws EsupSignatureException {
-        SignBook signBook = getSignBook(name, user);
+        SignBook signBook = getSignBook(name);
         return checkUserManageRights(user, signBook);
     }
 
@@ -323,16 +321,21 @@ public class SignBookService {
         }
     }
 
-    private String generateName(String name, User user) {
+    private String generateName(String prefix, String suffix, User user) {
         String signBookName = "";
+
+        if(!prefix.isEmpty()) {
+            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-");
+            signBookName += "_";
+        }
         signBookName += user.getFirstname().substring(0, 1).toUpperCase();
         signBookName += user.getName().substring(0, 1).toUpperCase();
         signBookName += "_";
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         signBookName += format.format(new Date());
-        if(!name.isEmpty()) {
+        if(!suffix.isEmpty()) {
             signBookName += "_";
-            signBookName += name.replaceAll("[\\\\/:*?\"<>|]", "-");
+            signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
         }
         return signBookName;
     }

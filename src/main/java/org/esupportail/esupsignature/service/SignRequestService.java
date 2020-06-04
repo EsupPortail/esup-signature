@@ -518,7 +518,11 @@ public class SignRequestService {
 		}
 		for(SignRequest signRequest : signRequests) {
 			Document signedFile = getLastSignedDocument(signRequest);
-			String documentUri = documentService.archiveDocument(signedFile);
+			String subPath = "";
+			if(signRequest.getParentSignBook() != null) {
+
+			}
+			String documentUri = documentService.archiveDocument(signedFile, subPath);
 			if(documentUri != null) {
 				signRequest.setExportedDocumentURI(documentUri);
 				clearAllDocuments(signRequest);

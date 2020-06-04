@@ -16,7 +16,7 @@
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.name}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
-                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
                 Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >

@@ -87,7 +87,7 @@ public class WsController {
     public String createSignBook(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook("", name, user, true);
         return signBook.getName();
     }
 
@@ -123,13 +123,15 @@ public class WsController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute User user, @PathVariable("name") String name,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
+    @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentInSignBookGroup(@ModelAttribute User user,
+                                             @PathVariable("name") String name,
+                                             @PathVariable("workflowName") String workflowName,
+                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents in " + name);
         //User user = userService.getCurrentUser();
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         signBookService.addSignRequest(signBook, signRequest);
@@ -139,12 +141,14 @@ public class WsController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute User user, @PathVariable("name") String name,
+    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequest(@ModelAttribute User user,
+                                              @PathVariable("name") String name,
+                                              @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
         logger.info("start add documents in " + name);
         //User user = userService.getCurrentUser();
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);

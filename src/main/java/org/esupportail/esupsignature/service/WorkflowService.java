@@ -152,7 +152,7 @@ public class WorkflowService {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
 
-                        SignBook signBook = signBookService.createSignBook("Import automatique " + signRequestService.generateUniqueId() + "_" + workflow.getName(), user, false);
+                        SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName(), user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
