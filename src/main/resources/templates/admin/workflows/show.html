@@ -64,6 +64,10 @@
                         <dd th:text="${workflow.publicUsage}"></dd>
                     </dl>
                     <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Scanner les metadonnées des PDF</dt>
+                        <dd th:text="${workflow.scanPdfMetadatas}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Circuit de signatures</dt>
                         <dd>
                             <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>

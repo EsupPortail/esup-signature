@@ -161,6 +161,7 @@ public class WorkflowAdminController {
 		workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		workflowToUpdate.setDescription(workflow.getDescription());
 		workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
+		workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
 		workflowToUpdate.setRole(workflow.getRole());
 		workflowToUpdate.setUpdateBy(user.getEppn());
 		workflowToUpdate.setUpdateDate(new Date());
@@ -187,12 +188,7 @@ public class WorkflowAdminController {
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
 						  RedirectAttributes redirectAttrs) throws EsupSignatureUserException {
-		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/";
-		}
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
 		workflow.getWorkflowSteps().add(workflowStep);
@@ -203,7 +199,6 @@ public class WorkflowAdminController {
 	public String removeStepRecipient(@ModelAttribute User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "recipientId") Long recipientId) {
-		//TODO preAuthorize
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(workflow.getCreateBy())) {
@@ -220,7 +215,6 @@ public class WorkflowAdminController {
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
-		//User user = userService.getCurrentUser();
 		user.setIp(httpServletRequest.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
@@ -290,13 +284,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
-		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
-
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/";
-		}
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, user);
 		if(nbImportedFiles == 0) {
 			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");

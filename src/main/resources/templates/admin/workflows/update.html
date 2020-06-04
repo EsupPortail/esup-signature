@@ -41,6 +41,10 @@
                             <input id="role" class="form-control" type="text" th:field="*{role}"/>
                         </div>
                         <div class="form-check">
+                            <input id="scanPdfMetadatas" class="form-check-input" type="checkbox" th:field="*{scanPdfMetadatas}"/>
+                            <label for="scanPdfMetadatas">Scanner les métadonnées des pdf ?</label>
+                        </div>
+                        <div class="form-check">
                             <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
                             <label for="publicUsage">Visibilité publique ?</label>
                         </div>

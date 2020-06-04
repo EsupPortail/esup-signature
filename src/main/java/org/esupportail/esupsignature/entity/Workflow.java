@@ -44,6 +44,8 @@ public class Workflow {
 
     private Boolean publicUsage = false;
 
+    private Boolean scanPdfMetadatas = false;
+
     private Boolean archive = false;
 
     @Enumerated(EnumType.STRING)
@@ -205,5 +207,13 @@ public class Workflow {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Boolean getScanPdfMetadatas() {
+        return scanPdfMetadatas;
+    }
+
+    public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
+        this.scanPdfMetadatas = scanPdfMetadatas;
     }
 }
