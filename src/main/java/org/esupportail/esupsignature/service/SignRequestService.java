@@ -500,7 +500,7 @@ public class SignRequestService {
 	}
 
 	public void sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
-		if(documentIOType != null) {
+		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 			if (documentIOType.equals(DocumentIOType.mail)) {
 				logger.info("send by email to " + targetUrl);
 				try {
@@ -520,7 +520,9 @@ public class SignRequestService {
 			Document signedFile = getLastSignedDocument(signRequest);
 			String subPath = "";
 			if(signRequest.getParentSignBook() != null) {
-
+				subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
+			} else {
+				subPath = "/simple/" + signRequest.getCreateBy().getEppn() + "/";
 			}
 			String documentUri = documentService.archiveDocument(signedFile, subPath);
 			if(documentUri != null) {

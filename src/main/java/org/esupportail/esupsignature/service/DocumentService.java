@@ -90,8 +90,7 @@ public class DocumentService {
 
 	public String archiveDocument(Document signedFile, String subPath) throws EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
-
-			return exportDocument(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()), globalProperties.getArchiveUri(), signedFile);
+			return exportDocument(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()), globalProperties.getArchiveUri() + subPath, signedFile);
 		} else {
 			return null;
 		}
