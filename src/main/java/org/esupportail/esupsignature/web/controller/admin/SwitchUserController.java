@@ -45,7 +45,6 @@ public class SwitchUserController {
 
     @GetMapping("/su")
     public String switchUser(Model model) {
-
         return "admin/su";
     }
 
