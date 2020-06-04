@@ -11,6 +11,7 @@ import java.util.List;
 public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom {
     List<SignBook> findByName(String name);
     List<SignBook> findByCreateBy(User createBy);
+    List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
     Long countByName(String name);
     List<SignBook> findByExternal(Boolean external);

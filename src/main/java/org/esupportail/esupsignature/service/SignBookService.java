@@ -166,17 +166,14 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(SignBook signBook, User user) throws EsupSignatureException {
+    public void completeSignBook(SignBook signBook) {
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "");
-        signRequestService.completeSignRequests(signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri(), user);
+        signRequestService.completeSignRequests(signBook.getSignRequests());
     }
 
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
-        logger.info("export signRequest to : " + signBook.getTargetType() + "://" + signBook.getDocumentsTargetUri());
-        if (signBook.getStatus().equals(SignRequestStatus.completed)) {
-            signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
-            signBook.setStatus(SignRequestStatus.exported);
-        }
+        signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+        signBook.setStatus(SignRequestStatus.exported);
     }
 
     public void removeStep(SignBook signBook, int step) {

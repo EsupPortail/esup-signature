@@ -57,7 +57,7 @@ public class ScheduledTaskService {
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
-		List<SignBook> signBooks = signBookRepository.findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus.completed);
+		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
 				signBookService.exportFilesToTarget(signBook);

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import eu.europa.esig.dss.*;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
@@ -20,13 +20,15 @@ import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.*;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
-import org.esupportail.esupsignature.service.fs.UploadActionType;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
@@ -89,9 +91,6 @@ public class SignRequestService {
 	private BigFileService bigFileService;
 
 	@Resource
-	private FsAccessFactory fsAccessFactory;
-
-	@Resource
 	private SignBookService signBookService;
 
 	@Resource
@@ -115,6 +114,9 @@ public class SignRequestService {
 	@Resource
 	private DataRepository dataRepository;
 
+	@Resource
+	private FsAccessFactory fsAccessFactory;
+
 	private String step = "";
 
 	public List<SignRequest> getToSignRequests(User user) {
@@ -124,30 +126,22 @@ public class SignRequestService {
 	}
 
 	public List<SignRequest> getSignRequestsSignedByUser(User user) {
-		List<SignRequest> signRequests = new ArrayList<>();
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
-		logs:
-		for (Log log : logs) {
-			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
-			try {
-				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
-			} catch (Exception e) {
-				logger.debug(e.getMessage());
-			}
-		}
-		return signRequests;
+		return getSignRequestsFromLogs(logs);
+
 	}
 
 	public List<SignRequest> getSignRequestsRefusedByUser(User user) {
-		List<SignRequest> signRequests = new ArrayList<>();
+
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
-		logs:
+		return getSignRequestsFromLogs(logs);
+	}
+
+	private List<SignRequest> getSignRequestsFromLogs(List<Log> logs) {
+		List<SignRequest> signRequests = new ArrayList<>();
 		for (Log log : logs) {
 			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
 			try {
@@ -163,24 +157,11 @@ public class SignRequestService {
 	}
 
 	public List<SignRequest> getSignRequestsSharedSign(User user) {
-		List<SignRequest> signRequests = new ArrayList<>();
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
 		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
-		logs:
-		for (Log log : logs) {
-			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
-			try {
-				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
-			} catch (Exception e) {
-				logger.debug(e.getMessage());
-			}
-		}
-		return signRequests;
+		return getSignRequestsFromLogs(logs);
 	}
 
 	public List<Document> getToSignDocuments(SignRequest signRequest) {
@@ -481,7 +462,7 @@ public class SignRequestService {
 						if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
 							mailService.sendCompletedMail(signRequest.getParentSignBook());
 						}
-						signBookService.completeSignBook(signRequest.getParentSignBook(), user);
+						signBookService.completeSignBook(signRequest.getParentSignBook());
 					} else {
 						signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 					}
@@ -489,7 +470,7 @@ public class SignRequestService {
 			}
 		} else {
 			if(isSignRequestCompleted(signRequest)) {
-				completeSignRequest(signRequest, user);
+				completeSignRequest(signRequest);
 			}
 		}
 	}
@@ -508,60 +489,47 @@ public class SignRequestService {
 		}
 	}
 
-	public String completeSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
-		return completeSignRequests(Arrays.asList(signRequest), null, null, user);
+	public void completeSignRequest(SignRequest signRequest) {
+		completeSignRequests(Arrays.asList(signRequest));
 	}
 
-	public String completeSignRequests(List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUri, User user) throws EsupSignatureException {
-		String result = "";
-//		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-//			result = sendSignRequestsToTarget("Demande terminée", signRequests, documentIOType, targetUri);
-//		} else {
-			for(SignRequest signRequest : signRequests) {
-				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS");
-			}
-//		}
-		return result;
-	}
-
-	public String sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
-		if (documentIOType.equals(DocumentIOType.mail)) {
-			logger.info("send by email to " + targetUrl);
-			try {
-				mailService.sendFile(title, signRequests, targetUrl);
-				return "mail://" + targetUrl;
-			} catch (MessagingException | IOException e) {
-				throw new EsupSignatureException("unable to send mail", e);
-			}
-		} else {
-			String documentUri = null;
-			for(SignRequest signRequest : signRequests) {
-				Document signedFile = getLastSignedDocument(signRequest);
-//				if(signRequest.getParentSignBook() != null) {
-//					targetUrl += "/" + signRequest.getParentSignBook().getName();
-//				}
-				try {
-					logger.info("send to " + documentIOType.name() + " in " + targetUrl);
-					FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
-					fsAccessService.createURITree(targetUrl);
-					InputStream inputStream = signedFile.getInputStream();
-					if(fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-						documentUri = targetUrl + "/" + signedFile.getFileName();
-						if(fsAccessService.getFileFromURI(documentUri) != null) {
-							signRequest.setExportedDocumentURI(documentUri);
-							clearAllDocuments(signRequest);
-							updateStatus(signRequest, SignRequestStatus.exported, "Exporté", "SUCCESS");
-						}
-					} else {
-						throw new EsupSignatureException("file is not exported");
-					}
-				} catch (EsupSignatureFsException e) {
-					throw new EsupSignatureException("write fsaccess error : ", e);
-				}
-			}
-			return documentUri;
+	public void completeSignRequests(List<SignRequest> signRequests) {
+		for(SignRequest signRequest : signRequests) {
+			updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS");
 		}
 	}
+
+	public void sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
+		if(documentIOType != null) {
+			if (documentIOType.equals(DocumentIOType.mail)) {
+				logger.info("send by email to " + targetUrl);
+				try {
+					mailService.sendFile(title, signRequests, targetUrl);
+				} catch (MessagingException | IOException e) {
+					throw new EsupSignatureException("unable to send mail", e);
+				}
+			} else {
+				for (SignRequest signRequest : signRequests) {
+					Document signedFile = getLastSignedDocument(signRequest);
+					documentService.exportDocument(documentIOType, targetUrl, signedFile);
+					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS");
+				}
+			}
+		}
+		for(SignRequest signRequest : signRequests) {
+			Document signedFile = getLastSignedDocument(signRequest);
+			String documentUri = documentService.archiveDocument(signedFile);
+			if(documentUri != null) {
+				signRequest.setExportedDocumentURI(documentUri);
+				clearAllDocuments(signRequest);
+				updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers l'archivage", "SUCCESS");
+			} else {
+				logger.info("archive document was skipped");
+			}
+		}
+	}
+
+
 
 	public void clearAllDocuments(SignRequest signRequest) {
 		if(signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().isEmpty()) {
@@ -580,10 +548,10 @@ public class SignRequestService {
 		}
 	}
 
-	public FsFile getLastSignedFsFile(SignRequest signRequest) {
+	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getParentSignBook().getTargetType());
+				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
 				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
 		}

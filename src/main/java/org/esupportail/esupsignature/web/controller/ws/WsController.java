@@ -333,7 +333,7 @@ public class WsController {
                 logger.warn("no signRequest " + token);
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (NoResultException | IOException e) {
+        } catch (NoResultException | IOException | EsupSignatureException e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -488,24 +488,20 @@ public class WsController {
     @Transactional
     @ResponseBody
     @PostMapping(value = "/complete-sign-request")
-    public String completeSignRequest(@RequestParam String token,
-                                                    @RequestParam(required = false) String documentIOTypeName,
-                                                    @RequestParam(required = false) String targetUri,
+    public void completeSignRequest(@RequestParam String token,
                                                     HttpServletRequest httpServletRequest) {
-        String result = "";
         try {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             User user = userService.getSystemUser();
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
-                result = signRequestService.completeSignRequests(Arrays.asList(signRequest), DocumentIOType.valueOf(documentIOTypeName), targetUri, user);
+                signRequestService.completeSignRequests(Arrays.asList(signRequest));
             } else {
                 logger.warn("no signed version of signRequest : " + token);
             }
-        } catch (NoResultException | EsupSignatureException e) {
+        } catch (NoResultException e) {
             logger.error(e.getMessage(), e);
         }
-        return result;
     }
 
 //

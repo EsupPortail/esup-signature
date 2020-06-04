@@ -561,7 +561,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
+    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         InputStream inputStream = null;
         String contentType = "";
@@ -603,7 +603,7 @@ public class SignRequestController {
     public String complete(@ModelAttribute User user, User authUser, @PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-            signRequestService.completeSignRequest(signRequest, user);
+            signRequestService.completeSignRequest(signRequest);
         } else {
             logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
         }

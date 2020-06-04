@@ -14,6 +14,7 @@ public class GlobalProperties {
     private String hideWizard;
     private String hideAutoSign;
     private String hideSendSignRequest;
+    private String archiveUri;
 
     public String getRootUrl() {
         return rootUrl;
@@ -69,5 +70,13 @@ public class GlobalProperties {
 
     public void setHideSendSignRequest(String hideSendSignRequest) {
         this.hideSendSignRequest = hideSendSignRequest;
+    }
+
+    public String getArchiveUri() {
+        return archiveUri;
+    }
+
+    public void setArchiveUri(String archiveUri) {
+        this.archiveUri = archiveUri;
     }
 }
