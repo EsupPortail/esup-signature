@@ -15,6 +15,7 @@ public class GlobalProperties {
     private String hideAutoSign;
     private String hideSendSignRequest;
     private String archiveUri;
+    private Integer delayBeforeCleaning = -1;
 
     public String getRootUrl() {
         return rootUrl;
@@ -78,5 +79,13 @@ public class GlobalProperties {
 
     public void setArchiveUri(String archiveUri) {
         this.archiveUri = archiveUri;
+    }
+
+    public Integer getDelayBeforeCleaning() {
+        return delayBeforeCleaning;
+    }
+
+    public void setDelayBeforeCleaning(Integer delayBeforeCleaning) {
+        this.delayBeforeCleaning = delayBeforeCleaning;
     }
 }

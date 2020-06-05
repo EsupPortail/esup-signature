@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
+<script th:inline="javascript" type="module" th:with="workflowName = ${workflow != null ? workflow.name : name}">
     import {FilesInput} from "/js/modules/filesInput.js";
-    new FilesInput($("#multipartFiles"), [[${workflow.name}]], [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+    new FilesInput($("#multipartFiles"), [[${workflowName}]], [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
 </script>
 <body>
 <div id="stepper1" class="bs-stepper linear">

@@ -169,9 +169,25 @@ public class SignBookService {
         signRequestService.completeSignRequests(signBook.getSignRequests());
     }
 
+    public void archivesFiles(SignBook signBook) throws EsupSignatureException {
+        signRequestService.archiveSignRequests(signBook.getSignRequests());
+        signBook.setStatus(SignRequestStatus.exported);
+    }
+
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
         signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
-        signBook.setStatus(SignRequestStatus.exported);
+    }
+
+    public void cleanFiles(SignBook signBook) {
+        int nbDocOnDataBase = 0;
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            signRequestService.cleanDocuments(signRequest);
+            nbDocOnDataBase += signRequest.getSignedDocuments().size();
+        }
+        if(nbDocOnDataBase == 0) {
+            signBook.setStatus(SignRequestStatus.cleaned);
+
+        }
     }
 
     public void removeStep(SignBook signBook, int step) {

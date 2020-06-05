@@ -82,7 +82,7 @@ public class MailService {
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
-            logger.info("send email completes for " + user.getName());
+            logger.info("send email completes for " + user.getEppn());
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to send email", e);

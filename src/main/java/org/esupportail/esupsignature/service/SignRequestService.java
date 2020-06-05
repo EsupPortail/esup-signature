@@ -12,6 +12,7 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import org.apache.commons.codec.binary.Base64;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
@@ -59,6 +60,9 @@ import java.util.stream.Collectors;
 public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
@@ -512,10 +516,13 @@ public class SignRequestService {
 				for (SignRequest signRequest : signRequests) {
 					Document signedFile = getLastSignedDocument(signRequest);
 					documentService.exportDocument(documentIOType, targetUrl, signedFile);
-					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS");
+					updateStatus(signRequest, SignRequestStatus.completed, "Exporté vers " + targetUrl, "SUCCESS");
 				}
 			}
 		}
+	}
+
+	public void archiveSignRequests(List<SignRequest> signRequests) throws EsupSignatureException {
 		for(SignRequest signRequest : signRequests) {
 			Document signedFile = getLastSignedDocument(signRequest);
 			String subPath = "";
@@ -524,22 +531,38 @@ public class SignRequestService {
 			} else {
 				subPath = "/simple/" + signRequest.getCreateBy().getEppn() + "/";
 			}
-			String documentUri = documentService.archiveDocument(signedFile, subPath);
-			if(documentUri != null) {
-				signRequest.setExportedDocumentURI(documentUri);
-				clearAllDocuments(signRequest);
-				updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers l'archivage", "SUCCESS");
+			if(globalProperties.getArchiveUri() != null) {
+				if(signRequest.getExportedDocumentURI() == null) {
+					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
+					signRequest.setExportedDocumentURI(documentUri);
+					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers l'archivage", "SUCCESS");
+
+				}
 			} else {
 				logger.info("archive document was skipped");
 			}
 		}
 	}
 
+	public void cleanDocuments(SignRequest signRequest) {
+		Date cleanDate = getEndDate(signRequest);
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(cleanDate);
+		cal.add(Calendar.DATE, globalProperties.getDelayBeforeCleaning());
+		cleanDate = cal.getTime();
+		if (signRequest.getExportedDocumentURI() != null
+				&& new Date().after(cleanDate) && signRequest.getSignedDocuments().size() > 0) {
+			clearAllDocuments(signRequest);
+			updateStatus(signRequest, SignRequestStatus.exported, "Fichiers nettoyés", "SUCCESS");
+		} else {
+			logger.debug("cleanning documents was skipped because date");
+		}
+	}
 
 
 	public void clearAllDocuments(SignRequest signRequest) {
 		if(signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().isEmpty()) {
-			logger.info("clear all documents from " + signRequest.getToken());
+			logger.info("clear all documents from signRequest : " + signRequest.getId());
 			List<Document> documents = new ArrayList<>();
 			documents.addAll(signRequest.getOriginalDocuments());
 			documents.addAll(signRequest.getSignedDocuments());
@@ -739,14 +762,6 @@ public class SignRequestService {
 		}
 	}
 
-//	public SignRequestParams getCurrentSignRequestParams(SignRequest signRequest) {
-//		if(signRequest.getSignRequestParams().size() > signRequest.getSignedDocuments().size()) {
-//			return signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size());
-//		} else {
-//			return getEmptySignRequestParams();
-//		}
-//	}
-
 	public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
 		List<SignRequest> signRequestsGrouped = new ArrayList<>();
 		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
@@ -768,13 +783,18 @@ public class SignRequestService {
 			Collections.sort(signRequestsGrouped, new PropertyComparator(sortDefinition));
 		}
 		for(SignRequest signRequest : signRequestsGrouped) {
-			List<Log> endLog = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.completed.name());
-			endLog.addAll(logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
-			if(endLog .size() > 0) {
-				signRequest.setEndDate(endLog.get(0).getLogDate());
-			}
+			signRequest.setEndDate(getEndDate(signRequest));
 		}
 		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
+	}
+
+	private Date getEndDate(SignRequest signRequest) {
+		List<Log> endLog = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.completed.name());
+		endLog.addAll(logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name()));
+		if(endLog .size() > 0) {
+			return endLog.get(0).getLogDate();
+		}
+		return null;
 	}
 
 	public SignType getSignTypeByLevel(int level) {

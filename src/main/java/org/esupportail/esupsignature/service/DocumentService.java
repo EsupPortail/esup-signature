@@ -33,9 +33,6 @@ public class DocumentService {
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
 	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
 	private DocumentRepository documentRepository;
 
 	@Resource
@@ -88,13 +85,8 @@ public class DocumentService {
 		return name;
 	}
 
-	public String archiveDocument(Document signedFile, String subPath) throws EsupSignatureException {
-		if(globalProperties.getArchiveUri() != null) {
-			return exportDocument(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()), globalProperties.getArchiveUri() + subPath, signedFile);
-		} else {
-			return null;
-		}
-
+	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureException {
+		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
 	}
 
 	public String exportDocument(String targetUrl, Document signedFile) throws EsupSignatureException {

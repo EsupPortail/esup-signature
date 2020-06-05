@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.scheduler;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
@@ -30,6 +31,9 @@ public class ScheduledTaskService {
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
 
 	@Resource
+	private GlobalProperties globalProperties;
+
+	@Resource
 	private SignBookRepository signBookRepository;
 
 	@Resource
@@ -53,7 +57,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 30000)
+	@Scheduled(initialDelay = 30000, fixedRate = 30000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -61,13 +65,30 @@ public class ScheduledTaskService {
 		for(SignBook signBook : signBooks) {
 			try {
 				signBookService.exportFilesToTarget(signBook);
+				signBookService.archivesFiles(signBook);
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}
 		}
 	}
-	
-//	@Scheduled(fixedRate = 300000)
+
+	@Scheduled(initialDelay = 30000, fixedRate = 30000)
+	@Transactional
+	public void scanAllSignbooksToClean() {
+		logger.trace("scan all signRequest to export");
+		if(globalProperties.getDelayBeforeCleaning() > -1) {
+			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.exported);
+			for (SignBook signBook : signBooks) {
+				signBookService.cleanFiles(signBook);
+			}
+		} else {
+			logger.debug("cleanning documents was skipped because neg valu");
+		}
+	}
+
+
+
+	//	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();

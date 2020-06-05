@@ -6,7 +6,8 @@ global:
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
-    archive-uri : smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat/Archive
+    archive-uri : smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat/Archive/dev
+#    delay-before-cleaning : 0
 
 tomcat:
     ajp:

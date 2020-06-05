@@ -18,6 +18,12 @@ body {
 
 }
 
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .disable-body-scrollbar {
     position: fixed;
 }
@@ -307,7 +313,7 @@ input:checked + .slider:before {
 }
 
 .workspace-sign {
-    margin-top: 93px;
+    margin-top: 170px;
     display: flex;
 }
 
