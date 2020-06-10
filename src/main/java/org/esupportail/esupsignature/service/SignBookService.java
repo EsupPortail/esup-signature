@@ -170,12 +170,17 @@ public class SignBookService {
     }
 
     public void archivesFiles(SignBook signBook) throws EsupSignatureException {
-        signRequestService.archiveSignRequests(signBook.getSignRequests());
-        signBook.setStatus(SignRequestStatus.exported);
+        if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
+            signRequestService.archiveSignRequests(signBook.getSignRequests());
+            signBook.setStatus(SignRequestStatus.archived);
+        }
     }
 
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
-        signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+        if(!signBook.getStatus().equals(SignRequestStatus.exported)) {
+            signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
+            signBook.setStatus(SignRequestStatus.exported);
+        }
     }
 
     public void cleanFiles(SignBook signBook) {

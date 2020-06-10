@@ -109,10 +109,11 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute User authUser, @PathVariable("id") Long id) {
+    public String delete(@ModelAttribute User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
-        return "redirect:/user/signrequests/";
+        redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
+        return "redirect:" + request.getHeader("referer");
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")

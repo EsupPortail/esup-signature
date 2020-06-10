@@ -74,10 +74,10 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 30000, fixedRate = 30000)
 	@Transactional
-	public void scanAllSignbooksToClean() {
+	public void scanAllSignbooksToClean() throws EsupSignatureException {
 		logger.trace("scan all signRequest to export");
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
-			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.exported);
+			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
 				signBookService.cleanFiles(signBook);
 			}

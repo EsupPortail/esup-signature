@@ -176,9 +176,16 @@ public class WorkflowService {
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                     String[] stepSplit = keySplit[1].split("#");
                                     ObjectMapper mapper = new ObjectMapper();
-                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
+//                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
+                                    List<String> recipientList = new ArrayList<>();
+                                    recipientList.add("david.lemaignent@univ-rouen.fr");
                                     WorkflowStep workflowStep = createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                     signBook.getWorkflowSteps().add(workflowStep);
+                                }
+                                if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
+                                    ObjectMapper mapper = new ObjectMapper();
+                                    String target = metadatas.get(metadataKey);
+                                    signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
                                 }
                             }
                         } else {

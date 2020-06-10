@@ -516,7 +516,7 @@ public class SignRequestService {
 				for (SignRequest signRequest : signRequests) {
 					Document signedFile = getLastSignedDocument(signRequest);
 					documentService.exportDocument(documentIOType, targetUrl, signedFile);
-					updateStatus(signRequest, SignRequestStatus.completed, "Exporté vers " + targetUrl, "SUCCESS");
+					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS");
 				}
 			}
 		}
@@ -535,7 +535,7 @@ public class SignRequestService {
 				if(signRequest.getExportedDocumentURI() == null) {
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
 					signRequest.setExportedDocumentURI(documentUri);
-					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers l'archivage", "SUCCESS");
+					updateStatus(signRequest, SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS");
 
 				}
 			} else {
