@@ -179,6 +179,8 @@ public class WorkflowService {
 //                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
                                     List<String> recipientList = new ArrayList<>();
                                     recipientList.add("david.lemaignent@univ-rouen.fr");
+//                                    recipientList.add("paul.tavernier@univ-rouen.fr");
+//                                    recipientList.add("bruno.quet@univ-rouen.fr");
                                     WorkflowStep workflowStep = createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                     signBook.getWorkflowSteps().add(workflowStep);
                                 }
@@ -194,7 +196,7 @@ public class WorkflowService {
 
                         signBookService.nextWorkFlowStep(signBook);
                         signBookService.pendingSignBook(signBook, user);
-                        //fsAccessService.remove(fsFile);
+                        fsAccessService.remove(fsFile);
                         nbImportedFiles++;
 
                         break; //a virer

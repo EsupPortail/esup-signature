@@ -40,10 +40,7 @@ import org.springframework.util.FileCopyUtils;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -145,7 +142,11 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	@NotNull
 	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException {
 		SmbFile smbFile;
-		URI uri = new URI(path);
+		int pos = path.lastIndexOf('/') + 1;
+		String path2 = path.substring(0, pos) + URLEncoder.encode(path.substring(pos));
+		URI uri = new URI(path2);
+
+//		URI uri = new URI(path.replace(" ", "%20"));
 		if(uri.getScheme() != null && uri.getScheme().equals("smb")) {
 			smbFile = new SmbFile(path, cifsContext);
 		} else {
@@ -159,7 +160,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		logger.info("removing file " + fsFile.getPath() + "/" + fsFile.getName());
 		SmbFile file;
 		try {
-			file = cd("/" + fsFile.getPath() + "/" + fsFile.getName());
+			file = cd(fsFile.getPath() + "/" + fsFile.getName());
 			file.delete();
 		} catch (SmbException e) {
 			logger.info("can't delete file because of SmbException : " + e.getMessage());
