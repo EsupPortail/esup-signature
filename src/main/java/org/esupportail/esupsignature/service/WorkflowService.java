@@ -151,8 +151,7 @@ public class WorkflowService {
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
-
-                        SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName(), user, false);
+                        SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName() + "_" + nbImportedFiles, user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
