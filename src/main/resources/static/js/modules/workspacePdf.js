@@ -22,7 +22,7 @@ export class WorkspacePdf {
     initListeners() {
         this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
         this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
-        this.pdfViewer.addEventListener('pageChange', e => this.refreshComments());
+        this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
         this.pdfViewer.addEventListener('render', e => this.initForm());
         document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
         document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
@@ -99,7 +99,7 @@ export class WorkspacePdf {
             }
         }
 
-        // this.refreshComments();
+        // this.refreshAfterPageChange();
         // if(this.signable) {
         //     this.signPosition.resetSign();
         // }
@@ -133,7 +133,7 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.signPosition.updateScale(this.pdfViewer.scale);
-        this.refreshComments();
+        this.refreshAfterPageChange();
     }
 
     clickAction() {
@@ -171,12 +171,12 @@ export class WorkspacePdf {
 
     focusComment(postit) {
         this.pdfViewer.renderPage(postit.pageNumber)
-        this.refreshComments();
+        this.refreshAfterPageChange();
     }
 
-    refreshComments() {
-        console.debug("refresh comments " + this.pdfViewer.pageNum);
-        this.signPosition.signPageNumber = this.pdfViewer.pageNum;
+    refreshAfterPageChange() {
+        console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
+        this.signPosition.getCurrentSign().signPageNumber = this.pdfViewer.pageNum;
         this.postits.forEach((postit, index) => {
             let postitDiv = $('#' + postit.id);
             let postitButton = $('#postit' + postit.id);
@@ -263,7 +263,7 @@ export class WorkspacePdf {
         $('#infos').show();
         this.pdfViewer.renderPage(1);
         this.pdfViewer.promizeToggleFields(false);
-        this.refreshComments();
+        this.refreshAfterPageChange();
     }
 
     toggleSignMode() {
