@@ -1,4 +1,5 @@
 import {WorkspacePdf} from "./workspacePdf.js";
+import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class SignUi {
 
@@ -75,16 +76,20 @@ export class SignUi {
         let csrf = document.getElementsByName("_csrf")[0];
         let signRequestUrlParams;
         if(this.workspace != null) {
+            let signRequestParams = this.workspace.signPosition.signRequestParamses[0];
+            // let signRequestParams = new SignRequestParams();
+            // signRequestParams.signImageNumber = this.workspace.signPosition.signImageNumber;
+            // signRequestParams.xPos = Math.round(this.workspace.signPosition.getPdfXpos());
+            // signRequestParams.yPos = Math.round(this.workspace.signPosition.getPdfYpos());
+            // signRequestParams.signWidth = Math.round(this.workspace.signPosition.signWidth * 0.75 / (this.workspace.signPosition.currentScale));
+            // signRequestParams.signHeight = Math.round(this.workspace.signPosition.signHeight * 0.75 / (this.workspace.signPosition.currentScale));
+            // signRequestParams.signPageNumber = this.workspace.pdfViewer.pageNum;
+
             signRequestUrlParams = "password=" + document.getElementById("password").value +
-                "&signImageNumber=" + this.workspace.signPosition.signImageNumber +
+                "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&addDate=" + this.workspace.signPosition.dateActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
-                "&xPos=" + Math.round(this.workspace.signPosition.getPdfXpos()) +
-                "&yPos=" + Math.round(this.workspace.signPosition.getPdfYpos()) +
-                "&signWidth=" + Math.round(this.workspace.signPosition.signWidth * 0.75 / (this.workspace.signPosition.currentScale)) +
-                "&signHeight=" + Math.round(this.workspace.signPosition.signHeight * 0.75 / (this.workspace.signPosition.currentScale)) +
-                "&signPageNumber=" + this.workspace.pdfViewer.pageNum +
                 "&formData=" + JSON.stringify(formData) +
                 "&" + csrf.name + "=" + csrf.value
             ;

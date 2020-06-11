@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -307,17 +308,12 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@ModelAttribute User user, @PathVariable("id") Long id,
-                               @RequestParam(value = "signImageNumber") Integer signImageNumber,
-                               @RequestParam(value = "signWidth", required = false) Integer signWidth,
-                               @RequestParam(value = "signHeight", required = false) Integer signHeight,
-                               @RequestParam(value = "xPos", required = false) Integer xPos,
-                               @RequestParam(value = "yPos", required = false) Integer yPos,
+                               @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "addDate", required = false) Boolean addDate,
                                @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-                               @RequestParam(value = "password", required = false) String password, HttpServletRequest httpServletRequest) {
+                               @RequestParam(value = "password", required = false) String password, HttpServletRequest httpServletRequest) throws JsonProcessingException {
 
         if (addDate == null) {
             addDate = false;
@@ -325,11 +321,11 @@ public class SignRequestController {
         if (visual == null) {
             visual = true;
         }
+        ObjectMapper objectMapper = new ObjectMapper();
         SignRequest signRequest = signRequestRepository.findById(id).get();
 
         Map<String, String> formDataMap = null;
         if(formData != null) {
-            ObjectMapper objectMapper = new ObjectMapper();
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
                 formDataMap.remove("_csrf");
@@ -350,20 +346,13 @@ public class SignRequestController {
                 e.printStackTrace();
             }
         }
-
-        if (signPageNumber != null && xPos != null && yPos != null && visual) {
-            SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
-            signRequestParams.setSignImageNumber(signImageNumber);
-            signRequestParams.setSignPageNumber(signPageNumber);
-            signRequestParams.setSignWidth(signWidth);
-            signRequestParams.setSignHeight(signHeight);
-            signRequestParams.setxPos(xPos);
-            signRequestParams.setyPos(yPos);
+        List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+        signRequest.getSignRequestParams().clear();
+        for(SignRequestParams signRequestParams : signRequestParamses) {
             signRequestParamsRepository.save(signRequestParams);
-            if(!signRequest.getSignRequestParams().contains(signRequestParams)) {
-                signRequest.getSignRequestParams().add(signRequestParams);
-            }
+            signRequest.getSignRequestParams().add(signRequestParams);
         }
+
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             signRequestService.setStep("Démarrage de l'application NexU");
             signRequestService.setStep("initNexu");

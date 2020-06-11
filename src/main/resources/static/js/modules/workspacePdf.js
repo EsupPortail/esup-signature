@@ -6,12 +6,12 @@ export class WorkspacePdf {
 
     constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages) {
         console.info("Starting workspace UI");
-        this.currentSignRequestParams =  new SignRequestParams(currentSignRequestParams);
+        this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
         this.signRequestId = id;
-        this.signPosition = new SignPosition(this.currentSignRequestParams.xPos, this.currentSignRequestParams.yPos, signWidth, signHeight, this.currentSignRequestParams.signPageNumber, signImages);
+        this.signPosition = new SignPosition(this.currentSignRequestParams[0].xPos, this.currentSignRequestParams[0].yPos, signWidth, signHeight, this.currentSignRequestParams[0].signPageNumber, signImages);
         this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'sign';
@@ -302,7 +302,7 @@ export class WorkspacePdf {
             this.signPosition.cross.show();
         }
         this.pdfViewer.rotation = 0;
-        this.pdfViewer.renderPage(this.currentSignRequestParams.signPageNumber);
+        this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
     }
