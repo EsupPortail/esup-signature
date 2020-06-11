@@ -177,6 +177,7 @@ export class WorkspacePdf {
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
         this.signPosition.getCurrentSign().signPageNumber = this.pdfViewer.pageNum;
+        $("div[id^='sign_']").each((index, e) => this.toggleSign(e));
         this.postits.forEach((postit, index) => {
             let postitDiv = $('#' + postit.id);
             let postitButton = $('#postit' + postit.id);
@@ -191,6 +192,19 @@ export class WorkspacePdf {
                 postitButton.css("background-color", "#EEE");
             }
         });
+    }
+
+    toggleSign(e) {
+        console.log($(e));
+        let signId = $(e).attr("id").split("_")[1];
+        let signRequestParams = this.signPosition.signRequestParamses[signId];
+        console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSign().signPageNumber);
+        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSign().signPageNumber) {
+            $(e).show();
+        } else {
+            $(e).hide();
+        }
+
     }
 
     getCommentPointer() {
