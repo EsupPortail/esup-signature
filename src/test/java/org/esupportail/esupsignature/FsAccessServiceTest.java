@@ -35,7 +35,7 @@ public class FsAccessServiceTest {
     @Resource
     private GlobalProperties globalProperties;
 
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     @Order(1)
     public void testSmbAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
@@ -54,7 +54,7 @@ public class FsAccessServiceTest {
 
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     @Order(2)
     public void testCmisAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.cmis);
@@ -72,7 +72,7 @@ public class FsAccessServiceTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     @Order(3)
     public void testVfsAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.vfs);
@@ -90,7 +90,7 @@ public class FsAccessServiceTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     @Order(4)
     public void testArchiveUri() throws EsupSignatureException {
         assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
