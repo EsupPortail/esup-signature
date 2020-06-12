@@ -57,7 +57,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 36000000)
+	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -72,7 +72,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 36000000)
+	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
 	@Transactional
 	public void scanAllSignbooksToClean() throws EsupSignatureException {
 		logger.trace("scan all signRequest to export");
