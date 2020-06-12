@@ -86,8 +86,8 @@ export class SignPosition {
         okSign.children().removeClass("anim-border");
         okSign.appendTo(this.pdf);
         this.currentSign++;
-        this.changeSignImage(this.getCurrentSign().signImageNumber);
         this.updateCrossPosition();
+        this.updateSignSize();
     }
 
     changeSignImage(imageNum) {
@@ -105,6 +105,7 @@ export class SignPosition {
         this.getCurrentSign().signWidth = Math.round((result.w / 3) * this.signScale * this.currentScale * this.fixRatio);
         this.getCurrentSign().signHeight = Math.round((result.h / 3) * this.signScale * this.currentScale * this.fixRatio);
         this.cross.css('background-size', this.getCurrentSign().signWidth + 'px');
+        this.updateSignSize();
     }
 
     getImageDimensions(file) {
