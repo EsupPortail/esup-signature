@@ -299,10 +299,10 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
-        $('#signZoomIn').removeClass('d-none');
-        $('#signZoomOut').removeClass('d-none');
-        $('#signNextImage').removeClass('d-none');
-        $('#signPrevImage').removeClass('d-none');
+        // $('#signZoomIn').removeClass('d-none');
+        // $('#signZoomOut').removeClass('d-none');
+        // $('#signNextImage').removeClass('d-none');
+        // $('#signPrevImage').removeClass('d-none');
         // $('#signZoomIn').prop('disabled', false);
         // $('#signZoomOut').prop('disabled', false);
         // $('#signNextImage').prop('disabled', false);

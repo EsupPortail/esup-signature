@@ -253,6 +253,13 @@ export class SignPosition {
     dragSignature() {
         console.info("start drag");
         this.cross.css('pointerEvents', "none");
+        this.cross.css('position', "absolute");
+        this.cross.css('margin-left', 0);
+        this.cross.css('margin-top', 0);
+        $('#signZoomIn').removeClass('d-none');
+        $('#signZoomOut').removeClass('d-none');
+        $('#signNextImage').removeClass('d-none');
+        $('#signPrevImage').removeClass('d-none');
         this.pdf.css('pointerEvents', "auto");
         document.body.style.cursor = "move";
         this.pointItEnable = true;

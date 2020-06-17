@@ -203,26 +203,29 @@ public class UserService {
 		}
 	}
 	
-	public void createUser(Authentication authentication) {
+	public User createUser(Authentication authentication) {
 		String uid;
 		if(authentication.getName().contains("@")) {
 			uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
 		} else {
 			uid = authentication.getName();
 		}
+		logger.info("controle de l'utilisateur " + uid);
 		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
 		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail);
+        return createUser(eppn, name, firstName, mail);
 	}
 	
 	public User createUser(String eppn, String name, String firstName, String email) {
 		User user;
 		if(userRepository.countByEppn(eppn) > 0) {
+			logger.info("mise à jour de l'utilisateur " + eppn);
     		user = userRepository.findByEppn(eppn).get(0);
     	} else {
+			logger.info("creation de l'utilisateur " + eppn);
 	    	user = new User();
 			user.setKeystore(null);
 			//user.setEmailAlertFrequency(EmailAlertFrequency.never);

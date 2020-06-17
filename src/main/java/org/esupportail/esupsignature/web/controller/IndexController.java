@@ -23,6 +23,8 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -40,6 +42,9 @@ import java.util.List;
 @RequestMapping("/")
 @Controller
 public class IndexController {
+
+	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
+
 
 	@ModelAttribute("userMenu")
 	public String getActiveRole() {
@@ -72,15 +77,17 @@ public class IndexController {
 	public String index(@ModelAttribute User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("system")) {
+			logger.info("utilisateur " + user.getEppn() + " connecté");
 			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			logger.info("auth user : " + auth.getName());
 			if("anonymousUser".equals(auth.getName())) {
 				model.addAttribute("securityServices", securityServices);
 				return "signin";
 			} else {
 				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
-				return "signin";
+				return "redirect:/user/";
 			}
 		}
 
