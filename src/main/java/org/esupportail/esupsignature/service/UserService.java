@@ -172,13 +172,29 @@ public class UserService {
 		return getSystemUser();
 	}
 
+	private String buildEppn(PersonLdap personLdap) {
+		if (personLdap == null) {
+			return null;
+		}
+		String eppn = null;
+		for (SecurityService securityService : securityServices) {
+			if (securityService instanceof CasSecurityServiceImpl) {
+				eppn = personLdap.getUid() + "@" + securityService.getDomain();
+			}
+		}
+		return eppn;
+	}
+
 	public User createUser(String mail) throws EsupSignatureUserException {
 		if(ldapPersonService != null) {
-			List<PersonLdap> personLdap = personLdapRepository.findByMail(mail);
-			if (personLdap.size() > 0) {
-				String eppn = personLdap.get(0).getEduPersonPrincipalName();
-				String name = personLdap.get(0).getSn();
-				String firstName = personLdap.get(0).getGivenName();
+			List<PersonLdap> personLdaps = personLdapRepository.findByMail(mail);
+			if (personLdaps.size() > 0) {
+				String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+				if (eppn == null) {
+					eppn = buildEppn(personLdaps.get(0));
+				}
+				String name = personLdaps.get(0).getSn();
+				String firstName = personLdaps.get(0).getGivenName();
 				return createUser(eppn, name, firstName, mail);
 			} else {
 				throw new EsupSignatureUserException("ldap user not found : " + mail);
@@ -188,19 +204,23 @@ public class UserService {
 		}
 	}
 	
-	public void createUser(Authentication authentication) {
+	public User createUser(Authentication authentication) {
 		String uid;
 		if(authentication.getName().contains("@")) {
 			uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
 		} else {
 			uid = authentication.getName();
 		}
+		logger.info("controle de l'utilisateur " + uid);
 		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
 		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+		if (eppn == null) {
+			eppn = buildEppn(personLdaps.get(0));
+		}
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail);
+        return createUser(eppn, name, firstName, mail);
 	}
 	
 	public User createUser(String eppn, String name, String firstName, String email) {
