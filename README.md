@@ -1,5 +1,7 @@
 ![ESUP-SIGNATURE](https://www.esup-portail.org/wiki/download/thumbnails/681148422/logo.png?version=1&modificationDate=1590494242000&api=v2)
 
+https://www.esup-portail.org/wiki/display/SIGN/
+
 Esup-signature permet gérer les circuits de visa et de signer des documents aux formats CAdES, XAdES, PAdES ou par simple apposition d'une image dans un PDF.
 
 Son objectif est de proposer un module de signature type micro-service permettant à un établissement d'intégrer la signature numérique dans ses services institutionnels.
@@ -19,9 +21,9 @@ La signature à l'aide d'une clé matérielle est possible à l'aide de l'applic
  * GhostScript
  * PostgreSQL
  
-# Documentation
+# Installation
 
-https://www.esup-portail.org/wiki/display/SIGN/
+https://www.esup-portail.org/wiki/display/SIGN/Installation
 
 # Configuration
 
