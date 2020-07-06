@@ -1,11 +1,11 @@
-package org.esupportail.esupsignature.ldap;
+package org.esupportail.esupsignature.service.ldap;
 
 import org.springframework.ldap.odm.annotations.Entry;
 import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(base = "ou=structures", objectClasses = {"organizationalUnit"})
+@Entry(objectClasses = {"organizationalUnit"})
 public final class OrganizationalUnitLdap {
 
     @Id

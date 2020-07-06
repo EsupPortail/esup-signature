@@ -1,28 +1,30 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
-import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
+import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 @ConditionalOnProperty(prefix = "spring.ldap", name = "base")
+@EnableConfigurationProperties(LdapProperties.class)
 public class LdapPersonService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Resource
+    private LdapProperties ldapProperties;
 
     @Resource
     private LdapTemplate ldapTemplate;
@@ -46,11 +48,13 @@ public class LdapPersonService {
             ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
         }
         if (ldapTemplateSelected != null) {
-            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
+            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidOrMailStartingWith(searchString, searchString, searchString, searchString);
             List<PersonLdap> filteredPersons = new ArrayList<>();
             for(PersonLdap personLdap : results) {
-                if(personLdap.getEduPersonAffiliation().contains("member") || personLdap.getEduPersonAffiliation().contains("staff")) {
-                    filteredPersons.add(personLdap);
+                for(String affiationName : ldapProperties.getAffiliationFilter().split(",")) {
+                    if (personLdap.getEduPersonAffiliation().contains(affiationName.trim()) || personLdap.getEduPersonPrimaryAffiliation().equals(affiationName.trim())) {
+                        filteredPersons.add(personLdap);
+                    }
                 }
             }
             return filteredPersons;

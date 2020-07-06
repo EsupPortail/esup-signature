@@ -88,6 +88,9 @@ export class SignPosition {
         this.currentSign++;
         this.updateCrossPosition();
         this.updateSignSize();
+        this.cross.css("position", "fixed");
+        this.cross.css("margin-left", "270px");
+        this.cross.css("margin-top", "135px");
     }
 
     changeSignImage(imageNum) {

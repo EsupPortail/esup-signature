@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.jasig.cas.client.session.SingleSignOutFilter;
@@ -33,6 +35,9 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private CasProperties casProperties;
+
+	@Resource
+	private LdapProperties ldapProperties;
 
 	@Resource
 	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
@@ -105,7 +110,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		authenticationProvider.setAuthenticationUserDetailsService(casAuthUserDetailsService());
 		authenticationProvider.setServiceProperties(serviceProperties());
 		authenticationProvider.setTicketValidator(cas20ServiceTicketValidator());
-		authenticationProvider.setKey(casProperties.getKey());
+		authenticationProvider.setKey("EsupSignatureCAS");
 		return authenticationProvider;
 	}
 	
@@ -124,7 +129,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	public LdapUserDetailsService ldapUserDetailsService() {
 
-		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch("ou=people", "(uid={0})", ldapContextSource);
+		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource,"ou=groups");
 
 		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();

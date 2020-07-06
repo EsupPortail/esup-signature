@@ -86,8 +86,17 @@ public class WorkflowAdminController {
 	private SignRequestRepository signRequestRepository;
 
 	@GetMapping(produces = "text/html")
-	public String list(Model model) {
-		model.addAttribute("workflows", workflowService.getAllWorkflows());
+	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
+		List<Workflow> workflows = new ArrayList<>();
+		if("system".equals(displayWorkflowType)) {
+			workflows.addAll(workflowService.getWorkflowsForUser(userService.getSystemUser()));
+		} else if("classes".equals(displayWorkflowType)) {
+			workflows.addAll(workflowService.getClassesWorkflows());
+		} else {
+			workflows.addAll(workflowService.getAllWorkflows());
+		}
+		model.addAttribute("displayWorkflowType", displayWorkflowType);
+		model.addAttribute("workflows", workflows);
 		return "admin/workflows/list";
 	}
 

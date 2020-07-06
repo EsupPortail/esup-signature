@@ -411,12 +411,17 @@ public class SignRequestController {
 
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             if(signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
                 SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
-                signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+                try {
+                    signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+                } catch (EsupSignatureIOException e) {
+                    redirectAttributes.addFlashAttribute("messageError", "Impossible de charger le document : documentsr     corrompu");
+                    return "redirect:" + request.getHeader("Referer");
+                }
                 signRequestService.addRecipients(signRequest, user);
 
                 signRequestService.pendingSignRequest(signRequest, signType, false, user);

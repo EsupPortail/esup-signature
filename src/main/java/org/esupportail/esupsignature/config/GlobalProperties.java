@@ -88,4 +88,5 @@ public class GlobalProperties {
     public void setDelayBeforeCleaning(Integer delayBeforeCleaning) {
         this.delayBeforeCleaning = delayBeforeCleaning;
     }
+
 }

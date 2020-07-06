@@ -3,14 +3,13 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
-import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
-import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -187,13 +185,29 @@ public class UserService {
 		return getSystemUser();
 	}
 
+	private String buildEppn(PersonLdap personLdap) {
+		if (personLdap == null) {
+			return null;
+		}
+		String eppn = null;
+		for (SecurityService securityService : securityServices) {
+			if (securityService instanceof CasSecurityServiceImpl) {
+				eppn = personLdap.getUid() + "@" + securityService.getDomain();
+			}
+		}
+		return eppn;
+	}
+
 	public User createUser(String mail) throws EsupSignatureUserException {
 		if(ldapPersonService != null) {
-			List<PersonLdap> personLdap = personLdapRepository.findByMail(mail);
-			if (personLdap.size() > 0) {
-				String eppn = personLdap.get(0).getEduPersonPrincipalName();
-				String name = personLdap.get(0).getSn();
-				String firstName = personLdap.get(0).getGivenName();
+			List<PersonLdap> personLdaps = personLdapRepository.findByMail(mail);
+			if (personLdaps.size() > 0) {
+				String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+				if (eppn == null) {
+					eppn = buildEppn(personLdaps.get(0));
+				}
+				String name = personLdaps.get(0).getSn();
+				String firstName = personLdaps.get(0).getGivenName();
 				return createUser(eppn, name, firstName, mail);
 			} else {
 				throw new EsupSignatureUserException("ldap user not found : " + mail);
@@ -213,6 +227,9 @@ public class UserService {
 		logger.info("controle de l'utilisateur " + uid);
 		List<PersonLdap> personLdaps =  personLdapRepository.findByUid(uid);
 		String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+		if (eppn == null) {
+			eppn = buildEppn(personLdaps.get(0));
+		}
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();

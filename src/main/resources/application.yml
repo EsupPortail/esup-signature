@@ -67,6 +67,11 @@ spring:
         encoding: UTF-8
         mode: HTML
 
+ldap:
+    search-base: ou=people
+    search-filter: (uid={0})
+    affiliation-filter: staff, member, affiliate
+
 mail:
     from: no-reply.esup-signature@univ-rouen.fr
 
@@ -93,11 +98,11 @@ fs:
     smb-password: BT28ap3R!
     smb-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat
     vfs-uri: /tmp
-    cmis-uri: https://esup-signature.univ-rouen.fr:8083/nuxeo
-    cmis-login: Administrator
-    cmis-password: Administrator
-    cmis-respository-id: default
-    cmis-root-path: /default-domain/workspaces
+#    cmis-uri: https://esup-signature.univ-rouen.fr:8083/nuxeo
+#    cmis-login: Administrator
+#    cmis-password: Administrator
+#    cmis-respository-id: default
+#    cmis-root-path: /default-domain/workspaces
 
 pdf:
     convert-to-pdf-a: true
@@ -112,7 +117,6 @@ security:
     cas:
         domain: univ-rouen.fr
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
-        key: EsupSignatureUnivRouenCAS
         service: http://dsi-7.univ-rouen.fr/login/cas
         title: Compte Université de Rouen Normandie (CAS)
         url: https://cas.univ-rouen.fr

@@ -12,12 +12,12 @@ import springfox.documentation.swagger.web.DocExpansion;
 import springfox.documentation.swagger.web.ModelRendering;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger.web.UiConfigurationBuilder;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 import java.util.Collections;
 
 @Configuration
-@EnableSwagger2
+@EnableSwagger2WebMvc
 public class SpringFoxConfig {
 
     @Bean
@@ -42,7 +42,7 @@ public class SpringFoxConfig {
         return new ApiInfo(
                 "Esup-Signature Rest API",
                 "Description des APIs",
-                "v0.9",
+                "v0.11",
                 "Terms of service",
                 new Contact("Esup Portail", "https://www.esup-portail.org/wiki/display/SIGN", "david.lemaignent@univ-rouen.fr"),
                 "Apache License", "http://www.apache.org/licenses/", Collections.emptyList());

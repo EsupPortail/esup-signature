@@ -107,6 +107,7 @@ public class WorkflowService {
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
+            workflow.setDescription(name);
             workflow.setCreateBy(user.getEppn());
             workflow.setCreateDate(new Date());
             workflow.setExternal(external);
@@ -129,6 +130,7 @@ public class WorkflowService {
         workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
         workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
         workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
+        workflows = workflows.stream().sorted((o1, o2) -> o1.getCreateDate().compareTo(o2.getCreateDate())).collect(Collectors.toCollection(LinkedHashSet::new));
         return workflows;
     }
 

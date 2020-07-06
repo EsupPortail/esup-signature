@@ -126,7 +126,7 @@
                             <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
                         </div>
                         <div th:unless="${step.changeable == true}" class="form-group d-inline">
-                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.name} + ' ('"></span>
+                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
                             <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">
                                 <span th:if="${iterator.index > 0}"> ou </span>
                                 <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
