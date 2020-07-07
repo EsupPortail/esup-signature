@@ -16,6 +16,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -61,6 +62,13 @@ public class WebAppConfig implements WebMvcConfigurer {
 //				.addVersionStrategy(new ContentVersionStrategy(), "/**");
 //
     }
+
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**")
+				.allowedOrigins("http://localhost:9795")
+				.allowedMethods("GET", "POST");
+	}
 	
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
@@ -85,17 +93,17 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return commonsMultipartResolver;
 	}
 
-	@Bean
-	public CorsFilter corsFilter() {
-	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    final CorsConfiguration config = new CorsConfiguration();
-	    config.setAllowCredentials(true);
-	    config.setAllowedOrigins(Collections.singletonList("*"));
-	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
-	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-	    source.registerCorsConfiguration("/**", config);
-	    return new CorsFilter(source);
-	}
+//	@Bean
+//	public CorsFilter corsFilter() {
+//	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//	    final CorsConfiguration config = new CorsConfiguration();
+//	    config.setAllowCredentials(true);
+//	    config.setAllowedOrigins(Collections.singletonList("*"));
+//	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
+//	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
+//	    source.registerCorsConfiguration("/**", config);
+//	    return new CorsFilter(source);
+//	}
 
 //	@Bean
 //	public LocaleResolver localeResolver() {
