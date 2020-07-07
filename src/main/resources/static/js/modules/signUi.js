@@ -104,7 +104,7 @@ export class SignUi {
     sendData(signRequestUrlParams) {
         this.reset();
         this.xmlHttpMain.open('POST', '/user/signrequests/sign/' + this.signRequestId, true);
-        this.xmlHttpMain.addEventListener('readystatechange', e => this.end());
+        //this.xmlHttpMain.addEventListener('readystatechange', e => this.end());
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
         // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(signRequestUrlParams);

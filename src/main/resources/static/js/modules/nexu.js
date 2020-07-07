@@ -37,8 +37,9 @@ export class Nexu {
             let signingCertificate = certificateData.response.certificate;
             let certificateChain = certificateData.response.certificateChain;
             let encryptionAlgorithm = certificateData.response.encryptionAlgorithm;
-            this.tokenId = certificateData.response.tokenId.id;
-            this.keyId = certificateData.response.keyId;
+            Nexu.tokenId = certificateData.response.tokenId.id;
+            Nexu.keyId = certificateData.response.keyId;
+            console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
             callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign", "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
@@ -52,8 +53,9 @@ export class Nexu {
             error(Object.create(merror));
         } else {
             Nexu.updateProgressBar("Signature du/des documents(s)", "50%");
+            console.log("token : " + Nexu.tokenId + "," + Nexu.keyId);
             let digestAlgo = "SHA256";
-            nexu_sign_with_token_infos(tokenId, keyId, dataToSignResponse.dataToSign, digestAlgo, Nexu.signDocument, Nexu.error);
+            nexu_sign_with_token_infos(Nexu.tokenId, Nexu.keyId, dataToSignResponse.dataToSign, digestAlgo, Nexu.signDocument, Nexu.error);
         }
     }
 
@@ -81,12 +83,13 @@ export class Nexu {
     static error(error) {
         console.log(error);
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
-        if (error!= null && error.errorMessage !=null) {
-            if (error.errorMessage !=null){
-                $("#errorcontent").html(error.errorMessage);
+        if (error!= null && error.responseJSON !=null) {
+            var jsonResp = error.responseJSON;
+            if (jsonResp.errorMessage !=null){
+                $("#errorcontent").html(jsonResp.errorMessage);
             }
-            else {
-                $("#errorcontent").html(error.error);
+            else if (jsonResp.error != null){
+                $("#errorcontent").html(jsonResp.error);
             }
         }
         $("#error").show();
@@ -105,7 +108,7 @@ export class Nexu {
             type: "GET",
             url: this.nexuUrl + "/nexu-info",
             crossDomain: true,
-            dataType: "jsonp",
+            dataType: "json",
             context : this,
             success: data => this.checkNexu(data)
         }).fail(function (error) {
@@ -117,6 +120,7 @@ export class Nexu {
     }
 
     checkNexu(data) {
+        console.log("Check NexU");
         if(data.version.startsWith(this.nexuVersion)) {
             console.log("Loading script...");
             this.loadScript();
