@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
 @SessionAttributes(value = { "signatureDocumentForm", "signRequestId", "parameters"})
 @RequestMapping("/user/nexu-sign")

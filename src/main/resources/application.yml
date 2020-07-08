@@ -2,7 +2,7 @@ global:
     root-url: http://dsi-7.univ-rouen.fr
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
-    nexu-download-url: /downloads/nexu-bundle-${nexuVersion}.zip
+    nexu-download-url: /downloads/nexu-bundle.zip
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
