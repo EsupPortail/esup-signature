@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
@@ -13,6 +14,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.barcode.DdDocService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
@@ -20,9 +22,8 @@ import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatu
 import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.http.converter.BufferedImageHttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -33,11 +34,13 @@ import javax.annotation.Resource;
 import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -70,6 +73,9 @@ public class WsController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private DdDocService ddDocService;
 
     @Resource
     private DocumentService documentService;
@@ -505,6 +511,16 @@ public class WsController {
             logger.error(e.getMessage(), e);
         }
     }
+
+    @GetMapping(value = "/2ddoc/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<String> genetare2DDoc(@PathVariable("barcode") String barcode, HttpServletResponse response) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "image/svg+xml");
+        headers.add("Content-Type", "image/png");
+        MatrixToImageWriter.writeToStream(ddDocService.getQrCodeSvg(barcode), "PNG", response.getOutputStream());
+        return null;
+    }
+
 
 //
 //    @ResponseBody
