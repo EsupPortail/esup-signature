@@ -26,7 +26,7 @@
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}" class="btn-floating bg-success waves-effect">
+                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}" class="btn-floating bg-success waves-effect">
                             <i class="fas fa-binoculars"></i>
                         </a>
                     </li>

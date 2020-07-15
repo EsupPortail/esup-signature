@@ -156,6 +156,7 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = "Signature terminée";
             document.getElementById("bar").style.width = 100 + "%";
+            document.location.href="/user/signrequests/" + this.signRequestId;
         } else if(result !== ""){
             console.debug("update bar : " + result);
             document.getElementById("bar").style.display = "block";

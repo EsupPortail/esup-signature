@@ -120,14 +120,13 @@ public class WorkflowAdminController {
 
 	@PostMapping(produces = "text/html")
 	public String create(@ModelAttribute User user, @RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
-		//User user = userService.getCurrentUser();
 		Workflow newWorkflow = new Workflow();
 		newWorkflow.setName(name);
 		Workflow workflow;
 		try {
 			workflow = workflowService.createWorkflow(name, userService.getSystemUser(),false);
 		} catch (EsupSignatureException e) {
-			redirectAttrs.addAttribute("messageError", "Ce circuit existe déjà");
+			redirectAttrs.addFlashAttribute("messageError", "Un circuit porte déjà ce nom");
 			return "redirect:/admin/workflows/";
 		}
 		return "redirect:/admin/workflows/" + workflow.getName();

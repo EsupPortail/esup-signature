@@ -34,7 +34,7 @@
         </div>
     </div>
 </div>
-<h4 class="d-flex justify-content-center mt-4">Dépot des fichiers</h4>
+<h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
 <form id="wiz2Form" th:action="'/user/wizard/wiz3'" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <input th:if="${workflow != null}" type="hidden" name="workflowId" th:value="${workflow.id}">
@@ -42,7 +42,7 @@
         <div class="file-loading">
             <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
         </div>
-        <div id="wiz2Form" class="form-check d-none">
+        <div id="unique" class="form-check d-none">
             <label>Regrouper les documents dans une archive lors de la signature</label>
             <label class="switch">
                 <input type="checkbox" name="unique">
