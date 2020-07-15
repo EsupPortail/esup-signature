@@ -78,7 +78,7 @@ public class DdDocService {
         string2dDoc += "01"; //diplome
         string2dDoc += "B1DAVID<GS>";
         string2dDoc += "B2LEMAIGNENT<GS>";
-        string2dDoc += "B6F";
+        string2dDoc += "B6M";
         string2dDoc += "B729061978";
         string2dDoc += "B9FR";
         string2dDoc += "BD7";
@@ -87,7 +87,7 @@ public class DdDocService {
         string2dDoc += "BIINFORMATIQUE<GS>";
         string2dDoc += "BJINFORMATIQUE DU LOGICIEL<GS>";
         string2dDoc += "B8ROUEN<GS>";
-        string2dDoc += "BB0761904G<GS>";
+        string2dDoc += "BB55555555<GS>";
         string2dDoc += "BC1234567<GS>";
         string2dDoc += "BF7DF";
 
