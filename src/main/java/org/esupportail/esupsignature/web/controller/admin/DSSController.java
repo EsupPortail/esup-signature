@@ -35,6 +35,11 @@ public class DSSController {
 		return "active";
 	}
 
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "dss";
+	}
+
 	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
 		return userService.getCurrentUser();

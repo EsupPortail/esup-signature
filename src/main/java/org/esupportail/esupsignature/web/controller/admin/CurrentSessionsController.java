@@ -44,6 +44,11 @@ public class CurrentSessionsController {
 		return "active";
 	}
 
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "currentSessions";
+	}
+
 	@ModelAttribute(value = "user", binding = false)
 	public User getUser() {
 		return userService.getCurrentUser();

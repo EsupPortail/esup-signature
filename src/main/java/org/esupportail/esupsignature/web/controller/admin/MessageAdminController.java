@@ -39,9 +39,14 @@ import java.util.List;
 @Controller
 public class MessageAdminController {
 
-	@ModelAttribute("active")
+	@ModelAttribute("adminMenu")
+	public String getAdminMenu() {
+		return "active";
+	}
+
+	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
-		return "admin";
+		return "messages";
 	}
 
 	@ModelAttribute(value = "user", binding = false)

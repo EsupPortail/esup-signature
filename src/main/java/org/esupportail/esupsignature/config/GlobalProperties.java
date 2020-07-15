@@ -16,6 +16,7 @@ public class GlobalProperties {
     private String hideSendSignRequest;
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
+    private Boolean enableSu = false;
 
     public String getRootUrl() {
         return rootUrl;
@@ -89,4 +90,11 @@ public class GlobalProperties {
         this.delayBeforeCleaning = delayBeforeCleaning;
     }
 
+    public Boolean getEnableSu() {
+        return enableSu;
+    }
+
+    public void setEnableSu(Boolean enableSu) {
+        this.enableSu = enableSu;
+    }
 }
