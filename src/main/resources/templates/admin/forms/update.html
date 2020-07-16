@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -31,13 +32,21 @@
                             <label for="name">Nom</label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
-                        <div class="form-check">
-                            <input id="activeVersion" class="form-check-input" type="checkbox" th:field="*{activeVersion}"/>
-                            <label for="activeVersion">Version active</label>
-                        </div>
                         <div class="form-group">
                             <label for="description">Description</label>
                             <input id="description" class="form-control" type="text" th:field="*{description}"/>
+                        </div>
+                        <div class="form-check">
+                            <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
+                            <label for="publicUsage">Visibilité publique ?</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">
+                                Rôle
+                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                                    ce formulaire</small></div>
+                            </label>
+                            <input class="form-control" type="text" th:field="*{role}"/>
                         </div>
                         <div class="form-group">
                             <label for="workflowType">Type de workflow</label>
@@ -49,21 +58,13 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="name">
-                                Rôle
-                                <div class="alert alert-info"><small>Le rôle correspond au groupe autorisé à accéder à
-                                    ce formulaire</small></div>
-                            </label>
-                            <input class="form-control" type="text" th:field="*{role}"/>
+                            <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                            <select class="form-control" id="prefillType" name="prefillType">
+                                <th:block th:each="preFillType : ${preFillTypes}">
+                                    <option th:selected="${form.preFillType == preFillType.name}" th:value="${preFillType.name}" th:text="${preFillType.description}"></option>
+                                </th:block>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label for="name">Pré-remplissage
-                                <div class="alert alert-info"><small>Précisez le nom de la classe de pré-premplissage
-                                    des champs (peut-être vide)</small></div>
-                            </label>
-                            <input class="form-control" type="text" th:field="*{preFillType}"/>
-                        </div>
-
                         <div class="form-group">
                             <div class="form-group">
                                 <label for="targetType" class="col-form-label">Type de destination</label>
@@ -83,9 +84,10 @@
                             <input id="pdfDisplay" class="form-check-input" type="checkbox" th:field="*{pdfDisplay}"/>
                             <label for="pdfDisplay">Mise en forme avec le PDF ?</label>
                         </div>
+
                         <div class="form-check">
-                            <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
-                            <label for="publicUsage">Visibilité publique ?</label>
+                            <input id="activeVersion" class="form-check-input" type="checkbox" th:field="*{activeVersion}"/>
+                            <label for="activeVersion">Version active</label>
                         </div>
                         <div th:switch="${model}">
                             <div th:case="null">

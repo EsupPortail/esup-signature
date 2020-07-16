@@ -466,6 +466,10 @@ input:checked + .slider:before {
     background-color: #343a40 !important;
 }
 
+.line {
+    background-color: #343a40 !important;
+}
+
 .bs-stepper-header {
     max-width: 100%;
 }
@@ -819,7 +823,7 @@ float:left;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 20px 20px 20px 20px;
+    padding: 15px;
 }
 
 .fixed-action-btn {
@@ -835,7 +839,23 @@ float:left;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 20px 20px 20px 20px;
+    padding: 15px;
+}
+
+.fixed-action-btn-simple {
+    position: fixed;
+    right: 50px;
+    bottom: 80px;
+    z-index: 8;
+    overflow: hidden;
+    height: 100px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 15px;
 }
 
 .fixed-action-btn ul {
@@ -1259,6 +1279,12 @@ float:left;
     }
     .d-xxl-block {
         display: block !important;
+    }
+    .col-xxl-8 {
+        position: relative;
+        width: 66.666667%;
+        padding-right: 15px;
+        padding-left: 15px;
     }
 }
 .select-mode > div.ss-single-selected {

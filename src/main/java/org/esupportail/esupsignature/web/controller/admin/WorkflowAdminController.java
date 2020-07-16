@@ -162,6 +162,8 @@ public class WorkflowAdminController {
 					workflowToUpdate.getManagers().add(managerUser.getEmail());
 				}
 			}
+		} else {
+			workflowToUpdate.getManagers().clear();
 		}
 		workflowToUpdate.setSourceType(workflow.getSourceType());
 		workflowToUpdate.setTargetType(workflow.getTargetType());
@@ -192,15 +194,39 @@ public class WorkflowAdminController {
 
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@ModelAttribute User user, @PathVariable("id") Long id,
-						  @RequestParam("recipientsEmails") String[] recipientsEmails,
-						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
 						  @RequestParam("signType") String signType,
-						  RedirectAttributes redirectAttrs) throws EsupSignatureUserException {
+						  @RequestParam(name="description", required = false) String description,
+						  @RequestParam("recipientsEmails") String[] recipientsEmails,
+						  @RequestParam(name="changeable", required = false) Boolean changeable,
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+		workflowStep.setDescription(description);
+		workflowStep.setChangeable(changeable);
 		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + workflow.getName();
+	}
+
+	@GetMapping(value = "/update-step/{id}/{step}")
+	public String changeStepSignType(@ModelAttribute User user,
+									 @PathVariable("id") Long id,
+									 @PathVariable("step") Integer step,
+									 @RequestParam(name="signType") SignType signType,
+									 @RequestParam(name="description") String description,
+									 @RequestParam(name="changeable", required = false) Boolean changeable,
+									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
+		Workflow workflow = workflowRepository.findById(id).get();
+		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
+			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+			workflowService.changeSignType(workflowStep, null, signType);
+			workflowStep.setDescription(description);
+			workflowStep.setStepNumber(workflow.getWorkflowSteps().indexOf(workflowStep) + 1);
+			workflowStep.setChangeable(changeable);
+			workflowStep.setAllSignToComplete(allSignToComplete);
+			return "redirect:/admin/workflows/" + workflow.getName();
+		}
+		return "redirect:/admin/workflows/";
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
@@ -233,27 +259,6 @@ public class WorkflowAdminController {
 		}
 		redirectAttributes.addFlashAttribute("messageInfo", "Participet ajouté");
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
-	}
-
-	@GetMapping(value = "/update-step/{id}/{step}")
-	public String changeStepSignType(@ModelAttribute User user,
-									 @PathVariable("id") Long id,
-									 @PathVariable("step") Integer step,
-									 @RequestParam(name="signType") SignType signType,
-									 @RequestParam(name="description") String description,
-									 @RequestParam(name="changeable", required = false) Boolean changeable,
-									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		Workflow workflow = workflowRepository.findById(id).get();
-		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
-			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
-			workflowService.changeSignType(workflowStep, null, signType);
-			workflowStep.setDescription(description);
-			workflowStep.setStepNumber(workflow.getWorkflowSteps().indexOf(workflowStep) + 1);
-			workflowStep.setChangeable(changeable);
-			workflowStep.setAllSignToComplete(allSignToComplete);
-			return "redirect:/admin/workflows/" + workflow.getName();
-		}
-		return "redirect:/admin/workflows/";
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")

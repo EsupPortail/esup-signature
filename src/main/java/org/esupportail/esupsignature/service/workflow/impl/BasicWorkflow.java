@@ -5,13 +5,9 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,15 +17,6 @@ public class BasicWorkflow extends DefaultWorkflow {
 	private String name = "BasicWorkflow";
 	private String description = "Une signature";
 	private List<WorkflowStep> workflowSteps;
-
-	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private RecipientService recipientService;
 
 	@Override
 	public String getName() {

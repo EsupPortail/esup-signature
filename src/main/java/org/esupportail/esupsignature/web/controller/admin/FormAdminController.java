@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.prefill.PreFill;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +130,8 @@ public class FormAdminController {
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());
 		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
-		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
+		List<PreFill> aaa = preFillService.getPreFillValues();
+		model.addAttribute("preFillTypes", aaa);
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
 		return "admin/forms/update";
@@ -147,7 +149,7 @@ public class FormAdminController {
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
-		model.addAttribute("prefillTypes", preFillService.getPreFillValues());
+		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
 	}
 	

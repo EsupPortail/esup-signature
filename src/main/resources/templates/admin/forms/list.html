@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<!--/*@thymesVar id="prefillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
+<!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
 <!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.workflow.DefaultWorkflow>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
@@ -138,15 +138,24 @@
                         <input type="text" id="roleName" name="roleName" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
-                        <select class="form-control" id="prefillType" name="prefillType">
-                            <th:block th:each="prefillType : ${prefillTypes}">
-                                <option th:value="${prefillType.name}"
-                                        th:text="${prefillType.description}"></option>
+                        <label for="workflowType" class="col-form-label">Type de workflow</label>
+                        <select class="form-control" id="workflowType" name="workflowType">
+                            <th:block th:each="workflowType : ${workflowTypes}">
+                                <option th:value="${workflowType.name}"
+                                        th:text="${workflowType.description}"></option>
                             </th:block>
                         </select>
                     </div>
-                    <div class="alert alert-info">
+                    <div class="form-group">
+                        <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                        <select class="form-control" id="prefillType" name="prefillType">
+                            <th:block th:each="preFillType : ${preFillTypes}">
+                                <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"
+                                        th:text="${preFillType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="alert alert-info d-none">
                         Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer
                         les droits sur les formulaires.
                         Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable
@@ -166,15 +175,6 @@
                     <div class="form-group">
                         <label for="name" class="col-form-label">Destination des documents</label>
                         <input type="text" name="targetURI" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="workflowType" class="col-form-label">Type de workflow</label>
-                        <select class="form-control" id="workflowType" name="workflowType">
-                            <th:block th:each="workflowType : ${workflowTypes}">
-                                <option th:value="${workflowType.name}"
-                                        th:text="${workflowType.description}"></option>
-                            </th:block>
-                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
