@@ -13,6 +13,9 @@ https://ec.europa.eu/cefdigital/wiki/display/CEFDIGITAL/DSS+releases
 
 La signature à l'aide d'une clé matérielle est possible à l'aide de l'application NexU en lien avec DSS. La liste des dispositifs matériels pris en charge est présente ici : https://nowina.lu/solutions/java-less-browser-signing-nexu/
 
+# Changelog
+
+https://www.esup-portail.org/wiki/display/SIGN/Change+log
 
 # Prérequis
 
