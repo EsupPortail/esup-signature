@@ -37,6 +37,15 @@ export class SignPosition {
         this.addSignButton = $('#addSignButton');
         this.changeSignImage(signRequestParams.signImageNumber);
         this.initListeners();
+        if(xPos !== 0 && yPos !== 0) {
+            this.updateCrossPosition();
+            this.cross.css("position", "absolute");
+            this.updateSignButtons();
+        } else {
+            this.cross.css("position", "fixed");
+            this.cross.css("margin-left", "270px");
+            this.cross.css("margin-top", "135px");
+        }
     }
 
     getCurrentSign() {
