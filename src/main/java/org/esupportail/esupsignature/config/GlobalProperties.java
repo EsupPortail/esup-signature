@@ -14,6 +14,9 @@ public class GlobalProperties {
     private String hideWizard;
     private String hideAutoSign;
     private String hideSendSignRequest;
+    private String archiveUri;
+    private Integer delayBeforeCleaning = -1;
+    private Boolean enableSu = false;
 
     public String getRootUrl() {
         return rootUrl;
@@ -69,5 +72,29 @@ public class GlobalProperties {
 
     public void setHideSendSignRequest(String hideSendSignRequest) {
         this.hideSendSignRequest = hideSendSignRequest;
+    }
+
+    public String getArchiveUri() {
+        return archiveUri;
+    }
+
+    public void setArchiveUri(String archiveUri) {
+        this.archiveUri = archiveUri;
+    }
+
+    public Integer getDelayBeforeCleaning() {
+        return delayBeforeCleaning;
+    }
+
+    public void setDelayBeforeCleaning(Integer delayBeforeCleaning) {
+        this.delayBeforeCleaning = delayBeforeCleaning;
+    }
+
+    public Boolean getEnableSu() {
+        return enableSu;
+    }
+
+    public void setEnableSu(Boolean enableSu) {
+        this.enableSu = enableSu;
     }
 }

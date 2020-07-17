@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
-<script th:src="${nexuUrl} + '/nexu.js'"></script>
+<script th:src="${nexuUrl} + '/nexu.js'" ></script>
 <script th:inline="javascript" type="module">
 	import {Nexu} from "/js/modules/nexu.js";
 	let	nexu = new Nexu([[${nexuUrl}]], [[${nexuVersion}]], [[${rootUrl}]]);

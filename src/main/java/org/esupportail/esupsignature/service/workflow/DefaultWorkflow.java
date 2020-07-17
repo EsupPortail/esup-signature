@@ -48,6 +48,13 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
 
     @Override
     public List<WorkflowStep> getWorkflowSteps() {
+        if(this.workflowSteps == null) {
+            try {
+                this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, null);
+            } catch (EsupSignatureUserException e) {
+                return null;
+            }
+        }
         return this.workflowSteps;
     }
 

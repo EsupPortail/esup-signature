@@ -14,9 +14,10 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
-public class DefaultPreFill implements PreFill {
+	public class DefaultPreFill implements PreFill {
 
 	private String name = "default";
 	private String description = "Pré-remplissage par défaut (données LDAP)";
@@ -40,12 +41,30 @@ public class DefaultPreFill implements PreFill {
 		PDFont font = PDType1Font.HELVETICA;
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
+		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
+		Map<String, Object> defaultValues = extDefaultValue.initValues(user);
+		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
+		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
-			if(field.getName().startsWith("extvalue")) {
-				String extValueType = field.getName().split("_")[1];
-				String extValueName = field.getName().split("_")[2];
-				ExtValue extValue = extValueService.getExtValueServiceByName(extValueType);
-				field.setDefaultValue(extValue.getValueByName(extValueName, user));
+			if(field.getExtValue() != null && !field.getExtValue().isEmpty()) {
+				if(field.getExtValue().split("\\(")[0].equals("ldap")) {
+					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
+					if(ldapValues.containsKey(extValueName)) {
+						if(extValueName.equals("schacDateOfBirth")) {
+							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
+						} else {
+							field.setDefaultValue((String) ldapValues.get(extValueName));
+						}
+					}
+				} else if(field.getExtValue().split("\\(")[0].equals("default")) {
+					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
+					if(defaultValues.containsKey(extValueName)) {
+						field.setDefaultValue((String) defaultValues.get(extValueName));
+					}
+				}
+				if(field.getExtValue().equals("covid(duree)")) {
+					field.setDefaultValue("1");
+				}
 			}
 			filledFields.add(field);
 		}

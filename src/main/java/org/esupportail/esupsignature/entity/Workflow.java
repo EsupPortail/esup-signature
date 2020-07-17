@@ -24,7 +24,6 @@ public class Workflow {
 	@Column(unique=true)
 	private String name;
 
-    @Size(max = 500)
     private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -38,10 +37,14 @@ public class Workflow {
     private Date updateDate;
 
     private String updateBy;
-    
+
+    private String role;
+
     private Boolean external = false;
 
     private Boolean publicUsage = false;
+
+    private Boolean scanPdfMetadatas = false;
 
     private Boolean archive = false;
 
@@ -196,5 +199,21 @@ public class Workflow {
 
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public Boolean getScanPdfMetadatas() {
+        return scanPdfMetadatas;
+    }
+
+    public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
+        this.scanPdfMetadatas = scanPdfMetadatas;
     }
 }

@@ -26,12 +26,17 @@
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-dark waves-effect">
-                            <i class="fas fa-cog"></i>
+                        <a th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}" class="btn-floating bg-success waves-effect">
+                            <i class="fas fa-binoculars"></i>
                         </a>
                     </li>
                     <li>
-                    <a role="button" title="Ajouter une étape" class="btn-floating bg-warning waves-effect" data-toggle="modal" data-target="#addStep">
+                        <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-warning waves-effect">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                    </li>
+                    <li>
+                    <a role="button" title="Ajouter une étape" class="btn-floating bg-dark waves-effect" data-toggle="modal" data-target="#addStep">
                         <i class="fas fa-shoe-prints"></i>
                     </a>
                     </li>
@@ -51,13 +56,16 @@
                         <dd th:text="${workflow.description}"></dd>
                     </dl>
                     <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Circuit de signatures</dt>
-                        <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
-                            <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
-                                Vous pouvez ajouter des étapes
-                            </div>
-                        </dd>
+                        <dt class="col-lg-5">Scanner les metadonnées des PDF</dt>
+                        <dd th:text="${workflow.scanPdfMetadatas}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Visibilité publique</dt>
+                        <dd th:text="${workflow.publicUsage}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Rôle</dt>
+                        <dd th:text="${workflow.role}"></dd>
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>
@@ -92,16 +100,48 @@
                             <dd th:text="${workflow.documentsTargetUri}"></dd>
                         </dl>
                     </div>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Circuit de signatures</dt>
+                        <dd>
+                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
+                            <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
+                                Vous pouvez ajouter des étapes
+                            </div>
+                        </dd>
+                    </dl>
                 </div>
             </div>
             <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/admin/workflows/add-step/' + ${id}" method="post">
+                        <form th:action="'/admin/workflows/add-step/' + ${workflow.id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
                             </div>
                             <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Description de l’étape:</label>
+                                    <input name="description" type="text" class="form-control" />
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <strong>L'utilisateur peut modifier les participants</strong>
+                                        <button data-target="#collapseHelpChangeable" data-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
+                                            <span class="fas fa-info-circle text-info"></span>
+                                        </button>
+                                        <div class="collapse" id="collapseChangeable">
+                                            <div class="alert alert-info">
+                                                <small>
+                                                    L'utilisateur pourra changer les noms des participants au moment de valider sa demande de signature
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="changeable"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
                                 <div class="form-group">
                                     <select name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple" required="required">
                                     </select>
@@ -127,12 +167,10 @@
                                             </div>
                                         </div>
                                     </label>
-                                    <div class="col-lg-8">
-                                        <label class="switch">
-                                            <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
-                                            <span class="slider round"></span>
-                                        </label>
-                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                        <span class="slider round"></span>
+                                    </label>
                                 </div>
 
                                 <div class="form-group" id="_signType_div_id">

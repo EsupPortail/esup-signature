@@ -18,6 +18,12 @@ body {
 
 }
 
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .disable-body-scrollbar {
     position: fixed;
 }
@@ -307,7 +313,7 @@ input:checked + .slider:before {
 }
 
 .workspace-sign {
-    margin-top: 93px;
+    margin-top: 170px;
     display: flex;
 }
 
@@ -457,6 +463,10 @@ input:checked + .slider:before {
     max-width: 100%;
 }
 .bs-stepper-line {
+    background-color: #343a40 !important;
+}
+
+.line {
     background-color: #343a40 !important;
 }
 
@@ -813,7 +823,7 @@ float:left;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 20px 20px 20px 20px;
+    padding: 15px;
 }
 
 .fixed-action-btn {
@@ -829,7 +839,23 @@ float:left;
     -webkit-box-align: end;
     -ms-flex-align: end;
     align-items: flex-end;
-    padding: 20px 20px 20px 20px;
+    padding: 15px;
+}
+
+.fixed-action-btn-simple {
+    position: fixed;
+    right: 50px;
+    bottom: 80px;
+    z-index: 8;
+    overflow: hidden;
+    height: 100px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+    padding: 15px;
 }
 
 .fixed-action-btn ul {
@@ -1253,6 +1279,12 @@ float:left;
     }
     .d-xxl-block {
         display: block !important;
+    }
+    .col-xxl-8 {
+        position: relative;
+        width: 66.666667%;
+        padding-right: 15px;
+        padding-left: 15px;
     }
 }
 .select-mode > div.ss-single-selected {

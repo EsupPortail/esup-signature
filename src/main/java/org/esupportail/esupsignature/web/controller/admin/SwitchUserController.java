@@ -22,6 +22,11 @@ public class SwitchUserController {
         return "active";
     }
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "su";
+    }
+
     @ModelAttribute(value = "user", binding = false)
     public User getUser() {
         return userService.getCurrentUser();
@@ -45,7 +50,6 @@ public class SwitchUserController {
 
     @GetMapping("/su")
     public String switchUser(Model model) {
-
         return "admin/su";
     }
 

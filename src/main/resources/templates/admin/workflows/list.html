@@ -13,19 +13,29 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn" >
+            <div class="fixed-action-btn-simple" >
                 <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
-            <div class="card col-lg-8 mx-auto">
+            <div class="card col-10 col-xxl-8">
                 <div class="card-body">
+                    <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">Filtrer</span>
+                    </div>
+                    <select name="displayWorkflowType" class="form-control" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
+                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
+                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
+                        <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
+                    </select>
+                    </div>
                     <table class="table table-sm table-borderless table-hover table-striped">
                         <thead class="thead-dark">
                         <tr>
                             <th>Nom</th>
-<!--                            <th>Créé par</th>-->
+                            <th>Créé par</th>
                             <th>Destinataires</th>
                             <th>Gestionnaire(s) du circuit</th>
                             <th>Voir</th>
@@ -35,7 +45,7 @@
                         <th:block th:each="workflow : ${workflows}">
                             <tr>
                                 <td th:text="${workflow.description}"></td>
-<!--                                <td th:text="${workflow.createBy}"></td>-->
+                                <td th:text="${workflow.createBy}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">

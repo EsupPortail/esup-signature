@@ -34,7 +34,19 @@
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group">
                             <label><strong>Description</strong></label>
-                            <input class="form-control" type="text" th:field="*{description}">
+                            <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
+                        </div>
+                        <div class="form-check">
+                            <input id="scanPdfMetadatas" class="form-check-input" type="checkbox" th:field="*{scanPdfMetadatas}"/>
+                            <label for="scanPdfMetadatas">Scanner les métadonnées des pdf ?</label>
+                        </div>
+                        <div class="form-check">
+                            <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
+                            <label for="publicUsage">Visibilité publique ?</label>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Rôle</label>
+                            <input id="role" class="form-control" type="text" th:field="*{role}"/>
                         </div>
                         <div class="form-group" id="managers">
                             <label for="managersSelect"><strong>Gestionnaire(s) du circuit</strong>
@@ -90,11 +102,6 @@
                                    placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
                                    value=""
                                    autocomplete="on">
-                        </div>
-                        <div class="form-group" id="description">
-                            <label for="_description_id"><strong>Description</strong></label>
-                            <textarea id="_description_id" name="description" class="form-control" rows="5"
-                                      cols="50"></textarea>
                         </div>
                     </form>
                 </div>

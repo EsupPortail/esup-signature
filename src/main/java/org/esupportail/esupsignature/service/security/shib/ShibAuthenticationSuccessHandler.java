@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.security.shib;
 
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,12 +9,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Enumeration;
 
 @Service
 public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHandler {

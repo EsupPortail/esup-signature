@@ -2,19 +2,19 @@ package org.esupportail.esupsignature.web.controller.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.ldap.PersonLdap;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.barcode.DdDocService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
@@ -22,9 +22,8 @@ import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatu
 import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.http.converter.BufferedImageHttpMessageConverter;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -35,11 +34,13 @@ import javax.annotation.Resource;
 import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -74,6 +75,9 @@ public class WsController {
     private UserService userService;
 
     @Resource
+    private DdDocService ddDocService;
+
+    @Resource
     private DocumentService documentService;
 
     @Resource
@@ -87,7 +91,7 @@ public class WsController {
     public String createSignBook(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook("", name, user, true);
         return signBook.getName();
     }
 
@@ -123,13 +127,15 @@ public class WsController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute User user, @PathVariable("name") String name,
-                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
+    @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentInSignBookGroup(@ModelAttribute User user,
+                                             @PathVariable("name") String name,
+                                             @PathVariable("workflowName") String workflowName,
+                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents in " + name);
         //User user = userService.getCurrentUser();
         user.setIp(httpServletRequest.getRemoteAddr());
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         signBookService.addSignRequest(signBook, signRequest);
@@ -139,12 +145,14 @@ public class WsController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute User user, @PathVariable("name") String name,
+    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Object addDocumentToNewSignRequest(@ModelAttribute User user,
+                                              @PathVariable("name") String name,
+                                              @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
         logger.info("start add documents in " + name);
         //User user = userService.getCurrentUser();
-        SignBook signBook = signBookService.getSignBook(name, user);
+        SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
@@ -333,7 +341,7 @@ public class WsController {
                 logger.warn("no signRequest " + token);
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (NoResultException | IOException e) {
+        } catch (NoResultException | IOException | EsupSignatureException e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -488,25 +496,31 @@ public class WsController {
     @Transactional
     @ResponseBody
     @PostMapping(value = "/complete-sign-request")
-    public String completeSignRequest(@RequestParam String token,
-                                                    @RequestParam(required = false) String documentIOTypeName,
-                                                    @RequestParam(required = false) String targetUri,
+    public void completeSignRequest(@RequestParam String token,
                                                     HttpServletRequest httpServletRequest) {
-        String result = "";
         try {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             User user = userService.getSystemUser();
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
-                result = signRequestService.completeSignRequests(Arrays.asList(signRequest), DocumentIOType.valueOf(documentIOTypeName), targetUri, user);
+                signRequestService.completeSignRequests(Arrays.asList(signRequest));
             } else {
                 logger.warn("no signed version of signRequest : " + token);
             }
-        } catch (NoResultException | EsupSignatureException e) {
+        } catch (NoResultException e) {
             logger.error(e.getMessage(), e);
         }
-        return result;
     }
+
+    @GetMapping(value = "/2ddoc/{barcode}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<String> genetare2DDoc(@PathVariable("barcode") String barcode, HttpServletResponse response) throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "image/svg+xml");
+        headers.add("Content-Type", "image/png");
+        MatrixToImageWriter.writeToStream(ddDocService.getQrCodeSvg(barcode), "PNG", response.getOutputStream());
+        return null;
+    }
+
 
 //
 //    @ResponseBody

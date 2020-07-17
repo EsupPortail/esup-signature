@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -61,6 +62,9 @@ public class MailService {
     private UserService userService;
 
     @Resource
+    private UserShareRepository userShareRepository;
+
+    @Resource
     private FileService fileService;
 
     public void sendCompletedMail(SignBook signBook) {
@@ -82,7 +86,7 @@ public class MailService {
             message.setTo(user.getEmail());
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
-            logger.info("send email completes for " + user.getName());
+            logger.info("send email completes for " + user.getEppn());
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             logger.error("unable to send email", e);
@@ -93,7 +97,6 @@ public class MailService {
         if (!checkMailSender()) {
             return;
         }
-        User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
@@ -103,11 +106,7 @@ public class MailService {
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         List<String> toEmails = new ArrayList<>();
-        toEmails.add(user.getEmail());
-        for(Recipient recipient : signBook.getWorkflowSteps().get(signBook.getWorkflowSteps().size() - 1).getRecipients()) {
-            //TODO search shares
-            toEmails.add(recipient.getUser().getEmail());
-        }
+        toEmails.add(signBook.getCreateBy().getEmail());
         try {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : demande signature refusée");

@@ -84,6 +84,7 @@
                         <div class="border ml-3 mr-3 "></div>
                         <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
                             <div class="alert alert-success m-0 " style="width: 300px;padding: 2px;">
+                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="addSignButton" title="Ajouter une signature" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-plus"></i></button>
                                 <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-sm btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
                                 <button id="dateButton" title="Inserer la date" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                             </div>
@@ -107,7 +108,7 @@
                 </div>
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-                        <li class="nav-item" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
+                        <li class="nav-item overflow-hidden" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
                             <a class="nav-link" th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" th:href="'/user/signrequests/' + ${signRequestTab.id}">
                                 <div class="truncate" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
                             </a>

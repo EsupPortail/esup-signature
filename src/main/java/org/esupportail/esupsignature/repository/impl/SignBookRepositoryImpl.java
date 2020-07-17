@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.repository.impl;
 
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.repository.SignBookRepositoryCustom;
+import org.esupportail.esupsignature.repository.custom.SignBookRepositoryCustom;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;

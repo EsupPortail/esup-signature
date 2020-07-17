@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class CasProperties {
 
     private String title;
-    private String key;
     private String url;
     private String service;
     private String groupMappingRoleAdmin;
@@ -18,14 +17,6 @@ public class CasProperties {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
     }
 
     public String getUrl() {

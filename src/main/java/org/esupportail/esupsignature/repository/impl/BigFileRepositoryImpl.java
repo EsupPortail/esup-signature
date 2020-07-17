@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.repository.impl;
 
 import org.esupportail.esupsignature.entity.BigFile;
-import org.esupportail.esupsignature.repository.BigFileRepositoryCustom;
+import org.esupportail.esupsignature.repository.custom.BigFileRepositoryCustom;
 import org.hibernate.LobHelper;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;

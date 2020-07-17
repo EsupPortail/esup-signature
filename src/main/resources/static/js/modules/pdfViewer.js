@@ -7,7 +7,7 @@ export class PdfViewer {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 1;
+        this.scale = 0.6;
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;

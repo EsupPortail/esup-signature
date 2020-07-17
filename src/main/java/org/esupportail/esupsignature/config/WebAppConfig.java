@@ -16,9 +16,7 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.resource.ContentVersionStrategy;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
@@ -61,7 +59,12 @@ public class WebAppConfig implements WebMvcConfigurer {
 //				.addVersionStrategy(new ContentVersionStrategy(), "/**");
 //
     }
-	
+
+//	@Override
+//	public void addCorsMappings(CorsRegistry registry) {
+//		registry.addMapping("/**");
+//	}
+
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
@@ -85,17 +88,27 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return commonsMultipartResolver;
 	}
 
-	@Bean
-	public CorsFilter corsFilter() {
-	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    final CorsConfiguration config = new CorsConfiguration();
-	    config.setAllowCredentials(true);
-	    config.setAllowedOrigins(Collections.singletonList("*"));
-	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
-	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-	    source.registerCorsConfiguration("/**", config);
-	    return new CorsFilter(source);
-	}
+//	@Bean
+//	public WebMvcConfigurer corsConfigurer() {
+//		return new WebMvcConfigurerAdapter() {
+//			@Override
+//			public void addCorsMappings(CorsRegistry registry) {
+//				registry.addMapping("/**");
+//			}
+//		};
+//	}
+
+//	@Bean
+//	public CorsFilter corsFilter() {
+//	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//	    final CorsConfiguration config = new CorsConfiguration();
+//	    config.setAllowCredentials(true);
+//	    config.setAllowedOrigins(Collections.singletonList("*"));
+//	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
+//	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
+//	    source.registerCorsConfiguration("/**", config);
+//	    return new CorsFilter(source);
+//	}
 
 //	@Bean
 //	public LocaleResolver localeResolver() {

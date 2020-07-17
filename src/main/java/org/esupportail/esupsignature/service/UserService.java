@@ -3,14 +3,13 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.ldap.OrganizationalUnitLdapRepository;
-import org.esupportail.esupsignature.ldap.PersonLdap;
-import org.esupportail.esupsignature.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.mail.MailService;
-import org.esupportail.esupsignature.service.scheduler.ScheduledTaskService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
@@ -20,7 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -113,8 +111,23 @@ public class UserService {
 
 	public User getSystemUser() {
 		User user = new User();
-		user.setEppn("System");
+		user.setEppn("system");
 		return user;
+	}
+
+	public User getSchedulerUser() {
+		if(userRepository.countByEppn("scheduler") > 0) {
+			return userRepository.findByEppn("scheduler").get(0);
+		} else {
+			User user = new User();
+			user.setEppn("scheduler");
+			user.setIp("127.0.0.1");
+			user.setFirstname("Automate");
+			user.setName("Esup-Signature");
+			user.setEmail("esup-signature@univ-ville.fr");
+			userRepository.save(user);
+			return user;
+		}
 	}
 
 	public User getGenericUser(String name, String firstname) {
@@ -148,8 +161,8 @@ public class UserService {
 	}
 
 	public User getUserByEppn(String eppn) {
-		if(eppn.equals("Scheduler")) {
-			return ScheduledTaskService.getSchedulerUser();
+		if(eppn.equals("scheduler")) {
+			return getSchedulerUser();
 		}
 		if(eppn.split("@").length == 1) {
 			for(SecurityService securityService : this.securityServices) {
@@ -226,8 +239,10 @@ public class UserService {
 	public User createUser(String eppn, String name, String firstName, String email) {
 		User user;
 		if(userRepository.countByEppn(eppn) > 0) {
+			logger.info("mise à jour de l'utilisateur " + eppn);
     		user = userRepository.findByEppn(eppn).get(0);
     	} else {
+			logger.info("creation de l'utilisateur " + eppn);
 	    	user = new User();
 			user.setKeystore(null);
 			//user.setEmailAlertFrequency(EmailAlertFrequency.never);

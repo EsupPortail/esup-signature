@@ -87,6 +87,9 @@ public class DataController {
 	private DataRepository dataRepository;
 
 	@Resource
+	private WorkflowService workflowService;
+
+	@Resource
 	private FormService formService;
 
 	@Resource
@@ -195,7 +198,7 @@ public class DataController {
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			Workflow workflow = dataService.getWorkflowByDataAndUser(data, null, user);
+			Workflow workflow = workflowService.getWorkflowByDataAndUser(data, null, user);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);

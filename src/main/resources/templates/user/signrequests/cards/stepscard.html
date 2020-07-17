@@ -53,12 +53,13 @@
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.documentsTargetUri != null}">
                             <div class="bs-stepper-line"></div>
-                            <div class="step border border-dark rounded" th:title="${signRequest.parentSignBook.documentsTargetUri}" th:classappend="${signRequest.parentSignBook.status.name() != 'exported'} ? 'div-disable'">
-                                <div title="Export" th:classappend="${signRequest.parentSignBook.status.name() == 'exported'} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
-                                <div class="bs-stepper-label text-break" th:text="${signRequest.parentSignBook.targetType}"></div>
+                            <div class="step border border-dark rounded" th:title="${signRequest.parentSignBook.documentsTargetUri}" th:classappend="${signRequest.parentSignBook.status.name() != 'exported' && signRequest.parentSignBook.status.name() != 'cleaned' && signRequest.parentSignBook.status.name() != 'archived'} ? 'div-disable'">
+                                <div title="Export" th:classappend="${signRequest.parentSignBook.status.name() == 'exported' || signRequest.parentSignBook.status.name() == 'archived'} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
+                                Export vers :
+                                <div class="bs-stepper-label text-break" th:text="#{'signbook.documentiotype.' + ${signRequest.parentSignBook.targetType}}"></div>
                             </div>
                         </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.status.name() == 'completed'}">
+                        <th:block th:if="${signRequest.parentSignBook.status.name() == 'completed' || signRequest.parentSignBook.status.name() == 'exported' || signRequest.parentSignBook.status.name() == 'cleaned' || signRequest.parentSignBook.status.name() == 'archived'}">
                             <div class="bs-stepper-line"></div>
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-success">

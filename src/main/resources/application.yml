@@ -6,6 +6,9 @@ global:
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
+    archive-uri: smb://serveur_fichier/archives
+#   delay-before-cleaning : 0
+    enable-su: false
 
 #tomcat:
 #    ajp:

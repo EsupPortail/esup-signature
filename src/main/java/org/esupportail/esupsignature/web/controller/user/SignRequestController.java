@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -307,17 +308,12 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity sign(@ModelAttribute User user, @PathVariable("id") Long id,
-                               @RequestParam(value = "signImageNumber") Integer signImageNumber,
-                               @RequestParam(value = "signWidth", required = false) Integer signWidth,
-                               @RequestParam(value = "signHeight", required = false) Integer signHeight,
-                               @RequestParam(value = "xPos", required = false) Integer xPos,
-                               @RequestParam(value = "yPos", required = false) Integer yPos,
+                               @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "addDate", required = false) Boolean addDate,
                                @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "signPageNumber", required = false) Integer signPageNumber,
-                               @RequestParam(value = "password", required = false) String password, HttpServletRequest httpServletRequest) {
+                               @RequestParam(value = "password", required = false) String password, HttpServletRequest httpServletRequest) throws JsonProcessingException {
 
         if (addDate == null) {
             addDate = false;
@@ -325,11 +321,11 @@ public class SignRequestController {
         if (visual == null) {
             visual = true;
         }
+        ObjectMapper objectMapper = new ObjectMapper();
         SignRequest signRequest = signRequestRepository.findById(id).get();
 
         Map<String, String> formDataMap = null;
         if(formData != null) {
-            ObjectMapper objectMapper = new ObjectMapper();
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
                 formDataMap.remove("_csrf");
@@ -350,20 +346,13 @@ public class SignRequestController {
                 e.printStackTrace();
             }
         }
-
-        if (signPageNumber != null && xPos != null && yPos != null && visual) {
-            SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
-            signRequestParams.setSignImageNumber(signImageNumber);
-            signRequestParams.setSignPageNumber(signPageNumber);
-            signRequestParams.setSignWidth(signWidth);
-            signRequestParams.setSignHeight(signHeight);
-            signRequestParams.setxPos(xPos);
-            signRequestParams.setyPos(yPos);
+        List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+        signRequest.getSignRequestParams().clear();
+        for(SignRequestParams signRequestParams : signRequestParamses) {
             signRequestParamsRepository.save(signRequestParams);
-            if(!signRequest.getSignRequestParams().contains(signRequestParams)) {
-                signRequest.getSignRequestParams().add(signRequestParams);
-            }
+            signRequest.getSignRequestParams().add(signRequestParams);
         }
+
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             signRequestService.setStep("Démarrage de l'application NexU");
             signRequestService.setStep("initNexu");
@@ -422,12 +411,17 @@ public class SignRequestController {
 
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             if(signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
                 SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
-                signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+                try {
+                    signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+                } catch (EsupSignatureIOException e) {
+                    redirectAttributes.addFlashAttribute("messageError", "Impossible de charger le document : documentsr     corrompu");
+                    return "redirect:" + request.getHeader("Referer");
+                }
                 signRequestService.addRecipients(signRequest, user);
 
                 signRequestService.pendingSignRequest(signRequest, signType, false, user);
@@ -455,7 +449,7 @@ public class SignRequestController {
             }
             SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            SignBook signBook = signBookService.createSignBook(multipartFiles[0].getOriginalFilename(), user, false);
+            SignBook signBook = signBookService.createSignBook("Demande simple", multipartFiles[0].getOriginalFilename(), user, false);
             signBook.setCurrentWorkflowStepNumber(1);
             try {
                 signBookRepository.save(signBook);
@@ -467,6 +461,7 @@ public class SignRequestController {
                 return "redirect:/user/signrequests";
             }
             signBookService.addSignRequest(signBook, signRequest);
+            //enable for auto pending
             //signBookService.pendingSignBook(signBook, user);
 //            if(!comment.isEmpty()) {
 //                signRequest.setComment(comment);
@@ -561,7 +556,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException {
+    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         InputStream inputStream = null;
         String contentType = "";
@@ -603,7 +598,7 @@ public class SignRequestController {
     public String complete(@ModelAttribute User user, User authUser, @PathVariable("id") Long id, HttpServletRequest request) throws EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-            signRequestService.completeSignRequest(signRequest, user);
+            signRequestService.completeSignRequest(signRequest);
         } else {
             logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
         }

@@ -20,6 +20,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
 
     private String name = "CreatorAndManagerWorkflow";
     private String description = "Signature du créateur puis du responsable";
+
     private List<WorkflowStep> workflowSteps;
 
     @Override
