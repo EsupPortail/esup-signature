@@ -526,24 +526,24 @@ public class SignRequestService {
 	}
 
 	public void archiveSignRequests(List<SignRequest> signRequests) throws EsupSignatureException {
-		for(SignRequest signRequest : signRequests) {
-			Document signedFile = getLastSignedDocument(signRequest);
-			String subPath = "";
-			if(signRequest.getParentSignBook() != null) {
-				subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
-			} else {
-				subPath = "/simple/" + signRequest.getCreateBy().getEppn() + "/";
-			}
-			if(globalProperties.getArchiveUri() != null) {
+		if(globalProperties.getArchiveUri() != null) {
+			for(SignRequest signRequest : signRequests) {
+				Document signedFile = getLastSignedDocument(signRequest);
+				String subPath = "";
+				if(signRequest.getParentSignBook() != null) {
+					subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
+				} else {
+					subPath = "/simple/" + signRequest.getCreateBy().getEppn() + "/";
+				}
 				if(signRequest.getExportedDocumentURI() == null) {
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
 					signRequest.setExportedDocumentURI(documentUri);
 					updateStatus(signRequest, SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS");
 
 				}
-			} else {
-				logger.info("archive document was skipped");
 			}
+		} else {
+			logger.info("archive document was skipped");
 		}
 	}
 
