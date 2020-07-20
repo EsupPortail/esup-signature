@@ -91,7 +91,7 @@
                         </div>
                     </th:block>
 
-                    <div id="openButtons" class="fixed-action-btns active" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">
+                    <div id="openButtons" class="fixed-action-btns active" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported') || signRequest.status.name() == 'archived')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">
                         <ul class="list-unstyled">
                             <li>
                                 <a id="print" class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">
