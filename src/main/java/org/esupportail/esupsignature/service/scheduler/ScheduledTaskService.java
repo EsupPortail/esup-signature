@@ -65,7 +65,9 @@ public class ScheduledTaskService {
 		for(SignBook signBook : signBooks) {
 			try {
 				signBookService.exportFilesToTarget(signBook);
-				signBookService.archivesFiles(signBook);
+				if(globalProperties.getArchiveUri() != null) {
+					signBookService.archivesFiles(signBook);
+				}
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}
@@ -82,7 +84,7 @@ public class ScheduledTaskService {
 				signBookService.cleanFiles(signBook);
 			}
 		} else {
-			logger.debug("cleanning documents was skipped because neg valu");
+			logger.debug("cleanning documents was skipped because neg value");
 		}
 	}
 
