@@ -112,6 +112,7 @@ pdf:
 security:
     cas:
         domain: univ-ville.fr
+	group-search-base: ou=groups
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
         key: EsupSignatureUnivVilleCAS
         service: https://esup-signature.univ-ville.fr/login/cas
