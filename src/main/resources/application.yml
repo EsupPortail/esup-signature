@@ -117,6 +117,7 @@ pdf:
 security:
     cas:
         domain: univ-rouen.fr
+        group-search-base: ou=groups
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
         service: http://dsi-7.univ-rouen.fr/login/cas
         title: Compte Université de Rouen Normandie (CAS)
