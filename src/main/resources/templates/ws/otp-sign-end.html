@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav-empty"></header>
+<main role="main">
+    <div class="wrapper">
+        <div id="content" class="content">
+            <h1>Signature OTP</h1>
+            <span th:text="'result : ' + ${result}"></span>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

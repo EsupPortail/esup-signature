@@ -10,6 +10,8 @@ import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.token.MSCAPISignatureToken;
+import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -26,6 +28,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.barcode.DdDocService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
@@ -375,7 +378,65 @@ public class SignRequestService {
 		return addSignedFile(signRequest, signedDocument.openStream(), dssDocument.getName(), signedDocument.getMimeType().getMimeTypeString());
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
+	public void serverSign(SignRequest signRequest) throws EsupSignatureException {
+		List<Document> toSignDocuments = new ArrayList<>();
+		for(Document document : getToSignDocuments(signRequest)) {
+			toSignDocuments.add(document);
+		}
+		step = "Initialisation de la procédure";
+		try {
+			step = "Déverouillage du keystore";
+
+			File serverKeyStore = new File(SignRequestService.class.getClassLoader().getResource("cert-esupdem.p12").getFile());
+
+			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(new FileInputStream(serverKeyStore), "chouthou");
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(new FileInputStream(serverKeyStore), "chouthou");
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(new FileInputStream(serverKeyStore), "chouthou");
+
+			step = "Formatage des documents";
+
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, false);
+			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+
+			step = "Préparation de la signature";
+
+			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+			List<String> base64CertificateChain = new ArrayList<>();
+			for (CertificateToken token : certificateTokenChain) {
+				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+			}
+			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
+			signatureDocumentForm.setSignWithExpiredCertificate(true);
+
+			ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
+			aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+			AbstractSignatureParameters parameters = aSiCWithXAdESSignatureParameters;
+
+			parameters.setSigningCertificate(certificateToken);
+			parameters.setCertificateChain(certificateTokenChain);
+			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
+			DSSDocument dssDocument;
+			if(toSignDocuments.size() > 1) {
+				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
+			} else {
+				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
+			}
+			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+			step = "Enregistrement du/des documents(s)";
+			addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
+			applyEndOfStepRules(signRequest, userService.getSystemUser());
+		} catch (EsupSignatureKeystoreException e) {
+			step = "security_bad_password";
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+		} catch (Exception e) {
+			step = "sign_system_error";
+			throw new EsupSignatureException(e.getMessage(), e);
+		}
+
+	}
+
+	public void certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
@@ -434,7 +495,7 @@ public class SignRequestService {
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			step = "Enregistrement du/des documents(s)";
-			return addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -453,8 +514,10 @@ public class SignRequestService {
 		return document;
 	}
 
-	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
-		recipientService.validateRecipient(signRequest.getRecipients(), user);
+	public void applyEndOfStepRules(SignRequest signRequest, User user) {
+		if(!user.getEppn().equals("system")) {
+			recipientService.validateRecipient(signRequest.getRecipients(), user);
+		}
 		if(signRequest.getParentSignBook() != null) {
 			if(!isSignRequestCompleted(signRequest)) {
 				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");

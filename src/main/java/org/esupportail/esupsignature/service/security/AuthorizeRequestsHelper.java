@@ -26,9 +26,6 @@ public class AuthorizeRequestsHelper {
 		.antMatchers("/user/", "/user/**").authenticated()
 		.antMatchers("/webjars/**").permitAll();
 
-//		http.authorizeRequests()
-//		.antMatchers("/", "/**").authenticated()
-//		.antMatchers("/webjars/**").permitAll();
 	}
 
 }

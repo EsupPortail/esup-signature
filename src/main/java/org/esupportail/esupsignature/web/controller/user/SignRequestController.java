@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.service.security.OtpService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -136,6 +137,9 @@ public class SignRequestController {
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private OtpService otpService;
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -193,6 +197,14 @@ public class SignRequestController {
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
         return "user/signrequests/list";
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
+    @GetMapping(value = "/send-otp/{id}")
+    public String sendOtp(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        otpService.generateOtpForSignRequest(signRequest, "0123456789");
+        return "redirect:/user/signrequests/" + id;
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
