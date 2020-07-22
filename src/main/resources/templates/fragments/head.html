@@ -41,7 +41,6 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
 		<link rel="stylesheet" th:href="@{/css/app.css}" />
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
-
-		<title>Esup Signature</title>
+		<title th:text="#{application.title} + ' - v' + #{application.version}"></title>
 	</head>
 </html>

@@ -42,6 +42,11 @@
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
+		<repository>
+			<id>vitam</id>
+			<name>Vitam Repository</name>
+			<url>https://download.programmevitam.fr/vitam_repository/3.6.0/mvn_repo/</url>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
@@ -626,6 +631,7 @@
 <!--			<artifactId>droid-container</artifactId>-->
 <!--			<version>6.5-VITAM</version>-->
 <!--		</dependency>-->
+
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
