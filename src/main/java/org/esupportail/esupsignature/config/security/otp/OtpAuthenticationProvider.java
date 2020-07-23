@@ -4,9 +4,10 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OtpAuthenticationProvider implements AuthenticationProvider {
 
@@ -14,7 +15,10 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
         String password = authentication.getCredentials().toString();
-        return new UsernamePasswordAuthenticationToken(name, password, new ArrayList<>());
+        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_OTP");
+        List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+        simpleGrantedAuthorities.add(authority);
+        return new UsernamePasswordAuthenticationToken(name, password, simpleGrantedAuthorities);
     }
 
     @Override

@@ -22,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -66,8 +67,18 @@ public class OtpService {
         User user = userService.createUser(phoneNumber, name, firstname, email);
         userRepository.save(user);
         signRequestService.addRecipients(signRequest, user);
+        removeOtpFromCache(phoneNumber);
+        removeOtpFromCache(email);
         otpCache.put(urlId, otp);
         logger.info("new url for otp : " + urlId);
+    }
+
+    public void removeOtpFromCache(String searchString) {
+        for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
+            if(otpEntry.getValue().getEmail().equals(searchString) || otpEntry.getValue().getPhoneNumber().equals(searchString)) {
+                clearOTP(otpEntry.getKey());
+            }
+        }
     }
 
     public String generateOtpPassword(String urlId) {

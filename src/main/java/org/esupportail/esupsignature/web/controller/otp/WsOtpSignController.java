@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
@@ -59,12 +64,12 @@ public class WsOtpSignController {
     private SmsService smsService;
 
     @GetMapping(value = "/{urlId}")
-    public String otpSign(@PathVariable String urlId, Model model) throws EsupSignatureException {
+    public String signin(@PathVariable String urlId, Model model) throws EsupSignatureException {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             if(!otp.isSmsSended()) {
                 String password = otpService.generateOtpPassword(urlId);
-                smsService.sendSms(otp.getPhoneNumber(), "Votre code de sécutité esup-signature : " + password);
+                //smsService.sendSms(otp.getPhoneNumber(), "Votre code de sécutité esup-signature : " + password);
                 otp.setSmsSended(true);
             }
             model.addAttribute("urlid", urlId);
@@ -75,7 +80,7 @@ public class WsOtpSignController {
     }
 
     @PostMapping
-    public String sign(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req) throws EsupSignatureUserException {
+    public String auth(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req) throws EsupSignatureUserException {
         Boolean testOtp = otpService.checkOtp(urlId, password);
         if(testOtp != null) {
             if (testOtp) {
@@ -83,12 +88,12 @@ public class WsOtpSignController {
                 logger.info("otp success for : " + urlId);
                 User user = userService.getUserByEmail(otp.getEmail());
                 userRepository.save(user);
-                UsernamePasswordAuthenticationToken authReq = new UsernamePasswordAuthenticationToken(otp.getPhoneNumber(), "");
-                Authentication auth = authenticationManager.authenticate(authReq);
-                SecurityContext sc = SecurityContextHolder.getContext();
-                sc.setAuthentication(auth);
-                HttpSession session = req.getSession(true);
-                session.setAttribute(SPRING_SECURITY_CONTEXT_KEY, sc);
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(otp.getPhoneNumber(), "");
+                Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+                SecurityContext securityContext = SecurityContextHolder.getContext();
+                securityContext.setAuthentication(authentication);
+                HttpSession httpSession = req.getSession(true);
+                httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
                 model.addAttribute("user", user);
                 model.addAttribute("authUser", user);
                 return "redirect:/user/signrequests/" + otp.getSignRequestId();
