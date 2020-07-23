@@ -57,9 +57,9 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-		logger.info("load user details from : " + token.getName());
+		logger.debug("load user details from : " + token.getName());
 		String credentials = (String) token.getCredentials();
-		logger.info("credentials : " + credentials);
+		logger.debug("credentials : " + credentials);
 		try {
 			for (String credential : StringUtils.split(credentials, ";")) {
 				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
@@ -67,13 +67,12 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				}
 			}
 		} catch (Exception e) {
-			logger.warn("unable to find credentials");
 			logger.debug("unable to find credentials", e);
 		}
 		try {
 			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
 				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-				logger.info("loading authorities : " + authorities.get(0).getAuthority());
+				logger.debug("loading authorities : " + authorities.get(0).getAuthority());
 			}
 		} catch (Exception e) {
 			logger.warn("unable to find authorities", e);

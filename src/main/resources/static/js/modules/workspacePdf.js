@@ -25,16 +25,17 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
         this.pdfViewer.addEventListener('render', e => this.initForm());
         document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
-        document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
-        if(this.signable) {
-            document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
-            if(this.currentSignType !== "pdfImageStamp") {
-                document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+        if(document.getElementById('commentModeButton') != null) {
+            document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
+            if (this.signable) {
+                document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
+                if (this.currentSignType !== "pdfImageStamp") {
+                    document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+                }
+                document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
             }
-            document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+            document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
         }
-        document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
-
         window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
         window.addEventListener("wheel", e => this.computeWhellEvent(e));
 

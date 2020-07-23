@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
-import org.esupportail.esupsignature.service.security.OtpService;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -77,7 +77,8 @@ public class SignRequestController {
 
     @ModelAttribute(value = "suUsers", binding = false)
     public List<User> getSuUsers() {
-        return userService.getSuUsers(getAuthUser());
+        User user = getAuthUser();
+        return userService.getSuUsers(user);
     }
 
     @ModelAttribute(value = "globalProperties")
@@ -203,7 +204,7 @@ public class SignRequestController {
     @GetMapping(value = "/send-otp/{id}")
     public String sendOtp(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        otpService.generateOtpForSignRequest(signRequest, "0123456789");
+        otpService.generateOtpForSignRequest(signRequest, "0646710804", "the_pin_s@yahoo.fr");
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -279,6 +280,7 @@ public class SignRequestController {
         List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
         model.addAttribute("globalPostits", globalPostits);
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, signRequest));
         signRequestService.setStep("");
         if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";
@@ -501,6 +503,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
+        redirectAttrs.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         return "redirect:/user/signrequests/?statusFilter=tosign";
     }
 

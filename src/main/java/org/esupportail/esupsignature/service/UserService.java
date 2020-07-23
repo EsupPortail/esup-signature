@@ -76,6 +76,7 @@ public class UserService {
 		this.ldapPersonService = ldapPersonService;
 	}
 
+
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 		attr.getRequest().getSession().setAttribute("suEppn", eppn);
@@ -164,10 +165,12 @@ public class UserService {
 		if(eppn.equals("scheduler")) {
 			return getSchedulerUser();
 		}
-		if(eppn.split("@").length == 1) {
-			for(SecurityService securityService : this.securityServices) {
-				if(securityService instanceof CasSecurityServiceImpl) {
-					eppn = eppn + "@" + securityService.getDomain();
+		if(userRepository.countByEppn(eppn) == 0) {
+			if (eppn.split("@").length == 1) {
+				for (SecurityService securityService : this.securityServices) {
+					if (securityService instanceof CasSecurityServiceImpl) {
+						eppn = eppn + "@" + securityService.getDomain();
+					}
 				}
 			}
 		}

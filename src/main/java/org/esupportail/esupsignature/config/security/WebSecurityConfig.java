@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.security;
 
+import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.service.security.AuthorizeRequestsHelper;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
@@ -10,18 +11,26 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
+import java.security.AuthProvider;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -101,4 +110,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		switchUserFilter.setTargetUrl("/");
 		return switchUserFilter;
 	}
+
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() {
+		return new ProviderManager(Arrays.asList(new OtpAuthenticationProvider()));
+	}
+
+	@Bean
+	public UserDetailsService userDetailsService() {
+		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+		return manager;
+
+	}
+
 }

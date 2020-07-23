@@ -76,6 +76,12 @@ ldap:
 mail:
     from: no-reply.esup-signature@univ-rouen.fr
 
+sms:
+    service-name: SMSU
+    url: https://smsu-api.univ-rouen.fr/
+    username: sms-univ-rouen-account
+    password: GeR4SmsK
+
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
     cache-data-source-url: jdbc:hsqldb:mem:cachedb

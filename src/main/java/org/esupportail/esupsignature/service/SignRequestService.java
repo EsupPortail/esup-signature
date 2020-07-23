@@ -35,6 +35,7 @@ import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -123,6 +125,9 @@ public class SignRequestService {
 
 	@Resource
 	private FsAccessFactory fsAccessFactory;
+
+	@Resource
+	private PreFillService preFillService;
 
 	private String step = "";
 
@@ -288,10 +293,14 @@ public class SignRequestService {
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
+		for(Recipient recipient : signRequest.getRecipients()) {
+			if(recipient.getUser().equals(user)) {
+				return;
+			}
+		}
 		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
 		recipientRepository.save(recipient);
 		signRequest.getRecipients().add(recipient);
-
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
@@ -898,6 +907,84 @@ public class SignRequestService {
 			//TODO share for workflows
 		}
 		return null;
+	}
+
+	public String computeShowView(Long id, User user, Boolean frameMode, Model model) throws IOException, EsupSignatureException {
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		if (signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
+				&& needToSign(signRequest, user)
+		) {
+			signRequest.setSignable(true);
+			model.addAttribute("currentSignType", getCurrentSignType(signRequest).name());
+			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
+			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
+			model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
+		}
+		if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
+			Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+			if(data != null && data.getForm() != null) {
+				List<Field> fields = data.getForm().getFields();
+				List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+				for (Field field : prefilledFields) {
+					if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
+						field.setDefaultValue("");
+					}
+					if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+						field.setDefaultValue(data.getDatas().get(field.getName()));
+					}
+				}
+				model.addAttribute("fields", prefilledFields);
+			}
+		}
+		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
+			List<Document> toSignDocuments = getToSignDocuments(signRequest);
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+				Document toDisplayDocument = getToSignDocuments(signRequest).get(0);
+				if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
+					if(checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+						signRequest.setSignable(false);
+						model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
+					}
+					List<String> signImages = new ArrayList<>();
+					for(Document signImage : user.getSignImages()) {
+						signImages.add(fileService.getBase64Image(signImage));
+					}
+					model.addAttribute("signImages", signImages);
+					int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
+					model.addAttribute("signWidth", size[0]);
+					model.addAttribute("signHeight", size[1]);
+				} else {
+					if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
+						model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
+						signRequest.setSignable(false);
+					}
+				}
+				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+			} else {
+				if(signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign))) {
+					signRequest.setSignable(true);
+				}
+				model.addAttribute("documentType", "other");
+			}
+
+		} else if (getLastSignedFsFile(signRequest) != null) {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
+		}
+
+		List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+		model.addAttribute("refuseLogs", refuseLogs);
+		model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+		List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
+		model.addAttribute("globalPostits", globalPostits);
+		model.addAttribute("signRequest", signRequest);
+		setStep("");
+		if (frameMode != null && frameMode) {
+			return "user/signrequests/show-frame";
+		} else {
+			return "user/signrequests/show";
+		}
 	}
 
 }

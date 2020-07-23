@@ -1,19 +1,27 @@
-package org.esupportail.esupsignature.service.security;
+package org.esupportail.esupsignature.service.security.otp;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.web.controller.IndexController;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import javax.mail.MessagingException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -22,33 +30,52 @@ public class OtpService {
 
     private static final Logger logger = LoggerFactory.getLogger(OtpService.class);
 
-    private static final Integer EXPIRE_MINS = 15;
+    private static final Integer EXPIRE_MINS = 10;
 
     private static LoadingCache<String, Otp> otpCache;
 
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private UserRepository userRepository;
+
+    @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
+    private MailService mailService;
+
     public OtpService() {
-        otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<>() {
+        otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).removalListener(notification -> clearOTP((String) notification.getKey())).build(new CacheLoader<>() {
             public Otp load(String urlId) {
                 return null;
             }
         });
     }
 
-    public void generateOtpForSignRequest(SignRequest signRequest, String phoneNumber) {
+    public void generateOtpForSignRequest(SignRequest signRequest, String phoneNumber, String email) throws MessagingException {
+        //TODO check email domain
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
         String password = randomOtpPassword(6);
+        //otp.setPassword(hashPassword(password));
         otp.setPassword(password);
         otp.setPhoneNumber(phoneNumber);
+        otp.setEmail(email);
         otp.setSignRequestId(signRequest.getId());
         String urlId = UUID.randomUUID().toString();
+        mailService.sendOtp(otp, urlId);
+        User user = userService.createUser(phoneNumber, "test", "test", email);
+        userRepository.save(user);
+        signRequestService.addRecipients(signRequest, user);
         otpCache.put(urlId, otp);
         logger.info("new url for otp : " + urlId + " : " + password);
     }
 
     public Otp getOtp(String urlId){
         try{
-            return otpCache.get(urlId);
+            return otpCache.getUnchecked(urlId);
         }catch (Exception e){
             logger.error("error on get otp : " + e.getMessage());
             return null;
@@ -63,6 +90,7 @@ public class OtpService {
     public Boolean checkOtp(String urlId, String password) {
         Otp otp = getOtp(urlId);
         if(otp != null) {
+//            if (otp.getPassword().equals(hashPassword(password))) {
             if (otp.getPassword().equals(password)) {
                 return true;
             } else {
@@ -78,22 +106,32 @@ public class OtpService {
     }
 
     private String randomOtpPassword(int size) {
-        SecureRandom randomGenerator = null;
         try {
-            randomGenerator = SecureRandom.getInstance("SHA1PRNG");
+            SecureRandom randomGenerator = SecureRandom.getInstance("SHA1PRNG");
             HashSet<Integer> set = new HashSet<>();
-            while(set.size() < size) {
+            while(set.size() < size - 3) {
                 set.add(randomGenerator.nextInt(9));
             }
             StringBuilder builder = new StringBuilder();
             for (Integer i : set) {
                 builder.append(i);
             }
-            return builder.toString();
+            return builder.toString() + (1000 - randomGenerator.nextInt(999));
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }
         return null;
+    }
+
+    private String hashPassword(String password) {
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            logger.error(e.getMessage());
+        }
+        byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+        return new String(Hex.encode(hash));
     }
 
 }

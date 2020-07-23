@@ -1,13 +1,15 @@
-package org.esupportail.esupsignature.service.security;
+package org.esupportail.esupsignature.service.security.otp;
 
 import org.esupportail.esupsignature.entity.Data;
 
 public class Otp {
 
     private String phoneNumber;
+    private String email;
     private String password;
     private Long signRequestId;
     private Data createDate;
+    private boolean smsSended = false;
     private int tries = 0;
 
     public String getPhoneNumber() {
@@ -16,6 +18,14 @@ public class Otp {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -40,6 +50,14 @@ public class Otp {
 
     public void setCreateDate(Data createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isSmsSended() {
+        return smsSended;
+    }
+
+    public void setSmsSended(boolean smsSended) {
+        this.smsSended = smsSended;
     }
 
     public int getTries() {
