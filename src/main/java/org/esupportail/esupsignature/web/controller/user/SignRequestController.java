@@ -201,10 +201,15 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
-    @GetMapping(value = "/send-otp/{id}")
-    public String sendOtp(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
+    @PostMapping(value = "/send-otp/{id}")
+    public String sendOtp(@ModelAttribute User user, @PathVariable("id") Long id,
+                          @RequestParam String phoneNumber,
+                          @RequestParam String email,
+                          @RequestParam String name,
+                          @RequestParam String firstname, RedirectAttributes redirectAttributes) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        otpService.generateOtpForSignRequest(signRequest, "0646710804", "the_pin_s@yahoo.fr");
+        otpService.generateOtpForSignRequest(signRequest, phoneNumber, email, name, firstname);
+        redirectAttributes.addFlashAttribute("messageSuccess", "Demande OTP envoyée");
         return "redirect:/user/signrequests/" + id;
     }
 

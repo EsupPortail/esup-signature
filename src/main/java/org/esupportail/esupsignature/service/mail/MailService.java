@@ -177,7 +177,7 @@ public class MailService {
 
     public void sendOtp(Otp otp, String urlId) throws MessagingException {
         final Context ctx = new Context(Locale.FRENCH);
-        ctx.setVariable("url", globalProperties.getRootUrl() + "/ws/otp-sign/" + urlId);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp/" + urlId);
         setTemplate(ctx);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;

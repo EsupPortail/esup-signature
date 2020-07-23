@@ -196,7 +196,7 @@
                 <tr>
                     <th>Mes signatures</th>
                     <td>
-                        <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide" data-ride="carousel">
+                        <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
                             <div class="carousel-inner">
                                 <th:block th:each="signImage, iterator : ${user.signImages}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
@@ -221,7 +221,7 @@
                 <tr>
                     <th>Magasin de certificats</th>
                     <td>
-                        <div th:unless="${user.keystore == null}" class="alert alert-danger">
+                        <div th:unless="${user.keystore == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
                             <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">

@@ -54,23 +54,28 @@ public class OtpService {
         });
     }
 
-    public void generateOtpForSignRequest(SignRequest signRequest, String phoneNumber, String email) throws MessagingException {
+    public void generateOtpForSignRequest(SignRequest signRequest, String phoneNumber, String email, String name, String firstname) throws MessagingException {
         //TODO check email domain
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
-        String password = randomOtpPassword(6);
-        //otp.setPassword(hashPassword(password));
-        otp.setPassword(password);
         otp.setPhoneNumber(phoneNumber);
         otp.setEmail(email);
         otp.setSignRequestId(signRequest.getId());
         String urlId = UUID.randomUUID().toString();
         mailService.sendOtp(otp, urlId);
-        User user = userService.createUser(phoneNumber, "test", "test", email);
+        User user = userService.createUser(phoneNumber, name, firstname, email);
         userRepository.save(user);
         signRequestService.addRecipients(signRequest, user);
         otpCache.put(urlId, otp);
-        logger.info("new url for otp : " + urlId + " : " + password);
+        logger.info("new url for otp : " + urlId);
+    }
+
+    public String generateOtpPassword(String urlId) {
+        Otp otp = getOtp(urlId);
+        String password = randomOtpPassword(6);
+        otp.setPassword(hashPassword(password));
+        logger.info("new password for otp " + urlId + " : " + password);
+        return password;
     }
 
     public Otp getOtp(String urlId){
@@ -90,8 +95,7 @@ public class OtpService {
     public Boolean checkOtp(String urlId, String password) {
         Otp otp = getOtp(urlId);
         if(otp != null) {
-//            if (otp.getPassword().equals(hashPassword(password))) {
-            if (otp.getPassword().equals(password)) {
+            if (otp.getPassword().equals(hashPassword(password))) {
                 return true;
             } else {
                 otp.setTries(otp.getTries() + 1);

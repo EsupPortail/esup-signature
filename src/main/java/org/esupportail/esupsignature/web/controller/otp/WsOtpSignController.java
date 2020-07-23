@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws;
+package org.esupportail.esupsignature.web.controller.otp;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
@@ -25,11 +25,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
-@RequestMapping("/ws/otp-sign")
+@RequestMapping("/otp")
 @Controller
 @Transactional
 public class WsOtpSignController {
@@ -64,11 +63,12 @@ public class WsOtpSignController {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             if(!otp.isSmsSended()) {
-                smsService.sendSms(otp.getPhoneNumber(), "Votre code de sécutité esup-signature : " + otp.getPassword());
+                String password = otpService.generateOtpPassword(urlId);
+                smsService.sendSms(otp.getPhoneNumber(), "Votre code de sécutité esup-signature : " + password);
                 otp.setSmsSended(true);
             }
             model.addAttribute("urlid", urlId);
-            return "ws/otp-sign";
+            return "otp/signin";
         } else {
             return "redirect:/denied/" + urlId;
         }
@@ -95,7 +95,7 @@ public class WsOtpSignController {
             } else {
                 model.addAttribute("result", "KO");
                 redirectAttributes.addFlashAttribute("messageError", "Mauvais mot de passe");
-                return "redirect:/ws/otp-sign/" + urlId;
+                return "redirect:/otp/" + urlId;
             }
         } else {
             return "redirect:/denied/" + urlId;
