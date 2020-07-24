@@ -481,13 +481,6 @@ export class PdfViewer {
         if (this.scale >= 2) {
             return;
         }
-        // $(".circle").each(function( index ) {
-        //     let left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale + 0.25));
-        //     let top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale + 0.25)) + 20 * (this.scale + 0.25);
-        //     console.log(top);
-        //     $(this).css('left', left);
-        //     $(this).css('top', top);
-        // });
         this.scale = this.scale + this.zoomStep;
         console.info('zoom in, scale = ' + this.scale);
         this.renderPage(this.pageNum);
@@ -499,13 +492,6 @@ export class PdfViewer {
         if (this.scale <= 0.50) {
             return;
         }
-        // $(".circle").each(function( index ) {
-        //     let left = Math.round($(this).css('left').replace("px", "") / this.scale * (this.scale - 0.25));
-        //     let top = Math.round((($(this).css('top').replace("px", "") / this.scale) - 20) * (this.scale - 0.25)) + 20 * (this.scale - 0.25);
-        //     console.log(top);
-        //     $(this).css('left', left);
-        //     $(this).css('top', top);
-        // });
         this.scale = this.scale - this.zoomStep;
         console.info('zoom out, scale = ' + this.scale);
         this.renderPage(this.pageNum);

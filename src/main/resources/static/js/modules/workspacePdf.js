@@ -25,16 +25,17 @@ export class WorkspacePdf {
         this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
         this.pdfViewer.addEventListener('render', e => this.initForm());
         document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
-        document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
-        if(this.signable) {
-            document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
-            if(this.currentSignType !== "pdfImageStamp") {
-                document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+        if(document.getElementById('commentModeButton') != null) {
+            document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
+            if (this.signable) {
+                document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
+                if (this.currentSignType !== "pdfImageStamp") {
+                    document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+                }
+                document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
             }
-            document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+            document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
         }
-        document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
-
         window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
         window.addEventListener("wheel", e => this.computeWhellEvent(e));
 
@@ -133,6 +134,7 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.signPosition.updateScale(this.pdfViewer.scale);
+        this.signPosition.updateCrossPosition();
         this.refreshAfterPageChange();
     }
 
@@ -299,14 +301,6 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
-        // $('#signZoomIn').removeClass('d-none');
-        // $('#signZoomOut').removeClass('d-none');
-        // $('#signNextImage').removeClass('d-none');
-        // $('#signPrevImage').removeClass('d-none');
-        // $('#signZoomIn').prop('disabled', false);
-        // $('#signZoomOut').prop('disabled', false);
-        // $('#signNextImage').prop('disabled', false);
-        // $('#signPrevImage').prop('disabled', false);
         $('#signModeButton').toggleClass('btn-outline-success');
         $('#signTools').show();
 
