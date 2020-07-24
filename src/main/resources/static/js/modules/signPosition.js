@@ -198,6 +198,7 @@ export class SignPosition {
         // this.getCurrentSign().signHeight = this.getCurrentSign().signHeight / this.currentScale * scale;
         // this.getCurrentSign().setxPos( this.getCurrentSign().xPos / this.currentScale * scale);
         // this.getCurrentSign().setyPos( this.getCurrentSign().yPos / this.currentScale * scale);
+        $('div[id^="sign_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
         this.currentScale = scale;
         this.updateCrossPosition();
     }
@@ -228,7 +229,22 @@ export class SignPosition {
         this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
+
+
         this.updateSignSize();
+    }
+
+    updateOtherSignPosition(sign, scale) {
+        let newTop = parseInt($(sign).css("top"), 10) / this.currentScale * scale;
+        let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
+        $(sign).css('top', newTop + "px");
+        $(sign).css('left', newLeft + "px");
+        let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
+        let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
+        $(sign).css('width', newWidth + "px");
+        $(sign).css('height', newHeight + "px");
+        $(sign).css('background-size', newWidth);
+
     }
 
     updateSignSize() {
