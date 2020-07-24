@@ -77,14 +77,6 @@ export class SignUi {
         let signRequestUrlParams;
         if(this.workspace != null) {
             let signRequestParams = this.workspace.signPosition.signRequestParamses[0];
-            // let signRequestParams = new SignRequestParams();
-            // signRequestParams.signImageNumber = this.workspace.signPosition.signImageNumber;
-            // signRequestParams.xPos = Math.round(this.workspace.signPosition.getPdfXpos());
-            // signRequestParams.yPos = Math.round(this.workspace.signPosition.getPdfYpos());
-            // signRequestParams.signWidth = Math.round(this.workspace.signPosition.signWidth * 0.75 / (this.workspace.signPosition.currentScale));
-            // signRequestParams.signHeight = Math.round(this.workspace.signPosition.signHeight * 0.75 / (this.workspace.signPosition.currentScale));
-            // signRequestParams.signPageNumber = this.workspace.pdfViewer.pageNum;
-
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&addDate=" + this.workspace.signPosition.dateActive +

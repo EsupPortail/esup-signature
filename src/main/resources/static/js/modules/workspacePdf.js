@@ -134,6 +134,7 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.signPosition.updateScale(this.pdfViewer.scale);
+        this.signPosition.updateCrossPosition();
         this.refreshAfterPageChange();
     }
 
@@ -300,14 +301,6 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
-        // $('#signZoomIn').removeClass('d-none');
-        // $('#signZoomOut').removeClass('d-none');
-        // $('#signNextImage').removeClass('d-none');
-        // $('#signPrevImage').removeClass('d-none');
-        // $('#signZoomIn').prop('disabled', false);
-        // $('#signZoomOut').prop('disabled', false);
-        // $('#signNextImage').prop('disabled', false);
-        // $('#signPrevImage').prop('disabled', false);
         $('#signModeButton').toggleClass('btn-outline-success');
         $('#signTools').show();
 

@@ -318,7 +318,7 @@ public class PdfService {
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
