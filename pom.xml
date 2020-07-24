@@ -42,11 +42,11 @@
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
-		<repository>
-			<id>vitam</id>
-			<name>Vitam Repository</name>
-			<url>https://download.programmevitam.fr/vitam_repository/3.6.0/mvn_repo/</url>
-		</repository>
+<!--		<repository>-->
+<!--			<id>vitam</id>-->
+<!--			<name>Vitam Repository</name>-->
+<!--			<url>https://download.programmevitam.fr/vitam_repository/3.6.0/mvn_repo/</url>-->
+<!--		</repository>-->
 	</repositories>
 	<distributionManagement>
 		<repository>
