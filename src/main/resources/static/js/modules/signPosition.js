@@ -156,13 +156,6 @@ export class SignPosition {
         console.info("sign zoom to : " + signScale);
         this.getCurrentSign().signWidth = Math.round(this.getCurrentSign().signWidth / this.signScale * signScale);
         this.getCurrentSign().signHeight = Math.round(this.getCurrentSign().signHeight / this.signScale * signScale);
-        // this.cross.css('width', this.getCurrentSign().signWidth * this.currentScale / this.fixRatio);
-        // this.cross.css('height', this.getCurrentSign().signHeight * this.currentScale / this.fixRatio);
-        // this.borders.css('width', this.getCurrentSign().signWidth * this.currentScale / this.fixRatio);
-        // this.borders.css('height', this.getCurrentSign().signHeight * this.currentScale / this.fixRatio);
-        // this.cross.css('background-size', this.getCurrentSign().signWidth * this.currentScale / this.fixRatio);
-        // $('#textVisa').css('font-size', this.fontSize * this.currentScale * signScale + "px");
-        // $('#textDate').css('font-size', this.fontSize * this.currentScale * signScale + "px");
         this.signScale = signScale;
         this.updateSignSize();
         this.updateSignButtons();
@@ -184,19 +177,17 @@ export class SignPosition {
             $('#commentPosX').val(e.offsetX ? (e.offsetX) : e.clientX);
             $('#commentPosY').val(e.offsetY ? (e.offsetY) : e.clientY);
             $('#commentPageNumber').val(this.getCurrentSign().signPageNumber);
-            //this.scalePosition();
         }
     }
 
     touchIt(e) {
         if (this.pointItEnable) {
-            //e.preventDefault();
             this.pointItMove = true;
             console.log("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
-            this.getCurrentSign().setxPos( touch.pageX * this.fixRatio);
-            this.getCurrentSign().setyPos( (touch.pageY - (rect.top + window.scrollY)) * this.fixRatio);
+            this.getCurrentSign().setxPos( touch.pageX / this.currentScale * this.fixRatio);
+            this.getCurrentSign().setyPos( (touch.pageY - (rect.top + window.scrollY)) / this.currentScale * this.fixRatio);
             this.updateCrossPosition();
         }
     }
