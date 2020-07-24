@@ -134,7 +134,6 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.signPosition.updateScale(this.pdfViewer.scale);
-        this.signPosition.updateCrossPosition();
         this.refreshAfterPageChange();
     }
 
