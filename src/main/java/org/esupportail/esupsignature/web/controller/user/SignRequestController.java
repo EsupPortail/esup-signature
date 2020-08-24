@@ -200,7 +200,7 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user)")
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #user)")
     @PostMapping(value = "/send-otp/{id}")
     public String sendOtp(@ModelAttribute User user, @PathVariable("id") Long id,
                           @RequestParam String phoneNumber,
