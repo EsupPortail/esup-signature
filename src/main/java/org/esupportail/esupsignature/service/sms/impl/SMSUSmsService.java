@@ -54,7 +54,7 @@ public class SMSUSmsService implements SmsService {
                 logger.info("SMS envoyé : " + phoneNumber);
             }
         } catch (IOException e) {
-            throw new EsupSignatureException("Problème d'envoi sms : ", e);
+            throw new EsupSignatureException("Problème d'envoi sms : " + e.getMessage(), e);
         }
 
     }
