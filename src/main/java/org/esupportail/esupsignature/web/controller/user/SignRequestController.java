@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -150,7 +151,7 @@ public class SignRequestController {
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "signBookId", required = false) Long signBookId,
                        @RequestParam(value = "messageError", required = false) String messageError,
-                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
+                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         workflowService.initCreatorWorkflow();
 
         List<SignRequest> signRequests;

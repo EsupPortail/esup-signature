@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.SignBook.SignBookType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;

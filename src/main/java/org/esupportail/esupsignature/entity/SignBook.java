@@ -214,7 +214,4 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public enum SignBookType {
-        system, group, workflow;
-    }
 }

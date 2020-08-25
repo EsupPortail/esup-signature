@@ -51,9 +51,6 @@ public class WsController {
     private static final Logger logger = LoggerFactory.getLogger(WsController.class);
 
     @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
-
-    @Resource
     private SignRequestRepository signRequestRepository;
 
     @Resource
@@ -76,15 +73,6 @@ public class WsController {
 
     @Resource
     private DdDocService ddDocService;
-
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private FileService fileService;
-
-    @Resource
-    private LogRepository logRepository;
 
     @ResponseBody
     @PostMapping(value = "/create-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
