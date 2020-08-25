@@ -478,21 +478,19 @@ public class SignRequestController {
                 //TODO ? throw
                 logger.error("error with users on send signrequest " + signRequest.getId());
                 redirectAttributes.addFlashAttribute("messageError", "Problème lors de l’envoi");
-                return "redirect:/user/signrequests";
             }
             signBookService.addSignRequest(signBook, signRequest);
             //enable for auto pending
-            //signBookService.pendingSignBook(signBook, user);
-//            if(!comment.isEmpty()) {
-//                signRequest.setComment(comment);
-//                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
-//            }
-            return "redirect:/user/signrequests/" + signRequest.getId();
+//          signBookService.pendingSignBook(signBook, user);
+//          if(!comment.isEmpty()) {
+//              signRequest.setComment(comment);
+//              signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+//          }
         } else {
             logger.warn("no file to import");
             redirectAttributes.addFlashAttribute("messageWarn", "Pas de fichier à importer");
-            return "redirect:/user/signrequests";
         }
+        return "redirect:/user/signrequests";
     }
 
 
