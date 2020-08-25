@@ -18,6 +18,7 @@ import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -35,7 +36,6 @@ import eu.europa.esig.dss.ws.signature.common.RemoteDocumentSignatureServiceImpl
 import eu.europa.esig.dss.ws.signature.common.RemoteMultipleDocumentsSignatureServiceImpl;
 import eu.europa.esig.dss.ws.validation.common.RemoteDocumentValidationService;
 import eu.europa.esig.dss.xades.signature.XAdESService;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -52,6 +52,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.Security;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(DSSProperties.class)
@@ -225,15 +227,18 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier() {
-		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
-		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
-		certificateVerifier.setCrlSource(cachedCRLSource());
-		certificateVerifier.setOcspSource(cachedOCSPSource());
-		certificateVerifier.setDataLoader(dataLoader());
-		certificateVerifier.setExceptionOnMissingRevocationData(false);
-		certificateVerifier.setExceptionOnInvalidTimestamp(false);
-		certificateVerifier.setCheckRevocationForUntrustedChains(false);
+		public CertificateVerifier certificateVerifier() {
+		List<CertificateSource> trustedCertSources = new ArrayList<>();
+		trustedCertSources.add(trustedListSource());
+		trustedCertSources.add(myTrustedCertificateSource());
+		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
+//		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
+//		certificateVerifier.setCrlSource(cachedCRLSource());
+//		certificateVerifier.setOcspSource(cachedOCSPSource());
+//		certificateVerifier.setDataLoader(dataLoader());
+////		certificateVerifier.setExceptionOnMissingRevocationData(false);
+////		certificateVerifier.setExceptionOnInvalidTimestamp(false);
+//		certificateVerifier.setCheckRevocationForUntrustedChains(false);
 		return certificateVerifier;
 	}
 

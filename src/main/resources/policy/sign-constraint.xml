@@ -312,7 +312,6 @@
 	<Timestamp>
 		<TimestampDelay Level="FAIL" Unit="DAYS" Value="1" />
 		<RevocationTimeAgainstBestSignatureTime	Level="WARN" />
-		<BestSignatureTimeBeforeIssuanceDateOfSigningCertificate Level="FAIL" />
 		<Coherence Level="WARN" />
 		<BasicSignatureConstraints>
 			<ReferenceDataExistence Level="FAIL" />
@@ -525,6 +524,5 @@
 		<TLNotExpired Level="WARN" />
 		<TLWellSigned Level="FAIL" />
 		<TLVersion Level="FAIL" value="5" />
-		<TLConsistency Level="FAIL" />
 	</eIDAS>
 </ConstraintsParameters>

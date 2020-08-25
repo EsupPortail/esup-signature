@@ -24,8 +24,8 @@ public class KeystoreService {
 		CertificateDTO dto = new CertificateDTO();
 
 		dto.setDssId(certificate.getDSSIdAsString());
-		dto.setIssuerName(certificate.getIssuerX500Principal().getName());
-		dto.setSubjectName(certificate.getSubjectX500Principal().getName());
+		dto.setIssuerName(certificate.getIssuer().getCanonical());
+		dto.setSubjectName(certificate.getSubject().getCanonical());
 		dto.setNotBefore(certificate.getNotBefore());
 		dto.setNotAfter(certificate.getNotAfter());
 

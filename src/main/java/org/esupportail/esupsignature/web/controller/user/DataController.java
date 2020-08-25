@@ -119,7 +119,7 @@ public class DataController {
 	}
 
 	@GetMapping
-	public String list(@ModelAttribute User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 3) Pageable pageable, Model model) {
+	public String list(@ModelAttribute User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
 		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
 		model.addAttribute("datas", datas);
 		return "user/datas/list";
