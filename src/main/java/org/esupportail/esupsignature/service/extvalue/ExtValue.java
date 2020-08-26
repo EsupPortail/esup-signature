@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service.extvalue;
 
 import org.esupportail.esupsignature.entity.User;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public interface ExtValue {

@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.springframework.data.repository.CrudRepository;

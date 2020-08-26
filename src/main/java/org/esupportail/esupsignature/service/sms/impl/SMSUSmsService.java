@@ -11,7 +11,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.sms.SmsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

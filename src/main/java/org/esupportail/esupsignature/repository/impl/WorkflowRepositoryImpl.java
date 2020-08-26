@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.repository.impl;
 
-import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.custom.WorkflowRepositoryCustom;

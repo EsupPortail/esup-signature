@@ -5,9 +5,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Table(name = "form")

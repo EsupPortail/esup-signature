@@ -7,9 +7,6 @@ import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -36,8 +33,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 

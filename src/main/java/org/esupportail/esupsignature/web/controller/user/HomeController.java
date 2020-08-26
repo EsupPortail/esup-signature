@@ -1,7 +1,10 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Message;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.FormService;

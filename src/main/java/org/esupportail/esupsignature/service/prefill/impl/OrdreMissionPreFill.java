@@ -6,7 +6,6 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.prefill.PreFill;

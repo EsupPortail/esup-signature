@@ -1,7 +1,10 @@
 package org.esupportail.esupsignature.service.export;
 
 import org.apache.commons.text.StringEscapeUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.LogRepository;

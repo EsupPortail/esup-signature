@@ -1,17 +1,18 @@
 package org.esupportail.esupsignature.service.workflow;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class DefaultWorkflow extends Workflow implements Cloneable {
 
