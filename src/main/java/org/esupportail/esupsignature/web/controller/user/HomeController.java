@@ -14,6 +14,8 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/user/")
@@ -85,14 +88,19 @@ public class HomeController {
     private DataRepository dataRepository;
 
     @GetMapping
-    public String list(@ModelAttribute User user, User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
+    public String list(@ModelAttribute User user, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
+        User authUser = userService.getUserFromAuthentication();
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
-        List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+        if(userService.getSignShare(user, authUser)) {
+            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
+        } else {
+            model.addAttribute("signRequests", new PageImpl<>(new ArrayList<>()));
+        }
+        List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
         model.addAttribute("globalProperties", globalProperties);
         model.addAttribute("datas", datas);
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
+        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
         return "user/home/index";
     }
 

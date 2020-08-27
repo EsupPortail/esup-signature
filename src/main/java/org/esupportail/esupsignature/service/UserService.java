@@ -67,6 +67,9 @@ public class UserService {
 	private FormRepository formRepository;
 
 	@Resource
+	private WorkflowRepository workflowRepository;
+
+	@Resource
 	private MailService mailService;
 
 	@Resource
@@ -303,7 +306,7 @@ public class UserService {
 						if (toSignSharedSignRequest.getParentSignBook() != null) {
 							List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
 							if(datas.size() > 0) {
-								if (datas.get(0).getForm().equals(userShare.getForm())) {
+								if (userShare.getForms().contains(datas.get(0).getForm())) {
 									if (!signRequest.equals(toSignSharedSignRequest)) {
 										toEmails.add(toUser.getEmail());
 									}
@@ -339,7 +342,7 @@ public class UserService {
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 							if(toSignSharedSignRequest.getParentSignBook() != null) {
 								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
-								if(datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm())) {
+								if(datas.size() > 0 && userShare.getForms().contains(datas.get(0).getForm())) {
 									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
 										toSignSignRequests.add(toSignSharedSignRequest);
 										toEmails.add(toUser.getEmail());
@@ -367,6 +370,13 @@ public class UserService {
 		}
 		return suUsers;
 	}
+
+	public Boolean getSignShare(User user, User authUser) {
+		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.sign) > 0) {
+			return true;
+		};
+		return false;
+	 }
 
 	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
@@ -479,6 +489,14 @@ public class UserService {
 		return false;
 	}
 
+	public Boolean checkSignShare(User fromUser, User toUser) {
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), UserShare.ShareType.sign);
+		if(userShares.size() > 0) {
+			return true;
+		}
+		return false;
+	}
+
 	public Boolean checkShare(User fromUser, User toUser) {
 		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
 		if(userShares.size() > 0) {
@@ -498,18 +516,23 @@ public class UserService {
 			return true;
 		}
 		for(UserShare userShare : userShares) {
-			if(userShare.getForm().equals(form)) {
+			if(userShare.getForms().contains(form)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void createUserShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") List<User> userEmails, @RequestParam("beginDate") Date beginDate, @RequestParam("endDate") Date endDate, User user) {
+	public void createUserShare(List<Long> forms, List<Long> workflows, String type, List<User> userEmails, Date beginDate, Date endDate, User user) {
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
 		userShare.setShareType(UserShare.ShareType.valueOf(type));
-		userShare.setForm(formRepository.findById(service).get());
+		for(Long form : forms) {
+			userShare.getForms().add(formRepository.findById(form).get());
+		}
+		for(Long workflow : workflows) {
+			userShare.getWorkflows().add(workflowRepository.findById(workflow).get());
+		}
 		userShare.getToUsers().addAll(userEmails);
 		userShare.setBeginDate(beginDate);
 		userShare.setEndDate(endDate);

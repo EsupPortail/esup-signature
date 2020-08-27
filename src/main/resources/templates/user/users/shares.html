@@ -26,7 +26,8 @@
                         <thead class="thead-dark">
                         <tr>
                             <th>Type</th>
-                            <th>Service</th>
+                            <th>Formulaire</th>
+                            <th>Circuit</th>
                             <th>Utilisateurs</th>
                             <th>Date de début</th>
                             <th>Date de fin</th>
@@ -41,7 +42,14 @@
                                     <span th:if="${userShare.shareType.name() == 'create'}">Creation</span>
                                 </td>
                                 <td>
-                                    <span th:text="${userShare.form.title}"></span>
+                                    <ul th:each="form : ${userShare.forms}">
+                                        <li class="text-left" th:text="${form.title}"></li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <ul th:each="workflow : ${userShare.workflows}">
+                                        <li class="text-left" th:text="${workflow.name}"></li>
+                                    </ul>
                                 </td>
                                 <td>
                                     <th:block th:each="toUser : ${userShare.toUsers}">
@@ -114,18 +122,27 @@
                 <div class="modal-body">
                         <div class="form-group">
                             <label for="selectType">Type de délégation</label>
-                            <select id="selectType" class="slim-select" name="type" required>
+                            <select id="selectType" class="slim-select-simple" name="type" required>
                                 <option value="" disabled selected>Choisir un type</option>
                                 <option value="sign">Signature</option>
                                 <option value="create">Création</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="selectService">Service à déléguer</label>
-                            <select id="selectService" class="slim-select" name="service" required>
-                                <option value="" disabled selected>Choisir un service</option>
+                            <label for="selectForm">Formulaires à déléguer</label>
+                            <select id="selectForm" class="slim-select-simple" name="form" multiple>
+                                <option data-placeholder="true">Choisir un ou plusieurs formulaire(s)</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:value="${form.id}" th:text="${form.title}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectWorkflow">Circuits à déléguer</label>
+                            <select id="selectWorkflow" class="slim-select-simple" name="workflow" multiple>
+                                <option data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>
+                                <th:block th:each="workflow : ${workflows}">
+                                    <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
                                 </th:block>
                             </select>
                         </div>

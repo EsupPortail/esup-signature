@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.RecipientRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.repository.WorkflowStepRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.fs.FsAccessService;
@@ -22,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -69,6 +67,9 @@ public class WorkflowService {
     private UserService userService;
 
     @Resource
+    private UserShareRepository userShareRepository;
+
+    @Resource
     private UserPropertieService userPropertieService;
 
     @Resource
@@ -77,6 +78,7 @@ public class WorkflowService {
     @Resource
     private PdfService pdfService;
 
+    @PostConstruct
     public void initCreatorWorkflow() {
         User creator;
         if (userRepository.countByEppn("creator") == 0) {
@@ -127,12 +129,18 @@ public class WorkflowService {
         }
     }
 
-    public Set<Workflow> getWorkflowsForUser(User user) {
+    public Set<Workflow> getWorkflowsForUser(User user, User authUser) {
         Set<Workflow> workflows = new HashSet<>();
-        workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
-        workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
-        workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
-        workflows = workflows.stream().sorted((o1, o2) -> o1.getCreateDate().compareTo(o2.getCreateDate())).collect(Collectors.toCollection(LinkedHashSet::new));
+        if(user.equals(authUser)) {
+            workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
+            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
+            workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
+        } else {
+            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
+                workflows.addAll(userShare.getWorkflows());
+            }
+        }
+        workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
         return workflows;
     }
 

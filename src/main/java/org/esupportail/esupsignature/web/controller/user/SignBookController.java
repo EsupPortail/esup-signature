@@ -97,13 +97,13 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/{id}", params = "form", produces = "text/html")
     public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
-        //User user = userService.getCurrentUser();
+        User authUser = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
         model.addAttribute("logs", logs);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user));
+        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
         return "user/signbooks/update";
     }
 

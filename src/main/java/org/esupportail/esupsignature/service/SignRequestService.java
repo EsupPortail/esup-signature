@@ -739,10 +739,12 @@ public class SignRequestService {
 		return signRequest.getCreateBy().equals(authUser);
 	}
 
-	public boolean preAuthorizeView(Long id, User user) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
-			return true;
+	public boolean preAuthorizeView(Long id, User user, User authUser) {
+		if(user.equals(authUser) || userService.checkSignShare(user, authUser)) {
+			SignRequest signRequest = signRequestRepository.findById(id).get();
+			if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -893,15 +895,19 @@ public class SignRequestService {
 		if(signBook != null) {
 			User toUser = userService.getUserFromAuthentication();
 			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
+			for (UserShare userShare : userShares) {
+				if(userShare.getWorkflows().contains(signBook.getWorkflow()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+					return userShare.getUser();
+				}
+			}
 			Data data = dataRepository.findBySignBook(signBook).get(0);
 			if(data != null) {
 				for (UserShare userShare : userShares) {
-					if (userShare.getForm() != null && userShare.getForm().equals(data.getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+					if (userShare.getForms().contains(data.getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
 						return userShare.getUser();
 					}
 				}
 			}
-			//TODO share for workflows
 		}
 		return null;
 	}

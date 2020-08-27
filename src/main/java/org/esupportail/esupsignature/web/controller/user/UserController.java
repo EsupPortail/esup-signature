@@ -9,10 +9,7 @@ import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.UserKeystoreService;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.slf4j.Logger;
@@ -87,6 +84,9 @@ public class UserController {
 
 	@Resource
 	private FormService formService;
+
+	@Resource
+	private WorkflowService workflowService;
 
 	@Resource
 	private UserKeystoreService userKeystoreService;
@@ -179,13 +179,14 @@ public class UserController {
 		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
+		model.addAttribute("workflows", workflowService.getWorkflowsForUser(authUser, authUser));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "params");
 		return "user/users/shares";
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute User authUser, @RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+	public String addShare(@ModelAttribute User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
 			users.add(userService.createUser(userEmail));
@@ -200,7 +201,7 @@ public class UserController {
 				logger.error("error on parsing dates");
 			}
 		}
-		userService.createUserShare(service, type, users, beginDateDate, endDateDate, authUser);
+		userService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), type, users, beginDateDate, endDateDate, authUser);
 		return "redirect:/user/users/shares";
 	}
 

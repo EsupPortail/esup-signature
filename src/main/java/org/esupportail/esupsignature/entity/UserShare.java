@@ -18,8 +18,11 @@ public class UserShare {
     @ManyToMany
     private List<User> toUsers = new ArrayList<>();
 
-    @ManyToOne
-    private Form form;
+    @OneToMany
+    private List<Form> forms = new ArrayList<>();
+
+    @OneToMany
+    private List<Workflow> workflows = new ArrayList<>();
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date beginDate;
@@ -58,12 +61,20 @@ public class UserShare {
         this.toUsers = toUsers;
     }
 
-    public Form getForm() {
-        return form;
+    public List<Form> getForms() {
+        return forms;
     }
 
-    public void setForm(Form form) {
-        this.form = form;
+    public void setForms(List<Form> forms) {
+        this.forms = forms;
+    }
+
+    public List<Workflow> getWorkflows() {
+        return workflows;
+    }
+
+    public void setWorkflows(List<Workflow> workflows) {
+        this.workflows = workflows;
     }
 
     public Date getBeginDate() {
