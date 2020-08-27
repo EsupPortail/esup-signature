@@ -27,7 +27,7 @@
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                        href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0}" class="badge badge-danger mt-1 d-none d-md-inline"
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && user == authUser}" class="badge badge-danger mt-1 d-none d-md-inline"
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
@@ -37,7 +37,7 @@
                        href="/user/datas" class="btn btn-transparent text-left">
                         <i class="fab fa-firstdraft"></i> <span
                             class="nav-item-label d-none d-xl-inline">Mes brouillons</span>
-                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0}"
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && user == authUser}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
                     </a>

@@ -505,9 +505,7 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkServiceShare(UserShare.ShareType shareType, Form form) {
-		User fromUser = getCurrentUser();
-		User toUser = getUserFromAuthentication();
+	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, Form form) {
 		if(fromUser.equals(toUser)) {
 			return true;
 		}

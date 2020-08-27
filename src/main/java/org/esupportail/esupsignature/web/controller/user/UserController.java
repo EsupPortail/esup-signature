@@ -187,6 +187,8 @@ public class UserController {
 
 	@PostMapping("/add-share")
 	public String addShare(@ModelAttribute User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+    	if(form == null) form = new Long[] {};
+		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
 			users.add(userService.createUser(userEmail));

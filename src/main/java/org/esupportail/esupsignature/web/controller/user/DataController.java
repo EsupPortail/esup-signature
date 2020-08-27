@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -32,6 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -121,9 +123,22 @@ public class DataController {
 	}
 
 	@GetMapping
-	public String list(@ModelAttribute User user, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		Page<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft, pageable);
-		model.addAttribute("datas", datas);
+	public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+		List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+		Page<Data> datasPage;
+		if(!user.equals(authUser)) {
+			List<Data> datasOk = new ArrayList<>();
+			for(Data data : datas) {
+				if(userService.checkServiceShare(user, authUser, UserShare.ShareType.create, data.getForm())) {
+					datasOk.add(data);
+				}
+			}
+			datasPage = new PageImpl<Data>(datasOk, pageable, datas.size());
+		} else {
+			datasPage = new PageImpl<Data>(datas, pageable, datas.size());
+		}
+
+		model.addAttribute("datas", datasPage);
 		return "user/datas/list";
 	}
 
@@ -144,10 +159,10 @@ public class DataController {
 	}
 
 	@GetMapping("form/{id}")
-	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userService.checkServiceShare(UserShare.ShareType.create, form)) {
+		if(autorizedForms.contains(form) && userService.checkServiceShare(user, authUser, UserShare.ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}
