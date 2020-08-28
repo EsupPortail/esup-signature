@@ -96,11 +96,11 @@
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
                             <i class="fas fa-users-cog"></i> Gérer mes délégations
                         </a>
-                        <div class="dropdown-divider"></div>
-                        <a role="button" th:href="'/user/users/change-share'" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
+                        <div th:if="${user != authUser}" class="dropdown-divider"></div>
+                        <a th:if="${user != authUser}" role="button" th:href="'/user/users/change-share'" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                             <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                         </a>
-                        <div class="dropdown-divider"></div>
+                        <div th:if="${suUsers.size() > 0 && user == authUser}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
                             <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                                 <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>

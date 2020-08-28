@@ -364,7 +364,7 @@ public class UserService {
 	public List<User> getSuUsers(User authUser) {
 		List<User> suUsers = new ArrayList<>();
 		for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
-			if(!suUsers.contains(userShare.getUser())) {
+			if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
 				suUsers.add(userShare.getUser());
 			}
 		}
@@ -480,6 +480,7 @@ public class UserService {
 	public Boolean switchToShareUser(String eppn) {
 		if(eppn == null || eppn.isEmpty()) {
 			setSuEppn(null);
+			return true;
 		}else {
 			if(checkShare(getUserByEppn(eppn), getUserFromAuthentication())) {
 				setSuEppn(eppn);
@@ -491,16 +492,20 @@ public class UserService {
 
 	public Boolean checkSignShare(User fromUser, User toUser) {
 		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), UserShare.ShareType.sign);
-		if(userShares.size() > 0) {
-			return true;
+		for(UserShare userShare : userShares) {
+			if (checkUserShareDate(userShare)) {
+				return true;
+			}
 		}
 		return false;
 	}
 
 	public Boolean checkShare(User fromUser, User toUser) {
 		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
-		if(userShares.size() > 0) {
-			return true;
+		for(UserShare userShare : userShares) {
+			if (checkUserShareDate(userShare)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -514,9 +519,17 @@ public class UserService {
 			return true;
 		}
 		for(UserShare userShare : userShares) {
-			if(userShare.getForms().contains(form)) {
+			if(userShare.getForms().contains(form) && checkUserShareDate(userShare)) {
 				return true;
 			}
+		}
+		return false;
+	}
+
+	public Boolean checkUserShareDate(UserShare userShare) {
+		Date today = new Date();
+		if((today.after(userShare.getBeginDate()) || userShare.getBeginDate() == null) && (today.before(userShare.getEndDate()) || userShare.getEndDate() == null)) {
+			return true;
 		}
 		return false;
 	}

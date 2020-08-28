@@ -122,7 +122,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws Exception {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
 		//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
@@ -184,7 +184,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
-	public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		//User user = userService.getCurrentUser();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
@@ -207,7 +207,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/complete/{id}")
-	public String complete(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String complete(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
@@ -219,7 +219,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/pending/{id}")
-	public String pending(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
@@ -232,7 +232,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/comment/{id}")
-	public String comment(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {

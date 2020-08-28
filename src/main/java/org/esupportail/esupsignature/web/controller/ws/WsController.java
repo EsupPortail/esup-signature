@@ -107,7 +107,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@ModelAttribute User user, @PathVariable("id") Long id,
+    public Object addDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         //User user = userService.getCurrentUser();
         user.setIp(httpServletRequest.getRemoteAddr());
@@ -120,7 +120,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute User user,
+    public Object addDocumentInSignBookGroup(@ModelAttribute("user") User user,
                                              @PathVariable("name") String name,
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
@@ -138,7 +138,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute User user,
+    public Object addDocumentToNewSignRequest(@ModelAttribute("user") User user,
                                               @PathVariable("name") String name,
                                               @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
@@ -157,7 +157,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity addWorkflowStep(@ModelAttribute User user, @RequestParam String name,
+    public ResponseEntity addWorkflowStep(@ModelAttribute("user") User user, @RequestParam String name,
                                   @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         SignType signType = null;
@@ -292,7 +292,7 @@ public class WsController {
             }
     )
     @GetMapping(value = "/get-last-file-by-token/{token}")
-    public void getLastFileByToken(@ModelAttribute User user, @PathVariable("token") String token, HttpServletResponse response) {
+    public void getLastFileByToken(@ModelAttribute("user") User user, @PathVariable("token") String token, HttpServletResponse response) {
         //User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -318,7 +318,7 @@ public class WsController {
             @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
             }
     )@GetMapping(value = "/get-last-file-from-signrequest")
-    public ResponseEntity<Void> getLastFileFromSignRequest(@ModelAttribute User user, @RequestParam String token, HttpServletResponse response) {
+    public ResponseEntity<Void> getLastFileFromSignRequest(@ModelAttribute("user") User user, @RequestParam String token, HttpServletResponse response) {
         try {
             if (signRequestRepository.countByToken(token) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(token).get(0);

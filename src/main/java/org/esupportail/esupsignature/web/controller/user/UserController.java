@@ -101,7 +101,7 @@ public class UserController {
 	private UserPropertieRepository userPropertieRepository;
 
     @GetMapping
-    public String createForm(@ModelAttribute User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+    public String createForm(@ModelAttribute("authUser") User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
@@ -112,7 +112,7 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String create(@ModelAttribute("authUser") User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
@@ -135,7 +135,7 @@ public class UserController {
     }
 
 	@GetMapping("/delete-sign/{id}")
-	public String deleteSign(@ModelAttribute User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String deleteSign(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
     	Document signDocument = documentRepository.findById(id).get();
 		authUser.getSignImages().remove(signDocument);
 		redirectAttributes.addFlashAttribute("messageInfo", "Signature supprimée");
@@ -175,7 +175,7 @@ public class UserController {
 	}
 
 	@GetMapping("/shares")
-	public String params(@ModelAttribute User authUser, Model model) {
+	public String params(@ModelAttribute("authUser") User authUser, Model model) {
 		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
@@ -186,7 +186,7 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+	public String addShare(@ModelAttribute("authUser") User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
@@ -208,7 +208,7 @@ public class UserController {
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String delShare(@ModelAttribute User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String delShare(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
 		UserShare userShare = userShareRepository.findById(id).get();
 		if (userShare.getUser().equals(authUser)) {
 			userShareRepository.delete(userShare);
@@ -218,16 +218,22 @@ public class UserController {
 	}
 
 	@GetMapping("/change-share")
-	public String change(@ModelAttribute User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		if(userService.switchToShareUser(eppn)) {
-			redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
+			if(eppn == null || eppn.isEmpty()) {
+				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation désactivée");
+			} else {
+				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
+			}
+		} else {
+			redirectAttributes.addFlashAttribute("messageError", "Aucune délégation active en ce moment");
 		}
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	public String markAsRead(@ModelAttribute User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
+	public String markAsRead(@ModelAttribute("authUser") User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
 		userService.disableMessage(authUser, id);
 		String referer = httpServletRequest.getHeader("Referer");

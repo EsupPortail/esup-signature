@@ -88,9 +88,8 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute User user, @PathVariable("id") Long id, Model model,
+	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-    	//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -116,7 +115,7 @@ public class NexuProcessController {
 
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute User user, Model model,
+	public GetDataToSignResponse getDataToSign(@ModelAttribute("user") User user, Model model,
 								@RequestBody @Valid DataToSignParams params,
 								@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
 								@ModelAttribute("signRequestId") Long signRequestId) throws IOException {
@@ -160,7 +159,7 @@ public class NexuProcessController {
 
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute User user,@RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(@ModelAttribute("user") User user,@RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId) throws EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();

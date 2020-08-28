@@ -73,7 +73,7 @@ public class IndexController {
 	}
 	
 	@GetMapping
-	public String index(@ModelAttribute User user, Model model) {
+	public String index(@ModelAttribute("user") User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("system")) {
 			logger.info("utilisateur " + user.getEppn() + " connecté");

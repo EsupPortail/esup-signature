@@ -89,14 +89,14 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute User user, @PathVariable("id") Long id) {
+    public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/{id}", params = "form", produces = "text/html")
-    public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model model) {
+    public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
         User authUser = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
         List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
@@ -109,7 +109,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
         redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
@@ -118,7 +118,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) {
+    public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<Document> documents = signRequestService.getToSignDocuments(signRequest);
         try {
@@ -148,7 +148,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/update-step/{id}/{step}")
-    public String changeStepSignType(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String changeStepSignType(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                      @PathVariable("step") Integer step,
                                      @RequestParam(name="name", required = false) String name,
                                      @RequestParam(name="signType") SignType signType,
@@ -167,7 +167,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @PostMapping(value = "/add-step/{id}")
-    public String addStep(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
@@ -186,7 +186,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @DeleteMapping(value = "/remove-step/{id}/{step}")
-    public String removeStep(@ModelAttribute User user, @PathVariable("id") Long id, @PathVariable("step") Integer step) {
+    public String removeStep(@ModelAttribute("user") User user, @PathVariable("id") Long id, @PathVariable("step") Integer step) {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCurrentWorkflowStepNumber() <= step + 1) {
             signBookService.removeStep(signBook, step);
@@ -196,7 +196,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @PostMapping(value = "/add-workflow/{id}")
-    public String addWorkflow(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String addWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
@@ -210,7 +210,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @PostMapping(value = "/add-docs/{id}")
-    public String addDocumentToNewSignRequest(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String addDocumentToNewSignRequest(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         SignBook signBook = signBookRepository.findById(id).get();
@@ -224,7 +224,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
-    public String sendToSignBook(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String sendToSignBook(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                  @PathVariable("workflowStepId") Long workflowStepId,
                                  @RequestParam(value = "signBookNames") String[] signBookNames, RedirectAttributes redirectAttributes, HttpServletRequest request) throws EsupSignatureUserException {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -238,7 +238,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @DeleteMapping(value = "/remove-step-recipent/{id}/{step}")
-    public String removeStepRecipient(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                  @PathVariable("step") Integer step,
                                  @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -248,7 +248,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -259,7 +259,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
     @PostMapping(value = "/comment/{id}")
-    public String comment(@ModelAttribute User user, @PathVariable("id") Long id,
+    public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                           @RequestParam(value = "posX", required = false) Integer posX,
@@ -274,7 +274,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute User user,
+    public Object addDocumentInSignBookGroup(@ModelAttribute("user") User user,
                                              @PathVariable("name") String name,
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
@@ -290,7 +290,7 @@ public class SignBookController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequestUnique(@ModelAttribute User user,
+    public Object addDocumentToNewSignRequestUnique(@ModelAttribute("user") User user,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {

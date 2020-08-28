@@ -118,7 +118,7 @@ public class DataController {
 	private RecipientService recipientService;
 
 	@ModelAttribute("forms")
-	public List<Form> getForms(@ModelAttribute User user, User authUser) {
+	public List<Form> getForms(@ModelAttribute("user") User user, User authUser) {
 		return 	formService.getFormsByUser(user, authUser);
 	}
 
@@ -133,17 +133,18 @@ public class DataController {
 					datasOk.add(data);
 				}
 			}
-			datasPage = new PageImpl<Data>(datasOk, pageable, datas.size());
+			datasPage = new PageImpl<>(datasOk, pageable, datas.size());
 		} else {
-			datasPage = new PageImpl<Data>(datas, pageable, datas.size());
+			datasPage = new PageImpl<>(datas, pageable, datas.size());
 		}
 
 		model.addAttribute("datas", datasPage);
 		return "user/datas/list";
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}")
-	public String show(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if (user.getEppn().equals(data.getOwner())) {
@@ -158,6 +159,7 @@ public class DataController {
 		}
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("form/{id}")
 	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
@@ -198,7 +200,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/update")
-	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+	public String updateData(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
 		Data data = dataService.getDataById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
@@ -231,8 +233,7 @@ public class DataController {
 	}
 
 	@PostMapping("form/{id}")
-	public String addData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
+	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
 		Data data;
@@ -247,8 +248,7 @@ public class DataController {
 	}
 
 	@PutMapping("{id}")
-	public String updateData(@ModelAttribute User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
+	public String updateData(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getDataById(id);
 		if(page == null) {
 			page = 1;
@@ -277,7 +277,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@PostMapping("{id}/send")
-	public String sendDataById(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String sendDataById(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		Data data = dataService.getDataById(id);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
@@ -295,9 +295,9 @@ public class DataController {
 		return "redirect:/user/signrequests/";
 	}
 
+	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@DeleteMapping("{id}")
-	public String deleteData(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
+	public String deleteData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
 			dataService.delete(data);
@@ -324,8 +324,7 @@ public class DataController {
 	}
 
 	@GetMapping("{id}/reset")
-	public String resetData(@ModelAttribute User user, @PathVariable("id") Long id) {
-		//User user = userService.getCurrentUser();
+	public String resetData(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
 		Data data = dataService.getDataById(id);
 		if(user.getEmail().equals(data.getCreateBy())) {
 			signBookService.delete(data.getSignBook());
@@ -339,8 +338,7 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/clone")
-	public String cloneData(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		//User user = userService.getCurrentUser();
+	public String cloneData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getDataById(id);
 		Data cloneData = dataService.cloneData(data);
 		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
@@ -349,7 +347,7 @@ public class DataController {
 
 	@PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
 	@GetMapping("{id}/clone-from-signrequests")
-	public String cloneDataFromSignRequest(@ModelAttribute User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+	public String cloneDataFromSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Data data = dataService.getDataFromSignRequest(signRequest);
 		Data cloneData = dataService.cloneData(data);
