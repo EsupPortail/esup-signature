@@ -17,11 +17,11 @@ export class GlobalUi {
     }
 
     initListeners() {
-        //$(document).on('click', e => this.closeUserMenu(e));
+        $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
+
         $("#closeUserInfo").on('click', function() {
             $("#user-toggle").click();
         });
-        //$(document).on('click', e => this.scrollToHash());
         this.sideBar.on('mouseover', e => this.disableBodyScroll());
         this.sideBar.on('mouseout', e => this.enableBodyScroll());
         this.clickableRow.on('click',  function() {
@@ -35,10 +35,6 @@ export class GlobalUi {
             $(e.target).addClass("invalid");
             $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
         }, true);
-
-        // document.addEventListener('change', function(e){
-        //     $(e.target).removeClass("invalid")
-        // }, true);
 
         $(".postit-global").on('click', function () {
             $(this).toggleClass("postit-small");
@@ -67,7 +63,7 @@ export class GlobalUi {
         if (window.innerWidth < 992) {
             this.hideSideBar();
         } else {
-            if(this.sideBarStatus === 'off') {
+            if(this.sideBarStatus === 'on') {
                 this.showSideBar();
             }
         }
@@ -111,14 +107,13 @@ export class GlobalUi {
     }
 
     initSideBar() {
-        $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
+        console.info("init side bar : " + this.sideBarStatus);
         if(this.sideBarStatus == null) {
             localStorage.setItem('sideBarStatus', 'on');
             this.sideBarStatus = localStorage.getItem('sideBarStatus');
         }
-
         if(this.sideBarStatus === 'off' && !this.sideBar.hasClass('active')) {
-            this.toggleSideBar();
+            this.hideSideBar();
         }
 
         if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
@@ -139,6 +134,7 @@ export class GlobalUi {
     }
 
     toggleSideBar() {
+        console.info("toggle side bar");
         this.sideBar.toggleClass('active');
         this.sideBar2.toggleClass('d-none');
         this.sideBarLabels.toggleClass('d-none');
@@ -153,6 +149,7 @@ export class GlobalUi {
     }
 
     showSideBar() {
+        console.debug("show side");
         this.sideBar.removeClass('active');
         this.sideBar2.removeClass('d-none');
         this.sideBarLabels.removeClass('d-none');
@@ -162,7 +159,6 @@ export class GlobalUi {
 
     hideSideBar() {
         console.debug("hide side");
-        localStorage.setItem('sideBarStatus', 'on');
         this.sideBar.addClass('active');
         this.sideBar2.addClass('d-none');
         this.sideBarLabels.addClass('d-none');
