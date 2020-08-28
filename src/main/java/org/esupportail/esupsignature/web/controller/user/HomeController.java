@@ -88,10 +88,9 @@ public class HomeController {
     private DataRepository dataRepository;
 
     @GetMapping
-    public String list(@ModelAttribute("user") User user, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
-        User authUser = userService.getUserFromAuthentication();
+    public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
         List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        if(userService.getSignShare(user, authUser)) {
+        if(user.equals(authUser) || userService.getSignShare(user, authUser)) {
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         } else {
             model.addAttribute("signRequests", new PageImpl<>(new ArrayList<>()));

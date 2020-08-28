@@ -15,8 +15,6 @@ export default class UserUi {
         this.userSignatureCrop.addEventListener('started', e => this.userSignaturePad.clear());
     }
 
-
-
     checkAlertFrequency() {
         let selectedValue = this.emailAlertFrequencySelect.options[this.emailAlertFrequencySelect.selectedIndex].value;
         if(selectedValue === 'daily') {

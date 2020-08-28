@@ -3,6 +3,10 @@
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="fragments/head :: head"></head>
+<script th:inline="javascript" type="module">
+    import {default as ShareUi} from "/js/modules/shareUi.js";
+    new ShareUi();
+</script>
 <body>
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
@@ -128,7 +132,7 @@
                                 <option value="create">Création</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div id="selectFormDiv" class="form-group d-none">
                             <label for="selectForm">Formulaires à déléguer</label>
                             <select id="selectForm" class="slim-select-simple" name="form" multiple>
                                 <option data-placeholder="true">Choisir un ou plusieurs formulaire(s)</option>
@@ -137,7 +141,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div id="selectWorkflowDiv" class="form-group d-none">
                             <label for="selectWorkflow">Circuits à déléguer</label>
                             <select id="selectWorkflow" class="slim-select-simple" name="workflow" multiple>
                                 <option data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>

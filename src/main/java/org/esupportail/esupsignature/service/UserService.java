@@ -528,7 +528,7 @@ public class UserService {
 
 	public Boolean checkUserShareDate(UserShare userShare) {
 		Date today = new Date();
-		if((today.after(userShare.getBeginDate()) || userShare.getBeginDate() == null) && (today.before(userShare.getEndDate()) || userShare.getEndDate() == null)) {
+		if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
 			return true;
 		}
 		return false;

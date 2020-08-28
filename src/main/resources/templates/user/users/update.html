@@ -4,7 +4,6 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/js/modules/userUi.js";
-
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
 </script>
 <body>
