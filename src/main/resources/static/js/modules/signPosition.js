@@ -22,6 +22,7 @@ export class SignPosition {
         this.fontSize = 12;
         this.pointItMove = false;
         this.dateActive = false;
+        this.nameActive = false;
         this.visualActive = true;
         this.cross = $('#cross');
         this.borders = $('#borders');
@@ -255,6 +256,9 @@ export class SignPosition {
         this.cross.css('background-size', this.getCurrentSign().signWidth * this.currentScale / this.fixRatio);
         $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         $('#textDate').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        $('#textDate').css('top', "-" + 30 * this.currentScale * this.signScale + "px");
+        $('#textName').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        $('#textName').css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();
     }
 
@@ -305,9 +309,11 @@ export class SignPosition {
         if(this.visualActive) {
             this.visualActive = false;
             $('#dateButton').prop('disabled', true);
+            $('#nameButton').prop('disabled', true);
         } else {
             this.visualActive = true;
             $('#dateButton').prop('disabled', false);
+            $('#nameButton').prop('disabled', false);
         }
         this.cross.toggle();
         $('#pen').toggleClass('btn-outline-success btn-outline-dark').children().toggleClass('fa-eye-slash fa-eye');
@@ -316,14 +322,25 @@ export class SignPosition {
     toggleDate() {
         console.log("toggle date");
         $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
-        var textDate;
         if(!this.dateActive) {
             this.dateActive = true;
-            this.borders.append("<span id='textDate' class='align-top' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+                this.borders.append("<span id='textDate' class='align-top' style='position : relative; float: left; clear: left; top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
         } else {
             this.dateActive = false;
-            textDate = document.getElementById("textDate");
-            textDate.remove();
+            document.getElementById("textDate").remove();
         }
     }
+
+    toggleName() {
+        console.log("toggle name");
+        $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
+        if(!this.nameActive) {
+            this.nameActive = true;
+            this.borders.prepend("<span id='textName' class='align-top' style='position : relative;  float: left; clear: left; top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Par machin</span>");
+        } else {
+            this.nameActive = false;
+            document.getElementById("textName").remove();
+        }
+    }
+
 }

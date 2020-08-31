@@ -33,6 +33,7 @@ export class WorkspacePdf {
                     document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
                 }
                 document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+                document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
             }
             document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
         }

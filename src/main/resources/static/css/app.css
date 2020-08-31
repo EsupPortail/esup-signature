@@ -329,6 +329,10 @@ input:checked + .slider:before {
     font-family: "DejaVu Sans Condensed";
 }
 
+#textName {
+    font-family: "DejaVu Sans Condensed";
+}
+
 .wrapper {
     display: block;
 }
