@@ -204,6 +204,25 @@ public class UserService {
 		return eppn;
 	}
 
+	public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
+		User user = getUserByEppn(eppn);
+		if(!user.getEppn().equals(getSystemUser().getEppn())) {
+			return user;
+		}
+		if(ldapPersonService != null) {
+			List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(eppn);
+			if (personLdaps.size() > 0) {
+				String name = personLdaps.get(0).getSn();
+				String firstName = personLdaps.get(0).getGivenName();
+				String mail = personLdaps.get(0).getMail();
+				return createUser(eppn, name, firstName, mail);
+			} else {
+				throw new EsupSignatureUserException("ldap user not found : " + eppn);
+			}
+		}
+		return null;
+	}
+
 	public User createUser(String mail) throws EsupSignatureUserException {
 		if(ldapPersonService != null) {
 			List<PersonLdap> personLdaps = personLdapRepository.findByMail(mail);

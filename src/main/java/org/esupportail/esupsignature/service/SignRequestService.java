@@ -770,7 +770,7 @@ public class SignRequestService {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
 			log.addAll(logRepository.findByEppnForAndSignRequestId(user.getEppn(), signRequest.getId()));
-			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
+			if (signRequest.getCreateBy().equals(user) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 				return true;
 			}
 		}
@@ -900,10 +900,10 @@ public class SignRequestService {
 					return userShare.getUser();
 				}
 			}
-			Data data = dataRepository.findBySignBook(signBook).get(0);
-			if(data != null) {
+			List<Data> datas = dataRepository.findBySignBook(signBook);
+			if(datas.size() > 0) {
 				for (UserShare userShare : userShares) {
-					if (userShare.getForms().contains(data.getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+					if (userShare.getForms().contains(datas.get(0).getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
 						return userShare.getUser();
 					}
 				}

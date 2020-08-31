@@ -183,6 +183,8 @@ public class WorkflowService {
                         if(workflow.getScanPdfMetadatas()) {
                             Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
                             String signType = metadatas.get("sign_type_default_val");
+                            User creator = userService.createUserWithEppn(metadatas.get("Creator"));
+                            signRequest.setCreateBy(creator);
                             for (String metadataKey : metadatas.keySet()) {
                                 String[] keySplit = metadataKey.split("_");
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
