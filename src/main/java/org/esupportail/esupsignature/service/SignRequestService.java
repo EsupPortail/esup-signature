@@ -312,7 +312,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean addName, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException {
 		step = "Démarrage de la signature";
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
@@ -330,14 +330,14 @@ public class SignRequestService {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 					if (visual) {
 						setStep("Apposition de la signature");
-						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate, addName);
 					}
 				}
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 					signedInputStream = filledInputStream;
 					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user, addDate);
+						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user, addDate, addName);
 					}
 				}
 			}
@@ -349,7 +349,7 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				bigFileService.setBinaryFileStream(toSignDocuments.get(0).getBigFile(), filledInputStream, filledInputStream.available());
 			}
-			certSign(signRequest, user, password, addDate, visual);
+			certSign(signRequest, user, password, addDate, addName, visual);
 		}
 		SignRequestParams params = signRequest.getCurrentSignRequestParams();
 		if (signType.equals(SignType.visa)) {
@@ -442,7 +442,7 @@ public class SignRequestService {
 
 	}
 
-	public void certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
+	public void certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean addName, boolean visual) throws EsupSignatureException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
@@ -481,7 +481,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate, addName);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {

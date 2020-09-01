@@ -3,7 +3,7 @@ import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber, signImages) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber, signImages, userName) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -13,7 +13,7 @@ export class SignUi {
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         if(isPdf) {
-            this.workspace = new WorkspacePdf(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages);
+            this.workspace = new WorkspacePdf(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName);
         }
         this.xmlHttpMain = new XMLHttpRequest();
         this.signComment = $('#signComment');
@@ -80,6 +80,7 @@ export class SignUi {
             signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&addDate=" + this.workspace.signPosition.dateActive +
+                "&addName=" + this.workspace.signPosition.nameActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
                 "&formData=" + JSON.stringify(formData) +

@@ -200,16 +200,17 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, String text, int width, int height) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, String text, int lineNumber) throws IOException {
 		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight() + 30 * (lineNumber + 1), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+		graphics2D.drawImage(signImage, 0, 30 * (lineNumber + 1), null);
+		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 //		graphics2D.setColor(new Color(255,255,255,0 ));
 //		graphics2D.fillRect(0, 0, signImage.getWidth(), signImage.getHeight());
-		graphics2D.drawImage(signImage, 0, 0, null);
-		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 //		graphics2D.setColor(Color.black);
-		if(text != null && !text.isEmpty()) {
+		if(text != null && !text.isEmpty() && lineNumber > 0) {
+			lineNumber = 1;
 			Map<TextAttribute, Object> map = new Hashtable<>();
 			int fontSize = 36;
 			//map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
@@ -220,9 +221,14 @@ public class FileService {
 			for (String line : text.split("\n")) {
 				FontMetrics fm = graphics2D.getFontMetrics();
 				int x = 0;
-				int y = fm.getHeight();
+				int y = fm.getHeight() * lineNumber;
 				graphics2D.drawString(line, x, y);
+				lineNumber++;
 			}
+			FontMetrics fm = graphics2D.getFontMetrics();
+			int x = 0;
+			int y = fm.getHeight() * lineNumber + 1;
+			graphics2D.drawString("", x, y);
 		}
 		graphics2D.dispose();
 		File fileImage = getTempFile("sign.png");

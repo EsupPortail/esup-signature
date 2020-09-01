@@ -325,12 +325,10 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
-#textDate {
+.sign-text {
     font-family: "DejaVu Sans Condensed";
-}
-
-#textName {
-    font-family: "DejaVu Sans Condensed";
+    color: black;
+    position : relative; float: left; clear: left;
 }
 
 .wrapper {

@@ -2,7 +2,7 @@ import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class SignPosition {
 
-    constructor(xPos, yPos, signWidth, signHeight, signPageNumber, signImages) {
+    constructor(xPos, yPos, signWidth, signHeight, signPageNumber, signImages, userName) {
         console.info("Starting sign position tools");
         this.currentScale = 1;
         this.signScale = 1;
@@ -17,6 +17,7 @@ export class SignPosition {
         signRequestParams.signHeight = signHeight * this.fixRatio;
         this.signRequestParamses = [signRequestParams];
         this.signImages = signImages;
+        this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
         this.fontSize = 12;
@@ -324,7 +325,7 @@ export class SignPosition {
         $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
         if(!this.dateActive) {
             this.dateActive = true;
-                this.borders.append("<span id='textDate' class='align-top' style='position : relative; float: left; clear: left; top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm') +"</span>");
+                this.borders.append("<span id='textDate' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm:ss') +"</span>");
         } else {
             this.dateActive = false;
             document.getElementById("textDate").remove();
@@ -333,10 +334,10 @@ export class SignPosition {
 
     toggleName() {
         console.log("toggle name");
-        $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
+        $('#nameButton').toggleClass('btn-outline-success btn-outline-dark');
         if(!this.nameActive) {
             this.nameActive = true;
-            this.borders.prepend("<span id='textName' class='align-top' style='position : relative;  float: left; clear: left; top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Par machin</span>");
+            this.borders.prepend("<span id='textName' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Signé par "+ this.userName +"</span>");
         } else {
             this.nameActive = false;
             document.getElementById("textName").remove();

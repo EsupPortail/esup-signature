@@ -180,20 +180,23 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate, boolean addName) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		int[] signSize;
 		InputStream signImage;
-		if(addDate) {
-			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-			String text = "Le " + dateFormat.format(new Date());
-			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
-		} else {
-			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+		String addText = "";
+		int addHeight = 0;
+		if(addName) {
+			addText += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
+			addHeight += 30;
 		}
-
+		if (addDate) {
+			addText +="Le " + dateFormat.format(new Date());
+			addHeight += 30;
+		}
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, addHeight);
 		fileDocumentImage = new InMemoryDocument(signImage, "sign.png");
 //		signSize = pdfService.getSignSize(signImage);
 
