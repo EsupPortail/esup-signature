@@ -42,8 +42,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -185,37 +188,37 @@ public class SignService {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
-		DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
 		String addText = "";
-		int addHeight = 0;
+		int lineNumber = 0;
 		if(addName) {
-			addText += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
-			addHeight += 30;
+			addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
+			lineNumber++;
 		}
 		if (addDate) {
 			addText +="Le " + dateFormat.format(new Date());
-			addHeight += 30;
+			lineNumber++;
 		}
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, addHeight);
-		fileDocumentImage = new InMemoryDocument(signImage, "sign.png");
-//		signSize = pdfService.getSignSize(signImage);
-
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber);
+		BufferedImage bufferedSignImage = ImageIO.read(signImage);
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(bufferedSignImage, "png", os);
+		fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
-		if (pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(signRequestParams.getSignWidth());
-			imageParameters.setHeight(signRequestParams.getSignHeight());
+		if(pdfParameters.getRotation() == 0) {
+			imageParameters.setWidth(bufferedSignImage.getWidth() / 4);
+			imageParameters.setHeight(bufferedSignImage.getHeight() / 4);
 			imageParameters.setxAxis(signRequestParams.getxPos());
-			imageParameters.setyAxis(signRequestParams.getyPos());
 		} else {
-			imageParameters.setWidth(signRequestParams.getSignHeight());
-			imageParameters.setHeight(signRequestParams.getSignWidth());
+			imageParameters.setWidth(bufferedSignImage.getHeight() / 4);
+			imageParameters.setHeight(bufferedSignImage.getWidth() / 4);
 			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
-			imageParameters.setyAxis(signRequestParams.getyPos());
 		}
+		imageParameters.setyAxis(signRequestParams.getyPos());
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
