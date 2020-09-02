@@ -1,8 +1,5 @@
 package org.esupportail.esupsignature.entity;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -79,10 +76,6 @@ public class User {
 
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
 	public String getName() {

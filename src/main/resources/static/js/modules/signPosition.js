@@ -22,8 +22,6 @@ export class SignPosition {
         this.pointItEnable = true;
         this.fontSize = 12;
         this.pointItMove = false;
-        this.dateActive = false;
-        this.nameActive = false;
         this.visualActive = true;
         this.cross = $('#cross');
         this.borders = $('#borders');
@@ -86,10 +84,13 @@ export class SignPosition {
         signRequestParams.signWidth = this.getCurrentSign().signWidth;
         signRequestParams.signHeight = this.getCurrentSign().signHeight;
         signRequestParams.signImageNumber = this.getCurrentSign().signImageNumber;
+        signRequestParams.addDate = false;
+        signRequestParams.addName = false;
         this.signRequestParamses.push(signRequestParams);
         let okSign = this.cross.clone();
         okSign.attr("id", "sign_" + this.currentSign)
         okSign.children().removeClass("anim-border");
+        okSign.children().children().attr("id", "sign_adds_" + this.currentSign)
         okSign.appendTo(this.pdf);
         this.currentSign++;
         this.updateCrossPosition();
@@ -97,6 +98,8 @@ export class SignPosition {
         this.cross.css("position", "fixed");
         this.cross.css("margin-left", "270px");
         this.cross.css("margin-top", "135px");
+        this.cross.css("margin-top", "135px");
+        this.cross.children().children().remove();
         this.hideButtons();
     }
 
@@ -323,11 +326,11 @@ export class SignPosition {
     toggleDate() {
         console.log("toggle date");
         $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
-        if(!this.dateActive) {
-            this.dateActive = true;
+        if(!this.getCurrentSign().addDate) {
+            this.getCurrentSign().addDate = true;
                 this.borders.append("<span id='textDate' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le "+ moment().format('DD/MM/YYYY HH:mm:ss') +"</span>");
         } else {
-            this.dateActive = false;
+            this.getCurrentSign().addDate = false;
             document.getElementById("textDate").remove();
         }
     }
@@ -335,11 +338,11 @@ export class SignPosition {
     toggleName() {
         console.log("toggle name");
         $('#nameButton').toggleClass('btn-outline-success btn-outline-dark');
-        if(!this.nameActive) {
-            this.nameActive = true;
+        if(!this.getCurrentSign().addName) {
+            this.getCurrentSign().addName = true;
             this.borders.prepend("<span id='textName' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Signé par "+ this.userName +"</span>");
         } else {
-            this.nameActive = false;
+            this.getCurrentSign().addName = false;
             document.getElementById("textName").remove();
         }
     }

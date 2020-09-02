@@ -16,6 +16,7 @@ export class SignUi {
             this.workspace = new WorkspacePdf(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName);
         }
         this.xmlHttpMain = new XMLHttpRequest();
+        this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.initListeners();
     }
@@ -74,24 +75,20 @@ export class SignUi {
         });
         console.log(formData);
         let csrf = document.getElementsByName("_csrf")[0];
-        let signRequestUrlParams;
         if(this.workspace != null) {
-            let signRequestParams = this.workspace.signPosition.signRequestParamses[0];
-            signRequestUrlParams = "password=" + document.getElementById("password").value +
+            this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
-                "&addDate=" + this.workspace.signPosition.dateActive +
-                "&addName=" + this.workspace.signPosition.nameActive +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
                 "&formData=" + JSON.stringify(formData) +
                 "&" + csrf.name + "=" + csrf.value
             ;
         } else {
-            signRequestUrlParams = "password=" + document.getElementById("password").value +
+            this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&" + csrf.name + "=" + csrf.value;
         }
-        console.info("params to send : " + signRequestUrlParams);
-        this.sendData(signRequestUrlParams);
+        console.info("params to send : " + this.signRequestUrlParams);
+        this.sendData(this.signRequestUrlParams);
     }
 
     sendData(signRequestUrlParams) {
@@ -141,7 +138,7 @@ export class SignUi {
         } else if(result === "initNexu") {
             console.info("redirect to NexU sign proccess");
             clearInterval(this.getProgressTimer);
-            document.location.href="/user/nexu-sign/" + this.signRequestId;
+            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
         }else if(result === "end") {
             console.info("get end");
             clearInterval(this.getProgressTimer);

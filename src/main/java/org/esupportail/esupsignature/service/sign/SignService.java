@@ -183,7 +183,7 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate, boolean addName) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
@@ -191,11 +191,11 @@ public class SignService {
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
 		String addText = "";
 		int lineNumber = 0;
-		if(addName) {
+		if(signRequestParams.isAddName()) {
 			addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
 			lineNumber++;
 		}
-		if (addDate) {
+		if (signRequestParams.isAddDate()) {
 			addText +="Le " + dateFormat.format(new Date());
 			lineNumber++;
 		}
@@ -209,16 +209,18 @@ public class SignService {
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
+		int heightAdjusted = Math.round(((float) signRequestParams.getSignWidth() / bufferedSignImage.getWidth()) * bufferedSignImage.getHeight());
 		if(pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(bufferedSignImage.getWidth() / 4);
-			imageParameters.setHeight(bufferedSignImage.getHeight() / 4);
+			imageParameters.setWidth(signRequestParams.getSignWidth());
+			imageParameters.setHeight(heightAdjusted);
 			imageParameters.setxAxis(signRequestParams.getxPos());
 		} else {
-			imageParameters.setWidth(bufferedSignImage.getHeight() / 4);
-			imageParameters.setHeight(bufferedSignImage.getWidth() / 4);
+			imageParameters.setWidth(heightAdjusted);
+			imageParameters.setHeight(signRequestParams.getSignWidth());
 			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
 		}
-		imageParameters.setyAxis(signRequestParams.getyPos());
+		int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
+		imageParameters.setyAxis(yPos);
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
@@ -228,7 +230,6 @@ public class SignService {
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
-		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
 		pAdESSignatureParameters.setSignerName(user.getFirstname() + " " + user.getName());
 		return pAdESSignatureParameters;
 	}

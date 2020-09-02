@@ -88,7 +88,7 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model,
+	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam("addDate") Boolean addDate, @RequestParam("addName") Boolean addName, Model model,
 										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
@@ -105,6 +105,8 @@ public class NexuProcessController {
 			model.addAttribute("rootUrl", globalProperties.getRootUrl());
 			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
 			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
+			model.addAttribute("addDate", addDate);
+			model.addAttribute("addName", addName);
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {
@@ -132,7 +134,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size()), documentForm.getDocumentToSign(), user, false, false);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size()), documentForm.getDocumentToSign(), user);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}

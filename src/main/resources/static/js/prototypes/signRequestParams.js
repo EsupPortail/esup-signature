@@ -6,8 +6,8 @@ export class SignRequestParams {
         this.signPageNumber;
         this.xPos;
         this.yPos;
-        this.signWidth;
-        this.signHeight;
+        this.addName;
+        this.addDate;
         Object.assign(this, currentSignRequestParams);
     }
 

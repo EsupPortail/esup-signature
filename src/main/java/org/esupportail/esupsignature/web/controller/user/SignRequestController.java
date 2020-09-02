@@ -332,12 +332,8 @@ public class SignRequestController {
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
-                               @RequestParam(value = "addDate", required = false) Boolean addDate,
-                               @RequestParam(value = "addName", required = false) Boolean addName,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
-        if (addDate == null) addDate = false;
-        if (addName == null) addName = false;
         if (visual == null) visual = true;
         ObjectMapper objectMapper = new ObjectMapper();
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -378,7 +374,7 @@ public class SignRequestController {
         }
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, addDate, addName, visual, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, formDataMap);
             signRequestService.setStep("end");
             return new ResponseEntity(HttpStatus.OK);
         } catch (EsupSignatureException | IOException e) {
