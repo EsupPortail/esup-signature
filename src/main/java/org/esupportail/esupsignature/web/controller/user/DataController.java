@@ -159,7 +159,6 @@ public class DataController {
 		}
 	}
 
-	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("form/{id}")
 	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
