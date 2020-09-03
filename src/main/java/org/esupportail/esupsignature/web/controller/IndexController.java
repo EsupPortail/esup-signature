@@ -45,10 +45,7 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
-	@ModelAttribute("userMenu")
-	public String getActiveRole() {
-		return "active";
-	}
+
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {

@@ -90,7 +90,9 @@
                 </li>
 
                 <li class="nav-item dropdown" th:if="${user == authUser}">
-                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarShareDropdown"
+                    <a class="btn btn-transparent text-left text-white dropdown-toggle"
+                       th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
+                       href="#" id="navbarShareDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-md-inline">Délégation</span>
                     </a>
@@ -112,7 +114,10 @@
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && user == authUser}" title="Menu admin">
-                    <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"><i class="fas fa-crown"></i> <span class="nav-item-label d-none d-xxl-inline">Admin</span></a>
+                    <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
+                       th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
+                        <i class="fas fa-crown"></i>Admin
+                    </a>
                 </li>
             </ul>
             <ul class="navbar-nav" th:if="${user.name != null}">

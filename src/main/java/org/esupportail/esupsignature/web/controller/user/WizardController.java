@@ -36,11 +36,6 @@ public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
-    @ModelAttribute("userMenu")
-    public String getActiveMenu() {
-        return "active";
-    }
-
     @ModelAttribute(value = "user", binding = false)
     public User getUser() {
         return userService.getCurrentUser();

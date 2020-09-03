@@ -54,11 +54,6 @@ public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
-    @ModelAttribute("userMenu")
-    public String getActiveRole() {
-        return "active";
-    }
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";

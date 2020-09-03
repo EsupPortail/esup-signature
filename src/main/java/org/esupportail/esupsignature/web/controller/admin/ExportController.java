@@ -32,11 +32,6 @@ public class ExportController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ExportController.class);
 
-	@ModelAttribute("userMenu")
-	public String getRoleMenu() {
-		return "active";
-	}
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "validation";

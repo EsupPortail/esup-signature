@@ -46,10 +46,7 @@ public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
 
-	@ModelAttribute("userMenu")
-	public String getActiveRole() {
-		return "active";
-	}
+
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {

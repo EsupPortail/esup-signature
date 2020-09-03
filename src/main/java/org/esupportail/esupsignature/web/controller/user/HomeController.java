@@ -42,11 +42,6 @@ public class HomeController {
     @Resource
     private GlobalProperties globalProperties;
 
-    @ModelAttribute("userMenu")
-    public String getRoleMenu() {
-        return "active";
-    }
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "home";

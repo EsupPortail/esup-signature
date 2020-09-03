@@ -108,6 +108,7 @@ public class UserController {
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 			model.addAttribute("referer", request.getHeader("referer"));
 		}
+		model.addAttribute("activeMenu", "settings");
 		return "user/users/update";
     }
     
@@ -170,7 +171,7 @@ public class UserController {
 		model.addAttribute("userProperties", userProperties);
 		model.addAttribute("forms", formService.getFormsByUser(user, user));
 		model.addAttribute("users", userRepository.findAll());
-		model.addAttribute("activeMenu", "params");
+		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
@@ -181,7 +182,7 @@ public class UserController {
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
 		model.addAttribute("workflows", workflowService.getWorkflowsForUser(authUser, authUser));
 		model.addAttribute("users", userRepository.findAll());
-		model.addAttribute("activeMenu", "params");
+		model.addAttribute("activeMenu", "shares");
 		return "user/users/shares";
 	}
 
