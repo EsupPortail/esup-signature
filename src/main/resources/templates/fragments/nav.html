@@ -116,7 +116,7 @@
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && user == authUser}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
-                        <i class="fas fa-crown"></i>Admin
+                        <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
                     </a>
                 </li>
             </ul>

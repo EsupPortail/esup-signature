@@ -29,13 +29,13 @@
                     <table class="table table-hover table-striped table-borderless">
                         <thead class="thead-dark">
                         <tr>
-                            <th>Type</th>
-                            <th>Formulaire</th>
-                            <th>Circuit</th>
-                            <th>Utilisateurs</th>
-                            <th>Date de début</th>
-                            <th>Date de fin</th>
-                            <th>Actions</th>
+                            <th style="width: 20%">Type de délégation</th>
+                            <th style="width: 15%">Formulaire</th>
+                            <th style="width: 15%">Circuit</th>
+                            <th style="width: 15%">Utilisateurs</th>
+                            <th style="width: 10%">Date de début</th>
+                            <th style="width: 10%">Date de fin</th>
+                            <th style="width: 5%">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -43,7 +43,7 @@
                             <tr>
                                 <td>
                                     <span th:if="${userShare.shareType.name() == 'sign'}">Signature</span>
-                                    <span th:if="${userShare.shareType.name() == 'create'}">Creation</span>
+                                    <span th:if="${userShare.shareType.name() == 'create'}">Creation de formulaires ou de circuits</span>
                                 </td>
                                 <td>
                                     <ul th:each="form : ${userShare.forms}">
@@ -127,9 +127,9 @@
                         <div class="form-group">
                             <label for="selectType">Type de délégation</label>
                             <select id="selectType" class="slim-select-simple" name="type" required>
-                                <option data-placeholder="true">Choisir un type</option>
+                                <option data-placeholder="true">Choisir un type de délégation</option>
                                 <option value="sign">Signature</option>
-                                <option value="create">Création</option>
+                                <option value="create">Creation de formulaires ou de circuits</option>
                             </select>
                         </div>
                         <div id="selectFormDiv" class="form-group d-none">
