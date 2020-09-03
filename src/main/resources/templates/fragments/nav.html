@@ -1,5 +1,7 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
+<!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <header th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
@@ -31,7 +33,7 @@
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
-                <li class="nav-item text-white">
+                <li class="nav-item text-white" th:if="${user == authUser || @userService.checkOneServiceShare(user, authUser, 'create')}">
                     <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, 'draft').size()}"
                        th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
@@ -42,7 +44,7 @@
 
                     </a>
                 </li>
-                <li class="nav-item text-white">
+                <li class="nav-item text-white" th:if="${user == authUser || @userService.checkOneServiceShare(user, authUser, 'sign')}" >
                     <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user, 'pending').size()}"
                        th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
@@ -50,7 +52,7 @@
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown" th:if="${user == authUser}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
@@ -87,7 +89,7 @@
                     </div>
                 </li>
 
-                <li class="nav-item dropdown">
+                <li class="nav-item dropdown" th:if="${user == authUser}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarShareDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-md-inline">Délégation</span>
@@ -95,10 +97,6 @@
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarShareDropdown" >
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
                             <i class="fas fa-users-cog"></i> Gérer mes délégations
-                        </a>
-                        <div th:if="${user != authUser}" class="dropdown-divider"></div>
-                        <a th:if="${user != authUser}" role="button" th:href="'/user/users/change-share'" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
-                            <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && user == authUser}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
@@ -108,7 +106,12 @@
                         </th:block>
                     </div>
                 </li>
-                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" title="Menu admin">
+                <li class="nav-item dropdown" th:if="${user != authUser}">
+                    <a th:if="${user != authUser}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
+                        <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
+                    </a>
+                </li>
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && user == authUser}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"><i class="fas fa-crown"></i> <span class="nav-item-label d-none d-xxl-inline">Admin</span></a>
                 </li>
             </ul>
@@ -129,11 +132,8 @@
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
                        aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
                        aria-controls="user-infos" data-toggle="collapse">
-                        <b th:if="${isUserOnSu}"
-                           class="d-inline nav-link text-light"
-                           th:text="'(' + ${user.firstname} + ' ' + ${user.name} +')'"></b>
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
-                           th:text="${authUser.firstname} + ' ' + ${authUser.name}"></b>
+                           th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                 </li>

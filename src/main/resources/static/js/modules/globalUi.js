@@ -165,4 +165,5 @@ export class GlobalUi {
         this.content.addClass('content-full');
         this.breadcrumb.addClass('breadcrumb-nav-full');
     }
+
 }

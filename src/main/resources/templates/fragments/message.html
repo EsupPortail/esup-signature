@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="messageNews" type="java.util.List<org.esupportail.esupsignature.entity.Message>"*/-->
 <div th:fragment="message">
-	<script language="JavaScript">
-		function markAsRead(id) {
-			$.get("/user/users/mark-as-read/" + id);
-		}
-	</script>
 	<th:block th:each="messageNew : ${messageNews}">
 		<div th:id="'toast_' + ${messageNew.id}" class="toast toast-xl" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
 			<div class="toast-header bg-light">
-				<strong class="mr-auto text-white blinking-black">Nouveauté !</strong>
+				<h3 class="mr-auto blinking-black">Nouveauté !</h3>
 				<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
 					<i class="fas fa-times"></i>
 				</button>
 			</div>
 			<div class="toast-body">
 				<p th:utext="${messageNew.text}"></p>
-				<button th:onclick="'markAsRead('+ ${messageNew.id} +');'" class="btn btn-light btn-outline-dark ml-2 fixed-bottom mb-2" data-dismiss="toast" aria-label="Close">Marquer comme lu</button>
+			</div>
+			<div class="toast-footer">
+				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
+				<i class="fa fa-eye-slash"></i>
+					Marquer comme lu
+				</button>
 			</div>
 		</div>
 		<script>

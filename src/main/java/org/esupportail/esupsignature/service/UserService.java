@@ -545,6 +545,17 @@ public class UserService {
 		return false;
 	}
 
+	public Boolean checkOneServiceShare(User fromUser, User toUser, UserShare.ShareType shareType) {
+		if(fromUser.equals(toUser)) {
+			return true;
+		}
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
+		if(userShares.size() > 0 ) {
+			return true;
+		}
+		return false;
+	}
+
 	public Boolean checkUserShareDate(UserShare userShare) {
 		Date today = new Date();
 		if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
