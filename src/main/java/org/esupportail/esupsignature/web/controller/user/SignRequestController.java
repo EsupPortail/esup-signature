@@ -511,16 +511,25 @@ public class SignRequestController {
         } else {
             return "redirect:/user/signrequests/";
         }
-
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @PostMapping(value = "/add-attachment/{id}")
-    public String addAttachement(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+    public String addAttachement(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+                                 @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
+                                 @RequestParam(value = "link", required = false) String link,
+                                 RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        for (MultipartFile multipartFile : multipartFiles) {
-            signRequestService.addAttachmentToSignRequest(signRequest, multipartFile);
+        if(multipartFiles != null && multipartFiles.length > 0) {
+            for (MultipartFile multipartFile : multipartFiles) {
+                if(multipartFile.getSize() > 0) {
+                    signRequestService.addAttachmentToSignRequest(signRequest, multipartFile);
+                }
+            }
+        }
+        if(link != null && !link.isEmpty()) {
+            signRequest.getLinks().add(link);
         }
         redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à bien été ajoutée");
         return "redirect:/user/signrequests/" + id;
@@ -540,6 +549,18 @@ public class SignRequestController {
             documentRepository.delete(attachement);
         }
         redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à été supprimée");
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @GetMapping(value = "/remove-link/{id}/{linkId}")
+    public String removeLink(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
+        logger.info("start remove link");
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        String toRemove = signRequest.getLinks().get(linkId);
+        signRequest.getLinks().remove(toRemove);
+        signRequestRepository.save(signRequest);
+        redirectAttributes.addFlashAttribute("messageInfo", "Le lien à été supprimé");
         return "redirect:/user/signrequests/" + id;
     }
 

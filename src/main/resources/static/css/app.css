@@ -960,7 +960,7 @@ float:left;
     z-index: 10000;
 }
 
-.toast-body {
+.toast-body-news {
     min-height: 80vh;
 }
 
