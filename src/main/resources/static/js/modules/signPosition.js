@@ -113,10 +113,12 @@ export class SignPosition {
         this.addSignButton.attr("disabled", "disabled");
         this.removeSignButton.removeAttr("disabled");
         this.hideButtons();
-        $('#dateButton').removeClass('btn-outline-success');
-        $('#dateButton').addClass('btn-outline-dark');
-        $('#nameButton').removeClass('btn-outline-success');
-        $('#nameButton').addClass('btn-outline-dark');
+        let dateButton = $('#dateButton');
+        dateButton.removeClass('btn-outline-success');
+        dateButton.addClass('btn-outline-dark');
+        let nameButton = $('#nameButton');
+        nameButton.removeClass('btn-outline-success');
+        nameButton.addClass('btn-outline-dark');
 
     }
 
@@ -304,10 +306,12 @@ export class SignPosition {
         this.borders.css('height', this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio);
         this.cross.css('background-size', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
         $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
-        $('#textDate').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
-        $('#textDate').css('top', "-" + 30 * this.currentScale * this.signScale + "px");
-        $('#textName').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
-        $('#textName').css('top', "-" + 30 * this.currentScale * this.signScale + "px");
+        let textDate = $('#textDate');
+        textDate.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        textDate.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
+        let textName = $('#textName');
+        textName.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        textName.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();
     }
 

@@ -85,8 +85,8 @@ export class WorkspacePdf {
 
     disableForm() {
         $("#signForm :input").not(':input[type=button], :input[type=submit], :input[type=reset]').each(function(i, e) {
-            console.log("disable ");
-            console.log(e);
+            console.debug("disable ");
+            console.debug(e);
             e.disabled = true;
         });
     }
@@ -204,11 +204,11 @@ export class WorkspacePdf {
     }
 
     toggleSign(e) {
-        console.log($(e));
+        console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses[signId];
         console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
-        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSignParams().signPageNumber) {
+        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
             $(e).show();
         } else {
             $(e).hide();
@@ -320,6 +320,7 @@ export class WorkspacePdf {
         this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
+        this.refreshAfterPageChange();
     }
 
     disableAllModes() {
@@ -337,6 +338,7 @@ export class WorkspacePdf {
 
         $('#signTools').hide();
         this.signPosition.cross.hide();
+
         $('#infos').hide();
         $('#postit').hide();
         $('#refusetools').hide();
