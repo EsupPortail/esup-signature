@@ -5,10 +5,19 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "sms")
 public class SmsProperties {
 
+    private boolean enableSms;
     private String serviceName;
     private String url;
     private String username;
     private String password;
+
+    public Boolean getEnableSms() {
+        return enableSms;
+    }
+
+    public void setEnableSms(Boolean enableSms) {
+        this.enableSms = enableSms;
+    }
 
     public String getServiceName() {
         return serviceName;

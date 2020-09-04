@@ -10,7 +10,6 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Configuration
-@ConditionalOnProperty(prefix = "sms", name = "service-name")
 @EnableConfigurationProperties(SmsProperties.class)
 public class SmsConfig {
 
@@ -25,9 +24,11 @@ public class SmsConfig {
 
     @Bean
     public SmsService smsService() {
-        for(SmsService smsService : smsServices) {
-            if(smsService.getName().equals(smsProperties.getServiceName())) {
-                return smsService;
+        if(smsProperties.getEnableSms()) {
+            for (SmsService smsService : smsServices) {
+                if (smsService.getName().equals(smsProperties.getServiceName())) {
+                    return smsService;
+                }
             }
         }
         return null;

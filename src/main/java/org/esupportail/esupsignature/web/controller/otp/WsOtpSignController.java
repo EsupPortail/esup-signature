@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.sms.SmsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpSession;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
+@ConditionalOnProperty(value = "sms.enable-sms", havingValue = "true")
 @RequestMapping("/otp")
 @Controller
 @Transactional
