@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -3,12 +3,12 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
-import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
@@ -67,6 +67,9 @@ public class UserService {
 	private FormRepository formRepository;
 
 	@Resource
+	private WorkflowRepository workflowRepository;
+
+	@Resource
 	private MailService mailService;
 
 	@Resource
@@ -75,6 +78,7 @@ public class UserService {
 	public UserService(@Autowired(required = false) LdapPersonService ldapPersonService) {
 		this.ldapPersonService = ldapPersonService;
 	}
+
 
 	public void setSuEppn(String eppn) {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -124,7 +128,7 @@ public class UserService {
 			user.setIp("127.0.0.1");
 			user.setFirstname("Automate");
 			user.setName("Esup-Signature");
-			user.setEmail("esup-signature@univ-rouen.fr");
+			user.setEmail("esup-signature@univ-ville.fr");
 			userRepository.save(user);
 			return user;
 		}
@@ -164,10 +168,12 @@ public class UserService {
 		if(eppn.equals("scheduler")) {
 			return getSchedulerUser();
 		}
-		if(eppn.split("@").length == 1) {
-			for(SecurityService securityService : this.securityServices) {
-				if(securityService instanceof CasSecurityServiceImpl) {
-					eppn = eppn + "@" + securityService.getDomain();
+		if(userRepository.countByEppn(eppn) == 0) {
+			if (eppn.split("@").length == 1) {
+				for (SecurityService securityService : this.securityServices) {
+					if (securityService instanceof CasSecurityServiceImpl) {
+						eppn = eppn + "@" + securityService.getDomain();
+					}
 				}
 			}
 		}
@@ -196,6 +202,25 @@ public class UserService {
 			}
 		}
 		return eppn;
+	}
+
+	public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
+		User user = getUserByEppn(eppn);
+		if(!user.getEppn().equals(getSystemUser().getEppn())) {
+			return user;
+		}
+		if(ldapPersonService != null) {
+			List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(eppn);
+			if (personLdaps.size() > 0) {
+				String name = personLdaps.get(0).getSn();
+				String firstName = personLdaps.get(0).getGivenName();
+				String mail = personLdaps.get(0).getMail();
+				return createUser(eppn, name, firstName, mail);
+			} else {
+				throw new EsupSignatureUserException("ldap user not found : " + eppn);
+			}
+		}
+		return null;
 	}
 
 	public User createUser(String mail) throws EsupSignatureUserException {
@@ -300,7 +325,7 @@ public class UserService {
 						if (toSignSharedSignRequest.getParentSignBook() != null) {
 							List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
 							if(datas.size() > 0) {
-								if (datas.get(0).getForm().equals(userShare.getForm())) {
+								if (userShare.getForms().contains(datas.get(0).getForm())) {
 									if (!signRequest.equals(toSignSharedSignRequest)) {
 										toEmails.add(toUser.getEmail());
 									}
@@ -336,7 +361,7 @@ public class UserService {
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 							if(toSignSharedSignRequest.getParentSignBook() != null) {
 								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
-								if(datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm())) {
+								if(datas.size() > 0 && userShare.getForms().contains(datas.get(0).getForm())) {
 									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
 										toSignSignRequests.add(toSignSharedSignRequest);
 										toEmails.add(toUser.getEmail());
@@ -358,12 +383,19 @@ public class UserService {
 	public List<User> getSuUsers(User authUser) {
 		List<User> suUsers = new ArrayList<>();
 		for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
-			if(!suUsers.contains(userShare.getUser())) {
+			if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
 				suUsers.add(userShare.getUser());
 			}
 		}
 		return suUsers;
 	}
+
+	public Boolean getSignShare(User user, User authUser) {
+		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.sign) > 0) {
+			return true;
+		};
+		return false;
+	 }
 
 	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
@@ -467,6 +499,7 @@ public class UserService {
 	public Boolean switchToShareUser(String eppn) {
 		if(eppn == null || eppn.isEmpty()) {
 			setSuEppn(null);
+			return true;
 		}else {
 			if(checkShare(getUserByEppn(eppn), getUserFromAuthentication())) {
 				setSuEppn(eppn);
@@ -476,17 +509,27 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
-		if(userShares.size() > 0) {
-			return true;
+	public Boolean checkSignShare(User fromUser, User toUser) {
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), UserShare.ShareType.sign);
+		for(UserShare userShare : userShares) {
+			if (checkUserShareDate(userShare)) {
+				return true;
+			}
 		}
 		return false;
 	}
 
-	public Boolean checkServiceShare(UserShare.ShareType shareType, Form form) {
-		User fromUser = getCurrentUser();
-		User toUser = getUserFromAuthentication();
+	public Boolean checkShare(User fromUser, User toUser) {
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
+		for(UserShare userShare : userShares) {
+			if (checkUserShareDate(userShare)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, Form form) {
 		if(fromUser.equals(toUser)) {
 			return true;
 		}
@@ -495,18 +538,42 @@ public class UserService {
 			return true;
 		}
 		for(UserShare userShare : userShares) {
-			if(userShare.getForm().equals(form)) {
+			if(userShare.getForms().contains(form) && checkUserShareDate(userShare)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void createUserShare(@RequestParam("service") Long service, @RequestParam("type") String type, @RequestParam("userIds") List<User> userEmails, @RequestParam("beginDate") Date beginDate, @RequestParam("endDate") Date endDate, User user) {
+	public Boolean checkOneServiceShare(User fromUser, User toUser, UserShare.ShareType shareType) {
+		if(fromUser.equals(toUser)) {
+			return true;
+		}
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
+		if(userShares.size() > 0 ) {
+			return true;
+		}
+		return false;
+	}
+
+	public Boolean checkUserShareDate(UserShare userShare) {
+		Date today = new Date();
+		if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
+			return true;
+		}
+		return false;
+	}
+
+	public void createUserShare(List<Long> forms, List<Long> workflows, String type, List<User> userEmails, Date beginDate, Date endDate, User user) {
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
 		userShare.setShareType(UserShare.ShareType.valueOf(type));
-		userShare.setForm(formRepository.findById(service).get());
+		for(Long form : forms) {
+			userShare.getForms().add(formRepository.findById(form).get());
+		}
+		for(Long workflow : workflows) {
+			userShare.getWorkflows().add(workflowRepository.findById(workflow).get());
+		}
 		userShare.getToUsers().addAll(userEmails);
 		userShare.setBeginDate(beginDate);
 		userShare.setEndDate(endDate);

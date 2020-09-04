@@ -20,16 +20,13 @@ package org.esupportail.esupsignature.service.security.shib;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.util.StringUtils;
 
@@ -57,9 +54,9 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-		logger.info("load user details from : " + token.getName());
+		logger.debug("load user details from : " + token.getName());
 		String credentials = (String) token.getCredentials();
-		logger.info("credentials : " + credentials);
+		logger.debug("credentials : " + credentials);
 		try {
 			for (String credential : StringUtils.split(credentials, ";")) {
 				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
@@ -67,13 +64,12 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				}
 			}
 		} catch (Exception e) {
-			logger.warn("unable to find credentials");
 			logger.debug("unable to find credentials", e);
 		}
 		try {
 			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
 				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-				logger.info("loading authorities : " + authorities.get(0).getAuthority());
+				logger.debug("loading authorities : " + authorities.get(0).getAuthority());
 			}
 		} catch (Exception e) {
 			logger.warn("unable to find authorities", e);

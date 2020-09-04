@@ -2,11 +2,11 @@ package org.esupportail.esupsignature.service.extvalue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

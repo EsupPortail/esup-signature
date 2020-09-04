@@ -2,7 +2,7 @@ global:
     root-url: https://esup-signature.univ-ville.fr
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
-    nexu-download-url: /downloads/nexu-bundle-${nexuVersion}.zip
+    nexu-download-url: /downloads/nexu-bundle.zip
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
@@ -68,8 +68,19 @@ spring:
         encoding: UTF-8
         mode: HTML
 
+ldap:
+    search-base: ou=people
+    search-filter: (uid={0})
+    affiliation-filter: staff, member, affiliate
+
 mail:
     from: no-reply.esup-signature@univ-ville.fr
+
+sms:
+    service-name: SMSU
+    url: https://smsu-api.univ-ville.fr/
+    username: sms-account
+    password: ********
 
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
@@ -87,7 +98,7 @@ dss:
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
-    trusted-certificat-url-list: https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
+    trusted-certificat-url-list: https://services.renater.fr/_media/tcs/geant_personal_ca_4.pem, https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
 
 fs:
 #    smb-login: esup-signature

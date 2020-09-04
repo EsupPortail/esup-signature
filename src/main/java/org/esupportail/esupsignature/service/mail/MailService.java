@@ -3,11 +3,15 @@ package org.esupportail.esupsignature.service.mail;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -174,34 +178,20 @@ public class MailService {
 
     }
 
-//    public void sendFile(SignBook signBook) {
-//        if (!checkMailSender()) {
-//            return;
-//        }
-//        final Context ctx = new Context(Locale.FRENCH);
-//        ctx.setVariable("rootUrl", rootUrl);
-//        ctx.setVariable("signBook", signBook);
-//        UserUi user = userRepository.findByEppn(signBook.getCreateBy()).get(0);
-//        ctx.setVariable("user", user);
-//        setTemplate(ctx);
-//        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-//        MimeMessageHelper message;
-//        try {
-//            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-//            message.setSubject("Esup-Signature : nouveau document  " + signBook.getName());
-//            message.setFrom(mailConfig.getMailFrom());
-//            message.setTo(signBook.getDocumentsTargetUri());
-//            List<Document> toSendDocuments = signBookService.getLastSignedDocuments(signBook);
-//            for (Document toSendDocument : toSendDocuments) {
-//                message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
-//            }
-//            String htmlContent = templateEngine.process("mail/email-file.html", ctx);
-//            message.setText(htmlContent, true); // true = isHtml
-//            mailSender.send(mimeMessage);
-//        } catch (MessagingException | IOException e) {
-//            logger.error("unable to send email", e);
-//        }
-//    }
+    public void sendOtp(Otp otp, String urlId) throws MessagingException {
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp/" + urlId);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper message;
+        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        message.setSubject("Esup-Signature : nouveau document à signer");
+        message.setFrom(mailConfig.getMailFrom());
+        message.setTo(otp.getEmail());
+        String htmlContent = templateEngine.process("mail/email-otp.html", ctx);
+        message.setText(htmlContent, true);
+        mailSender.send(mimeMessage);
+    }
 
     public void sendFile(String title, List<SignRequest> signRequests, String targetUri) throws MessagingException, IOException {
         if (!checkMailSender()) {
@@ -224,7 +214,7 @@ public class MailService {
             message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
         }
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
-        message.setText(htmlContent, true); // true = isHtml
+        message.setText(htmlContent, true);
         mailSender.send(mimeMessage);
 
     }

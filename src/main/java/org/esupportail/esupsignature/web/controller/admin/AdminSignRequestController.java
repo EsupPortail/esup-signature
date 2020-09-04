@@ -7,9 +7,6 @@ import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -36,8 +33,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -127,7 +122,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute User user, @PathVariable("id") Long id, Model model) throws Exception {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
 		//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
@@ -135,21 +130,6 @@ public class AdminSignRequestController {
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-//					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-//					if (pdfParameters != null) {
-//						model.addAttribute("pdfWidth", pdfParameters.getWidth());
-//						model.addAttribute("pdfHeight", pdfParameters.getHeight());
-//						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-//					}
-					if(user.getSignImages().get(0) != null) {
-						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-						int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
-						model.addAttribute("signWidth", size[0]);
-						model.addAttribute("signHeight", size[1]);
-					} else {
-						model.addAttribute("signWidth", 100);
-						model.addAttribute("signHeight", 75);
-					}
 				}
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
@@ -157,12 +137,6 @@ public class AdminSignRequestController {
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 			model.addAttribute("logs", logs);
 			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			if(user.getSignImages().get(0) != null) {
-				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-			}
-			if(user.getKeystore() != null) {
-				model.addAttribute("keystore", user.getKeystore().getFileName());
-			}
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
 			return "admin/signrequests/show";
@@ -189,7 +163,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
-	public void getLastFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		//User user = userService.getCurrentUser();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
@@ -212,7 +186,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/complete/{id}")
-	public String complete(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String complete(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
@@ -224,7 +198,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/pending/{id}")
-	public String pending(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
@@ -237,7 +211,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/comment/{id}")
-	public String comment(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {

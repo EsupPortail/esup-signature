@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.fs.FsFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -89,7 +88,7 @@ public class WorkflowAdminController {
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
 		if("system".equals(displayWorkflowType)) {
-			workflows.addAll(workflowService.getWorkflowsForUser(userService.getSystemUser()));
+			workflows.addAll(workflowService.getWorkflowsForUser(userService.getSystemUser(), userService.getSystemUser()));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else {
@@ -119,7 +118,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute User user, @RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
+	public String create(@ModelAttribute("user") User user, @RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
 		Workflow newWorkflow = new Workflow();
 		newWorkflow.setName(name);
 		Workflow workflow;
@@ -133,7 +132,7 @@ public class WorkflowAdminController {
 	}
 
     @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@ModelAttribute User user, @PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
+    public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
 		//User user = userService.getCurrentUser();
 		Workflow workflow = workflowRepository.findById(id).get();
 //		if (!workflowService.checkUserManageRights(user, workflow)) {
@@ -150,7 +149,7 @@ public class WorkflowAdminController {
     }
 	
     @PostMapping(value = "/update/{id}")
-    public String update(@ModelAttribute User user,
+    public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
 						 @RequestParam(required = false) List<String> managers) throws EsupSignatureUserException {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
@@ -181,7 +180,7 @@ public class WorkflowAdminController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
+    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
     	//User user = userService.getCurrentUser();
     	Workflow workflow = workflowRepository.findById(id).get();
 //		if (!workflowService.checkUserManageRights(user, workflow)) {
@@ -193,7 +192,7 @@ public class WorkflowAdminController {
     }
 
 	@PostMapping(value = "/add-step/{id}")
-	public String addStep(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
 						  @RequestParam(name="description", required = false) String description,
 						  @RequestParam("recipientsEmails") String[] recipientsEmails,
@@ -209,7 +208,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/update-step/{id}/{step}")
-	public String changeStepSignType(@ModelAttribute User user,
+	public String changeStepSignType(@ModelAttribute("user") User user,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
 									 @RequestParam(name="signType") SignType signType,
@@ -230,7 +229,7 @@ public class WorkflowAdminController {
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-	public String removeStepRecipient(@ModelAttribute User user, @PathVariable("id") Long id,
+	public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "recipientId") Long recipientId) {
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -245,7 +244,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
-	public String addStepRecipient(@ModelAttribute User user,
+	public String addStepRecipient(@ModelAttribute("user") User user,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
@@ -262,7 +261,7 @@ public class WorkflowAdminController {
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
-	public String addStep(@ModelAttribute User user,
+	public String addStep(@ModelAttribute("user") User user,
 						  @PathVariable("id") Long id,
 						  @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
 		//User user = userService.getCurrentUser();
@@ -282,7 +281,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(value = "/add-params/{id}")
-	public String addParams(@ModelAttribute User user,
+	public String addParams(@ModelAttribute("user") User user,
 							@PathVariable("id") Long id,
 			RedirectAttributes redirectAttrs) {
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -296,7 +295,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
+	public String getFileFromSource(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
 		Workflow workflow = workflowRepository.findById(id).get();
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, user);
 		if(nbImportedFiles == 0) {

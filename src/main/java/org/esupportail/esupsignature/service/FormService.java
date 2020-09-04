@@ -74,7 +74,7 @@ public class FormService {
 			forms = formRepository.findAutorizedFormByUser(user);
 		} else {
 			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
-				forms.add(userShare.getForm());
+				forms.addAll(userShare.getForms());
 			}
 		}
 		return forms;
@@ -141,9 +141,9 @@ public class FormService {
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
+			List<UserShare> userShares = userShareRepository.findByFormsContains(testForms.get(0));
 			for (UserShare userShare : userShares) {
-				userService.createUserShare(form.getId(), userShare.getShareType().name(), userShare.getToUsers(), userShare.getBeginDate(), userShare.getEndDate(), userShare.getUser());
+				userShare.getForms().add(form);
 			}
 		}
 		return form;

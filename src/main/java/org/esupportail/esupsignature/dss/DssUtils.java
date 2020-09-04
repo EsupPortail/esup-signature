@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.dss;
 import eu.europa.esig.dss.model.DSSDocument;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.spi.x509.CertificatePool;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import org.esupportail.esupsignature.dss.model.TimestampDTO;
@@ -68,7 +67,7 @@ public final class DssUtils {
 
 	public static TimestampToken toTimestampToken(TimestampDTO dto) {
 		try {
-			TimestampToken token = new TimestampToken(Utils.fromBase64(dto.getBase64Timestamp()), dto.getType(), new CertificatePool());
+			TimestampToken token = new TimestampToken(Utils.fromBase64(dto.getBase64Timestamp()), dto.getType());
 			token.setCanonicalizationMethod(dto.getCanonicalizationMethod());
 			return token;
 		} catch (Exception e) {

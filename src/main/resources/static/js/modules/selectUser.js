@@ -50,5 +50,4 @@ export default class SelectUser {
             }
         });
     }
-
 }

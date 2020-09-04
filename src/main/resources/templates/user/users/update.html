@@ -4,14 +4,13 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/js/modules/userUi.js";
-
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
 </script>
 <body>
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/user-side"></nav>
+        <nav th:insert="fragments/side-user"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Paramètres :
@@ -144,8 +143,8 @@
                                 <div class="collapse collapse" id="collapseHelpKeyStore">
                                     <div class="alert alert-info">
                                         <small> Pour demander un certificat merci de contacter le RSSI de l'établissement : <a
-                                                href="mailto:rssi@univ-rouen.fr"
-                                                target="_blank">rssi@univ-rouen.fr</a>
+                                                href="mailto:rssi@univ-ville.fr"
+                                                target="_blank">rssi@univ-ville.fr</a>
                                         </small>
                                     </div>
                                 </div>

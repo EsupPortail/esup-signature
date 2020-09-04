@@ -12,18 +12,24 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.barcode.DdDocService;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
-import org.springframework.http.converter.BufferedImageHttpMessageConverter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -34,13 +40,11 @@ import javax.annotation.Resource;
 import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -49,9 +53,6 @@ import java.util.List;
 public class WsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsController.class);
-
-    @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
 
     @Resource
     private SignRequestRepository signRequestRepository;
@@ -76,15 +77,6 @@ public class WsController {
 
     @Resource
     private DdDocService ddDocService;
-
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private FileService fileService;
-
-    @Resource
-    private LogRepository logRepository;
 
     @ResponseBody
     @PostMapping(value = "/create-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -115,7 +107,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocument(@ModelAttribute User user, @PathVariable("id") Long id,
+    public Object addDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         //User user = userService.getCurrentUser();
         user.setIp(httpServletRequest.getRemoteAddr());
@@ -128,7 +120,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentInSignBookGroup(@ModelAttribute User user,
+    public Object addDocumentInSignBookGroup(@ModelAttribute("user") User user,
                                              @PathVariable("name") String name,
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
@@ -146,7 +138,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute User user,
+    public Object addDocumentToNewSignRequest(@ModelAttribute("user") User user,
                                               @PathVariable("name") String name,
                                               @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
@@ -165,7 +157,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity addWorkflowStep(@ModelAttribute User user, @RequestParam String name,
+    public ResponseEntity addWorkflowStep(@ModelAttribute("user") User user, @RequestParam String name,
                                   @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         SignType signType = null;
@@ -300,7 +292,7 @@ public class WsController {
             }
     )
     @GetMapping(value = "/get-last-file-by-token/{token}")
-    public void getLastFileByToken(@ModelAttribute User user, @PathVariable("token") String token, HttpServletResponse response) {
+    public void getLastFileByToken(@ModelAttribute("user") User user, @PathVariable("token") String token, HttpServletResponse response) {
         //User user = userService.getCurrentUser();
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserViewRights(user, signRequest)) {
@@ -326,7 +318,7 @@ public class WsController {
             @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
             }
     )@GetMapping(value = "/get-last-file-from-signrequest")
-    public ResponseEntity<Void> getLastFileFromSignRequest(@ModelAttribute User user, @RequestParam String token, HttpServletResponse response) {
+    public ResponseEntity<Void> getLastFileFromSignRequest(@ModelAttribute("user") User user, @RequestParam String token, HttpServletResponse response) {
         try {
             if (signRequestRepository.countByToken(token) > 0) {
                 SignRequest signRequest = signRequestRepository.findByToken(token).get(0);

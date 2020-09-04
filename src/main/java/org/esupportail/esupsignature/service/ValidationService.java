@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 

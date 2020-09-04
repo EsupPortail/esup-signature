@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.service.fs.FsAccessService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -120,6 +122,9 @@ public class SignRequestService {
 
 	@Resource
 	private FsAccessFactory fsAccessFactory;
+
+	@Resource
+	private PreFillService preFillService;
 
 	private String step = "";
 
@@ -285,10 +290,14 @@ public class SignRequestService {
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
+		for(Recipient recipient : signRequest.getRecipients()) {
+			if(recipient.getUser().equals(user)) {
+				return;
+			}
+		}
 		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
 		recipientRepository.save(recipient);
 		signRequest.getRecipients().add(recipient);
-
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
@@ -303,7 +312,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException {
+	public void sign(SignRequest signRequest, User user, String password, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException {
 		step = "Démarrage de la signature";
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
@@ -321,14 +330,14 @@ public class SignRequestService {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 					if (visual) {
 						setStep("Apposition de la signature");
-						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user, addDate);
+						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequest.getCurrentSignRequestParams(), user);
 					}
 				}
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 					signedInputStream = filledInputStream;
 					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user, addDate);
+						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user);
 					}
 				}
 			}
@@ -336,13 +345,12 @@ public class SignRequestService {
 				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
 			addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
-		}else {
+		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				bigFileService.setBinaryFileStream(toSignDocuments.get(0).getBigFile(), filledInputStream, filledInputStream.available());
 			}
-			certSign(signRequest, user, password, addDate, visual);
+			certSign(signRequest, user, password, visual);
 		}
-		SignRequestParams params = signRequest.getCurrentSignRequestParams();
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getCurrentStepNumber());
@@ -375,7 +383,65 @@ public class SignRequestService {
 		return addSignedFile(signRequest, signedDocument.openStream(), dssDocument.getName(), signedDocument.getMimeType().getMimeTypeString());
 	}
 
-	public Document certSign(SignRequest signRequest, User user, String password, boolean addDate, boolean visual) throws EsupSignatureException {
+	public void serverSign(SignRequest signRequest) throws EsupSignatureException {
+		List<Document> toSignDocuments = new ArrayList<>();
+		for(Document document : getToSignDocuments(signRequest)) {
+			toSignDocuments.add(document);
+		}
+		step = "Initialisation de la procédure";
+		try {
+			step = "Déverouillage du keystore";
+
+			File serverKeyStore = new File(SignRequestService.class.getClassLoader().getResource("cert-esupdem.p12").getFile());
+
+			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(new FileInputStream(serverKeyStore), "chouthou");
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(new FileInputStream(serverKeyStore), "chouthou");
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(new FileInputStream(serverKeyStore), "chouthou");
+
+			step = "Formatage des documents";
+
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, false);
+			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+
+			step = "Préparation de la signature";
+
+			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+			List<String> base64CertificateChain = new ArrayList<>();
+			for (CertificateToken token : certificateTokenChain) {
+				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+			}
+			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
+			signatureDocumentForm.setSignWithExpiredCertificate(true);
+
+			ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
+			aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+			AbstractSignatureParameters parameters = aSiCWithXAdESSignatureParameters;
+
+			parameters.setSigningCertificate(certificateToken);
+			parameters.setCertificateChain(certificateTokenChain);
+			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
+			DSSDocument dssDocument;
+			if(toSignDocuments.size() > 1) {
+				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
+			} else {
+				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
+			}
+			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+			step = "Enregistrement du/des documents(s)";
+			addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
+			applyEndOfStepRules(signRequest, userService.getSystemUser());
+		} catch (EsupSignatureKeystoreException e) {
+			step = "security_bad_password";
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+		} catch (Exception e) {
+			step = "sign_system_error";
+			throw new EsupSignatureException(e.getMessage(), e);
+		}
+
+	}
+
+	public void certSign(SignRequest signRequest, User user, String password, boolean visual) throws EsupSignatureException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
@@ -414,7 +480,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user, addDate);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -434,7 +500,7 @@ public class SignRequestService {
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			step = "Enregistrement du/des documents(s)";
-			return addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			step = "security_bad_password";
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -453,8 +519,10 @@ public class SignRequestService {
 		return document;
 	}
 
-	public void applyEndOfStepRules(SignRequest signRequest, User user) throws EsupSignatureException {
-		recipientService.validateRecipient(signRequest.getRecipients(), user);
+	public void applyEndOfStepRules(SignRequest signRequest, User user) {
+		if(!user.getEppn().equals("system")) {
+			recipientService.validateRecipient(signRequest.getRecipients(), user);
+		}
 		if(signRequest.getParentSignBook() != null) {
 			if(!isSignRequestCompleted(signRequest)) {
 				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
@@ -670,10 +738,14 @@ public class SignRequestService {
 		return signRequest.getCreateBy().equals(authUser);
 	}
 
-	public boolean preAuthorizeView(Long id, User user) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
-			return true;
+	public boolean preAuthorizeView(Long id, User user, User authUser) {
+		if(user.equals(authUser) || userService.checkSignShare(user, authUser)) {
+			if(signRequestRepository.countById(id) > 0) {
+				SignRequest signRequest = signRequestRepository.findById(id).get();
+				if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
+					return true;
+				}
+			}
 		}
 		return false;
 	}
@@ -699,7 +771,7 @@ public class SignRequestService {
 		if(signRequest != null) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
 			log.addAll(logRepository.findByEppnForAndSignRequestId(user.getEppn(), signRequest.getId()));
-			if (signRequest.getCreateBy().equals(user.getEppn()) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
+			if (signRequest.getCreateBy().equals(user) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 				return true;
 			}
 		}
@@ -824,17 +896,99 @@ public class SignRequestService {
 		if(signBook != null) {
 			User toUser = userService.getUserFromAuthentication();
 			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
-			Data data = dataRepository.findBySignBook(signBook).get(0);
-			if(data != null) {
+			for (UserShare userShare : userShares) {
+				if(userShare.getWorkflows().contains(signBook.getWorkflow()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+					return userShare.getUser();
+				}
+			}
+			List<Data> datas = dataRepository.findBySignBook(signBook);
+			if(datas.size() > 0) {
 				for (UserShare userShare : userShares) {
-					if (userShare.getForm() != null && userShare.getForm().equals(data.getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
+					if (userShare.getForms().contains(datas.get(0).getForm()) && checkUserSignRights(userShare.getUser(), signRequest)) {
 						return userShare.getUser();
 					}
 				}
 			}
-			//TODO share for workflows
 		}
 		return null;
+	}
+
+	public String computeShowView(Long id, User user, Boolean frameMode, Model model) throws IOException, EsupSignatureException {
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		if (signRequest.getStatus().equals(SignRequestStatus.pending)
+				&& checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
+				&& needToSign(signRequest, user)
+		) {
+			signRequest.setSignable(true);
+			model.addAttribute("currentSignType", getCurrentSignType(signRequest).name());
+			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
+			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
+			model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
+		}
+		if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
+			Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+			if(data != null && data.getForm() != null) {
+				List<Field> fields = data.getForm().getFields();
+				List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+				for (Field field : prefilledFields) {
+					if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
+						field.setDefaultValue("");
+					}
+					if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+						field.setDefaultValue(data.getDatas().get(field.getName()));
+					}
+				}
+				model.addAttribute("fields", prefilledFields);
+			}
+		}
+		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
+			List<Document> toSignDocuments = getToSignDocuments(signRequest);
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+				Document toDisplayDocument = getToSignDocuments(signRequest).get(0);
+				if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
+					if(checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+						signRequest.setSignable(false);
+						model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
+					}
+					List<String> signImages = new ArrayList<>();
+					for(Document signImage : user.getSignImages()) {
+						signImages.add(fileService.getBase64Image(signImage));
+					}
+					model.addAttribute("signImages", signImages);
+					int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
+					model.addAttribute("signWidth", size[0]);
+					model.addAttribute("signHeight", size[1]);
+				} else {
+					if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
+						model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
+						signRequest.setSignable(false);
+					}
+				}
+				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
+			} else {
+				if(signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign))) {
+					signRequest.setSignable(true);
+				}
+				model.addAttribute("documentType", "other");
+			}
+
+		} else if (getLastSignedFsFile(signRequest) != null) {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
+		}
+
+		List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+		model.addAttribute("refuseLogs", refuseLogs);
+		model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
+		List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
+		model.addAttribute("globalPostits", globalPostits);
+		model.addAttribute("signRequest", signRequest);
+		setStep("");
+		if (frameMode != null && frameMode) {
+			return "user/signrequests/show-frame";
+		} else {
+			return "user/signrequests/show";
+		}
 	}
 
 }

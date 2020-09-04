@@ -57,5 +57,22 @@ $(".slim-select").each(function () {
     console.info("enable slim-select for : " + $(this).attr('id'));
     new SlimSelect({
         select: '#' + $(this).attr('id')
-    })
+    });
+})
+
+$( "select").filter(".slim-select-simple").each(function () {
+    let selectName = $(this).attr('id');
+    console.info("enable slim-select-simple for : " + selectName);
+    this.selectField = $("#" + selectName);
+    new SlimSelect({
+        select: '#' + $(this).attr('id'),
+        showSearch: false,
+        searchHighlight: false,
+        hideSelectedOption: true,
+        closeOnSelect: true,
+        ajax: function (search, callback) {
+            callback(false)
+        }
+    });
+    this.selectField.addClass("slim-select-hack");
 })

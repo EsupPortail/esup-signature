@@ -1,5 +1,4 @@
 package org.esupportail.esupsignature.utils;
-import java.sql.Connection;
 
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
@@ -12,6 +11,8 @@ import org.hibernate.service.ServiceRegistry;
 import org.hibernate.tool.schema.internal.exec.JdbcConnectionAccessConnectionProviderImpl;
 import org.hibernate.tool.schema.internal.exec.JdbcConnectionAccessProvidedConnectionImpl;
 import org.hibernate.tool.schema.internal.exec.JdbcContext;
+
+import java.sql.Connection;
 
 /**
  * @author Steve Ebersole

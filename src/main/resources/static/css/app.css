@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/5.8.2/webfonts/fa-solid-900.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-    url('/webjars/font-awesome/5.8.2/webfonts/fa-solid-900.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+    src: url('/webjars/font-awesome/5.13.0/webfonts/fa-solid-900.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+    url('/webjars/font-awesome/5.13.0/webfonts/fa-solid-900.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
 }
 
 html {
@@ -325,8 +325,10 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
-#textDate {
+.sign-text {
     font-family: "DejaVu Sans Condensed";
+    color: black;
+    position : relative; float: left; clear: left;
 }
 
 .wrapper {
@@ -954,7 +956,20 @@ float:left;
 }
 
 .toast {
+    background-color: rgba(255,255,255,.95) !important;
     z-index: 10000;
+}
+
+.toast-body-news {
+    min-height: 80vh;
+}
+
+.toast-footer {
+    padding:.25rem .75rem;
+    color:#6c757d;
+    background-color:rgba(255,255,255,.85);
+    background-clip:padding-box;
+    border-top:1px solid rgba(0,0,0,.05);
 }
 
 .toast-sm {

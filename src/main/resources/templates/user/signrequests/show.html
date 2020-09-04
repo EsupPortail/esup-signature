@@ -27,13 +27,13 @@
         [[${postits}]],
         [[${documentType == 'pdf'}]],
         [[${signRequest.currentStepNumber}]],
-        [[${signImages}]]
-    );
+        [[${signImages}]],
+        [[${user.firstname + ' ' + user.name}]]);
     signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
 </script>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/sign-side"></nav>
+        <nav th:insert="fragments/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${signRequest.createBy == user}" class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
@@ -61,7 +61,8 @@
             <div class="tools">
                 <div class="d-flex mb-1">
 <!--                    <a th:if="${signRequest.createBy == user && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
-                    <a class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Détails" th:href="'/user/signrequests/send-otp/' + ${signRequest.id}"><i class="fas fa-phone-alt"></i></a>
+                    <button data-toggle="modal" data-target="#otpModal" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="OTP"><i class="fas fa-key"></i></button>
+
                     <a th:if="${signRequest.createBy == user}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-info-circle"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
                         <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
@@ -80,19 +81,21 @@
                         <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
                         <div class="border ml-3 mr-3 "></div>
                         <button class="btn btn-light btn-outline-dark ml-1" data-toggle="modal" data-target="#attachment">
-                            <i class="fas fa-paperclip"></i> <span class="d-none d-xl-inline">Pièces jointes</span> <div th:if="${signRequest.attachments.size() > 0 }" th:text="${signRequest.attachments.size()}" class="badge badge-primary"></div>
+                            <i class="fas fa-paperclip"></i> <span class="d-none d-xl-inline">Pièces jointes</span> <div th:if="${signRequest.attachments.size() + signRequest.links.size() > 0 }" th:text="${signRequest.attachments.size() + signRequest.links.size()}" class="badge badge-primary"></div>
                         </button>
                         <div class="border ml-3 mr-3 "></div>
                         <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
                             <div class="alert alert-success m-0 " style="width: 300px;padding: 2px;">
-                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="addSignButton" title="Ajouter une signature" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-plus"></i></button>
+                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="addSignButton" title="Ajouter une signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-plus"></i></button>
+                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="removeSignButton" title="Supprimer la dernière signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-minus"></i></button>
                                 <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-sm btn-light btn-outline-success ml-1"><i class="fas fa-eye"></i></button>
+                                <button id="nameButton" title="Inserer le nom" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-user-alt"></i></button>
                                 <button id="dateButton" title="Inserer la date" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                             </div>
                         </div>
                     </th:block>
 
-                    <div id="openButtons" class="fixed-action-btns active" th:if="${user == signRequest.createBy && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported' || signRequest.status.name() == 'archived')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">
+                    <div id="openButtons" class="fixed-action-btns active" th:if="${viewRight && (signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported' || signRequest.status.name() == 'archived')}" onmouseover="$('#openButtons').toggleClass('active');" onmouseout="$('#openButtons').toggleClass('active');">
                         <ul class="list-unstyled">
                             <li>
                                 <a id="print" class="btn-lg btn-floating bg-primary waves-effect" th:onclick="'printJS({printable:\'/user/signrequests/get-last-file/' + ${id} + '\', type:\'pdf\', showModal:true});'" title="Imprimer le document">
@@ -294,6 +297,37 @@
                 </div>
                 <div class="modal-body">
                     <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">
+                        Envoyer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/send-otp/' + ${id}" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title">Demander une signature à une personne externe</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="phoneNumber">Numéro de téléphone</label>
+                    <input id="phoneNumber" type="text" name="phoneNumber" class="form-control">
+                    <label for="email">Email</label>
+                    <input id="email" type="text" name="email" class="form-control">
+                    <label for="name">Nom</label>
+                    <input id="name" type="text" name="name" class="form-control">
+                    <label for="firstname">Prénom</label>
+                    <input id="firstname" type="text" name="firstname" class="form-control">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>

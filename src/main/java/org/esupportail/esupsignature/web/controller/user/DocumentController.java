@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -72,7 +71,7 @@ public class DocumentController {
 	private SignRequestService signRequestService;
 
     @GetMapping(value = "/getfile/{id}")
-	public ResponseEntity<Void> getFile(@ModelAttribute User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+	public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
 		//User user = userService.getCurrentUser();
 		Document document = documentRepository.findById(id).get();
 		if(document.equals(user.getKeystore())) {

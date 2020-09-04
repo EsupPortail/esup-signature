@@ -18,9 +18,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.util.Matrix;
-import org.apache.xmlgraphics.xmp.Metadata;
-import org.apache.xmlgraphics.xmp.schemas.pdf.PDFXAdapter;
-import org.apache.xmlgraphics.xmp.schemas.pdf.PDFXXMPSchema;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
@@ -29,10 +26,8 @@ import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.Attribute;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.DomXmpParser;
-import org.apache.xmpbox.xml.XmpParsingException;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
@@ -40,8 +35,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,18 +46,10 @@ import org.verapdf.pdfa.PDFAValidator;
 import org.verapdf.pdfa.VeraGreenfieldFoundryProvider;
 import org.verapdf.pdfa.results.TestAssertion;
 import org.verapdf.pdfa.results.ValidationResult;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.DateFormat;
@@ -84,49 +69,49 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user, boolean addDate) {
+    public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user) {
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-            DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-            InputStream signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-            String text = "";
-            if (signType.equals(SignType.visa)) {
-                try {
-                    text += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
-                    if (addDate) {
-                        text +="Le " + dateFormat.format(new Date());
-                    }
-                    signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
-                } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
+            String addText = "";
+            int lineNumber = 0;
+            if(signRequestParams.isAddName()) {
+                if(signType.equals(SignType.visa)) {
+                    addText += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
+                } else {
+                    addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
                 }
-            } else {
-//                TODO add nom prenom ?
-//                if(addName) {
-//
-//                }
-                if (addDate) {
-                    text +="Le " + dateFormat.format(new Date());
-                }
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+                lineNumber++;
             }
-            BufferedImage bufferedImage = ImageIO.read(signImage);
+            if (signRequestParams.isAddDate()) {
+                addText +="Le " + dateFormat.format(new Date());
+                lineNumber++;
+            }
+            InputStream signImage;
+            if (signType.equals(SignType.visa)) {
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, lineNumber);
+            } else {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber);
+            }
+            BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "png", signImageByteArrayOutputStream);
+            ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             float tx = 0;
             float ty = 0;
-            float x_adjusted = signRequestParams.getxPos();
-            float y_adjusted = signRequestParams.getyPos();
-
+            float xAdjusted = signRequestParams.getxPos();
+            float yAdjusted;
+            float width =  bufferedSignImage.getWidth();
+            float height = bufferedSignImage.getHeight();
+            int heightAdjusted = Math.round(((float) signRequestParams.getSignWidth() / width) * height);
             if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-                y_adjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+                yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + (heightAdjusted - signRequestParams.getSignHeight()) + pdPage.getCropBox().getLowerLeftY();
             } else {
-                y_adjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
+                yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + (heightAdjusted - signRequestParams.getSignHeight()) + pdPage.getCropBox().getLowerLeftY();
             }
             if (pdfParameters.isLandScape()) {
                 tx = pdfParameters.getWidth();
@@ -136,7 +121,7 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-            contentStream.drawImage(pdImage, x_adjusted, y_adjusted, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.setAllSecurityToBeRemoved(true);

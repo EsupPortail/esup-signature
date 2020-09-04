@@ -31,8 +31,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
@@ -44,12 +44,6 @@ import java.util.List;
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
-
-
-	@ModelAttribute("userMenu")
-	public String getActiveRole() {
-		return "active";
-	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -74,7 +68,7 @@ public class IndexController {
 	}
 	
 	@GetMapping
-	public String index(@ModelAttribute User user, Model model) {
+	public String index(@ModelAttribute("user") User user, Model model) {
 		model.addAttribute("user", user);
 		if(user != null && !user.getEppn().equals("system")) {
 			logger.info("utilisateur " + user.getEppn() + " connecté");
@@ -90,7 +84,6 @@ public class IndexController {
 				return "redirect:/user/";
 			}
 		}
-
 	}
 
 	@GetMapping("/login/**")
@@ -98,22 +91,27 @@ public class IndexController {
 		return "redirect:/";
 	}
 
-	@PostMapping("/denied/**")
-	@GetMapping("/denied/**")
+	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
 	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
-		String[] uriParams = forwardUri.split("/");
-		if(uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
-			SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
-			User suUser = signRequestService.checkShare(signRequest);
-			if(suUser != null) {
-				if(userService.switchToShareUser(suUser.getEppn())) {
-					redirectAttributes.addFlashAttribute("messageWarning", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+		if(forwardUri !=null) {
+			String[] uriParams = forwardUri.split("/");
+			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
+				if(signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
+					SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+					User suUser = signRequestService.checkShare(signRequest);
+					if (suUser != null) {
+						if (userService.switchToShareUser(suUser.getEppn())) {
+							redirectAttributes.addFlashAttribute("messageWarn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+						}
+						return "redirect:" + forwardUri;
+					}
+				} else {
+					redirectAttributes.addFlashAttribute("messageError", "Demande non trouvée");
+					return "redirect:/user/signrequests";
 				}
-				return "redirect:"+ forwardUri;
 			}
 		}
-		//TODO check shares
 		return "denied";
 	}
 

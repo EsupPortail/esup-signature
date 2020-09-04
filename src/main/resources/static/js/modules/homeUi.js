@@ -5,6 +5,7 @@ export class HomeUi {
         this.workflowFilterButton = $('#workflowFilterButton');
         this.formFilterButton = $('#formFilterButton');
         this.globalFilterButton = $('#globalFilterButton');
+        this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.noFilterButton = $('#noFilterButton');
         this.menuToggled = false;
         this.initListeners();
@@ -17,6 +18,12 @@ export class HomeUi {
         this.globalFilterButton.on('click', e => this.globalWorkflows(e));
         this.formFilterButton.on('click', e => this.filterForms(e));
         this.noFilterButton.on('click', e => this.filterNothing(e));
+        this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
+    }
+
+    listenMarkAsReadButton(btn) {
+        console.log("listen to" + btn);
+        $(btn).on('click', e => this.markAsRead(e));
     }
 
     toggleNewMenu() {
@@ -33,10 +40,9 @@ export class HomeUi {
     }
 
     globalWorkflows(e) {
-        this.workflowFilterButton.addClass('disabled');
-        this.formFilterButton.addClass('disabled');
-        this.globalFilterButton.removeClass('disabled');
-        this.noFilterButton.addClass('disabled');
+        this.turnAllButtonsOff();
+        this.globalFilterButton.removeClass('btn-light');
+        this.globalFilterButton.addClass('btn-secondary');
         $('.workflowButton').addClass('d-none');
         $('.formButton').addClass('d-none');
         $('.globalButton').removeClass('d-none');
@@ -45,23 +51,20 @@ export class HomeUi {
     }
 
     filterWorkflows(e) {
-        this.workflowFilterButton.removeClass('disabled');
-        this.formFilterButton.addClass('disabled');
-        this.globalFilterButton.addClass('disabled');
-        this.noFilterButton.addClass('disabled');
+        this.turnAllButtonsOff();
+        this.workflowFilterButton.removeClass('btn-light');
+        this.workflowFilterButton.addClass('btn-secondary');
         $('.noWorkflow').removeClass('d-none');
         $('.noForm').addClass('d-none');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').addClass('d-none');
         $('.globalButton').addClass('d-none');
-
     }
 
     filterForms(e) {
-        this.workflowFilterButton.addClass('disabled');
-        this.formFilterButton.removeClass('disabled');
-        this.globalFilterButton.addClass('disabled');
-        this.noFilterButton.addClass('disabled');
+        this.turnAllButtonsOff();
+        this.formFilterButton.removeClass('btn-light');
+        this.formFilterButton.addClass('btn-secondary');
         $('.noForm').removeClass('d-none');
         $('.noWorkflow').addClass('d-none');
         $('.workflowButton').addClass('d-none');
@@ -70,15 +73,25 @@ export class HomeUi {
     }
 
     filterNothing(e) {
-        this.workflowFilterButton.addClass('disabled');
-        this.formFilterButton.addClass('disabled');
-        this.noFilterButton.removeClass('disabled');
+        this.turnAllButtonsOff();
+        this.noFilterButton.removeClass('btn-light');
+        this.noFilterButton.addClass('btn-secondary');
         $('.workflowButton').removeClass('d-none');
         $('.formButton').removeClass('d-none');
         $('.globalButton').removeClass('d-none');
         $('.noWorkflow').addClass('d-none');
         $('.noForm').addClass('d-none');
+    }
 
+    turnAllButtonsOff() {
+        this.workflowFilterButton.removeClass('btn-secondary');
+        this.formFilterButton.removeClass('btn-secondary');
+        this.globalFilterButton.removeClass('btn-secondary');
+        this.noFilterButton.removeClass('btn-secondary');
+        this.workflowFilterButton.addClass('btn-light');
+        this.formFilterButton.addClass('btn-light');
+        this.globalFilterButton.addClass('btn-light');
+        this.noFilterButton.addClass('btn-light');
     }
 
     activeHorizontalScrolling(event){
@@ -89,4 +102,9 @@ export class HomeUi {
         }
     }
 
+    markAsRead(e) {
+        let id = e.target.id.split('_')[1];
+        console.log("mark as read message " + id);
+        $.get("/user/users/mark-as-read/" + id);
+    }
 }

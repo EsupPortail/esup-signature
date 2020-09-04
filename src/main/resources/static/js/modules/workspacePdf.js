@@ -4,14 +4,21 @@ import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class WorkspacePdf {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages) {
+    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
         console.info("Starting workspace UI");
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
         this.signRequestId = id;
-        this.signPosition = new SignPosition(this.currentSignRequestParams[0].xPos, this.currentSignRequestParams[0].yPos, signWidth, signHeight, this.currentSignRequestParams[0].signPageNumber, signImages);
+        this.signPosition = new SignPosition(
+            this.currentSignRequestParams[0].xPos,
+            this.currentSignRequestParams[0].yPos,
+            signWidth,
+            signHeight,
+            this.currentSignRequestParams[0].signPageNumber,
+            signImages,
+            userName);
         this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'sign';
@@ -33,6 +40,7 @@ export class WorkspacePdf {
                     document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
                 }
                 document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+                document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
             }
             document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
         }
@@ -77,8 +85,8 @@ export class WorkspacePdf {
 
     disableForm() {
         $("#signForm :input").not(':input[type=button], :input[type=submit], :input[type=reset]').each(function(i, e) {
-            console.log("disable ");
-            console.log(e);
+            console.debug("disable ");
+            console.debug(e);
             e.disabled = true;
         });
     }
@@ -134,7 +142,6 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.signPosition.updateScale(this.pdfViewer.scale);
-        this.signPosition.updateCrossPosition();
         this.refreshAfterPageChange();
     }
 
@@ -178,7 +185,7 @@ export class WorkspacePdf {
 
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
-        this.signPosition.getCurrentSign().signPageNumber = this.pdfViewer.pageNum;
+        this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
         $("div[id^='sign_']").each((index, e) => this.toggleSign(e));
         this.postits.forEach((postit, index) => {
             let postitDiv = $('#' + postit.id);
@@ -197,11 +204,11 @@ export class WorkspacePdf {
     }
 
     toggleSign(e) {
-        console.log($(e));
+        console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses[signId];
-        console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSign().signPageNumber);
-        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSign().signPageNumber) {
+        console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
+        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
             $(e).show();
         } else {
             $(e).hide();
@@ -313,6 +320,7 @@ export class WorkspacePdf {
         this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
+        this.refreshAfterPageChange();
     }
 
     disableAllModes() {
@@ -330,6 +338,7 @@ export class WorkspacePdf {
 
         $('#signTools').hide();
         this.signPosition.cross.hide();
+
         $('#infos').hide();
         $('#postit').hide();
         $('#refusetools').hide();

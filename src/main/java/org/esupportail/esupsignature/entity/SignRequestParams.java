@@ -1,8 +1,5 @@
 package org.esupportail.esupsignature.entity;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-
 import javax.persistence.*;
 
 @Entity
@@ -30,6 +27,26 @@ public class SignRequestParams {
 
 	private int yPos = 0;
 
+	private Boolean addDate = false;
+
+	private Boolean addName = false;
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Integer getVersion() {
+        return this.version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public int getSignImageNumber() {
         return signImageNumber;
     }
@@ -45,14 +62,6 @@ public class SignRequestParams {
 	public void setSignPageNumber(int signPageNumber) {
         this.signPageNumber = signPageNumber;
     }
-	
-	public String getPdSignatureFieldName() {
-		return pdSignatureFieldName;
-	}
-
-	public void setPdSignatureFieldName(String pdSignatureFieldName) {
-		this.pdSignatureFieldName = pdSignatureFieldName;
-	}
 
     public int getSignWidth() {
         return signWidth;
@@ -70,6 +79,14 @@ public class SignRequestParams {
         this.signHeight = signHeight;
     }
 
+    public String getPdSignatureFieldName() {
+		return pdSignatureFieldName;
+	}
+
+	public void setPdSignatureFieldName(String pdSignatureFieldName) {
+		this.pdSignatureFieldName = pdSignatureFieldName;
+	}
+
     public int getxPos() {
         return this.xPos;
     }
@@ -86,23 +103,20 @@ public class SignRequestParams {
         this.yPos = yPos;
     }
 
-	public String toString() {
-        return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    public Boolean isAddDate() {
+        return addDate;
     }
 
-	public Long getId() {
-        return this.id;
+    public void setAddDate(boolean addDate) {
+        this.addDate = addDate;
     }
 
-	public void setId(Long id) {
-        this.id = id;
+    public Boolean isAddName() {
+        return addName;
     }
 
-	public Integer getVersion() {
-        return this.version;
+    public void setAddName(boolean addName) {
+        this.addName = addName;
     }
 
-	public void setVersion(Integer version) {
-        this.version = version;
-    }
 }

@@ -25,18 +25,34 @@
                             </tr>
                         </th:block>
                     </table>
+                    <table th:if="${signRequest.links.size() > 0}" class="table table-borderless table-striped table-hover">
+                        <th:block th:each="link, iterator : ${signRequest.links}">
+                            <tr>
+                                <td>
+                                    <a th:href="${link}" target="_blank" th:text="${link}"></a>
+                                </td>
+                                <td th:if="${signRequest.createBy == user}">
+                                    <a th:href="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}"  onclick="return confirm('Confimez la suppression du lien')" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </table>
                     <div th:unless="${signRequest.attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
                     <hr/>
                     <div class="form-group">
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">
-                            <input required aria-describedby="inputGroupLabel03" class="custom-file-input"
+                            <input aria-describedby="inputGroupLabel03" class="custom-file-input"
                                    data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
                                    type="file">
                             <label class="custom-file-label" for="inputGroupFile03" id="inputGroupLabel03"
                                    aria-label="Choisir un document">
                                 Choisir un document
                             </label>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Ajouter un lien</label>
+                            <input class="form-control" type="text" name="link">
                         </div>
                     </div>
                 </div>

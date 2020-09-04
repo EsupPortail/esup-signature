@@ -1,11 +1,9 @@
 package org.esupportail.esupsignature.service.security.shib;
 
-import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 public class ShibRequestHeaderAuthenticationFilter extends RequestHeaderAuthenticationFilter {

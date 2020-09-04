@@ -49,6 +49,9 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Workflow workflow = null;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
@@ -158,6 +161,14 @@ public class SignBook {
         this.status = status;
     }
 
+    public Workflow getWorkflow() {
+        return workflow;
+    }
+
+    public void setWorkflow(Workflow workflow) {
+        this.workflow = workflow;
+    }
+
     public List<WorkflowStep> getWorkflowSteps() {
         return workflowSteps;
     }
@@ -214,7 +225,4 @@ public class SignBook {
         this.comment = comment;
     }
 
-    public enum SignBookType {
-        system, group, workflow;
-    }
 }

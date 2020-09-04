@@ -10,7 +10,7 @@
             <div id="newScroll" class="text-center text-nowrap col-12 overflow-auto text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Signature simple</h5>
-                    <a th:if="${!isUserOnSu}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                    <a th:if="${user == authUser || @userService.checkOneServiceShare(user, authUser, 'sign')}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                        title="Vous devez signer un document présent sur votre poste">
                         <div class="crop">
@@ -70,7 +70,7 @@
                            style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
                            th:title="'Formulaire : ' + ${form.title}">
                             <div class="crop">
-                                <i class="fas fa-file-alt fa-4x text-danger"></i>
+                                <i class="fas fa-file-alt fa-4x"></i>
 <!--                                <img th:src="'/user/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                             </div>
                             <h6 th:text="${form.title}"></h6>

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dss.model;
 
-import eu.europa.esig.dss.enumerations.*;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.utils.Utils;
 import org.springframework.web.multipart.MultipartFile;
 

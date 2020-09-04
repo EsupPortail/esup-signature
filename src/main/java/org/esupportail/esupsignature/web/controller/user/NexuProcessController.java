@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.ToBeSigned;
@@ -18,7 +17,6 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
@@ -43,10 +40,7 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-	@ModelAttribute("userMenu")
-	public String getActiveRole() {
-		return "active";
-	}
+
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -91,9 +85,8 @@ public class NexuProcessController {
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute User user, @PathVariable("id") Long id, Model model,
+	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model,
 										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
-    	//User user = userService.getCurrentUser();
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -119,7 +112,7 @@ public class NexuProcessController {
 
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute User user, Model model,
+	public GetDataToSignResponse getDataToSign(@ModelAttribute("user") User user, Model model,
 								@RequestBody @Valid DataToSignParams params,
 								@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
 								@ModelAttribute("signRequestId") Long signRequestId) throws IOException {
@@ -136,7 +129,7 @@ public class NexuProcessController {
 			} else {
 				if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 					SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
-					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size()), documentForm.getDocumentToSign(), user, false);
+					parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size()), documentForm.getDocumentToSign(), user);
 				} else {
 					parameters = signService.fillParameters((SignatureDocumentForm) signatureDocumentForm);
 				}
@@ -163,7 +156,7 @@ public class NexuProcessController {
 
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute User user,@RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(@ModelAttribute("user") User user,@RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId) throws EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();

@@ -4,7 +4,7 @@
 <script th:src="${nexuUrl} + '/nexu.js'" ></script>
 <script th:inline="javascript" type="module">
 	import {Nexu} from "/js/modules/nexu.js";
-	let	nexu = new Nexu([[${nexuUrl}]], [[${nexuVersion}]], [[${rootUrl}]]);
+	let	nexu = new Nexu([[${nexuUrl}]], [[${nexuVersion}]], [[${rootUrl}]], [[${addDate}]], [[${addName}]]);
 	nexu.getCertificates();
 </script>
 <body>

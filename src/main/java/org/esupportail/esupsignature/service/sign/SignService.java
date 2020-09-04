@@ -1,22 +1,17 @@
 package org.esupportail.esupsignature.service.sign;
 
-import eu.europa.esig.dss.*;
+import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.SignatureAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
-import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentHorizontal;
-import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureAlignmentVertical;
-import eu.europa.esig.dss.pades.SignatureImageParameters.VisualSignatureRotation;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
@@ -47,10 +42,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -187,39 +183,44 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user, boolean addDate) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, MultipartFile toSignFile, User user) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		int[] signSize;
 		InputStream signImage;
-		if(addDate) {
-			DateFormat dateFormat = new SimpleDateFormat("dd MMMM YYYY HH:mm:ss", Locale.FRENCH);
-			String text = "Le " + dateFormat.format(new Date());
-			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), text, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
-		} else {
-			signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), null, signRequestParams.getSignWidth(), signRequestParams.getSignHeight());
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
+		String addText = "";
+		int lineNumber = 0;
+		if(signRequestParams.isAddName()) {
+			addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
+			lineNumber++;
 		}
-
-		fileDocumentImage = new InMemoryDocument(signImage, "sign.png");
-//		signSize = pdfService.getSignSize(signImage);
-
+		if (signRequestParams.isAddDate()) {
+			addText +="Le " + dateFormat.format(new Date());
+			lineNumber++;
+		}
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber);
+		BufferedImage bufferedSignImage = ImageIO.read(signImage);
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		ImageIO.write(bufferedSignImage, "png", os);
+		fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
-		if (pdfParameters.getRotation() == 0) {
+		int heightAdjusted = Math.round(((float) signRequestParams.getSignWidth() / bufferedSignImage.getWidth()) * bufferedSignImage.getHeight());
+		if(pdfParameters.getRotation() == 0) {
 			imageParameters.setWidth(signRequestParams.getSignWidth());
-			imageParameters.setHeight(signRequestParams.getSignHeight());
+			imageParameters.setHeight(heightAdjusted);
 			imageParameters.setxAxis(signRequestParams.getxPos());
-			imageParameters.setyAxis(signRequestParams.getyPos());
 		} else {
-			imageParameters.setWidth(signRequestParams.getSignHeight());
+			imageParameters.setWidth(heightAdjusted);
 			imageParameters.setHeight(signRequestParams.getSignWidth());
 			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
-			imageParameters.setyAxis(signRequestParams.getyPos());
 		}
+		int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
+		imageParameters.setyAxis(yPos);
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
@@ -229,7 +230,6 @@ public class SignService {
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());
 
 		fillParameters(pAdESSignatureParameters, form);
-		//pAdESSignatureParameters.setSignatureFieldId(signRequestParams.getPdSignatureFieldName());
 		pAdESSignatureParameters.setSignerName(user.getFirstname() + " " + user.getName());
 		return pAdESSignatureParameters;
 	}
