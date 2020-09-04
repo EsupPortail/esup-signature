@@ -130,21 +130,6 @@ public class AdminSignRequestController {
 			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
 				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
-//					PdfParameters pdfParameters = pdfService.getPdfParameters(toDisplayDocument.getInputStream());
-//					if (pdfParameters != null) {
-//						model.addAttribute("pdfWidth", pdfParameters.getWidth());
-//						model.addAttribute("pdfHeight", pdfParameters.getHeight());
-//						model.addAttribute("imagePagesSize", pdfParameters.getTotalNumberOfPages());
-//					}
-					if(user.getSignImages().get(0) != null) {
-						model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-						int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
-						model.addAttribute("signWidth", size[0]);
-						model.addAttribute("signHeight", size[1]);
-					} else {
-						model.addAttribute("signWidth", 100);
-						model.addAttribute("signHeight", 75);
-					}
 				}
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
@@ -152,12 +137,6 @@ public class AdminSignRequestController {
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 			model.addAttribute("logs", logs);
 			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			if(user.getSignImages().get(0) != null) {
-				model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-			}
-			if(user.getKeystore() != null) {
-				model.addAttribute("keystore", user.getKeystore().getFileName());
-			}
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("itemId", id);
 			return "admin/signrequests/show";
