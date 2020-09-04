@@ -740,9 +740,11 @@ public class SignRequestService {
 
 	public boolean preAuthorizeView(Long id, User user, User authUser) {
 		if(user.equals(authUser) || userService.checkSignShare(user, authUser)) {
-			SignRequest signRequest = signRequestRepository.findById(id).get();
-			if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
-				return true;
+			if(signRequestRepository.countById(id) > 0) {
+				SignRequest signRequest = signRequestRepository.findById(id).get();
+				if (checkUserViewRights(user, signRequest) || checkUserSignRights(user, signRequest)) {
+					return true;
+				}
 			}
 		}
 		return false;

@@ -449,7 +449,6 @@ public class SignRequestController {
     public String sendSignRequest(@ModelAttribute("user") User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-//                                  @RequestParam(name = "comment", required = false) String comment,
                                   @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
@@ -475,9 +474,11 @@ public class SignRequestController {
 //              signRequest.setComment(comment);
 //              signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
 //          }
+            redirectAttributes.addFlashAttribute("messageWarn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande");
+            return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             logger.warn("no file to import");
-            redirectAttributes.addFlashAttribute("messageWarn", "Pas de fichier à importer");
+            redirectAttributes.addFlashAttribute("messageError", "Pas de fichier à importer");
         }
         return "redirect:/user/signrequests";
     }
@@ -655,7 +656,7 @@ public class SignRequestController {
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
         }
         redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
-        return "redirect:/user/signrequests/" + id;
+        return "redirect:/user/signrequests/";
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")

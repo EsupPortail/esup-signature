@@ -45,8 +45,6 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
-
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "home";
@@ -86,7 +84,6 @@ public class IndexController {
 				return "redirect:/user/";
 			}
 		}
-
 	}
 
 	@GetMapping("/login/**")
@@ -100,17 +97,21 @@ public class IndexController {
 		if(forwardUri !=null) {
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
-				SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
-				User suUser = signRequestService.checkShare(signRequest);
-				if (suUser != null) {
-					if (userService.switchToShareUser(suUser.getEppn())) {
-						redirectAttributes.addFlashAttribute("messageWarning", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+				if(signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
+					SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+					User suUser = signRequestService.checkShare(signRequest);
+					if (suUser != null) {
+						if (userService.switchToShareUser(suUser.getEppn())) {
+							redirectAttributes.addFlashAttribute("messageWarn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+						}
+						return "redirect:" + forwardUri;
 					}
-					return "redirect:" + forwardUri;
+				} else {
+					redirectAttributes.addFlashAttribute("messageError", "Demande non trouvée");
+					return "redirect:/user/signrequests";
 				}
 			}
 		}
-		//TODO check shares
 		return "denied";
 	}
 
