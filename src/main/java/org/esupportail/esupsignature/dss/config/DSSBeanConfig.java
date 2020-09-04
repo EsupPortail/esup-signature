@@ -226,7 +226,7 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-		public CertificateVerifier certificateVerifier() {
+	public CertificateVerifier certificateVerifier() {
 		List<CertificateSource> trustedCertSources = new ArrayList<>();
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());

@@ -41,7 +41,7 @@
 	<script>$('#toast').toast('show');</script>
 	</th:block>
 <th:block th:if="${messageWarn != null}" >
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="1000">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-header text-dark bg-warning">
 			<strong class="mr-auto blinking-black">Attention</strong>
 			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -55,7 +55,7 @@
 	<script>$('#toast').toast('show');</script>
 	</th:block>
 <th:block th:if="${messageSuccess != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-header bg-success">
 			<strong class="mr-auto text-white">Confirmation</strong>
 			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -69,7 +69,7 @@
 	<script>$('#toast').toast('show');</script>
 	</th:block>
 	<th:block th:if="${messageInfo != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000">
+	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-header">
 			<strong class="mr-auto text-dark">Information</strong>
 			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
