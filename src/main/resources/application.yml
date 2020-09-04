@@ -78,10 +78,10 @@ mail:
 
 sms:
     enable-sms : false
-    service-name: SMSU
-    url: https://smsu-api.univ-ville.fr/
-    username: sms-account
-    password: ********
+#    service-name: SMSU
+#    url: https://smsu-api.univ-ville.fr/
+#    username: sms-account
+#    password: ********
 
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
