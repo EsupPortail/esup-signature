@@ -1,6 +1,6 @@
 export class SignRequestParams {
 
-    constructor(currentSignRequestParams) {
+    constructor(signRequestParams) {
         this.pdSignatureFieldName;
         this.signImageNumber;
         this.signPageNumber;
@@ -8,7 +8,7 @@ export class SignRequestParams {
         this.yPos;
         this.addName;
         this.addDate;
-        Object.assign(this, currentSignRequestParams);
+        Object.assign(this, signRequestParams);
     }
 
     setxPos(x) {
