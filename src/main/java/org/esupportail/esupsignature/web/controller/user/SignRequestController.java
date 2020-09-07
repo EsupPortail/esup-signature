@@ -428,7 +428,7 @@ public class SignRequestController {
                 try {
                     signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
                 } catch (EsupSignatureIOException e) {
-                    redirectAttributes.addFlashAttribute("messageError", "Impossible de charger le document : documentsr     corrompu");
+                    redirectAttributes.addFlashAttribute("messageError", "Impossible de charger le document : documents corrompu");
                     return "redirect:" + request.getHeader("Referer");
                 }
                 signRequestService.addRecipients(signRequest, user);
@@ -455,19 +455,17 @@ public class SignRequestController {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
-            SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-            SignBook signBook = signBookService.createSignBook("Demande simple", multipartFiles[0].getOriginalFilename(), user, false);
+
+            SignBook signBook = signRequestService.addDocsInSignBook(user, "Demande simple", "", multipartFiles);
             signBook.setCurrentWorkflowStepNumber(1);
             try {
                 signBookRepository.save(signBook);
                 signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
             } catch (EsupSignatureUserException e) {
-                //TODO ? throw
-                logger.error("error with users on send signrequest " + signRequest.getId());
+                logger.error("error with users on create signbook " + signBook.getId());
                 redirectAttributes.addFlashAttribute("messageError", "Problème lors de l’envoi");
             }
-            signBookService.addSignRequest(signBook, signRequest);
+//            signBookService.addSignRequest(signBook, signRequest);
             //enable for auto pending
 //          signBookService.pendingSignBook(signBook, user);
 //          if(!comment.isEmpty()) {
@@ -475,7 +473,7 @@ public class SignRequestController {
 //              signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
 //          }
             redirectAttributes.addFlashAttribute("messageWarn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande");
-            return "redirect:/user/signrequests/" + signRequest.getId();
+            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
             logger.warn("no file to import");
             redirectAttributes.addFlashAttribute("messageError", "Pas de fichier à importer");

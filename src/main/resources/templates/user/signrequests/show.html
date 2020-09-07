@@ -8,9 +8,9 @@
 <body>
 <header th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
-    globalUi.showSideBar();
-    globalUi.disableSideBarButton();
+    // import globalUi from "/js/main.js";
+    // globalUi.showSideBar();
+    // globalUi.disableSideBarButton();
     import {Nexu} from "/js/modules/nexu.js";
     import {SignUi} from "/js/modules/signUi.js";
     let signable = [[${signRequest.signable}]];
@@ -113,14 +113,15 @@
                 <nav class="nav nav-tabs" th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
                         <li class="nav-item overflow-hidden" th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'file-tab'">
-                            <a class="nav-link" th:classappend="${signRequest.id == signRequestTab.id} ? 'active'" th:href="'/user/signrequests/' + ${signRequestTab.id}">
-                                <div class="truncate" th:classappend="${signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked'} ? 'text-success' : 'text-danger'"><i class="fas fa-file"></i>&nbsp;<span th:text="${signRequestTab.title}"></span></div>
+                            <a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (signRequestTab.status.name() == 'signed' || signRequestTab.status.name() == 'completed' || signRequestTab.status.name() == 'exported' || signRequestTab.status.name() == 'checked' ? 'text-success' : 'bg-danger text-white')}" th:href="'/user/signrequests/' + ${signRequestTab.id}" th:title="${signRequestTab.title}">
+                                <div class="truncate"><i class="fas fa-file"></i>&nbsp;
+                                    <span th:text="${signRequestTab.title}"></span></div>
                             </a>
                         </li>
                     </th:block>
                 </nav>
             </div>
-            <div th:if="${signRequest.status.name() == 'pending'}" style="position: absolute;left: 270px;top: 135px;">
+            <div th:if="${signRequest.status.name() == 'pending'}" style="position: absolute;left: 270px;top: 180px;">
                 <th:block  th:each="postit, iterate : ${globalPostits}">
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->

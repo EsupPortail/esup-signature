@@ -228,6 +228,17 @@ public class SignRequestService {
 		}
 	}
 
+
+	public SignBook addDocsInSignBook(User user, String name, String workflowName, MultipartFile[] multipartFiles) throws EsupSignatureException, EsupSignatureIOException {
+		SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
+		for (MultipartFile multipartFile : multipartFiles) {
+			SignRequest signRequest = createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+			addDocsToSignRequest(signRequest, multipartFile);
+			signBookService.addSignRequest(signBook, signRequest);
+		}
+		return signBook;
+	}
+
 	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
@@ -306,7 +317,6 @@ public class SignRequestService {
 			signRequest.setAllSignToComplete(allSignToComplete);
 			signRequest.setCurrentStepNumber(signRequest.getCurrentStepNumber() + 1);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
-			sendEmailAlerts(signRequest, user);
 		} else {
 			logger.warn("already pending");
 		}

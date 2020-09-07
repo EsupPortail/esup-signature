@@ -676,24 +676,25 @@ float:left;
     border-radius: 50%;
 }
 
+.nav-tabs {
+    border-bottom : 1px solid #000000;
+}
+
 .nav-tabs .nav-link {
     border-color: #dee2e6 !important;
-    background-color: #dee2e6;
+    border-bottom : 1px solid #000000 !important;
+    /*background-color: #dee2e6;*/
 }
 
 .nav-tabs .nav-link.active {
-    border-color: #dee2e6 #dee2e6 #fff !important;
+    border-color: #000 #000 #fff !important;
+
 }
 
 .file-tab {
     width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.file-tab:hover {
-    min-width: 200px;
-    width: auto;
 }
 
 .bootstrap-datetimepicker-widget {

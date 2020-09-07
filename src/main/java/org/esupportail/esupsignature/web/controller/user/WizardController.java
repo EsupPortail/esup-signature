@@ -75,7 +75,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz2", produces = "text/html")
-    public String wiz2(@ModelAttribute("user") User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model, RedirectAttributes redirectAttributes) {
+    public String wiz2(@ModelAttribute("user") User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.info(user.getEppn() + " init new signBook : " + name);
         logger.debug("Choix des fichiers");
         model.addAttribute("name", name);
