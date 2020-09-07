@@ -192,6 +192,7 @@ public class UserController {
 		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
 		for (String userEmail : userEmails) {
+			users.add(userService.getUserByEmail(userEmail));
 		}
 		Date beginDateDate = null;
 		Date endDateDate = null;
