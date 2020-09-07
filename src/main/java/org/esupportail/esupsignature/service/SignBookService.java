@@ -284,9 +284,14 @@ public class SignBookService {
     public void pendingSignBook(SignBook signBook, User user) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), "SUCCESS", signBook.getComment());
+        boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
             signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete(), user);
+            if(!emailSended) {
+                signRequestService.sendEmailAlerts(signRequest, user);
+                emailSended = true;
+            }
         }
 
 // TODO : verifier doublon

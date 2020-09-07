@@ -40,7 +40,7 @@ export class SignPosition {
         } else {
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
-            this.cross.css("margin-top", "135px");
+            this.cross.css("margin-top", "180px");
         }
         this.addSignButton.attr("disabled", "disabled");
         this.removeSignButton.attr("disabled", "disabled");
@@ -107,8 +107,8 @@ export class SignPosition {
         this.updateCrossPosition();
         this.cross.css("position", "fixed");
         this.cross.css("margin-left", "270px");
-        this.cross.css("margin-top", "135px");
-        this.cross.css("margin-top", "135px");
+        this.cross.css("margin-top", "180px");
+        this.cross.css("margin-top", "180px");
         this.cross.children().children().remove();
         this.addSignButton.attr("disabled", "disabled");
         this.removeSignButton.removeAttr("disabled");
