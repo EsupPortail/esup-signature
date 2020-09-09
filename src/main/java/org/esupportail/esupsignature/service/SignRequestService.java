@@ -576,10 +576,12 @@ public class SignRequestService {
 
 	public List<User> getTempUsers(SignRequest signRequest) {
 		List<User> users = new ArrayList<>();
-		for(WorkflowStep workflowStep : signRequest.getParentSignBook().getWorkflowSteps()) {
-			for(Recipient recipient : workflowStep.getRecipients()) {
-				if(recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
-					users.add(recipient.getUser());
+		if(signRequest.getParentSignBook() != null) {
+			for (WorkflowStep workflowStep : signRequest.getParentSignBook().getWorkflowSteps()) {
+				for (Recipient recipient : workflowStep.getRecipients()) {
+					if (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
+						users.add(recipient.getUser());
+					}
 				}
 			}
 		}
