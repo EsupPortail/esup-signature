@@ -203,17 +203,19 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #user)")
-    @PostMapping(value = "/send-otp/{id}")
-    public String sendOtp(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam String phoneNumber,
-                          @RequestParam String email,
-                          @RequestParam String name,
-                          @RequestParam String firstname, RedirectAttributes redirectAttributes) throws Exception {
+    @GetMapping(value = "/send-otp/{id}/{recipientId}")
+    public String sendOtp(@ModelAttribute("user") User user,
+                          @PathVariable("id") Long id,
+                          @PathVariable("recipientId") Long recipientId,
+                          RedirectAttributes redirectAttributes) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        User newUser = userService.createUser(phoneNumber, name, firstname, email, UserType.external);
-        userRepository.save(newUser);
-        otpService.generateOtpForSignRequest(signRequest, newUser);
-        redirectAttributes.addFlashAttribute("messageSuccess", "Demande OTP envoyée");
+        User newUser = userRepository.findById(recipientId).get();
+        if(newUser.getUserType().equals(UserType.external)) {
+            otpService.generateOtpForSignRequest(signRequest, newUser);
+            redirectAttributes.addFlashAttribute("messageSuccess", "Demande OTP envoyée");
+        } else {
+            redirectAttributes.addFlashAttribute("messageError", "Problème d'envoi OTP");
+        }
         return "redirect:/user/signrequests/" + id;
     }
 
