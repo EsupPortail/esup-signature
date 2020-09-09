@@ -168,7 +168,7 @@ public class WsController {
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail) throws EsupSignatureUserException {
         List<JsonDocuments> signedFiles = new ArrayList<>();
-        User user = userService.getUserByEmail(recipientEmail);
+        User user = userService.checkUserByEmail(recipientEmail);
         List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
 
         for (SignRequest signRequest : signRequests) {

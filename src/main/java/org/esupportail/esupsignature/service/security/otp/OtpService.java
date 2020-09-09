@@ -7,6 +7,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -55,20 +56,17 @@ public class OtpService {
         });
     }
 
-    public void generateOtpForSignRequest(SignRequest signRequest, String phoneNumber, String email, String name, String firstname) throws MessagingException {
-        //TODO check email domain
+    public void generateOtpForSignRequest(SignRequest signRequest, User extUser) throws MessagingException {
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
-        otp.setPhoneNumber(phoneNumber);
-        otp.setEmail(email);
+        otp.setPhoneNumber(extUser.getEppn());
+        otp.setEmail(extUser.getEmail());
         otp.setSignRequestId(signRequest.getId());
         String urlId = UUID.randomUUID().toString();
         mailService.sendOtp(otp, urlId);
-        User user = userService.createUser(phoneNumber, name, firstname, email);
-        userRepository.save(user);
-        signRequestService.addRecipients(signRequest, user);
-        removeOtpFromCache(phoneNumber);
-        removeOtpFromCache(email);
+        signRequestService.addRecipients(signRequest, extUser);
+        removeOtpFromCache(extUser.getEppn());
+        removeOtpFromCache(extUser.getEmail());
         otpCache.put(urlId, otp);
         logger.info("new url for otp : " + urlId);
     }

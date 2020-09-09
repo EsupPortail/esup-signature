@@ -80,7 +80,7 @@ public class IndexController {
 				model.addAttribute("securityServices", securityServices);
 				return "signin";
 			} else {
-				userService.createUser(SecurityContextHolder.getContext().getAuthentication());
+				userService.createUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
 				return "redirect:/user/";
 			}
 		}

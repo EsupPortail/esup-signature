@@ -5,6 +5,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -82,7 +83,7 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         User creator;
         if (userRepository.countByEppn("creator") == 0) {
-            creator = userService.createUser("creator", "Createur de la demande", "", "");
+            creator = userService.createUser("creator", "Createur de la demande", "", "", UserType.system);
         } else {
             creator = userRepository.findByEppn("creator").get(0);
         }
@@ -255,12 +256,12 @@ public class WorkflowService {
         return workflowStep.getId();
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureUserException {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             User recipientUser;
             if (userRepository.countByEmail(recipientEmail) == 0) {
-                recipientUser = userService.createUser(recipientEmail);
+                recipientUser = userService.createUserWithEmail(recipientEmail);
             } else {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
@@ -355,7 +356,7 @@ public class WorkflowService {
         } else {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
             for(String email : favoritesEmail) {
-                User recipientUser = userService.getUserByEmail(email);
+                User recipientUser = userService.checkUserByEmail(email);
                 recipients.add(recipientService.createRecipient(null, recipientUser));
             }
         }

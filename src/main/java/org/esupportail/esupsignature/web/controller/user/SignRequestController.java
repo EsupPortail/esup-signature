@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -38,6 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -90,6 +92,9 @@ public class SignRequestController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserRepository userRepository;
 
     @Resource
     private PreFillService preFillService;
@@ -205,7 +210,9 @@ public class SignRequestController {
                           @RequestParam String name,
                           @RequestParam String firstname, RedirectAttributes redirectAttributes) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        otpService.generateOtpForSignRequest(signRequest, phoneNumber, email, name, firstname);
+        User newUser = userService.createUser(phoneNumber, name, firstname, email, UserType.external);
+        userRepository.save(newUser);
+        otpService.generateOtpForSignRequest(signRequest, newUser);
         redirectAttributes.addFlashAttribute("messageSuccess", "Demande OTP envoyée");
         return "redirect:/user/signrequests/" + id;
     }
@@ -216,8 +223,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
-                && signRequestService.needToSign(signRequest, user)
-        ) {
+                && signRequestService.needToSign(signRequest, user)) {
             signRequest.setSignable(true);
             model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
             model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
@@ -259,7 +265,7 @@ public class SignRequestController {
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
-                        model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
+                        model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users'>Mes paramètres</a>");
                         signRequest.setSignable(false);
                     }
                 }
@@ -275,8 +281,12 @@ public class SignRequestController {
             FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
             model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
         }
-
+        boolean isTempUsers = false;
+        if(signRequestService.getTempUsers(signRequest).size() > 0) {
+            isTempUsers = true;
+        }
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        model.addAttribute("isTempUsers", isTempUsers);
         model.addAttribute("refuseLogs", refuseLogs);
         model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
         List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
@@ -636,8 +646,37 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("user") User user, User authUser, @PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes) {
+                          @RequestParam(value = "comment", required = false) String comment,
+                          @RequestParam(value = "emails", required = false) String emails[],
+                          @RequestParam(value = "names", required = false) String names[],
+                          @RequestParam(value = "firstnames", required = false) String firstnames[],
+                          @RequestParam(value = "phones", required = false) String phones[],
+                          RedirectAttributes redirectAttributes) throws MessagingException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
+        List<User> tempUsers = signRequestService.getTempUsers(signRequest);
+        int countExternalUsers = 0;
+        for(User tempUser : tempUsers) {
+            if(tempUser.getUserType().equals(UserType.external)) countExternalUsers++;
+        }
+        if(countExternalUsers == names.length) {
+            int userNumber = 0;
+            for(User tempUser : tempUsers) {
+                if(tempUser.getUserType().equals(UserType.shib)) {
+                    logger.warn("TODO Envoi Mail SHIBBOLETH ");
+                    //TODO envoi mail spécifique
+                } else if(tempUser.getUserType().equals(UserType.external)) {
+                    tempUser.setFirstname(firstnames[userNumber]);
+                    tempUser.setName(names[userNumber]);
+                    tempUser.setEppn(phones[userNumber]);
+                    otpService.generateOtpForSignRequest(signRequest, tempUser);
+                }
+                userRepository.save(tempUser);
+                userNumber++;
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("messageError", "Merci de compléter tous les utilisateurs externes");
+            return "redirect:/user/signrequests/" + signRequest.getId();
+        }
         signRequest.setComment(comment);
         if(signRequest.getParentSignBook() != null) {
             if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {

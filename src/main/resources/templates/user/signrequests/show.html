@@ -53,7 +53,6 @@
             </div>
             <div id="signButtons" th:unless="${signRequest.signable}" class="fixed-action-btns active">
                 <ul class="list-unstyled">
-
                 <li><a role="button" th:if="${signRequest.status.name() == 'draft'}"  class="btn-floating btn-lg bg-success waves-effect" title="Envoyer" data-toggle="modal" data-target="#sendModal"><i class="fas fa-paper-plane"></i></a></li>
                 <li><a role="button" th:if="${signRequest.status.name() == 'draft'}"  class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a></li>
                 </ul>
@@ -154,7 +153,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {FilesInput} from "/js/modules/filesInput.js";
+                    import {default as FilesInput} from "/js/modules/filesInput.js";
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                     new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                 </script>
@@ -297,6 +296,24 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div class="form-group" th:if="${isTempUsers}">
+                        <label>Des destinataires ne sont pas connus dans le système, merci de saisir les informations complémentaires si besoin</label>
+                        <th:block th:each="workflow : ${signRequest.parentSignBook.workflowSteps}">
+                            <th:block th:each="recipient : ${workflow.recipients}">
+                                <div th:if="${recipient.user.name == recipient.user.email && recipient.user.userType.name() == 'external'}">
+                                    <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
+                                    <input type="hidden" name="emails" th:value="${recipient.user.email}">
+                                    <br>
+                                    <label>Nom</label>
+                                    <input class="form-control" type="text" name="names" required>
+                                    <label>Prénom</label>
+                                    <input class="form-control" type="text" name="firstnames" required>
+                                    <label>Mobile</label>
+                                    <input class="form-control" type="text" name="phones" required>
+                                </div>
+                            </th:block>
+                        </th:block>
+                    </div>
                     <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">

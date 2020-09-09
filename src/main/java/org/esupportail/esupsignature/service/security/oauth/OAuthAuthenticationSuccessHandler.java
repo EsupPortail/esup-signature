@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -31,7 +32,7 @@ public class OAuthAuthenticationSuccessHandler implements AuthenticationSuccessH
 		String name = defaultOidcUser.getAttributes().get("family_name").toString();
 		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
-		User user = userService.createUser(id, name, prenom, email);
+		userService.createUser(id, name, prenom, email, UserType.external);
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		String targetURL = defaultSavedRequest.getRedirectUrl();
 		httpServletRequest.getSession().setAttribute("securityServiceName", "OAuthSecurityServiceImpl");

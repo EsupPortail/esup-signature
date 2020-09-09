@@ -271,7 +271,7 @@ public class SignRequestService {
 		for (String recipientEmail : recipientsEmail) {
 			User recipientUser;
 			if (userRepository.countByEmail(recipientEmail) == 0) {
-				recipientUser = userService.createUser(recipientEmail);
+				recipientUser = userService.createUserWithEmail(recipientEmail);
 			} else {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
@@ -572,6 +572,18 @@ public class SignRequestService {
 				userService.sendSignRequestEmailAlert(recipientUser, signRequest);
 			}
 		}
+	}
+
+	public List<User> getTempUsers(SignRequest signRequest) {
+		List<User> users = new ArrayList<>();
+		for(WorkflowStep workflowStep : signRequest.getParentSignBook().getWorkflowSteps()) {
+			for(Recipient recipient : workflowStep.getRecipients()) {
+				if(recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
+					users.add(recipient.getUser());
+				}
+			}
+		}
+		return users;
 	}
 
 	public void completeSignRequest(SignRequest signRequest) {

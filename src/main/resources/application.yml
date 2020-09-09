@@ -135,6 +135,7 @@ security:
         idp-url: https://idp.univ-rouen.fr
         principal-request-header: REMOTE_USER
         title: Compte d’un autre établissement (Shibboleth)
+        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     ws:
         ws-access-authorize-ips: 127.0.0.1
 

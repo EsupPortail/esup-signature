@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.UserType;
+
 import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
@@ -26,6 +28,9 @@ public class User {
 
     @Column(unique=true)
     private String email;
+
+    @Enumerated(EnumType.STRING)
+    private UserType userType;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     @OrderColumn
@@ -108,6 +113,14 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 
     public List<Document> getSignImages() {

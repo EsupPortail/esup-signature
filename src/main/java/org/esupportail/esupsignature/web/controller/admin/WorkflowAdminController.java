@@ -156,7 +156,7 @@ public class WorkflowAdminController {
 		if(managers != null && managers.size() > 0) {
 			workflowToUpdate.getManagers().clear();
 			for(String manager : managers) {
-				User managerUser = userService.getUserByEmail(manager);
+				User managerUser = userService.checkUserByEmail(manager);
 				if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
 					workflowToUpdate.getManagers().add(managerUser.getEmail());
 				}

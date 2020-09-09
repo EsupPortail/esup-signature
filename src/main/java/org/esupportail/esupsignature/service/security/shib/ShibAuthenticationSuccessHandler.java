@@ -1,6 +1,9 @@
 package org.esupportail.esupsignature.service.security.shib;
 
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,9 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private UserRepository userRepository;
+
 	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 	
 	//pas de redirection ici !
@@ -32,7 +38,16 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
         if(eppn == null || email == null || name == null || firstName == null) {
         	throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		} else {
-			userService.createUser(eppn, name, firstName, email);
+			User user = userService.getUserByEmail(email);
+			if(user == null) {
+				userService.createUser(eppn, name, firstName, email, UserType.shib);
+			} else {
+				user.setEppn(eppn);
+				user.setName(name);
+				user.setFirstname(firstName);
+				user.setEmail(email);
+				userRepository.save(user);
+			}
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
         /*
