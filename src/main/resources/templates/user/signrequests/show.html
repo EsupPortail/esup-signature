@@ -8,9 +8,9 @@
 <body>
 <header th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
-    // import globalUi from "/js/main.js";
-    // globalUi.showSideBar();
-    // globalUi.disableSideBarButton();
+    import globalUi from "/js/main.js";
+    globalUi.showSideBar();
+    globalUi.disableSideBarButton();
     import {Nexu} from "/js/modules/nexu.js";
     import {SignUi} from "/js/modules/signUi.js";
     let signable = [[${signRequest.signable}]];
@@ -70,8 +70,10 @@
                             <i class="fas fa-arrow-down"></i>
                         </button>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
-                        <button id="zoomout" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i></button>
-                        <button id="zoomin" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i></button>
+                        <button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i></button>
+                        <button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i></button>
+                        <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-expand"></i></button>
+                        <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-compress"></i></button>
                         <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                         <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
@@ -123,7 +125,7 @@
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->
-                    <div class="postit-global" th:style="'position: fixed; right: ' + ${250 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
+                    <div class="postit-global d-none" th:style="'position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
                         <b th:text="'Postit de ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                         <button type="button" class="close">
                             <i class="fas fa-times"></i>

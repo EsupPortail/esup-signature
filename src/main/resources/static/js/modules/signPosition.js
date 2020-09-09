@@ -68,7 +68,7 @@ export class SignPosition {
     }
 
     initListeners() {
-        window.addEventListener("touchmove", e => this.touchIt(e));
+        window.addEventListener("touchmove", e => this.touchIt(e), {passive: false});
         this.initCrossListeners();
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
@@ -175,6 +175,7 @@ export class SignPosition {
             var i = new Image()
             i.onload = function(){
                 resolved({w: i.width, h: i.height})
+                resolved({w: i.width, h: i.height})
             };
             i.src = file
         })
@@ -236,11 +237,12 @@ export class SignPosition {
 
     touchIt(e) {
         if (this.pointItEnable) {
+            e.preventDefault();
             this.pointItMove = true;
             console.log("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
-            this.getCurrentSignParams().setxPos( touch.pageX / this.currentScale * this.fixRatio);
+            this.getCurrentSignParams().setxPos( (touch.pageX - (rect.left)) / this.currentScale * this.fixRatio);
             this.getCurrentSignParams().setyPos( (touch.pageY - (rect.top + window.scrollY)) / this.currentScale * this.fixRatio);
             this.updateCrossPosition();
         }
@@ -280,7 +282,7 @@ export class SignPosition {
         console.debug("update sign pos to : " + this.getCurrentSignParams().xPos + " " + this.getCurrentSignParams().yPos);
         if(this.posX < 0) this.posX = 0;
         if(this.posY < 0) this.posY = 0;
-        this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
+        // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
         this.updateSignSize();
@@ -319,14 +321,16 @@ export class SignPosition {
     stopDragSignature() {
         console.info("stop drag");
         this.fireEvent('stopDrag', ['ok']);
-        this.cross.css('backgroundColor', 'rgba(0, 255, 0, 0)');
+        this.cross.css('backgroundColor', 'rgba(0, 255, 0, .0)');
         this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";
+        if(this.pointItEnable) {
+            this.updateSignButtons();
+            this.showButtons();
+        }
         this.pointItEnable = false;
         this.pointItMove = false
         this.addSignButton.removeAttr("disabled");
-        this.showButtons();
-        this.updateSignButtons();
     }
 
     dragSignature() {
