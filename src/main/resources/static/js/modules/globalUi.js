@@ -36,10 +36,6 @@ export class GlobalUi {
             $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
         }, true);
 
-        $(".postit-global").on('click', function () {
-            $(this).toggleClass("postit-small");
-        });
-
         $(document).click(function (event) {
             var container = document.getElementsByClassName('user-infos')[0];
             var _opened = $("#user-infos").hasClass("collapse show");

@@ -121,7 +121,7 @@
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->
-                    <div class="postit-global" th:style="'z-index : 1; position: absolute; left: ' + ${1 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
+                    <div class="postit-global" th:style="'z-index : 1; position: absolute; right: ' + ${100 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
                         <b th:text="'Postit de ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                         <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${postit.comment}"></p>

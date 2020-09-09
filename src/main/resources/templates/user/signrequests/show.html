@@ -60,8 +60,6 @@
             <div class="tools">
                 <div class="d-flex mb-1">
 <!--                    <a th:if="${signRequest.createBy == user && signRequest.parentSignBook != null && (signRequest.parentSignBook.status.name() == 'draft' || signRequest.parentSignBook.status.name() == 'pending')}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
-                    <button data-toggle="modal" data-target="#otpModal" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="OTP"><i class="fas fa-key"></i></button>
-
                     <a th:if="${signRequest.createBy == user}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'"><i class="fas fa-info-circle"></i></a>
                     <th:block th:if="${documentType == 'pdf'}">
                         <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
@@ -125,8 +123,11 @@
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->
-                    <div class="postit-global" th:style="'z-index : 1; position: absolute; left: ' + ${1 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
+                    <div class="postit-global" th:style="'position: fixed; right: ' + ${250 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
                         <b th:text="'Postit de ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                        <button type="button" class="close">
+                            <i class="fas fa-times"></i>
+                        </button>
                         <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${postit.comment}"></p>
                     </div>
@@ -315,37 +316,6 @@
                         </th:block>
                     </div>
                     <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">
-                        Envoyer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <form th:action="'/user/signrequests/send-otp/' + ${id}" method="post">
-                <div class="modal-header">
-                    <h3 class="modal-title">Demander une signature à une personne externe</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <label for="phoneNumber">Numéro de téléphone</label>
-                    <input id="phoneNumber" type="text" name="phoneNumber" class="form-control">
-                    <label for="email">Email</label>
-                    <input id="email" type="text" name="email" class="form-control">
-                    <label for="name">Nom</label>
-                    <input id="name" type="text" name="name" class="form-control">
-                    <label for="firstname">Prénom</label>
-                    <input id="firstname" type="text" name="firstname" class="form-control">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>

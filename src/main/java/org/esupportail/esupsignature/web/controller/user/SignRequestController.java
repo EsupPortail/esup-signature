@@ -657,27 +657,29 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<User> tempUsers = signRequestService.getTempUsers(signRequest);
         int countExternalUsers = 0;
-        for(User tempUser : tempUsers) {
-            if(tempUser.getUserType().equals(UserType.external)) countExternalUsers++;
-        }
-        if(countExternalUsers == names.length) {
-            int userNumber = 0;
-            for(User tempUser : tempUsers) {
-                if(tempUser.getUserType().equals(UserType.shib)) {
-                    logger.warn("TODO Envoi Mail SHIBBOLETH ");
-                    //TODO envoi mail spécifique
-                } else if(tempUser.getUserType().equals(UserType.external)) {
-                    tempUser.setFirstname(firstnames[userNumber]);
-                    tempUser.setName(names[userNumber]);
-                    tempUser.setEppn(phones[userNumber]);
-                    otpService.generateOtpForSignRequest(signRequest, tempUser);
-                }
-                userRepository.save(tempUser);
-                userNumber++;
+        if(tempUsers.size() > 0) {
+            for (User tempUser : tempUsers) {
+                if (tempUser.getUserType().equals(UserType.external)) countExternalUsers++;
             }
-        } else {
-            redirectAttributes.addFlashAttribute("messageError", "Merci de compléter tous les utilisateurs externes");
-            return "redirect:/user/signrequests/" + signRequest.getId();
+            if (countExternalUsers == names.length) {
+                int userNumber = 0;
+                for (User tempUser : tempUsers) {
+                    if (tempUser.getUserType().equals(UserType.shib)) {
+                        logger.warn("TODO Envoi Mail SHIBBOLETH ");
+                        //TODO envoi mail spécifique
+                    } else if (tempUser.getUserType().equals(UserType.external)) {
+                        tempUser.setFirstname(firstnames[userNumber]);
+                        tempUser.setName(names[userNumber]);
+                        tempUser.setEppn(phones[userNumber]);
+                        otpService.generateOtpForSignRequest(signRequest, tempUser);
+                    }
+                    userRepository.save(tempUser);
+                    userNumber++;
+                }
+            } else {
+                redirectAttributes.addFlashAttribute("messageError", "Merci de compléter tous les utilisateurs externes");
+                return "redirect:/user/signrequests/" + signRequest.getId();
+            }
         }
         signRequest.setComment(comment);
         if(signRequest.getParentSignBook() != null) {

@@ -11,22 +11,22 @@
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
                     <button type="button" id="signZoomIn"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-search-plus"></i>
                     </button>
                     <button type="button" id="signZoomOut"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-search-minus"></i>
                     </button>
                     <button type="button" id="signPrevImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-chevron-up"></i>
                     </button>
                     <button type="button" id="signNextImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-chevron-down"></i>
                     </button>
@@ -87,7 +87,7 @@
     <!--        </div>-->
     <!--    </form>-->
 
-    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;width: 300px; right: 20px" class="position-fixed">
+    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
         <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
             cliquant sur l’endroit concerné du document
         </div>
