@@ -378,18 +378,19 @@ public class WorkflowService {
                 workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
                 int step = 1;
                 for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                    replaceStepCreatorByUser(user, workflowStep);
+                    entityManager.detach(workflowStep);
                     if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                         workflowStep.getRecipients().clear();
                         List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
                         for (Recipient recipient : recipients) {
                             workflowStep.getRecipients().add(recipient);
+                            entityManager.detach(recipient);
                         }
                         if(recipientEmails != null) {
                             userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
                         }
                     }
-                    replaceStepCreatorByUser(user, workflowStep);
-                    entityManager.detach(workflowStep);
                     step++;
 
                 }

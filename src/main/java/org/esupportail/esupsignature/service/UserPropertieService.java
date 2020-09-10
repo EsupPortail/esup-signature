@@ -16,6 +16,9 @@ public class UserPropertieService {
     @Resource
     private UserPropertieRepository userPropertieRepository;
 
+    @Resource
+    private RecipientRepository recipientRepository;
+
     public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
         if (userProperties.size() == 0) {
@@ -26,11 +29,17 @@ public class UserPropertieService {
                 List<String> recipientEmails = new ArrayList<>();
                 for(Recipient recipient : workflowStep.getRecipients()) {
                     recipientEmails.add(recipient.getUser().getEmail());
+//                    recipientRepository.save(recipient);
                 }
                 if(userPropertie.getRecipients().containsAll(recipientEmails)) {
-                    userPropertie.setScore(userPropertie.getScore() + 1);
+                    List<String> favoritesEmails = getFavoritesEmails(user, step, form);
+                    favoritesEmails.removeAll(userPropertie.getRecipients());
+                    if(favoritesEmails.size() > 0) {
+                        userPropertie.setScore(userPropertie.getScore() + 1);
+                    }
                     nbUpdated++;
                 }
+                userPropertieRepository.save(userPropertie);
             }
             if(nbUpdated == 0) {
                 addPropertie(user, step, workflowStep, form);
