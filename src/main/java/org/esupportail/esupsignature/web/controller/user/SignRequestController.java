@@ -681,7 +681,6 @@ public class SignRequestController {
                 return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
-        signRequest.setComment(comment);
         if(signRequest.getParentSignBook() != null) {
             if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
                 signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
