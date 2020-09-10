@@ -374,6 +374,7 @@ public class WorkflowService {
                 defaultWorkflow.initWorkflowSteps();
                 defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
                 workflow = defaultWorkflow;
+                workflowSteps.addAll(workflow.getWorkflowSteps());
             } else {
                 workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
                 int step = 1;
@@ -394,9 +395,9 @@ public class WorkflowService {
                     step++;
 
                 }
+                workflowSteps.addAll(workflow.getWorkflowSteps());
+                entityManager.detach(workflow);
             }
-            workflowSteps.addAll(workflow.getWorkflowSteps());
-            entityManager.detach(workflow);
             return workflow;
         } catch (Exception e) {
             logger.error("workflow not found", e);

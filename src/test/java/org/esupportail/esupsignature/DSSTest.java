@@ -21,8 +21,8 @@ public class DSSTest {
     private OJService ojService;
 
     @Test
-    public void dssTest() throws IOException {
-        ojService.getCertificats();
+    public void dssTest() {
+        ojService.checkOjFreshness();
         assumeTrue("dss cache not fresh !", !ojService.checkOjFreshness());
     }
 
