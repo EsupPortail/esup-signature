@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceIm
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,13 +42,13 @@ public class UserService {
 	@Resource
 	private UserRepository userRepository;
 
-	@Resource
+	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 
 	@Resource
 	List<SecurityService> securityServices;
 
-	@Resource
+	@Autowired(required = false)
 	private CasProperties casProperties;
 
 	@Resource
@@ -618,7 +619,7 @@ public class UserService {
 	public UserType checkMailDomain(String email) {
 		String domain = email.split("@")[1];
 		for(SecurityService securityService : securityServices) {
-			if(securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
+			if(casProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
 				return UserType.ldap;
 			}
 			if(securityService instanceof ShibSecurityServiceImpl) {
