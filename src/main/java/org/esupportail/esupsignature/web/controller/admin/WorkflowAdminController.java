@@ -88,7 +88,8 @@ public class WorkflowAdminController {
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
 		if("system".equals(displayWorkflowType)) {
-			workflows.addAll(workflowService.getWorkflowsForUser(userService.getSystemUser(), userService.getSystemUser()));
+			User systemUser = userService.getSystemUser();
+			workflows.addAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else {
