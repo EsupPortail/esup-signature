@@ -6,7 +6,7 @@
     import globalUi from "/js/main.js";
     globalUi.hideSideBar();
     globalUi.disableSideBarButton();
-    import {FilesInput} from "/js/modules/filesInput.js";
+    import {default as FilesInput} from "/js/modules/filesInput.js";
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>
 <body>

@@ -20,39 +20,43 @@ public class UserPropertieService {
     private RecipientRepository recipientRepository;
 
     public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
-        List<User> recipientsUser = workflowStep.getRecipients().stream().map(Recipient::getUser).collect(Collectors.toList());
-        List<String> recipientsEmail = recipientsUser.stream().map(User::getEmail).collect(Collectors.toList());
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
         if (userProperties.size() == 0) {
-            UserPropertie userPropertie = new UserPropertie();
-            userPropertie.setStep(step);
-            userPropertie.setForm(form);
-            for(Recipient recipient : workflowStep.getRecipients()) {
-                userPropertie.getRecipients().add(recipient.getUser().getEmail());
-            }
-            userPropertie.setUser(user);
-            userPropertieRepository.save(userPropertie);
+            addPropertie(user, step, workflowStep, form);
         } else {
-            List<UserPropertie> userPropertiesOld = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
-            for (UserPropertie userPropertie : userPropertiesOld) {
-                userPropertie.setScore(0);
-                userPropertieRepository.save(userPropertie);
-            }
-            if(userProperties.size() == 1 && userProperties.get(0).getRecipients().size() == 0) {
-                for(Recipient recipient : workflowStep.getRecipients()) {
-                    userProperties.get(0).getRecipients().add(recipient.getUser().getEmail());
-                }
-            }
+            int nbUpdated = 0;
             for(UserPropertie userPropertie : userProperties) {
                 List<String> recipientEmails = new ArrayList<>();
                 for(Recipient recipient : workflowStep.getRecipients()) {
                     recipientEmails.add(recipient.getUser().getEmail());
+//                    recipientRepository.save(recipient);
                 }
                 if(userPropertie.getRecipients().containsAll(recipientEmails)) {
-                    userPropertie.setScore(userPropertie.getScore() + 1);
+                    List<String> favoritesEmails = getFavoritesEmails(user, step, form);
+                    favoritesEmails.removeAll(userPropertie.getRecipients());
+                    if(favoritesEmails.size() > 0) {
+                        userPropertie.setScore(userPropertie.getScore() + 1);
+                    }
+                    nbUpdated++;
                 }
+                userPropertieRepository.save(userPropertie);
+            }
+            if(nbUpdated == 0) {
+                addPropertie(user, step, workflowStep, form);
             }
         }
+    }
+
+    private void addPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
+        UserPropertie userPropertie = new UserPropertie();
+        userPropertie.setStep(step);
+        userPropertie.setForm(form);
+        userPropertie.setScore(1);
+        for(Recipient recipient : workflowStep.getRecipients()) {
+            userPropertie.getRecipients().add(recipient.getUser().getEmail());
+        }
+        userPropertie.setUser(user);
+        userPropertieRepository.save(userPropertie);
     }
 
     public void createTargetPropertie(User user, String targetEmail, Form form) {
@@ -76,9 +80,10 @@ public class UserPropertieService {
         List<String> favoriteRecipients = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
-            if(userPropertie.getScore() >= bestScore) {
+            if(userPropertie.getScore() > bestScore) {
                 favoriteRecipients.clear();
                 favoriteRecipients.addAll(userPropertie.getRecipients());
+                bestScore = userPropertie.getScore();
             }
         }
         return favoriteRecipients;

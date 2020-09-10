@@ -2,8 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
-    <div class="hr">Etapes du circuit</div>
-    <div class="card card-body bg-light mb-1">
+    <div class="card col-lg-10 mx-auto">
+        <div class="card-body">
+            <h5>Circuit</h5>
             <th:block th:if="${signRequest.parentSignBook.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
@@ -87,6 +88,7 @@
                     </div>
                 </div>
             </th:block>
+    </div>
     </div>
 </div>
 </html>

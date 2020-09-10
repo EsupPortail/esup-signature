@@ -25,44 +25,39 @@ export class PdfViewer {
         this.initListeners();
     }
 
-    addEventListener(name, handler) {
-        if (this.events.hasOwnProperty(name))
-            this.events[name].push(handler);
-        else
-            this.events[name] = [handler];
-    };
-
-    removeEventListener(name, handler) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        let index = this.events[name].indexOf(handler);
-        if (index !== -1)
-            this.events[name].splice(index, 1);
-    };
-
-    fireEvent(name, args) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        if (!args || !args.length)
-            args = [];
-
-        let evs = this.events[name], l = evs.length;
-        for (let i = 0; i < l; i++) {
-            evs[i].apply(null, args);
-        }
-    };
-
     initListeners() {
         document.getElementById('prev').addEventListener('click', e => this.prevPage());
         document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
+        document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
+        document.getElementById('fullheight').addEventListener('click', e => this.fullHeight());
         document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
         document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
         window.addEventListener('resize', e => this.adjustZoom());
 
+    }
+
+    fullWidth() {
+        console.info("full width " + window.innerWidth);
+        let newScale = (Math.round(window.innerWidth / 100) / 10);
+        if (newScale !== this.scale) {
+            this.scale = newScale;
+            console.info('zoom in, scale = ' + this.scale);
+            this.renderPage(this.pageNum);
+            this.fireEvent('scaleChange', ['in']);
+        }
+    }
+
+    fullHeight() {
+        console.info("full height " + window.innerHeight);
+        let newScale = (Math.round((window.innerHeight - 200) / 100) / 10) - 0.1;
+        if (newScale !== this.scale) {
+            this.scale = newScale;
+            console.info('zoom in, scale = ' + this.scale);
+            this.renderPage(this.pageNum);
+            this.fireEvent('scaleChange', ['in']);
+        }
     }
 
     adjustZoom() {
@@ -80,7 +75,7 @@ export class PdfViewer {
         if (window.innerWidth < 576) {
             newScale = 0.5;
         }
-        if (newScale != this.scale) {
+        if (newScale !== this.scale) {
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.renderPage(this.pageNum);
@@ -530,5 +525,35 @@ export class PdfViewer {
         });
 
     }
+
+    addEventListener(name, handler) {
+        if (this.events.hasOwnProperty(name))
+            this.events[name].push(handler);
+        else
+            this.events[name] = [handler];
+    };
+
+    removeEventListener(name, handler) {
+        if (!this.events.hasOwnProperty(name))
+            return;
+
+        let index = this.events[name].indexOf(handler);
+        if (index !== -1)
+            this.events[name].splice(index, 1);
+    };
+
+    fireEvent(name, args) {
+        if (!this.events.hasOwnProperty(name))
+            return;
+
+        if (!args || !args.length)
+            args = [];
+
+        let evs = this.events[name], l = evs.length;
+        for (let i = 0; i < l; i++) {
+            evs[i].apply(null, args);
+        }
+    };
+
 
 }

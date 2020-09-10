@@ -10,6 +10,7 @@ public class ShibProperties {
     private String principalRequestHeader;
     private String credentialsRequestHeader;
     private String groupMappingRoleAdmin;
+    private String domainsWhiteListUrl;
 
     public String getTitle() {
         return title;
@@ -51,4 +52,11 @@ public class ShibProperties {
         this.groupMappingRoleAdmin = groupMappingRoleAdmin;
     }
 
+    public String getDomainsWhiteListUrl() {
+        return domainsWhiteListUrl;
+    }
+
+    public void setDomainsWhiteListUrl(String domainsWhiteListUrl) {
+        this.domainsWhiteListUrl = domainsWhiteListUrl;
+    }
 }

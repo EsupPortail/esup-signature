@@ -7,8 +7,10 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import globalUi from "/js/main.js";
-    globalUi.hideSideBar();
-    globalUi.disableSideBarButton();
+    $(document).ready(function () {
+        globalUi.hideSideBar();
+        globalUi.disableSideBarButton();
+    });
     import {CreateDataUi} from "/js/modules/createDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
 </script>
@@ -89,6 +91,8 @@
                     </button>
                     <button id="zoomout" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i></button>
                     <button id="zoomin" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i></button>
+                    <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-expand"></i></button>
+                    <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-compress"></i></button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
                     <button title="Rotation à droite" id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
                     <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>

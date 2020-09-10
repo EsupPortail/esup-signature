@@ -36,7 +36,7 @@
 			<table class="table table-sm table-borderless table-striped table-hover">
 			<th:block th:each="recipient : ${signRequest.recipients}">
 				<tr>
-					<td width="100%" th:text="${recipient.getUser().getFirstname() + ' ' + recipient.getUser().getName()}"></td>
+					<td width="100%" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
 					<td align="center">
 						<div th:switch="${recipient.signed}">
 							<i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>

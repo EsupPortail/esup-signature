@@ -1,5 +1,4 @@
 import {WorkspacePdf} from "./workspacePdf.js";
-import {SignRequestParams} from "../prototypes/signRequestParams.js";
 
 export class SignUi {
 

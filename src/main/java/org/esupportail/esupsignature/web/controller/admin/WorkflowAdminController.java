@@ -88,7 +88,8 @@ public class WorkflowAdminController {
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
 		if("system".equals(displayWorkflowType)) {
-			workflows.addAll(workflowService.getWorkflowsForUser(userService.getSystemUser(), userService.getSystemUser()));
+			User systemUser = userService.getSystemUser();
+			workflows.addAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else {
@@ -156,7 +157,7 @@ public class WorkflowAdminController {
 		if(managers != null && managers.size() > 0) {
 			workflowToUpdate.getManagers().clear();
 			for(String manager : managers) {
-				User managerUser = userService.getUserByEmail(manager);
+				User managerUser = userService.checkUserByEmail(manager);
 				if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
 					workflowToUpdate.getManagers().add(managerUser.getEmail());
 				}
@@ -202,7 +203,7 @@ public class WorkflowAdminController {
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setDescription(description);
 		workflowStep.setChangeable(changeable);
-		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
+		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() + 1);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
@@ -234,7 +235,7 @@ public class WorkflowAdminController {
 									  @RequestParam(value = "recipientId") Long recipientId) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(workflow.getCreateBy())) {
+		if(user.getEppn().equals(workflow.getCreateBy()) || "system".equals(workflow.getCreateBy())) {
 			Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
 			workflowStep.getRecipients().remove(recipientToRemove);
 		} else {

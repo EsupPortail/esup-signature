@@ -83,7 +83,7 @@ public class WsOtpSignController {
             if (testOtp) {
                 Otp otp = otpService.getOtp(urlId);
                 logger.info("otp success for : " + urlId);
-                User user = userService.getUserByEmail(otp.getEmail());
+                User user = userService.checkUserByEmail(otp.getEmail());
                 userRepository.save(user);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(otp.getPhoneNumber(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);

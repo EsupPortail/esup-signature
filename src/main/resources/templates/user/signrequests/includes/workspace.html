@@ -11,28 +11,28 @@
             <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
                 <th:block th:if="${currentSignType != 'visa'}">
                     <button type="button" id="signZoomIn"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-search-plus"></i>
                     </button>
                     <button type="button" id="signZoomOut"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-search-minus"></i>
                     </button>
                     <button type="button" id="signPrevImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-chevron-up"></i>
                     </button>
                     <button type="button" id="signNextImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute"
+                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                             style="z-index: 3;">
                         <i class="fas fas fa-chevron-down"></i>
                     </button>
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                         onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                         onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
                          th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
                         <div id="borders" class="anim-border"
                              th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
@@ -41,7 +41,7 @@
                 <th:block th:if="${currentSignType == 'visa'}">
                     <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                          onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                         onmouseout="this.style.backgroundColor= 'rgba(255, 0, 0, .0)';"
+                         onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
                          th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: 100px;background-image: url(\'/images/sceau.png\'); width: 100px; height: 75px; line-height: 75px; text-align: center; left: ' + ${signRequest.getCurrentSignRequestParams().xPos} + 'px;top: ' + ${signRequest.getCurrentSignRequestParams().yPos} + 'px;position:absolute;pointer-events: auto;cursor: move;'">
                         <div id="borders" class="anim-border"
                              th:style="'vertical-align:top; text-align:left;line-height:6px; width:  ' + ${signWidth} + 'px; height:  ' + ${signHeight} + 'px;'">
@@ -87,7 +87,7 @@
     <!--        </div>-->
     <!--    </form>-->
 
-    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="display: none;width: 300px; right: 20px" class="position-fixed">
+    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
         <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
             cliquant sur l’endroit concerné du document
         </div>

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.security.shib;
 
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
@@ -12,6 +13,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +24,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private ShibProperties shibProperties;
+
+	@Resource
+	private FileService fileService;
 
 	@Resource
 	private ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler;
@@ -98,5 +104,14 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
 		return shibAuthenticatedUserDetailsService;
 	}
-	
+
+	public File getDomainsWhiteList() {
+		try {
+			return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 }

@@ -121,7 +121,7 @@
                     <!--            <div class="box-wrap">-->
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->
-                    <div class="postit-global" th:style="'z-index : 1; position: absolute; left: ' + ${1 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
+                    <div class="postit-global" th:style="'z-index : 1; position: absolute; right: ' + ${100 + (iterate.index * 10)} + 'px; top : ' + ${1 + (iterate.index * 190)} + 'px;'">
                         <b th:text="'Postit de ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
                         <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${postit.comment}"></p>
@@ -149,7 +149,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {FilesInput} from "/js/modules/filesInput.js";
+                    import {default as FilesInput} from "/js/modules/filesInput.js";
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                     new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                 </script>

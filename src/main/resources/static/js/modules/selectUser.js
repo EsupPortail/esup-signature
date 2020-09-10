@@ -15,6 +15,14 @@ export default class SelectUser {
         this.selectField.addClass("slim-select-hack");
     }
 
+    validateEmail(email) {
+        const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if(re.test(String(email).toLowerCase())) {
+            return email;
+        }
+        return false;
+    }
+
     createUserSelect(selectName, valuePrefix) {
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
@@ -25,6 +33,7 @@ export default class SelectUser {
             hideSelectedOption: true,
             closeOnSelect: true,
             limit: this.limit,
+            addable: e => this.validateEmail(e),
             searchFilter: (option, search) => {
                 return true;
             },

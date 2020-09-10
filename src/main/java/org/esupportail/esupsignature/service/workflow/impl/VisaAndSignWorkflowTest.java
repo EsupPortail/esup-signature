@@ -75,7 +75,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         if(data != null) {
             workflowStep2.setParentType("data");
             workflowStep2.setParentId(data.getId());
-            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.getUserByEmail(step2Recipient)));
+            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.checkUserByEmail(step2Recipient)));
         } else {
             recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser(step2Recipient, "")));
         }

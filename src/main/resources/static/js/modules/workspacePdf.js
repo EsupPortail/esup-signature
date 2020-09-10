@@ -27,6 +27,8 @@ export class WorkspacePdf {
     }
 
     initListeners() {
+        this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
+        this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
         this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
         this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
         this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
@@ -51,6 +53,10 @@ export class WorkspacePdf {
 
         // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
         $('#pdf').mousemove(e => this.moveAction(e));
+
+        $(".postit-global").on('click', function () {
+            $(this).toggleClass("postit-small");
+        });
 
         this.postits.forEach((postit, index) => {
             let postitButton = $('#postit' + postit.id);
@@ -264,6 +270,7 @@ export class WorkspacePdf {
         $('#rotateright').prop('disabled', false);
         this.pdfViewer.renderForm = false;
         this.pdfViewer.renderPage(1);
+        this.showAllPostits();
     }
 
     toggleCommentMode() {
@@ -321,6 +328,7 @@ export class WorkspacePdf {
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
         this.refreshAfterPageChange();
+        this.showAllPostits();
     }
 
     disableAllModes() {
@@ -345,6 +353,8 @@ export class WorkspacePdf {
         $('#rotateleft').prop('disabled', true);
         $('#rotateright').prop('disabled', true);
         $('#pdf').css('cursor', 'default');
+
+        this.hideAllPostits();
     }
 
 
@@ -388,5 +398,17 @@ export class WorkspacePdf {
         }
         return direction;
     }
-    
+
+    hideAllPostits() {
+        $(".postit-global").each(function () {
+            $(this).addClass("d-none");
+        });
+    }
+
+    showAllPostits() {
+        $(".postit-global").each(function () {
+            $(this).removeClass("d-none");
+        });
+    }
+
 }

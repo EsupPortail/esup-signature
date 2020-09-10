@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.file;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -16,10 +17,13 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Scanner;
 
 @Service
 public class FileService {
@@ -237,6 +241,27 @@ public class FileService {
 		File file = getTempFile("sceau.png");
 		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
 		return new FileInputStream(file);
+	}
+
+	public File getFileFromUrl(String url) throws IOException {
+		File file = getTempFile(url.split("/")[url.split("/").length-1]);
+		FileUtils.copyURLToFile(new URL(url), file);
+		return file;
+	}
+
+	public boolean isFileContainsText(File file, String text) {
+		try {
+			Scanner scanner = new Scanner(file);
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if(line.contains(text)) {
+					return true;
+				}
+			}
+		} catch(FileNotFoundException e) {
+			logger.error(e.getMessage());
+		}
+		return false;
 	}
 
 }

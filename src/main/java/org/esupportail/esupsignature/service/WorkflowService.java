@@ -5,6 +5,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -82,7 +83,7 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         User creator;
         if (userRepository.countByEppn("creator") == 0) {
-            creator = userService.createUser("creator", "Createur de la demande", "", "");
+            creator = userService.createUser("creator", "Createur de la demande", "", "", UserType.system);
         } else {
             creator = userRepository.findByEppn("creator").get(0);
         }
@@ -190,11 +191,7 @@ public class WorkflowService {
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                     String[] stepSplit = keySplit[1].split("#");
                                     ObjectMapper mapper = new ObjectMapper();
-//                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                    List<String> recipientList = new ArrayList<>();
-                                    recipientList.add("david.lemaignent@univ-rouen.fr");
-//                                    recipientList.add("paul.tavernier@univ-rouen.fr");
-//                                    recipientList.add("bruno.quet@univ-rouen.fr");
+                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
                                     WorkflowStep workflowStep = createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                     signBook.getWorkflowSteps().add(workflowStep);
                                 }
@@ -255,12 +252,12 @@ public class WorkflowService {
         return workflowStep.getId();
     }
 
-    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) throws EsupSignatureUserException {
+    public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
             User recipientUser;
             if (userRepository.countByEmail(recipientEmail) == 0) {
-                recipientUser = userService.createUser(recipientEmail);
+                recipientUser = userService.createUserWithEmail(recipientEmail);
             } else {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
@@ -355,7 +352,7 @@ public class WorkflowService {
         } else {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
             for(String email : favoritesEmail) {
-                User recipientUser = userService.getUserByEmail(email);
+                User recipientUser = userService.checkUserByEmail(email);
                 recipients.add(recipientService.createRecipient(null, recipientUser));
             }
         }
@@ -366,7 +363,6 @@ public class WorkflowService {
         Workflow workflow;
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         Workflow modelWorkflow = getWorkflowByName(data.getForm().getWorkflowType());
-
         try {
             if (modelWorkflow instanceof DefaultWorkflow) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
@@ -374,32 +370,29 @@ public class WorkflowService {
                 defaultWorkflow.initWorkflowSteps();
                 defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
                 workflow = defaultWorkflow;
+                workflowSteps.addAll(workflow.getWorkflowSteps());
             } else {
                 workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(workflow.getWorkflowSteps());
-                if(recipientEmails != null) {
-                    for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                        if (workflowStep.getChangeable()) {
-                            workflowStep.getRecipients().clear();
-                            List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
-                            for (Recipient recipient : recipients) {
-                                recipientRepository.save(recipient);
-                                workflowStep.getRecipients().add(recipient);
-                            }
+                int step = 1;
+                for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                    replaceStepCreatorByUser(user, workflowStep);
+                    entityManager.detach(workflowStep);
+                    if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
+                        workflowStep.getRecipients().clear();
+                        List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
+                        for (Recipient recipient : recipients) {
+                            workflowStep.getRecipients().add(recipient);
+                            entityManager.detach(recipient);
+                        }
+                        if(recipientEmails != null) {
+                            userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
                         }
                     }
-                    workflowSteps.addAll(workflow.getWorkflowSteps());
-                }
-            }
-            if (recipientEmails != null) {
-                int step = 1;
-                for (WorkflowStep workflowStep : workflowSteps) {
-                    userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
                     step++;
+
                 }
-            }
-            for(WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                replaceStepCreatorByUser(user, workflowStep);
+                workflowSteps.addAll(workflow.getWorkflowSteps());
+                entityManager.detach(workflow);
             }
             return workflow;
         } catch (Exception e) {

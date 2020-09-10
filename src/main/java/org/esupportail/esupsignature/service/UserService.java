@@ -1,17 +1,21 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +23,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -37,13 +41,14 @@ public class UserService {
 	@Resource
 	private UserRepository userRepository;
 
+	@Resource
 	private LdapPersonService ldapPersonService;
 
 	@Resource
-	private UserService userService;
+	List<SecurityService> securityServices;
 
 	@Resource
-	List<SecurityService> securityServices;
+	private CasProperties casProperties;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -71,6 +76,9 @@ public class UserService {
 
 	@Resource
 	private MailService mailService;
+
+	@Resource
+	private FileService fileService;
 
 	@Resource
 	private HttpServletRequest httpServletRequest;
@@ -152,16 +160,23 @@ public class UserService {
 		if(userRepository.countByEppn("creator") > 0) {
 			return  userRepository.findByEppn("creator").get(0);
 		} else {
-			return createUser("creator", "Createur de la demande", "", "");
+			return createUser("creator", "Createur de la demande", "", "", UserType.system);
 		}
 	}
 
-	public User getUserByEmail(String email) throws EsupSignatureUserException {
+	public User checkUserByEmail(String email) {
 		if(userRepository.countByEmail(email) > 0) {
 			return userRepository.findByEmail(email).get(0);
 		} else {
-			return createUser(email);
+			return createUserWithEmail(email);
 		}
+	}
+
+	public User getUserByEmail(String email) {
+		if(userRepository.countByEmail(email) > 0) {
+			return userRepository.findByEmail(email).get(0);
+		}
+		return null;
 	}
 
 	public User getUserByEppn(String eppn) {
@@ -215,7 +230,7 @@ public class UserService {
 				String name = personLdaps.get(0).getSn();
 				String firstName = personLdaps.get(0).getGivenName();
 				String mail = personLdaps.get(0).getMail();
-				return createUser(eppn, name, firstName, mail);
+				return createUser(eppn, name, firstName, mail, UserType.ldap);
 			} else {
 				throw new EsupSignatureUserException("ldap user not found : " + eppn);
 			}
@@ -223,7 +238,7 @@ public class UserService {
 		return null;
 	}
 
-	public User createUser(String mail) throws EsupSignatureUserException {
+	public User createUserWithEmail(String mail) {
 		if(ldapPersonService != null) {
 			List<PersonLdap> personLdaps = personLdapRepository.findByMail(mail);
 			if (personLdaps.size() > 0) {
@@ -233,16 +248,20 @@ public class UserService {
 				}
 				String name = personLdaps.get(0).getSn();
 				String firstName = personLdaps.get(0).getGivenName();
-				return createUser(eppn, name, firstName, mail);
-			} else {
-				throw new EsupSignatureUserException("ldap user not found : " + mail);
+				return createUser(eppn, name, firstName, mail, UserType.ldap);
 			}
-		} else {
-			return getGenericUser(mail, "");
 		}
+		UserType userType = checkMailDomain(mail);
+		if(userType.equals(UserType.external)) {
+			logger.info("ldap user not found : " + mail + ". Creating temp acccount");
+			return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.external);
+		} else if (userType.equals(UserType.shib)) {
+			return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.shib);
+		}
+		return null;
 	}
 	
-	public User createUser(Authentication authentication) {
+	public User createUserWithAuthentication(Authentication authentication) {
 		String uid;
 		if(authentication.getName().contains("@")) {
 			uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -258,10 +277,10 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail);
+        return createUser(eppn, name, firstName, mail, UserType.ldap);
 	}
 	
-	public User createUser(String eppn, String name, String firstName, String email) {
+	public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
 		User user;
 		if(userRepository.countByEppn(eppn) > 0) {
 			logger.info("mise à jour de l'utilisateur " + eppn);
@@ -276,6 +295,7 @@ public class UserService {
 		user.setFirstname(firstName);
 		user.setEppn(eppn);
 		user.setEmail(email);
+		user.setUserType(userType);
 		List<String> recipientEmails = new ArrayList<>();
 		recipientEmails.add(user.getEmail());
 		try {
@@ -348,7 +368,7 @@ public class UserService {
 		List<String> toEmails = new ArrayList<>();
 		//List<SignRequest> signRequestsToSend = new ArrayList<>();
 		//pour ne pas recevoir ses propres demandes
-		if(userService.getUserFromAuthentication() != null && recipientUser.equals(userService.getUserFromAuthentication())) {
+		if(getUserFromAuthentication() != null && recipientUser.equals(getUserFromAuthentication())) {
 			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
 			toEmails.add(recipientUser.getEmail());
 		} else {
@@ -593,5 +613,21 @@ public class UserService {
 	public void disableMessage(User authUser, long id) {
 		Message message = messageRepository.findById(id).get();
 		message.getUsers().add(authUser);
+	}
+
+	public UserType checkMailDomain(String email) {
+		String domain = email.split("@")[1];
+		for(SecurityService securityService : securityServices) {
+			if(securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
+				return UserType.ldap;
+			}
+			if(securityService instanceof ShibSecurityServiceImpl) {
+				File whiheListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
+				if(fileService.isFileContainsText(whiheListFile, domain)) {
+					return UserType.shib;
+				}
+			}
+		}
+		return UserType.external;
 	}
 }
