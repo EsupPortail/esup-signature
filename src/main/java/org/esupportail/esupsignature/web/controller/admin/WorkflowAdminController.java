@@ -202,7 +202,7 @@ public class WorkflowAdminController {
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setDescription(description);
 		workflowStep.setChangeable(changeable);
-		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() - 1);
+		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() + 1);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
@@ -234,7 +234,7 @@ public class WorkflowAdminController {
 									  @RequestParam(value = "recipientId") Long recipientId) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(workflow.getCreateBy())) {
+		if(user.getEppn().equals(workflow.getCreateBy()) || "system".equals(workflow.getCreateBy())) {
 			Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
 			workflowStep.getRecipients().remove(recipientToRemove);
 		} else {

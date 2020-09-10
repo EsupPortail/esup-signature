@@ -59,7 +59,7 @@
                         </div>
                         <div class="form-group">
                             <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
-                            <select class="form-control" id="prefillType" name="prefillType">
+                            <select class="form-control" id="prefillType" th:field="*{preFillType}">
                                 <th:block th:each="preFillType : ${preFillTypes}">
                                     <option th:selected="${form.preFillType == preFillType.name}" th:value="${preFillType.name}" th:text="${preFillType.description}"></option>
                                 </th:block>

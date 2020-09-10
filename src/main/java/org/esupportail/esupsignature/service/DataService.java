@@ -108,13 +108,13 @@ public class DataService {
             userPropertieService.createTargetPropertie(user, targetUrl, form);
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
+        Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
+        workflow.setName(workflow.getName() + "_" + form.getName());
         SignBook signBook = signBookService.createSignBook("Formulaire", name, user, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
-        Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
-        workflow.setName(workflow.getName() + "_" + form.getName());
         signBookService.importWorkflow(signBook, workflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {

@@ -7,8 +7,10 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import globalUi from "/js/main.js";
-    globalUi.hideSideBar();
-    globalUi.disableSideBarButton();
+    $(document).ready(function () {
+        globalUi.hideSideBar();
+        globalUi.disableSideBarButton();
+    });
     import {CreateDataUi} from "/js/modules/createDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
 </script>

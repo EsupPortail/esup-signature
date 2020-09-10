@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<!--/*@thymesVar id="userProperties" type="java.util.List<org.esupportail.esupsignature.entity.UserPropertie>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -20,6 +20,7 @@
                         <tr>
                             <th>Service</th>
                             <th>Etape</th>
+                            <th>Score</th>
                             <th>Signataire</th>
                             <th>Destinataire</th>
                         </tr>
@@ -32,6 +33,9 @@
                                 </td>
                                 <td>
                                     <span th:text="${userProperties.step}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${userProperties.score}"></span>
                                 </td>
                                 <td>
                                     <span th:text="${userProperties.recipients}"></span>

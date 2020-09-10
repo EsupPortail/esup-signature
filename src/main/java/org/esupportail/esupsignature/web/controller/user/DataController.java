@@ -46,8 +46,6 @@ public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
 
-
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "datas";
@@ -276,7 +274,7 @@ public class DataController {
 	public String sendDataById(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		Data data = dataService.getDataById(id);
-		if(data.getStatus().equals(SignRequestStatus.draft)) {
+			if(data.getStatus().equals(SignRequestStatus.draft)) {
 			try {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
 				redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
@@ -284,6 +282,7 @@ public class DataController {
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage(), e);
 				redirectAttributes.addFlashAttribute("messageError", e.getMessage());
+				return "redirect:/user/datas/" + id;
 			}
 		} else {
 			redirectAttributes.addFlashAttribute("messageError", "Attention, la procédure est déjà démarée");

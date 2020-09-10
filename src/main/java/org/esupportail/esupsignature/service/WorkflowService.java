@@ -367,7 +367,6 @@ public class WorkflowService {
         Workflow workflow;
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         Workflow modelWorkflow = getWorkflowByName(data.getForm().getWorkflowType());
-
         try {
             if (modelWorkflow instanceof DefaultWorkflow) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
@@ -377,31 +376,26 @@ public class WorkflowService {
                 workflow = defaultWorkflow;
             } else {
                 workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(workflow.getWorkflowSteps());
-                if(recipientEmails != null) {
-                    for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                        if (workflowStep.getChangeable()) {
-                            workflowStep.getRecipients().clear();
-                            List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
-                            for (Recipient recipient : recipients) {
-                                recipientRepository.save(recipient);
-                                workflowStep.getRecipients().add(recipient);
-                            }
+                int step = 1;
+                for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                    if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
+                        workflowStep.getRecipients().clear();
+                        List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
+                        for (Recipient recipient : recipients) {
+                            workflowStep.getRecipients().add(recipient);
+                        }
+                        if(recipientEmails != null) {
+                            userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
                         }
                     }
-                    workflowSteps.addAll(workflow.getWorkflowSteps());
-                }
-            }
-            if (recipientEmails != null) {
-                int step = 1;
-                for (WorkflowStep workflowStep : workflowSteps) {
-                    userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+                    replaceStepCreatorByUser(user, workflowStep);
+                    entityManager.detach(workflowStep);
                     step++;
+
                 }
             }
-            for(WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
-                replaceStepCreatorByUser(user, workflowStep);
-            }
+            workflowSteps.addAll(workflow.getWorkflowSteps());
+            entityManager.detach(workflow);
             return workflow;
         } catch (Exception e) {
             logger.error("workflow not found", e);
