@@ -196,9 +196,12 @@ public class WorkflowService {
                                     signBook.getWorkflowSteps().add(workflowStep);
                                 }
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                    ObjectMapper mapper = new ObjectMapper();
                                     String target = metadatas.get(metadataKey);
-                                    signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
+                                    if(target.contains("://")) {
+                                        signBook.setDocumentsTargetUri(target.replace("\\", "/"));
+                                    } else {
+                                        signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
+                                    }
                                 }
                             }
                         } else {

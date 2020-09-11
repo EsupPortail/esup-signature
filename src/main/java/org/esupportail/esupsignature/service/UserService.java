@@ -39,17 +39,26 @@ public class UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+
+	private LdapPersonService ldapPersonService;
+
+	private CasProperties casProperties;
+
+	@Autowired(required = false)
+	public void setLdapPersonService(LdapPersonService ldapPersonService) {
+		this.ldapPersonService = ldapPersonService;
+	}
+
+	@Autowired(required = false)
+	public void setCasProperties(CasProperties casProperties) {
+		this.casProperties = casProperties;
+	}
+
 	@Resource
 	private UserRepository userRepository;
 
-	@Autowired(required = false)
-	private LdapPersonService ldapPersonService;
-
 	@Resource
 	List<SecurityService> securityServices;
-
-	@Autowired(required = false)
-	private CasProperties casProperties;
 
 	@Resource
 	private SignRequestService signRequestService;
