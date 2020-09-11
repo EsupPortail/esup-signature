@@ -217,8 +217,6 @@ public class WorkflowService {
                         signBookService.pendingSignBook(signBook, user);
                         fsAccessService.remove(fsFile);
                         nbImportedFiles++;
-
-                        break; //a virer
                     }
                 } else {
                     logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
