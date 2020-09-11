@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -176,7 +177,7 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook) throws EsupSignatureException {
-        if(!signBook.getStatus().equals(SignRequestStatus.exported)) {
+        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getDocumentsTargetUri() != null && !signBook.getTargetType().equals(DocumentIOType.none)) {
             signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getTargetType(), signBook.getDocumentsTargetUri());
             signBook.setStatus(SignRequestStatus.exported);
         }
