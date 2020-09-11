@@ -132,9 +132,13 @@ public class UserService {
 	}
 
 	public User getSystemUser() {
-		User user = new User();
-		user.setEppn("system");
-		return user;
+		if(userRepository.countByEppn("system") > 0) {
+			return userRepository.findByEppn("system").get(0);
+		} else {
+			User user = new User();
+			user.setEppn("system");
+			return user;
+		}
 	}
 
 	public User getSchedulerUser() {
