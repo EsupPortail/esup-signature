@@ -296,7 +296,7 @@ public class WorkflowService {
         }
         workflowStep.setSignType(signType);
         workflowStepRepository.save(workflowStep);
-        if(recipientEmails != null) {
+        if(recipientEmails != null && recipientEmails.length > 0) {
             addRecipientsToWorkflowStep(workflowStep, recipientEmails);
         }
         return workflowStep;

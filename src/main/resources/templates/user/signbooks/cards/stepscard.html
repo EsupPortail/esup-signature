@@ -5,9 +5,9 @@
         <div class="card-body">
             <h5 class="text-center"><b>Circuit de signature</b></h5>
             <div th:if="${user.eppn == signBook.createBy}">
-                <div th:if="${(signBook.getStatus().name() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.getStatus().name() == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed)}">
+                <div th:if="${(signBook.getStatus() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.getStatus() == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed)}">
                     <div th:if="${signBook.signRequests.size() == 0 || signBook.getWorkflowSteps().size() == 0}">
-                        <div class="alert alert-warning mb-1" th:if="${signBook.getStatus().name() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}}">
+                        <div class="alert alert-warning mb-1" th:if="${signBook.getStatus() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}}">
                             <div th:unless="${signBook.getWorkflowSteps().size() > 0 && @signBookService.getCurrentWorkflowStep(signBook).recipients.size() > 0}">
                                 <p>
                                     Vous devez ajouter des étapes ainsi que des participants pour chaque étape du circuit de signature

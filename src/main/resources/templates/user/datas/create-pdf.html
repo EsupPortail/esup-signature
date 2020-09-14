@@ -67,7 +67,7 @@
 <!--                            <i class="fas fa-play"></i></a>-->
 <!--                    </li>-->
 <!--                    <li>-->
-<!--                        <a target="_blank" title="Exporter en PDF" th:if="${data.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}}"-->
+<!--                        <a target="_blank" title="Exporter en PDF" th:if="${data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"-->
 <!--                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
 <!--                           class="btn-floating bg-danger wave-effect">-->
 <!--                            <i class="fas fa-file-pdf"></i>-->
@@ -110,7 +110,7 @@
     </div>
 </main>
 
-<div th:if="${data.status != null && data.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}}" class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div th:if="${data.status != null && data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content modal-lg">
             <div class="modal-header">

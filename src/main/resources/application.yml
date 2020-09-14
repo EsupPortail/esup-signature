@@ -49,14 +49,14 @@ spring:
         encoding: UTF-8
         fallback-to-system-locale: false
     security:
-        oauth2:
-            client:
-                registration:
-                    google:
-                        client-id: 295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com
-                        client-secret: OPeG_a0fifx1r5qcN5RONL_o
-                        redirect-uri: http://dsi-7.univ-rouen.fr/login/oauth2/code/google
-                        scope: profile, email
+#        oauth2:
+#            client:
+#                registration:
+#                    google:
+#                        client-id: 295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com
+#                        client-secret: OPeG_a0fifx1r5qcN5RONL_o
+#                        redirect-uri: http://dsi-7.univ-rouen.fr/login/oauth2/code/google
+#                        scope: profile, email
     servlet:
         multipart:
             enabled: true

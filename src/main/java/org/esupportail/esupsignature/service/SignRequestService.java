@@ -944,7 +944,7 @@ public class SignRequestService {
 				&& needToSign(signRequest, user)
 		) {
 			signRequest.setSignable(true);
-			model.addAttribute("currentSignType", getCurrentSignType(signRequest).name());
+			model.addAttribute("currentSignType", getCurrentSignType(signRequest));
 			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
 			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
 			model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());

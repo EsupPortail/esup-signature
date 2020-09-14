@@ -196,7 +196,7 @@ public class WorkflowAdminController {
 	public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
 						  @RequestParam(name="description", required = false) String description,
-						  @RequestParam("recipientsEmails") String[] recipientsEmails,
+						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -264,13 +264,8 @@ public class WorkflowAdminController {
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
 	public String addStep(@ModelAttribute("user") User user,
 						  @PathVariable("id") Long id,
-						  @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
-		//User user = userService.getCurrentUser();
+						  @PathVariable("stepNumber") Integer stepNumber) {
 		Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/" + workflow.getName();
-		}
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
 		for(int i = 0; i < workflow.getWorkflowSteps().size(); i++) {

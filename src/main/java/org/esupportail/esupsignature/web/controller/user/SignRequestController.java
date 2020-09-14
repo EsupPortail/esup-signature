@@ -227,7 +227,7 @@ public class SignRequestController {
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)) {
             signRequest.setSignable(true);
-            model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest).name());
+            model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest));
             model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
             model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
             model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());

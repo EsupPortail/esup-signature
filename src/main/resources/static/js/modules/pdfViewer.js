@@ -422,7 +422,7 @@ export class PdfViewer {
                 signField.addClass("d-none");
                 signField.parent().remove();
             }
-            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
+            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith(T(org.esupportail.esupsignature.entity.enums.SignType).visa)) {
                 console.debug("found sign field");
                 visaFieldNumber = visaFieldNumber + 1;
                 $('.popupWrapper').remove();

@@ -397,7 +397,10 @@ export class SignPosition {
         $('#nameButton').toggleClass('btn-outline-success btn-outline-dark');
         if(!this.getCurrentSignParams().addName) {
             this.getCurrentSignParams().addName = true;
-            this.borders.prepend("<span id='textName' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Signé par "+ this.userName +"</span>");
+            //TODO if visa
+            this.borders.prepend("<span id='textName' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
+                "Signé par "+ this.userName +"</span>");
+
         } else {
             this.getCurrentSignParams().addName = false;
             document.getElementById("textName").remove();

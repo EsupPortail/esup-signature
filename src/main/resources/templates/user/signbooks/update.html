@@ -42,7 +42,7 @@
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a th:if="${signBook.getStatus().name() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
+                    <li><a th:if="${signBook.getStatus() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
                     <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
                     <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-medical"></i></a></li>
                 </ul>
