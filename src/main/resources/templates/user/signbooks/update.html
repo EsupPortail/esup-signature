@@ -16,7 +16,7 @@
         <nav th:fragment="side" id="sidebar" class="scrollbar-lite">
             <div class="m-1">
                 <div th:if="${user == signBook.createBy}">
-                    <div th:if="${(signBook.status.name() == 'draft' || signBook.status.name() == 'completed')}">
+                    <div th:if="${(signBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed)}">
                         <div th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0}">
                             <th:block th:if="${signBook.workflowSteps.get(0).recipients.size() > 0}">
                                 <button title="Lancer la procédure de signature" type="button" class="mb-1 col-12 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
@@ -42,12 +42,12 @@
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a th:if="${signBook.getStatus().name() == 'draft' && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
+                    <li><a th:if="${signBook.getStatus().name() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
                     <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
                     <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-medical"></i></a></li>
                 </ul>
             </div>
-            <th:block th:if="${signBook.status.name() == 'draft' || signBook.status.name() == 'pending'}">
+            <th:block th:if="${signBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                 <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
             </th:block>
             <div class="card col-lg-11 mb-1">

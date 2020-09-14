@@ -27,9 +27,9 @@
                             class="btn btn-light btn-outline-success ml-1">
                         <i class="fas fa-save"></i><br/>
                     </button>
-                    <div th:if="${data.status != null}" th:switch="${data.status.name()}">
-                        <th:block th:case="'draft'">
-                            <a target="_blank" title="Exporter en PDF" th:if="${data.status.name() == 'draft'}"
+                    <div th:if="${data.status != null}" th:switch="${data.status}">
+                        <th:block th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                            <a target="_blank" title="Exporter en PDF" th:if="${data.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}}"
                                th:href="'/user/datas/' + ${data.id} + '/export-pdf'"
                                class="btn btn btn-outline-dark btn-light ml-1">
                                 <i class="fas fa-file-pdf"></i>

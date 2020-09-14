@@ -36,7 +36,7 @@ export default class FilesInput {
         this.input.fileinput('upload');
     }
 
-    // [# th:if="${signRequest.status.name() != 'draft' || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
+    // [# th:if="${signRequest.status != ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || user.eppn != signRequest.createBy || signRequest.signedDocuments.size() > 0}"]
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];

@@ -8,7 +8,7 @@
     <form id="signForm">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
-            <th:block th:if="${signRequest.signable && signRequest.status.name() != 'signed'}">
+            <th:block th:if="${signRequest.signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
                 <th:block th:if="${currentSignType != 'visa'}">
                     <button type="button" id="signZoomIn"
                             class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"

@@ -60,8 +60,8 @@
                                                 <td class="align-content-center">
                                                     <div th:switch="${recipient.signed}">
                                                         <th:block th:case="true">
-                                                            <i th:if="${signRequest.status.name() != 'refused'}" title="a signé le document" class="fas fa-check-circle text-success"></i>
-                                                            <i th:if="${signRequest.status.name() == 'refused'}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
+                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
                                                         </th:block>
                                                         <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                     </div>
@@ -79,8 +79,8 @@
                                                 <td class="align-content-center">
                                                     <div th:switch="${recipient.signed}">
                                                         <th:block th:case="true">
-                                                            <i th:if="${signRequest.status.name() != 'refused'}" title="a signé le document" class="fas fa-check-circle text-success"></i>
-                                                            <i th:if="${signRequest.status.name() == 'refused'}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
+                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
                                                         </th:block>
                                                         <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                     </div>
@@ -107,13 +107,13 @@
                                     </button>
                                     <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
-                                            <a th:unless="${signRequest.status.name() == 'pending' && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter
                                             </a>
-                                            <a th:if="${signRequest.status.name() == 'pending' && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-signature pr-2"></i> Signer
                                             </a>
-                                            <a th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported' || signRequest.status.name() == 'archived'}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                                            <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                                                 <i class="fas fa-download pr-2"></i> Télécharger
                                             </a>
                                             <a th:if="${@dataService.getDataFromSignRequest(signRequest) != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
@@ -164,13 +164,13 @@
                                     </button>
                                     <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
                                         <div class=" card-body">
-                                            <a th:unless="${signRequest.status.name() == 'pending' && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter
                                             </a>
-                                            <a th:if="${signRequest.status.name() == 'pending' && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                                            <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-signature pr-2"></i> Signer
                                             </a>
-                                            <a th:if="${signRequest.status.name() == 'completed' || signRequest.status.name() == 'exported' || signRequest.status.name() == 'archived'}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                                            <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                                                 <i class="fas fa-download pr-2"></i> Télécharger
                                             </a>
                                             <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">

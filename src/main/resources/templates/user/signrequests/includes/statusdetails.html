@@ -3,9 +3,9 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="statusdetails">
 	<div th:if="${user == signRequest.createBy}">
-		<div th:if="${(signRequest.status.name() == 'draft')}">
+		<div th:if="${(signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
 			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
-				<div class="alert alert-secondary mb-1" th:if="${signRequest.status.name() == 'draft'}">
+				<div class="alert alert-secondary mb-1" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
 					<h5 class="alert-heading">
 						La demande en cours de création
 					</h5>
@@ -14,7 +14,7 @@
 		</div>
 	</div>
 	<div th:if="${user == signRequest.createBy}">
-		<div th:if="${(signRequest.status.name() == 'draft')}">
+		<div th:if="${(signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
 			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
 				<div class="alert alert-dark mb-1">
 					<h5 class="alert-heading">
@@ -24,7 +24,7 @@
 			</div>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'pending'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
 		<div class="card card-body mb-1">
 			<span>
 				<span title="Étape en cours" class="bs-stepper-circle bg-warning">
@@ -48,29 +48,29 @@
 			</table>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'signed'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
 		<div class="alert alert-success mb-1">
 			<p class="alert-heading">Le document est signé</p>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'checked'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}">
 		<div class="alert alert-success mb-1">
 			<h5 class="alert-heading">Le document est visé</h5>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'completed'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
 		<div class="alert alert-success mb-1">
 			<p class="alert-heading">Cette demande est terminée</p>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'refused'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
 		<div class="alert alert-danger mb-1">
 			<h5 class="alert-heading">La demande a été refusée</h5>
 			Motif :
 			<span th:text="${refuseLogs.get(0).comment}"></span>
 		</div>
 	</div>
-	<div th:if="${signRequest.status.name() == 'exported'}">
+	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
 		<div class="alert alert-dark mb-1">
 			<p>Le document signé a été exporté vers son emplacement définitif :</p>
 			<button title="Copier le lien" class="btn btn-light btn-sm" onclick="copy();"><i class="fas fa-copy"></i> Copier le lien</button>
