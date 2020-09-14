@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.annotation.SetGlobalAttributs;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -42,42 +43,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/user/datas")
 @Controller
 @Transactional
+@SetGlobalAttributs(activeMenu = "datas")
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
-
-	@ModelAttribute("activeMenu")
-	public String getActiveMenu() {
-		return "datas";
-	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@ModelAttribute(value = "messageNews", binding = false)
-	public List<Message> getMessageNews() {
-		return userService.getMessages(getAuthUser());
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
 
 	@Resource
 	private DataService dataService;
