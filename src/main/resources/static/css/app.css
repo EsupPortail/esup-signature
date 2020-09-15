@@ -676,6 +676,10 @@ float:left;
     border-radius: 50%;
 }
 
+.clickable-td {
+    cursor: pointer;
+}
+
 .nav-tabs {
     border-bottom : 1px solid #000000;
 }

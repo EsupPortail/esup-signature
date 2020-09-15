@@ -10,6 +10,7 @@ export class GlobalUi {
         this.breadcrumb = $('#breadcrumb');
         this.inputFile = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
+        this.clickableTd = $(".clickable-td");
         this.autoHide = $('.auto-hide');
         this.initListeners();
         this.initSideBar();
@@ -25,6 +26,9 @@ export class GlobalUi {
         this.sideBar.on('mouseover', e => this.disableBodyScroll());
         this.sideBar.on('mouseout', e => this.enableBodyScroll());
         this.clickableRow.on('click',  function() {
+            window.location = $(this).closest('tr').attr('data-href');
+        });
+        this.clickableTd.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });
         this.inputFile.on('change', e => this.changeFileInputName(e));
