@@ -47,7 +47,7 @@
                 <ul class="list-unstyled">
                     <li><a id="signLaunchButton" role="button" th:if="${signRequest.signable && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="btn-floating btn-lg bg-success waves-effect" title="Signer"><i class="fas fa-file-signature"></i></a></li>
                     <li><a id="visaLaunchButton" role="button" th:unless="${!signRequest.signable || currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="btn-floating btn-lg bg-success waves-effect" title="Viser"><i class="fas fa-check"></i></a></li>
-                    <li><a role="button" th:if="${signRequest.parentSignBook != null}" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
+                    <li><a role="button" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.parentSignBook != null}" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser" th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i class="fas fa-file-excel"></i></a></li>
                     <li><a role="button" th:unless="${signRequest.parentSignBook != null}"  class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a></li>
                 </ul>
             </div>
