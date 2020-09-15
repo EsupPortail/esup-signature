@@ -31,7 +31,7 @@ public class SetGlobalAttributs {
 
     @ModelAttribute(value = "suUsers", binding = false)
     public List<User> getSuUsers() {
-        return userService.getSuUsers(getAuthUser());
+        return userService.getSuUsers(userService.getUserFromAuthentication());
     }
 
     @ModelAttribute(value = "globalProperties")

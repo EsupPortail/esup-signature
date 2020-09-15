@@ -137,6 +137,7 @@ public class UserService {
 		} else {
 			User user = new User();
 			user.setEppn("system");
+			userRepository.save(user);
 			return user;
 		}
 	}
