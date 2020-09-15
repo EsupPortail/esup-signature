@@ -47,29 +47,8 @@ public class MessageAdminController {
 		return "messages";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
 	@Resource
 	private MessageRepository messageRepository;
-
-	@Resource
-	private UserService userService;
 
 	@GetMapping
 	public String messages(Pageable pageable, Model model) {

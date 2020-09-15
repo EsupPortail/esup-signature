@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.annotation.SetGlobalAttributs;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -12,6 +11,7 @@ import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +22,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -43,10 +44,14 @@ import java.util.stream.Collectors;
 @RequestMapping("/user/datas")
 @Controller
 @Transactional
-@SetGlobalAttributs(activeMenu = "datas")
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
+
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "datas";
+	}
 
 	@Resource
 	private DataService dataService;
@@ -80,6 +85,9 @@ public class DataController {
 
 	@Resource
 	private RecipientService recipientService;
+
+	@Resource
+	private PdfService pdfService;
 
 	@ModelAttribute("forms")
 	public List<Form> getForms(@ModelAttribute("user") User user, User authUser) {
@@ -317,6 +325,16 @@ public class DataController {
 		Data cloneData = dataService.cloneData(data);
 		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
+	}
+
+	@GetMapping("forms/{id}/get-image")
+	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws Exception {
+		Form form = formRepository.findById(id).get();
+		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
+		response.setContentType(MediaType.IMAGE_PNG_VALUE);
+		IOUtils.copy(in, response.getOutputStream());
+		in.close();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }

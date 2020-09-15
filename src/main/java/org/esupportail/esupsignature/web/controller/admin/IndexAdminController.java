@@ -38,29 +38,8 @@ public class IndexAdminController {
 		return "admin";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UserService userService;
-
 	@GetMapping
-	public String index(RedirectAttributes redirectAttrs, Model model) {
+	public String index() {
 		return "redirect:/admin/signrequests";
 	}
 }

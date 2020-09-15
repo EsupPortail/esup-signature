@@ -40,31 +40,9 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "signrequests";
-	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
 	}
 
 	@Resource
@@ -76,9 +54,6 @@ public class NexuProcessController {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@Resource
-	private UserService userService;
-	
 	@Resource
 	private SignRequestService signRequestService;
 

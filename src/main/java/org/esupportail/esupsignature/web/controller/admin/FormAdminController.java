@@ -44,24 +44,6 @@ public class FormAdminController {
 		return "forms";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
 	@Resource
 	private DocumentService documentService;
 
@@ -76,14 +58,6 @@ public class FormAdminController {
 
 	@Resource
 	private PreFillService preFillService;
-
-	@Resource
-	private UserService userService;
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {

@@ -47,14 +47,6 @@ public class WsOtpSignController {
     AuthenticationManager authenticationManager;
 
     @Resource
-    private GlobalProperties globalProperties;
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
-
-    @Resource
     private UserRepository userRepository;
 
     @Resource

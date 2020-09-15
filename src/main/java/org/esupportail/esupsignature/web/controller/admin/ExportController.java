@@ -37,27 +37,6 @@ public class ExportController {
 		return "validation";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UserService userService;
-
 	@Resource
 	private DataExportService dataExportService;
 
@@ -65,8 +44,8 @@ public class ExportController {
 	private FormRepository formRepository;
 
 	@GetMapping
-	public String list(Model model) {
-		List<Form> forms = formRepository.findAutorizedFormByUser(getUser());
+	public String list(@ModelAttribute("user") User user, Model model) {
+		List<Form> forms = formRepository.findAutorizedFormByUser(user);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}

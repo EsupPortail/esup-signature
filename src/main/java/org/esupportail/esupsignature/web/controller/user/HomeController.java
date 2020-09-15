@@ -47,26 +47,6 @@ public class HomeController {
         return "home";
     }
 
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return userService.getCurrentUser();
-    }
-
-    @ModelAttribute(value = "authUser", binding = false)
-    public User getAuthUser() {
-        return userService.getUserFromAuthentication();
-    }
-
-    @ModelAttribute(value = "suUsers", binding = false)
-    public List<User> getSuUsers() {
-        return userService.getSuUsers(getAuthUser());
-    }
-
-    @ModelAttribute(value = "messageNews", binding = false)
-    public List<Message> getMessageNews() {
-        return userService.getMessages(getAuthUser());
-    }
-
     @Resource
     private UserService userService;
 

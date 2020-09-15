@@ -43,9 +43,6 @@ public class DocumentAdminController {
 	private DocumentRepository documentRepository;
 
 	@Resource
-	private UserService userService;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -53,29 +50,6 @@ public class DocumentAdminController {
 
 	@Resource
 	private PdfService pdfService;
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers(User authUser) {
-		return userService.getSuUsers(authUser);
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
 
 	@GetMapping("/form")
 	public String creatDocument(Model model) {

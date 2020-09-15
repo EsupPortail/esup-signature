@@ -36,19 +36,6 @@ public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return userService.getCurrentUser();
-    }
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
-
-    @Resource
-    private GlobalProperties globalProperties;
-
     @Resource
     private UserService userService;
 
@@ -87,8 +74,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(@ModelAttribute("user") User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        User authUser = userService.getUserFromAuthentication();
+    public ModelAndView wiz3(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix d'un workflow");
         List<SignBook> signBooks = signBookRepository.findByCreateBy(user);
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);

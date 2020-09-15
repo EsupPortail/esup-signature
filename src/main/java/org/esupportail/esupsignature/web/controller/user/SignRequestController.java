@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.annotation.SetGlobalAttributs;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -53,10 +52,14 @@ import java.util.stream.Collectors;
 @Controller
 @Transactional
 @EnableConfigurationProperties(GlobalProperties.class)
-@SetGlobalAttributs(activeMenu = "signrequests")
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
+
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "signrequests";
+    }
 
     @Resource
     private GlobalProperties globalProperties;
@@ -116,7 +119,7 @@ public class SignRequestController {
 //    private SedaExportService sedaExportService;
 
     @GetMapping
-    public String list(User user, User authUser,
+    public String list(@ModelAttribute(value = "user", binding = false) User user, @ModelAttribute(value = "authUser", binding = false) User authUser,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "signBookId", required = false) Long signBookId,
                        @RequestParam(value = "messageError", required = false) String messageError,
