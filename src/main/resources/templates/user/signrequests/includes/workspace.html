@@ -9,33 +9,34 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signRequest.signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                    <button type="button" id="signZoomIn"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                            style="z-index: 3;">
-                        <i class="fas fas fa-search-plus"></i>
-                    </button>
-                    <button type="button" id="signZoomOut"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                            style="z-index: 3;">
-                        <i class="fas fas fa-search-minus"></i>
-                    </button>
-                    <button type="button" id="signPrevImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                            style="z-index: 3;">
-                        <i class="fas fas fa-chevron-up"></i>
-                    </button>
-                    <button type="button" id="signNextImage"
-                            class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                            style="z-index: 3;">
-                        <i class="fas fas fa-chevron-down"></i>
-                    </button>
-                    <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                         onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                         onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
-                         th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
-                        <div id="borders" class="anim-border"
-                             th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-                    </div>
+                <button type="button" id="signZoomIn"
+                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
+                        style="z-index: 3;">
+                    <i class="fas fas fa-search-plus"></i>
+                </button>
+                <button type="button" id="signZoomOut"
+                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
+                        style="z-index: 3;">
+                    <i class="fas fas fa-search-minus"></i>
+                </button>
+                <button type="button" id="signPrevImage"
+                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
+                        style="z-index: 3;">
+                    <i class="fas fas fa-chevron-up"></i>
+                </button>
+                <button type="button" id="signNextImage"
+                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
+                        style="z-index: 3;">
+                    <i class="fas fas fa-chevron-down"></i>
+                </button>
+                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                     onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
+                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
+                    <div id="borders" class="anim-border"
+                         th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
+                </div>
+            </th:block>
             <th:block th:each="postit : ${postits}">
                 <div th:id="${postit.id}" class="circle"
                      th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'"
