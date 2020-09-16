@@ -126,8 +126,8 @@
                 <div class="modal-body">
                         <div class="form-group">
                             <label for="selectType">Type de délégation</label>
-                            <select id="selectType" class="slim-select-simple" name="type" required>
-                                <option data-placeholder="true">Choisir un type de délégation</option>
+                            <select id="selectType" class="slim-select-simple" name="type" required="required">
+                                <option value="" data-placeholder="true">Choisir un type de délégation</option>
                                 <option value="sign">Signature</option>
                                 <option value="create">Creation de formulaires ou de circuits</option>
                             </select>
@@ -135,7 +135,7 @@
                         <div id="selectFormDiv" class="form-group d-none">
                             <label for="selectForm">Formulaires à déléguer</label>
                             <select id="selectForm" class="slim-select-simple" name="form" multiple>
-                                <option data-placeholder="true">Choisir un ou plusieurs formulaire(s)</option>
+                                <option value="" data-placeholder="true">Choisir un ou plusieurs formulaire(s)</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:value="${form.id}" th:text="${form.title}"></option>
                                 </th:block>
@@ -144,7 +144,7 @@
                         <div id="selectWorkflowDiv" class="form-group d-none">
                             <label for="selectWorkflow">Circuits à déléguer</label>
                             <select id="selectWorkflow" class="slim-select-simple" name="workflow" multiple>
-                                <option data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>
+                                <option value="" data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>
                                 <th:block th:each="workflow : ${workflows}">
                                     <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
                                 </th:block>
@@ -156,11 +156,11 @@
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de début</label>
-                            <input type="text" name="beginDate" class="form-control datepicker">
+                            <input type="date" name="beginDate" class="form-control datepicker">
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de fin</label>
-                            <input type="text" name="endDate" class="form-control datepicker">
+                            <input type="date" name="endDate" class="form-control datepicker">
                         </div>
                 </div>
                 <div class="modal-footer">

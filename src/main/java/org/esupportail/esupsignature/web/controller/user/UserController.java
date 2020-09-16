@@ -163,7 +163,13 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute("authUser") User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+	public String addShare(@ModelAttribute("authUser") User authUser,
+						   @RequestParam(value = "form", required = false) Long[] form,
+						   @RequestParam(value = "workflow", required = false) Long[] workflow,
+						   @RequestParam("type") String type,
+						   @RequestParam("userIds") String[] userEmails,
+						   @RequestParam("beginDate") String beginDate,
+						   @RequestParam("endDate") String endDate) {
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
@@ -174,8 +180,8 @@ public class UserController {
 		Date endDateDate = null;
 		if (beginDate != null && endDate != null) {
 			try {
-				beginDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(beginDate);
-				endDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(endDate);
+				beginDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(beginDate);
+				endDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 			} catch (ParseException e) {
 				logger.error("error on parsing dates");
 			}

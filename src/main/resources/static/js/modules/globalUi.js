@@ -168,18 +168,19 @@ export class GlobalUi {
 
     checkSlimSelect() {
         $("select").filter(".slim-select").each(function () {
-            console.info("auto enable slim-select for : " + $(this).attr('id'));
+            let selectName = $(this).attr('id');
+            console.info("auto enable slim-select for : " + selectName);
             new SlimSelect({
-                select: '#' + $(this).attr('id')
+                select: '#' + selectName
             });
+            $(this).addClass("slim-select-hack");
         })
 
         $("select").filter(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
-            this.selectField = $("#" + selectName);
             new SlimSelect({
-                select: '#' + $(this).attr('id'),
+                select: '#' + selectName,
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: true,
@@ -188,7 +189,7 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            this.selectField.addClass("slim-select-hack");
+            $(this).addClass("slim-select-hack");
         })
     }
 

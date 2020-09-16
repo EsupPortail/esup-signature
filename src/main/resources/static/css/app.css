@@ -243,7 +243,9 @@ input:checked + .slider:before {
 .slim-select-hack {
     opacity: 0;
     height: 0;
+    margin-top: 36px;
     display: block !important;
+    position: absolute;
 }
 
 /* select slim */

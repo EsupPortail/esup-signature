@@ -6,10 +6,10 @@ export default class ShareUi {
     }
 
     initListeners() {
-        $('#selectType').on('change', e => this.toggleShareForm(e));
+        $('#selectType').on('change', e => this.toggleShareForm());
     }
 
-    toggleShareForm(e) {
+    toggleShareForm() {
         let selectedTypeValue = $("#selectType :selected").val();
         console.info("toggle share form" + selectedTypeValue);
         if(selectedTypeValue === 'create') {
