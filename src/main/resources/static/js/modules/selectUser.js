@@ -1,13 +1,15 @@
 export default class SelectUser {
 
-    constructor(selectName, valuePrefix, limit) {
+    constructor(selectName, limit) {
+        console.debug("init slim-select users : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
-        console.info("Enable slim-select for " + selectName);
-        if(valuePrefix == null) {
-            valuePrefix = "";
-        }
+        let valuePrefix = "";
         this.limit = 99;
+        let selectNameSplit = selectName.split("_");
+        if(selectNameSplit.length === 2) {
+            valuePrefix = selectNameSplit[1] + "*";
+        }
         if(limit != null) {
             this.limit = limit;
         }

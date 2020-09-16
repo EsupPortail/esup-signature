@@ -1,13 +1,15 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -45,9 +47,6 @@ public class SignBookController {
 
     @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -89,11 +88,11 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
         redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
-        return "redirect:" + request.getHeader("referer");
+        return "redirect:/user/signrequests";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
@@ -205,34 +204,19 @@ public class SignBookController {
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
-    public String sendToSignBook(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                                 @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames") String[] signBookNames, RedirectAttributes redirectAttributes, HttpServletRequest request) throws EsupSignatureUserException {
-        SignBook signBook = signBookRepository.findById(id).get();
-        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        if (signBookNames != null && signBookNames.length > 0) {
-            workflowService.addRecipientsToWorkflowStep(workflowStep, signBookNames);
-        }
-        redirectAttributes.addFlashAttribute("Ajouté au parapheur");
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @DeleteMapping(value = "/remove-step-recipent/{id}/{step}")
     public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                  @PathVariable("step") Integer step,
-                                 @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
+                                 @RequestParam(value = "recipientId") Long recipientId, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.removeStepRecipient(signBook, step, recipientId);
+        redirectAttributes.addFlashAttribute("messageInfo", "Le destinataire à été supprimé");
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletRequest request) {
+    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.pendingSignBook(signBook, user);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

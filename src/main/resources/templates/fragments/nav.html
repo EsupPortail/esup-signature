@@ -283,7 +283,7 @@
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
-                        <select name="signType" id="signType" class="form-control">
+                        <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
@@ -333,7 +333,7 @@
                         <input required id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <br><br>
                         <label for="signType2">Choisir un type de signature</label>
-                        <select name="signType" id="signType2" class="form-control">
+                        <select name="signType" id="signType2" class="slim-select-simple">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
@@ -342,14 +342,12 @@
                         <br>
                         <label for="recipientsEmails">Choisir les participants</label>
                         <div class="form-group">
-                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
+                            <select class="select-users" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
                                     required="required">
                             </select>
                         </div>
                         <script th:inline="javascript" type="module">
-                            import {default as SelectUser} from "/js/modules/selectUser.js";
                             import {default as FilesInputSimple} from "/js/modules/filesInputSimple.js";
-                            new SelectUser("recipientsEmails");
                             new FilesInputSimple($("#inputGroupFile02"), "Demande Simple", "inputGroupFile02", null, true, [[${_csrf.parameterName}]], [[${_csrf.token}]], null);
                         </script>
                         <div class="form-group" id="_allSignToComplete_div_id">

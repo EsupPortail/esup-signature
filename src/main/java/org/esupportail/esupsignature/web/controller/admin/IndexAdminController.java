@@ -17,17 +17,10 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.UserService;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import javax.annotation.Resource;
 
 @RequestMapping("/admin")
 @Controller

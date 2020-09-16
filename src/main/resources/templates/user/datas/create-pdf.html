@@ -143,15 +143,11 @@
                     <th:block th:each="step,iterator : ${steps}">
                         <div th:if="${step.changeable == true}" class="form-group">
                             <label th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable : ' + ${step.name}"></label>
-                            <select th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >
+                            <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >
                                 <th:block th:each="recipient : ${step.recipients}">
                                     <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
                                 </th:block>
                             </select>
-                            <script th:inline="javascript" type="module">
-                                import {default as SelectUser} from "/js/modules/selectUser.js";
-                                new SelectUser("recipientEmailsSelect_[[${step.stepNumber}]]", "[[${step.stepNumber}]]*", [[${step.maxRecipients}]]);
-                            </script>
                             <p class="small">
                                 Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
                             </p>

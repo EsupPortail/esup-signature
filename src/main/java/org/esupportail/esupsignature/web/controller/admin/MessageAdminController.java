@@ -17,11 +17,8 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.MessageRepository;
-import org.esupportail.esupsignature.service.UserService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

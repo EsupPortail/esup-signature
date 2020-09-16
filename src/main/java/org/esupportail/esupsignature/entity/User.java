@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.entity;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Date;

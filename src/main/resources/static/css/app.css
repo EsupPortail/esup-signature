@@ -82,6 +82,14 @@ code {
     height: 50px;
 }
 
+.select-users {
+    /*for javascript detection : new SelectUser()*/
+}
+
+.slim-select, .slim-select-simple {
+    /*for javascript detection : new SlimSelect()*/
+}
+
 .hide-select {
     opacity: 0;
     position: absolute;
@@ -247,7 +255,8 @@ input:checked + .slider:before {
 }
 
 .ss-main .ss-multi-selected {
-    border: 1px solid #ced4da;	
+    border: 1px solid #ced4da;
+    min-height: 38px;
 }
 	
 .ss-value-text {
@@ -1314,6 +1323,11 @@ float:left;
         padding-left: 15px;
     }
 }
-.select-mode > div.ss-single-selected {
-    height: 50px;
+.ss-single-selected {
+    min-height: 38px !important;
+}
+
+.ss-main {
+    font-weight: normal !important;
+    margin-bottom: 20px !important;
 }

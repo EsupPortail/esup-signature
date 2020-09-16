@@ -119,7 +119,7 @@ public class SignRequestController {
 //    private SedaExportService sedaExportService;
 
     @GetMapping
-    public String list(@ModelAttribute(value = "user", binding = false) User user, @ModelAttribute(value = "authUser", binding = false) User authUser,
+    public String list(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @RequestParam(value = "signBookId", required = false) Long signBookId,
                        @RequestParam(value = "messageError", required = false) String messageError,

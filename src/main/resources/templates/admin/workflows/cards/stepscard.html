@@ -67,7 +67,6 @@
                                 <tr>
                                     <th>Participants</th>
                                     <th>
-
                                         <button type="button" title="Ajouter un destinataire"
                                                 class="btn btn-sm btn-primary" data-toggle="modal"
                                                 th:data-target="'#reSendModal' + ${workflowStep.id}">
@@ -86,7 +85,7 @@
                                                         </div>
                                                         <div class="modal-body">
                                                             <div class="form-group">
-                                                                <select name="recipientsEmails"
+                                                                <select class="select-users" name="recipientsEmails"
                                                                         th:id="'recipientsEmails' + ${workflowStep.id}"
                                                                         size="5" multiple="multiple"
                                                                         required="required">
@@ -107,11 +106,6 @@
                                                         </div>
                                                     </form>
                                                 </div>
-                                                <script th:inline="javascript" type="module">
-                                                    import {default as SelectUser} from "/js/modules/selectUser.js";
-
-                                                    new SelectUser("recipientsEmails[[${workflowStep.id}]]");
-                                                </script>
                                             </div>
                                         </div>
                                     </th>

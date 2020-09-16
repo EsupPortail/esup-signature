@@ -55,11 +55,11 @@
 	</th:block>
 <th:block th:if="${messageSuccess != null}">
 	<div id="toastSuccess" class="toast toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
-		<div class="toast-body">
+		<div class="toast-body text-white">
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-			<h4 class="mr-auto text-white">Confirmation</h4>
+			<h4 class="mr-auto">Confirmation</h4>
 			<h6 th:utext="${messageSuccess}"></h6>
 		</div>
 	</div>

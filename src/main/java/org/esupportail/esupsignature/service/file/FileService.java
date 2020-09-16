@@ -17,7 +17,6 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

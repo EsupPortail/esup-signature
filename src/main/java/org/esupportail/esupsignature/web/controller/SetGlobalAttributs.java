@@ -4,13 +4,16 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import java.util.ArrayList;
 import java.util.List;
 
-@ControllerAdvice
+@ControllerAdvice()
 public class SetGlobalAttributs {
 
     @Resource
@@ -29,19 +32,15 @@ public class SetGlobalAttributs {
         return userService.getUserFromAuthentication();
     }
 
-    @ModelAttribute(value = "suUsers", binding = false)
-    public List<User> getSuUsers() {
-        return userService.getSuUsers(userService.getUserFromAuthentication());
-    }
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
-
-    @ModelAttribute(value = "messageNews", binding = false)
-    public List<Message> getMessageNews() {
-        return userService.getMessages(getAuthUser());
+    @ModelAttribute
+    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
+        List<Message> messages = new ArrayList<>();
+        if(!authUser.getEppn().equals("system") && user.equals(authUser)) {
+            messages.addAll(userService.getMessages(authUser));
+        }
+        model.addAttribute("suUsers", userService.getSuUsers(authUser));
+        model.addAttribute("globalProperties", this.globalProperties);
+        model.addAttribute("messageNews", messages);
     }
 
 }

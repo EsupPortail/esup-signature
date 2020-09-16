@@ -62,7 +62,7 @@ public class IndexController {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@ModelAttribute(value = "user", binding = false)
+	@ModelAttribute
 	public User getUser() {
 		return userService.getCurrentUser();
 	}

@@ -411,23 +411,12 @@ export class PdfViewer {
         let visaFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
-            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('sign')) {
-                console.debug("found sign field");
+            if (items[i].fieldType === undefined) {
+                console.debug("sign field found");
                 signFieldNumber = signFieldNumber + 1;
                 $('.popupWrapper').remove();
                 let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
                 signField.append('Champ signature ' + signFieldNumber + '<br>');
-                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
-            }
-            if (items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith(T(org.esupportail.esupsignature.entity.enums.SignType).visa)) {
-                console.debug("found sign field");
-                visaFieldNumber = visaFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ visa ' + visaFieldNumber + '<br>');
                 //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
                 signField.addClass("sign-field");
                 signField.addClass("d-none");

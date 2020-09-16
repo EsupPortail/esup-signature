@@ -1,3 +1,5 @@
+import {default as SelectUser} from "./selectUser.js";
+
 export class GlobalUi {
 
     constructor() {
@@ -14,7 +16,6 @@ export class GlobalUi {
         this.autoHide = $('.auto-hide');
         this.initListeners();
         this.initSideBar();
-        this.adjustUi();
     }
 
     initListeners() {
@@ -23,8 +24,6 @@ export class GlobalUi {
         $("#closeUserInfo").on('click', function() {
             $("#user-toggle").click();
         });
-        this.sideBar.on('mouseover', e => this.disableBodyScroll());
-        this.sideBar.on('mouseout', e => this.enableBodyScroll());
         this.clickableRow.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });
@@ -52,7 +51,7 @@ export class GlobalUi {
             window.history.back();
         });
         window.addEventListener('resize', e => this.adjustUi());
-        $(document).ready(e => this.adjustUi());
+        $(document).ready(e => this.onDocumentLoad());
     }
 
     resetMode() {
@@ -157,6 +156,46 @@ export class GlobalUi {
         this.sideBarLabels.addClass('d-none');
         this.content.addClass('content-full');
         this.breadcrumb.addClass('breadcrumb-nav-full');
+    }
+
+    checkSelectUser() {
+        $(".select-users").each(function () {
+            let selectId = $(this).attr('id');
+            console.info("auto enable select-user for : " + selectId);
+            new SelectUser(selectId);
+        });
+    }
+
+    checkSlimSelect() {
+        $("select").filter(".slim-select").each(function () {
+            console.info("auto enable slim-select for : " + $(this).attr('id'));
+            new SlimSelect({
+                select: '#' + $(this).attr('id')
+            });
+        })
+
+        $("select").filter(".slim-select-simple").each(function () {
+            let selectName = $(this).attr('id');
+            console.info("auto enable slim-select-simple for : " + selectName);
+            this.selectField = $("#" + selectName);
+            new SlimSelect({
+                select: '#' + $(this).attr('id'),
+                showSearch: false,
+                searchHighlight: false,
+                hideSelectedOption: true,
+                closeOnSelect: true,
+                ajax: function (search, callback) {
+                    callback(false)
+                }
+            });
+            this.selectField.addClass("slim-select-hack");
+        })
+    }
+
+    onDocumentLoad() {
+        this.checkSelectUser();
+        this.checkSlimSelect();
+        this.adjustUi();
     }
 
 }
