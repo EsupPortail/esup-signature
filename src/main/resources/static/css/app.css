@@ -961,7 +961,6 @@ float:left;
 }
 
 .toast {
-    background-color: rgba(255,255,255,.95) !important;
     z-index: 10000;
 }
 
@@ -978,7 +977,15 @@ float:left;
 }
 
 .toast-sm {
-    min-width: 300px;
+    min-width: 400px;
+    margin: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.toast-md {
+    min-width: 800px;
     margin: 20px;
     position: fixed;
     top: 0;
@@ -1102,9 +1109,9 @@ float:left;
 }
 
 .blinking-white {
-    animation:blinkingText 1.2s infinite;
+    animation:blinkingTextWhite 1.2s infinite;
 }
-@keyframes blinkingText {
+@keyframes blinkingTextWhite {
     0%{     color: #FFF;    }
     49%{    color: #FFF; }
     60%{    color: transparent; }
