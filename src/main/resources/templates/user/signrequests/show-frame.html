@@ -259,13 +259,6 @@
             <div class="modal-body">
                 <input autocomplete="new-password" th:classappend="${currentSignType != 'certSign' && currentSignType != 'nexuSign'} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
             </div>
-            <script>
-                $("#passwordAll").on('keyup', function (e) {
-                    if (e.keyCode === 13) {
-                        // Do something
-                    }
-                });
-            </script>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
                 <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">

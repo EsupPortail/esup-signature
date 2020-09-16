@@ -25,9 +25,6 @@
 				</button>
 			</div>
 		</div>
-		<script>
-			$('#toast_[[${messageNew.id}]]').toast('show');
-		</script>
 	</th:block>
 	<th:block th:if="${messageError != null}">
 	<div id="toastError" class="toast toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" >
@@ -39,7 +36,6 @@
 			<h6 class="text-white" th:utext="${messageError}"></h6>
 		</div>
 	</div>
-	<script>$('#toastError').toast('show');</script>
 	</th:block>
 	<th:block th:if="${messageWarn != null}" >
 	<div id="toastWarn" class="toast toast-sm bg-warning" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
@@ -51,9 +47,8 @@
 			<h6 th:utext="${messageWarn}"></h6>
 		</div>
 	</div>
-	<script>$('#toastWarn').toast('show');</script>
 	</th:block>
-<th:block th:if="${messageSuccess != null}">
+	<th:block th:if="${messageSuccess != null}">
 	<div id="toastSuccess" class="toast toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-body text-white">
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
@@ -63,7 +58,6 @@
 			<h6 th:utext="${messageSuccess}"></h6>
 		</div>
 	</div>
-	<script>$('#toastSuccess').toast('show');</script>
 	</th:block>
 	<th:block th:if="${messageInfo != null}">
 	<div id="toastInfo" class="toast toast-sm bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
@@ -75,7 +69,6 @@
 			<h6 th:utext="${messageInfo}"></h6>
 		</div>
 	</div>
-	<script>$('#toastInfo').toast('show');</script>
 	</th:block>
 	<th:block th:if="${messageCustom != null}">
 	<div id="toastCustom" class="toast toast-md bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
@@ -87,7 +80,6 @@
 			<pre class="h6" th:utext="${messageCustom}"></pre>
 		</div>
 	</div>
-	<script>$('#toastCustom').toast('show');</script>
 	</th:block>
 </div>
 </html>

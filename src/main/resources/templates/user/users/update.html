@@ -192,10 +192,9 @@
                                     </div>
                                 </div>
                             </label>
-                            <select class="form-control" id="_emailAlertFrequency_id" name="emailAlertFrequency"
+                            <select class="slim-select-simple" id="_emailAlertFrequency_id" name="emailAlertFrequency"
                                     size="1" onchange="checkAlertFrequency();">
-                                <option selected="selected" value="">-- Choisir votre préférence d'alerte --
-                                </option>
+                                <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
                                 <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
                                     <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
                                             selected="selected" th:value="${emailAlertFrequency}"

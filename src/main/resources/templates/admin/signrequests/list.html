@@ -21,7 +21,7 @@
                                 <span class="input-group-text" id="basic-addon1">Statut</span>
                             </div>
                             <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
-                                <option value="" disabled="disabled" selected="selected">Choisir un statut</option>
+                                <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
                                 <th:block th:each="status : ${statuses}">
                                     <option th:if="${status == statusFilter}" th:value="${status}"

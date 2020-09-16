@@ -90,6 +90,10 @@ code {
     /*for javascript detection : new SlimSelect()*/
 }
 
+.summer-note {
+    /*for javascript detection : new summernote()*/
+}
+
 .hide-select {
     opacity: 0;
     position: absolute;

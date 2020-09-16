@@ -65,15 +65,6 @@
                                             </a>
                                         </div>
                                     </div>
-                                    <script>
-                                        $(document).click(function (event) {
-                                            var clickover = $(event.target);
-                                            var _opened = $("#menu-[[${data.id}]]").hasClass("collapse show");
-                                            if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
-                                                $("#menu-toggle-[[${data.id}]]").click();
-                                            }
-                                        });
-                                    </script>
                                 </td>
                                 <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${data.id}">
                                     <div class="modal-dialog">

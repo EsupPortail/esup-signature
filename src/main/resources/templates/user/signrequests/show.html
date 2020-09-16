@@ -239,7 +239,7 @@
                         <button id="launchSignButton" class="mb-1 btn btn-success float-right" title="Signer" th:value="${signRequest.id}">Signer</button>
                     </div>
                 </div>
-                <input th:classappend="${signType != 'certSign'} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
+                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign} ? 'd-none'" class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore"/>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
@@ -266,13 +266,6 @@
             <div class="modal-body">
                 <input autocomplete="new-password" th:classappend="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign} ? 'd-none'" class="form-control" type="password" id="passwordAll" name="passwordAll" value="" placeholder="Mot de passe du keystore"/>
             </div>
-            <script>
-                $("#passwordAll").on('keyup', function (e) {
-                    if (e.keyCode === 13) {
-                        // Do something
-                    }
-                });
-            </script>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
                 <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">

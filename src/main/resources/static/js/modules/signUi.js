@@ -165,4 +165,14 @@ export class SignUi {
     redirect() {
         document.location.href="/user/signrequests/" + this.signRequestId;
     }
+
+    copy() {
+        let copyText = document.getElementById("exportUrl");
+        let textArea = document.createElement("textarea");
+        textArea.value = copyText.textContent;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("Copy");
+        textArea.remove();
+    }
 }

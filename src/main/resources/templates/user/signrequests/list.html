@@ -127,15 +127,7 @@
                                             </a>
                                         </div>
                                     </div>
-                                    <script>
-                                        $(document).click(function (event) {
-                                            var clickover = $(event.target);
-                                            var _opened = $("#menu-[[${signRequest.id}]]").hasClass("collapse show");
-                                            if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
-                                                $("#menu-toggle-[[${signRequest.id}]]").click();
-                                            }
-                                        });
-                                    </script>
+
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -181,15 +173,7 @@
                                             </a>
                                         </div>
                                     </div>
-                                    <script>
-                                        $(document).click(function (event) {
-                                            var clickover = $(event.target);
-                                            var _opened = $("#menu-[[${signRequest.id}]]").hasClass("collapse show");
-                                            if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
-                                                $("#menu-toggle-[[${signRequest.id}]]").click();
-                                            }
-                                        });
-                                    </script>
+
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">

@@ -39,19 +39,30 @@ export class GlobalUi {
             $('html, body').animate({scrollTop: $($(".invalid")[0]).offset().top - offset }, delay);
         }, true);
 
-        $(document).click(function (event) {
-            var container = document.getElementsByClassName('user-infos')[0];
-            var _opened = $("#user-infos").hasClass("collapse show");
-            if (_opened === true && container !== event.target && !container.contains(event.target)) {
-                $("#user-toggle").click();
-            }
-        });
+        $(document).click(e => this.hideMenus(e));
 
         $('#returnButton').click(function () {
             window.history.back();
         });
+
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
+    }
+
+    hideMenus(event) {
+        var clickover = $(event.target);
+        $("div[id^='menu-']").each(function() {
+            var _opened = $(this).hasClass("collapse show");
+            if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
+                let id = $(this).attr('id').split('-')[1];
+                $("#menu-toggle-" + id).click();
+            }
+        });
+        var container = document.getElementsByClassName('user-infos')[0];
+        var _opened = $("#user-infos").hasClass("collapse show");
+        if (_opened === true && container !== event.target && !container.contains(event.target)) {
+            $("#user-toggle").click();
+        }
     }
 
     resetMode() {
@@ -111,8 +122,6 @@ export class GlobalUi {
         if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
             this.toggleSideBar();
         }
-        // this.autoHide.on('mouseover', e => this.autoShowSideBar());
-        // this.autoHide.on('mouseout', e => this.hideSideBar());
     }
 
     toggleSideBarAction() {
@@ -132,12 +141,6 @@ export class GlobalUi {
         this.sideBarLabels.toggleClass('d-none');
         this.content.toggleClass('content-full');
         this.breadcrumb.toggleClass('breadcrumb-nav-full');
-    }
-
-    autoShowSideBar() {
-        this.sideBar.removeClass('active');
-        this.sideBar2.removeClass('d-none');
-        this.sideBarLabels.removeClass('d-none');
     }
 
     showSideBar() {
@@ -167,7 +170,7 @@ export class GlobalUi {
     }
 
     checkSlimSelect() {
-        $("select").filter(".slim-select").each(function () {
+        $(".slim-select").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select for : " + selectName);
             new SlimSelect({
@@ -176,7 +179,7 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $("select").filter(".slim-select-simple").each(function () {
+        $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             new SlimSelect({
@@ -193,10 +196,38 @@ export class GlobalUi {
         })
     }
 
+    enableSummerNote() {
+        $('.summer-note').each(function() {
+            console.info("auto enable summer note for " + $(this).attr('id'));
+            $(this).summernote({
+                tabsize: 2,
+                height: 250,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+        });
+    }
+
+    displayToasts() {
+        $('.toast').each(function() {
+            console.info("display toast : " + $(this).attr('id'));
+            $(this).toast('show');
+        });
+    }
+
     onDocumentLoad() {
         this.checkSelectUser();
         this.checkSlimSelect();
+        this.enableSummerNote();
         this.adjustUi();
+        this.displayToasts();
     }
 
 }
