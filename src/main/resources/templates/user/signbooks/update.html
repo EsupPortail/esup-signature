@@ -15,17 +15,7 @@
     <div class="wrapper">
         <nav th:fragment="side" id="sidebar" class="scrollbar-lite">
             <div class="m-1">
-                <div th:if="${user == signBook.createBy}">
-                    <div th:if="${(signBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed)}">
-                        <div th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0}">
-                            <th:block th:if="${signBook.workflowSteps.get(0).recipients.size() > 0}">
-                                <button title="Lancer la procédure de signature" type="button" class="mb-1 col-12 btn btn-success text-left" data-toggle="modal" data-target="#sendModal">
-                                    <i class="fas fa-paper-plane " aria-hidden="true"></i> <span class="sidebar-label">Lancer la procedure de signature</span>
-                                </button>
-                            </th:block>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
@@ -37,17 +27,25 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+            <div id="addButton" class="fixed-action-btn" style="margin-bottom: 100px;"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a th:if="${signBook.getStatus() == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} && signBook.workflowSteps.size() == 0}" title="Charger un modèle de workflow" role="button" data-toggle="modal" data-target="#addWorkflow" class="btn-floating bg-primary waves-effect"><i class="fas fa-project-diagram"></i></a></li>
                     <li><a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect"><i class="fas fa-shoe-prints"></i></a></li>
-                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#fastSignRequestModal"  class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-medical"></i></a></li>
+                    <li><a title="Ajouter un document à signer" role="button" data-toggle="modal" data-target="#addDoc"  class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-medical"></i></a></li>
                 </ul>
             </div>
-            <th:block th:if="${signBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+            <div th:if="${user == signBook.createBy}">
+                <div th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <div class="fixed-action-simple-btn" th:if="${signBook.signRequests.size() > 0 && signBook.workflowSteps.size() > 0 && signBook.workflowSteps.get(0).recipients.size() > 0}">
+                        <a title="Lancer la procédure de signature" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#sendModal">
+                            <i class="fas fa-paper-plane"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                 <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
             </th:block>
             <div class="card col-lg-11 mb-1">
@@ -60,7 +58,7 @@
                                 <th>Titre</th>
                                 <th class="d-none d-md-table-cell">Date de création</th>
                                 <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th class="d-none">Action</th>
+                                <th class="">Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -69,7 +67,7 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
-                                    <td class="d-none">
+                                    <td class="">
                                          <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
@@ -78,10 +76,42 @@
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                     <i class="fas fa-eye pr-2"></i>Consulter
                                                 </a>
-                                                <a th:if="${signRequest.parentSignBook.createBy == user.eppn}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
                                                     <i class="fas fa-pencil-alt pr-2"></i>Modifier
                                                 </a>
-
+                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <script>
+                                            $(document).click(function (event) {
+                                                var clickover = $(event.target);
+                                                var _opened = $("#menu-[[${signRequest.id}]]").hasClass("collapse show");
+                                                if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
+                                                    $("#menu-toggle-[[${signRequest.id}]]").click();
+                                                }
+                                            });
+                                        </script>
+                                        <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
+                                                        <div class="modal-header">
+                                                            <h2>Attention</h2>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                                                            <button type="submit" class="btn btn-danger">Oui</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -100,7 +130,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="fastSignRequestModal" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+<div class="modal fade" id="addDoc" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -114,8 +144,8 @@
                     <div class="col-lg-12">
                         <div class="form-group">
                             <div class="custom-file">
-                                <input required aria-describedby="inputGroupFileAddon01" class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles" type="file">
-                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
+                                <input required class="custom-file-input" data-buttontext="Choisir fichier" id="inputGroupFile02" name="multipartFiles" type="file">
+                                <label class="custom-file-label" for="inputGroupFile02" id="inputGroupLabel02">
                                     Choisir un document
                                 </label>
                             </div>
@@ -190,10 +220,6 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-danger">
-                        Attention, les paramètres de la demande ne pourront plus etre changés une fois celle-ci envoyée
-                    </div>
-                    <br/>
                     <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">
@@ -207,38 +233,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="addWorkflow" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Charger un modèle de circuit</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            <form th:action="'/user/wizard/wiz4/' + ${signBook.id}" method="post">
-                <div class="modal-body">
-                        <div class="form-group">
-                            <select id="workflowId" name="workflowId" class="form-control" required>
-                                <option value="" disabled selected>Choisir un circuit de signatures existant</option>
-                                <th:block th:each="workflow : ${workflows} ">
-                                    <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
-                                </th:block>
-                            </select>
-                            <br>
-
-                        </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">
-                        Appliquer
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 <footer th:replace="fragments/footer"></footer>
 </body>
 </html>

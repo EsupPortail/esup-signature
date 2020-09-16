@@ -27,6 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/user/signbooks")
@@ -75,7 +76,10 @@ public class SignBookController {
     public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
         User authUser = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
+        List<Log> logs = new ArrayList<>();
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
+        }
         model.addAttribute("logs", logs);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
@@ -194,6 +198,8 @@ public class SignBookController {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
+            WorkflowStep workflowStep = signBookService.getCurrentWorkflowStep(signBook);
+            signRequestService.pendingSignRequest(signRequest, workflowStep.getSignType(), workflowStep.getAllSignToComplete());
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }
@@ -228,7 +234,6 @@ public class SignBookController {
                           @RequestParam(value = "comment", required = false) String comment,
                           HttpServletRequest request) {
         SignBook signBook = signBookRepository.findById(id).get();
-        signBookService.nextWorkFlowStep(signBook);
         signBookService.pendingSignBook(signBook, user);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }

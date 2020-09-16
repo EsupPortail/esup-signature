@@ -288,7 +288,7 @@ public class SignBookService {
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
-            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete(), user);
+            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
             if(!emailSended) {
                 signRequestService.sendEmailAlerts(signRequest, user);
                 emailSended = true;

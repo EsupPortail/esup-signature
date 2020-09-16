@@ -76,19 +76,12 @@ export class GlobalUi {
         $('#returnButton').removeClass('d-none');
     }
 
-    disableBodyScroll() {
-        //$('body').addClass('disable-body-scrollbar');
-    }
-
-    enableBodyScroll() {
-        //$('body').removeClass('disable-body-scrollbar');
-    }
-
     changeFileInputName(e) {
         let inputFile = e.target;
         let fileName = inputFile.files[0].name;
         let label = $('label[for='+  inputFile.id  +']');
         label[0].innerHTML = fileName;
+        console.info("change name to " + fileName);
     }
 
     scrollToHash() {

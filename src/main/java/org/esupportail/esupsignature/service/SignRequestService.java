@@ -191,7 +191,7 @@ public class SignRequestService {
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
-		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande", "SUCCESS");
+		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande " + title, "SUCCESS");
 		return signRequest;
 	}
 
@@ -311,7 +311,7 @@ public class SignRequestService {
 		signRequest.getRecipients().add(recipient);
 	}
 
-	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete, User user) {
+	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			signRequest.setSignType(signType);
 			signRequest.setAllSignToComplete(allSignToComplete);
@@ -757,9 +757,9 @@ public class SignRequestService {
 		return recipientService.needSign(signRequest.getRecipients(), user);
 	}
 
-	public boolean preAuthorizeOwner(Long id, User authUser) {
+	public boolean preAuthorizeOwner(Long id, User user) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		return signRequest.getCreateBy().equals(authUser);
+		return signRequest.getCreateBy().equals(user);
 	}
 
 	public boolean preAuthorizeView(Long id, User user, User authUser) {

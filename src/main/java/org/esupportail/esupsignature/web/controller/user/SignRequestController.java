@@ -375,19 +375,17 @@ public class SignRequestController {
         return new String[]{"ok"};
     }
 
-    //@PreAuthorize("@signRequestService.preAuthorizeOwner(#id)")
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
-        //User user = userService.getCurrentUser();
         Document document = documentRepository.findById(id).get();
         SignRequest signRequest = signRequestRepository.findById(document.getParentId()).get();
-        if(signRequest.getCreateBy().equals(user.getEppn())) {
+        if(signRequest.getCreateBy().equals(user)) {
             signRequest.getOriginalDocuments().remove(document);
         } else {
-            result.put("error", "Not autorized");
+            result.put("error", "Non autorisé");
         }
         return result.toString();
     }
@@ -418,7 +416,7 @@ public class SignRequestController {
                 }
                 signRequestService.addRecipients(signRequest, user);
 
-                signRequestService.pendingSignRequest(signRequest, signType, false, user);
+                signRequestService.pendingSignRequest(signRequest, signType, false);
                 return "redirect:/user/signrequests/" + signRequest.getId();
             } else {
                 redirectAttributes.addFlashAttribute("messageError", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());

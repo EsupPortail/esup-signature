@@ -7,7 +7,7 @@
     globalUi.hideSideBar();
     globalUi.disableSideBarButton();
     import {default as FilesInput} from "/js/modules/filesInput.js";
-    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], false, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -53,12 +53,6 @@
             <div class="card mb-1 col-lg-8 mx-auto" th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
                 <div class="card-body">
                     <h5>Liste des documents originaux</h5>
-                    <th:block th:if="${user == signRequest.createBy && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
-                        <button th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && user == signRequest.createBy && signRequest.signedDocuments.size() == 0}" id="browseBtn" type="button" class="mr-2 btn btn-sm btn-primary float-right"
-                                onclick="$('.clickable').click();">
-                            <i class="fas fa-plus" aria-hidden="true"></i> Ajouter un document
-                        </button>
-                    </th:block>
                     <div th:if="${user == signRequest.createBy}">
                         <div th:if="${(signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed)}">
                             <div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
