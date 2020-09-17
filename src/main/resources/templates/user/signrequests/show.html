@@ -9,10 +9,11 @@
 <header th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
     import globalUi from "/static/js/main.js";
-    globalUi.showSideBar();
-    globalUi.disableSideBarButton();
     import {Nexu} from "/static/js/modules/nexu.js";
     import {SignUi} from "/static/js/modules/signUi.js";
+
+    globalUi.showSideBar();
+    globalUi.disableSideBarButton();
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
     if(signable && currentSignType === 'nexuSign') {

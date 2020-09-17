@@ -47,7 +47,7 @@
                                                     <img class="thumbnail" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
                                                 </td>
                                                 <td>
-                                                    <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                    <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </a>
                                                 </td>

@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -121,43 +122,11 @@ public class SignRequestController {
     @GetMapping
     public String list(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                       @RequestParam(value = "signBookId", required = false) Long signBookId,
-                       @RequestParam(value = "messageError", required = false) String messageError,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        model.addAttribute("statusFilter", statusFilter);
         if(user.equals(authUser) || userService.getSignShare(user, authUser)) {
             List<SignRequest> signRequests;
-            if (statusFilter != null) {
-                if (statusFilter.equals("tosign")) {
-                    signRequests = signRequestService.getToSignRequests(user);
-                } else if (statusFilter.equals("signedByMe")) {
-                    signRequests = signRequestService.getSignRequestsSignedByUser(user);
-                } else if (statusFilter.equals("refusedByMe")) {
-                    signRequests = signRequestService.getSignRequestsRefusedByUser(user);
-                } else if (statusFilter.equals("sharedSign")) {
-                    signRequests = signRequestService.getSignRequestsSharedSign(user);
-                } else {
-                    signRequests = signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.valueOf(statusFilter));
-                }
-                model.addAttribute("statusFilter", statusFilter);
-            } else {
-                signRequests = signRequestRepository.findByCreateBy(user);
-                for(SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-                    if(!signRequests.contains(signRequest)) {
-                        signRequests.add(signRequest);
-                    }
-                }
-                for(SignRequest signRequest : signRequestService.getSignRequestsSignedByUser(user)) {
-                    if(!signRequests.contains(signRequest)) {
-                        signRequests.add(signRequest);
-                    }
-                }
-                for(SignRequest signRequest : signRequestService.getSignRequestsRefusedByUser(user)) {
-                    if(!signRequests.contains(signRequest)) {
-                        signRequests.add(signRequest);
-                    }
-                }
-            }
-
+            signRequests = signRequestService.getSignRequests(user, statusFilter);
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
             if (user.getKeystore() != null) {
                 model.addAttribute("keystore", user.getKeystore().getFileName());
@@ -165,14 +134,20 @@ public class SignRequestController {
         } else {
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(new ArrayList<>(), pageable));
         }
-
-        model.addAttribute("mydocs", "active");
-        model.addAttribute("signBookId", signBookId);
         model.addAttribute("statuses", SignRequestStatus.values());
-        model.addAttribute("messageError", messageError);
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
         return "user/signrequests/list";
+    }
+
+    @GetMapping(value = "/list-ws")
+    @ResponseBody
+    public List<SignRequest> listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
+                                    @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                                    @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable) {
+        List<SignRequest> signRequests = signRequestService.getSignRequests(user, statusFilter);
+        Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
+        return signRequestPage.getContent();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #user)")

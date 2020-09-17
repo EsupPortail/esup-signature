@@ -128,6 +128,41 @@ public class SignRequestService {
 
 	private String step = "";
 
+	public List<SignRequest> getSignRequests(User user, String statusFilter) {
+		List<SignRequest> signRequests;
+		if (statusFilter != null) {
+			if (statusFilter.equals("tosign")) {
+				signRequests = getToSignRequests(user);
+			} else if (statusFilter.equals("signedByMe")) {
+				signRequests = getSignRequestsSignedByUser(user);
+			} else if (statusFilter.equals("refusedByMe")) {
+				signRequests = getSignRequestsRefusedByUser(user);
+			} else if (statusFilter.equals("sharedSign")) {
+				signRequests = getSignRequestsSharedSign(user);
+			} else {
+				signRequests = signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.valueOf(statusFilter));
+			}
+		} else {
+			signRequests = signRequestRepository.findByCreateBy(user);
+			for(SignRequest signRequest : getToSignRequests(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsSignedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsRefusedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+		}
+		return signRequests;
+	}
+
 	public List<SignRequest> getToSignRequests(User user) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUser(user);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
@@ -935,84 +970,6 @@ public class SignRequestService {
 			}
 		}
 		return null;
-	}
-
-	public String computeShowView(Long id, User user, Boolean frameMode, Model model) throws IOException, EsupSignatureException {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if (signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
-				&& needToSign(signRequest, user)
-		) {
-			signRequest.setSignable(true);
-			model.addAttribute("currentSignType", getCurrentSignType(signRequest));
-			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
-			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
-			model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
-		}
-		if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
-			Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
-			if(data != null && data.getForm() != null) {
-				List<Field> fields = data.getForm().getFields();
-				List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
-				for (Field field : prefilledFields) {
-					if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
-						field.setDefaultValue("");
-					}
-					if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
-						field.setDefaultValue(data.getDatas().get(field.getName()));
-					}
-				}
-				model.addAttribute("fields", prefilledFields);
-			}
-		}
-		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
-			List<Document> toSignDocuments = getToSignDocuments(signRequest);
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				Document toDisplayDocument = getToSignDocuments(signRequest).get(0);
-				if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-					if(checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
-						signRequest.setSignable(false);
-						model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
-					}
-					List<String> signImages = new ArrayList<>();
-					for(Document signImage : user.getSignImages()) {
-						signImages.add(fileService.getBase64Image(signImage));
-					}
-					model.addAttribute("signImages", signImages);
-					int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
-					model.addAttribute("signWidth", size[0]);
-					model.addAttribute("signHeight", size[1]);
-				} else {
-					if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
-						model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature");
-						signRequest.setSignable(false);
-					}
-				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
-			} else {
-				if(signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign))) {
-					signRequest.setSignable(true);
-				}
-				model.addAttribute("documentType", "other");
-			}
-
-		} else if (getLastSignedFsFile(signRequest) != null) {
-			FsFile fsFile = getLastSignedFsFile(signRequest);
-			model.addAttribute("documentType", fileService.getExtension(fsFile.getName()));
-		}
-
-		List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
-		model.addAttribute("refuseLogs", refuseLogs);
-		model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-		List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
-		model.addAttribute("globalPostits", globalPostits);
-		model.addAttribute("signRequest", signRequest);
-		setStep("");
-		if (frameMode != null && frameMode) {
-			return "user/signrequests/show-frame";
-		} else {
-			return "user/signrequests/show";
-		}
 	}
 
 }

@@ -65,6 +65,7 @@ public class SignBook {
 
     private String exportedDocumentURI;
 
+    @JsonIgnore
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();

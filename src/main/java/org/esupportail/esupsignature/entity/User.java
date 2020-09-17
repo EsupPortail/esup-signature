@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
@@ -32,6 +33,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
@@ -41,7 +43,8 @@ public class User {
     
     @Transient
     private String signImageBase64;
-    
+
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 

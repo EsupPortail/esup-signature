@@ -5,8 +5,12 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import globalUi from "/static/js/main.js";
+    import ListSignRequest from "/static/js/modules/listSignRequest.js";
+
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
+
+    new ListSignRequest();
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
