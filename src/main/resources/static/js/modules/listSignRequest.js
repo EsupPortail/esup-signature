@@ -1,12 +1,18 @@
+import {WheelDetector} from "./utils/WheelDetector.js";
+
 export default class ListSignRequest {
 
     constructor() {
+        this.wheelDetector = new WheelDetector();
         this.initListeners();
     }
 
     initListeners() {
-        window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
-        window.addEventListener("wheel", e => this.computeWhellEvent(e));
+        this.wheelDetector.addEventListener("pagebottom", e => this.addToPage());
+    }
+
+    addToPage() {
+        console.info("Add to page");
     }
 
 }

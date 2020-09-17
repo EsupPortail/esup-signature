@@ -1,6 +1,7 @@
 import {PdfViewer} from "./pdfViewer.js";
 import {SignPosition} from "./signPosition.js";
-import {SignRequestParams} from "../prototypes/signRequestParams.js";
+import {SignRequestParams} from "../prototypes/SignRequestParams.js";
+import {WheelDetector} from "./utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
@@ -23,6 +24,7 @@ export class WorkspacePdf {
         //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'sign';
         this.xmlHttpMain = new XMLHttpRequest();
+        this.wheelDetector = new WheelDetector();
         this.initListeners();
     }
 
@@ -46,8 +48,11 @@ export class WorkspacePdf {
             }
             document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
         }
-        window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
-        window.addEventListener("wheel", e => this.computeWhellEvent(e));
+
+        this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+        this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
+        this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
+        this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
 
         this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
 
@@ -357,46 +362,19 @@ export class WorkspacePdf {
         this.hideAllPostits();
     }
 
-
-    computeWhellEvent(event) {
-        console.debug("wheel event");
-        if(event.ctrlKey === true) {
-            if (this.detectMouseWheelDirection(event) === 'down'){
-                console.debug("wheel down zoom out");
-                this.pdfViewer.zoomOut();
-            } else {
-                console.debug("wheel up zoom in");
-                this.pdfViewer.zoomIn();
-            }
-        } else {
-            if (this.detectMouseWheelDirection(event) === 'down' && $(window).scrollTop() + $(window).height() === $(document).height()) {
-                console.debug("wheel down next page");
-                if(this.pdfViewer.pageNum < this.pdfViewer.pdfDoc.numPages) {
-                    this.pdfViewer.nextPage();
-                }
-            } else if (this.detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {
-                console.debug("wheel up prev page");
-                if(this.pdfViewer.pageNum > 1) {
-                    this.pdfViewer.prevPage();
-                    window.scrollTo(0, document.body.scrollHeight);
-                }
-            }
+    pageTop() {
+        console.debug("prev page");
+        if(this.pdfViewer.pageNum > 1) {
+            this.pdfViewer.prevPage();
+            window.scrollTo(0, document.body.scrollHeight);
         }
     }
 
-    detectMouseWheelDirection(e) {
-        let delta = null,
-            direction = false;
-        let e_delta = (e.deltaY || -e.wheelDelta || e.detail);
-        if ( e_delta ) {
-            delta = e_delta  / 60;
-        } else if ( e.detail ) {
-            delta = -e.detail / 2;
+    pageBottom() {
+        console.debug("wheel down next page");
+        if(this.pdfViewer.pageNum < this.pdfViewer.pdfDoc.numPages) {
+            this.pdfViewer.nextPage();
         }
-        if ( delta !== null ) {
-            direction = delta > 0 ? 'down' : 'up';
-        }
-        return direction;
     }
 
     hideAllPostits() {

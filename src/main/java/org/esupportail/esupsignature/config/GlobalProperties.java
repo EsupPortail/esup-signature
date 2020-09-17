@@ -17,6 +17,7 @@ public class GlobalProperties {
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
+    private Boolean enableSplash = false;
     private String version = "";
 
     public String getRootUrl() {
@@ -97,6 +98,14 @@ public class GlobalProperties {
 
     public void setEnableSu(Boolean enableSu) {
         this.enableSu = enableSu;
+    }
+
+    public Boolean getEnableSplash() {
+        return enableSplash;
+    }
+
+    public void setEnableSplash(Boolean enableSplash) {
+        this.enableSplash = enableSplash;
     }
 
     public String getVersion() {

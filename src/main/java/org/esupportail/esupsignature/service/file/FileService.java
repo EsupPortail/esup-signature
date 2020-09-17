@@ -6,8 +6,12 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -28,6 +32,20 @@ import java.util.Scanner;
 public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+
+	public String readFileToString(String path) {
+		ResourceLoader resourceLoader = new DefaultResourceLoader();
+		Resource resource = resourceLoader.getResource(path);
+		return asString(resource);
+	}
+
+	public String asString(Resource resource) {
+		try (Reader reader = new InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+			return FileCopyUtils.copyToString(reader);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 
 	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
 		File file = getTempFile(name);

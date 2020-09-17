@@ -30,6 +30,8 @@ public class User {
     @Column(unique=true)
     private String email;
 
+    private Boolean splash = false;
+
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
@@ -116,6 +118,14 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getSplash() {
+        return splash;
+    }
+
+    public void setSplash(Boolean splash) {
+        this.splash = splash;
     }
 
     public UserType getUserType() {

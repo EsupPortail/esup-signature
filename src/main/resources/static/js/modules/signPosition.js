@@ -1,8 +1,10 @@
-import {SignRequestParams} from "../prototypes/signRequestParams.js";
+import {SignRequestParams} from "../prototypes/SignRequestParams.js";
+import {EventFactory} from "./utils/EventFactory.js";
 
-export class SignPosition {
+export class SignPosition extends EventFactory {
 
     constructor(xPos, yPos, signWidth, signHeight, signPageNumber, signImages, userName) {
+        super();
         console.info("Starting sign position tools");
         this.currentScale = 1;
         this.signScale = 1;
@@ -406,34 +408,5 @@ export class SignPosition {
             document.getElementById("textName").remove();
         }
     }
-
-    addEventListener(name, handler) {
-        if (this.events.hasOwnProperty(name))
-            this.events[name].push(handler);
-        else
-            this.events[name] = [handler];
-    };
-
-    removeEventListener(name, handler) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        let index = this.events[name].indexOf(handler);
-        if (index !== -1)
-            this.events[name].splice(index, 1);
-    };
-
-    fireEvent(name, args) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        if (!args || !args.length)
-            args = [];
-
-        let evs = this.events[name], l = evs.length;
-        for (let i = 0; i < l; i++) {
-            evs[i].apply(null, args);
-        }
-    };
 
 }

@@ -9,6 +9,7 @@ global:
 #    archive-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat/Archive/dev
 #    delay-before-cleaning : 0
     enable-su: true
+    enable-splash: true
     version: '@project.version@'
 
 tomcat:

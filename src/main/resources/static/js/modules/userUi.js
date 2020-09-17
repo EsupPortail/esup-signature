@@ -1,3 +1,5 @@
+import {EventFactory} from "./utils/EventFactory.js";
+
 export default class UserUi {
 
     constructor(lastSign, signWidth, signHeight) {
@@ -114,9 +116,10 @@ export class UserSignaturePad {
 }
 
 
-export class UserSignatureCrop {
+export class UserSignatureCrop extends EventFactory {
 
     constructor() {
+        super();
         console.info("Starting user signature crop tool");
         this.cropDiv = document.getElementById('crop-div');
         this.zoomLevel = 1;
@@ -214,34 +217,5 @@ export class UserSignatureCrop {
             }
         }
     }
-
-    addEventListener(name, handler) {
-        if (this.events.hasOwnProperty(name))
-            this.events[name].push(handler);
-        else
-            this.events[name] = [handler];
-    };
-
-    removeEventListener(name, handler) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        let index = this.events[name].indexOf(handler);
-        if (index !== -1)
-            this.events[name].splice(index, 1);
-    };
-
-    fireEvent(name, args) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        if (!args || !args.length)
-            args = [];
-
-        let evs = this.events[name], l = evs.length;
-        for (let i = 0; i < l; i++) {
-            evs[i].apply(null, args);
-        }
-    };
 
 }

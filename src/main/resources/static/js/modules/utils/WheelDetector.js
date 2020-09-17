@@ -1,7 +1,6 @@
-import EventFactory from "./EventFactory.js";
+import {EventFactory} from "./EventFactory.js";
 
-export default class WheelDetection extends EventFactory {
-
+export class WheelDetector extends EventFactory {
 
     constructor() {
         super();

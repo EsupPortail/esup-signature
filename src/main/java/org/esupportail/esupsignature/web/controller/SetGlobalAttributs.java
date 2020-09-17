@@ -4,12 +4,12 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
-import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +21,9 @@ public class SetGlobalAttributs {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FileService fileService;
 
     @ModelAttribute(value = "user", binding = false)
     public User getUser() {
@@ -35,12 +38,18 @@ public class SetGlobalAttributs {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
         List<Message> messages = new ArrayList<>();
-        if(!authUser.getEppn().equals("system") && user.equals(authUser)) {
+        if((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash()) {
+            Message splashMessage = new Message();
+            splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
+            splashMessage.setId(0L);
+            messages.add(splashMessage);
+        } else if(!authUser.getEppn().equals("system") && user.equals(authUser)) {
             messages.addAll(userService.getMessages(authUser));
         }
+        model.addAttribute("messageNews", messages);
         model.addAttribute("suUsers", userService.getSuUsers(authUser));
         model.addAttribute("globalProperties", this.globalProperties);
-        model.addAttribute("messageNews", messages);
+
     }
 
 }

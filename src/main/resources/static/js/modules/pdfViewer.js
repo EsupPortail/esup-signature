@@ -1,8 +1,10 @@
 import {EventBus} from "../customs/ui_utils.js";
+import {EventFactory} from "./utils/EventFactory.js";
 
-export class PdfViewer {
+export class PdfViewer extends EventFactory {
 
     constructor(url, signable, currentStepNumber) {
+        super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
         this.pdfPageView = null;
@@ -406,7 +408,6 @@ export class PdfViewer {
     renderPdfForm(items) {
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
-        let visaFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
             if (items[i].fieldType === undefined) {
@@ -510,37 +511,5 @@ export class PdfViewer {
         this.pdfPageView.eventBus.dispatch('print', {
             source: self
         });
-
     }
-
-    addEventListener(name, handler) {
-        if (this.events.hasOwnProperty(name))
-            this.events[name].push(handler);
-        else
-            this.events[name] = [handler];
-    };
-
-    removeEventListener(name, handler) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        let index = this.events[name].indexOf(handler);
-        if (index !== -1)
-            this.events[name].splice(index, 1);
-    };
-
-    fireEvent(name, args) {
-        if (!this.events.hasOwnProperty(name))
-            return;
-
-        if (!args || !args.length)
-            args = [];
-
-        let evs = this.events[name], l = evs.length;
-        for (let i = 0; i < l; i++) {
-            evs[i].apply(null, args);
-        }
-    };
-
-
 }
