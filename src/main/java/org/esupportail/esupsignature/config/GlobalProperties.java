@@ -17,6 +17,7 @@ public class GlobalProperties {
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
+    private String version = "";
 
     public String getRootUrl() {
         return rootUrl;
@@ -96,5 +97,13 @@ public class GlobalProperties {
 
     public void setEnableSu(Boolean enableSu) {
         this.enableSu = enableSu;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

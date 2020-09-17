@@ -186,7 +186,7 @@ export class GlobalUi {
                 select: '#' + selectName,
                 showSearch: false,
                 searchHighlight: false,
-                hideSelectedOption: true,
+                hideSelectedOption: false,
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)
