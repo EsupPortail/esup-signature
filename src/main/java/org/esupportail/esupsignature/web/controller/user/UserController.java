@@ -216,15 +216,17 @@ public class UserController {
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	@ResponseBody
-	public String markAsRead(@ModelAttribute("authUser") User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
+	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
     	if(id == 0) {
-    		authUser.setSplash(true);
+    		User user = userRepository.findByEppn(authUser.getEppn()).get(0);
+    		user.setSplash(true);
 		} else {
 			userService.disableMessage(authUser, id);
 		}
-		return "ok";
+
+		String referer = httpServletRequest.getHeader("Referer");
+		return "redirect:"+ referer;
 	}
 
 }

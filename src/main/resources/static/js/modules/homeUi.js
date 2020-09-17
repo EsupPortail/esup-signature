@@ -5,7 +5,6 @@ export class HomeUi {
         this.workflowFilterButton = $('#workflowFilterButton');
         this.formFilterButton = $('#formFilterButton');
         this.globalFilterButton = $('#globalFilterButton');
-        this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.noFilterButton = $('#noFilterButton');
         this.menuToggled = false;
         this.initListeners();
@@ -18,12 +17,6 @@ export class HomeUi {
         this.globalFilterButton.on('click', e => this.globalWorkflows(e));
         this.formFilterButton.on('click', e => this.filterForms(e));
         this.noFilterButton.on('click', e => this.filterNothing(e));
-        this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
-    }
-
-    listenMarkAsReadButton(btn) {
-        console.log("listen to" + btn);
-        $(btn).on('click', e => this.markAsRead(e));
     }
 
     toggleNewMenu() {
@@ -102,9 +95,4 @@ export class HomeUi {
         }
     }
 
-    markAsRead(e) {
-        let id = e.target.id.split('_')[1];
-        console.log("mark as read message " + id);
-        $.get("/user/users/mark-as-read/" + id);
-    }
 }

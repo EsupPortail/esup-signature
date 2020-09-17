@@ -14,11 +14,13 @@ export class GlobalUi {
         this.clickableRow = $(".clickable-row");
         this.clickableTd = $(".clickable-td");
         this.autoHide = $('.auto-hide');
+        this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.initListeners();
         this.initSideBar();
     }
 
     initListeners() {
+        this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
 
         $("#closeUserInfo").on('click', function() {
@@ -47,6 +49,17 @@ export class GlobalUi {
 
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
+    }
+
+    listenMarkAsReadButton(btn) {
+        console.log("listen to" + btn);
+        $(btn).on('click', e => this.markAsRead(e));
+    }
+
+    markAsRead(e) {
+        let id = e.target.id.split('_')[1];
+        console.log("mark as read message " + id);
+        $.get("/user/users/mark-as-read/" + id);
     }
 
     hideMenus(event) {
