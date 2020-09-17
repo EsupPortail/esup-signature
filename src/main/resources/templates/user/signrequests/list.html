@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.thymeleaf.org/spring-data">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
+    import globalUi from "/static/js/main.js";
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
 </script>

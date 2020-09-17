@@ -8,11 +8,11 @@
 <body>
 <header th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
+    import globalUi from "/static/js/main.js";
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
-    import {Nexu} from "/js/modules/nexu.js";
-    import {SignUi} from "/js/modules/signUi.js";
+    import {Nexu} from "/static/js/modules/nexu.js";
+    import {SignUi} from "/static/js/modules/signUi.js";
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
     if(signable && currentSignType === 'nexuSign') {
@@ -156,7 +156,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from "/js/modules/filesInput.js";
+                    import {default as FilesInput} from "/static/js/modules/filesInput.js";
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                     new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                 </script>

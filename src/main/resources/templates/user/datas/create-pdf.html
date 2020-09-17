@@ -6,12 +6,12 @@
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
+    import globalUi from "/static/js/main.js";
     $(document).ready(function () {
         globalUi.hideSideBar();
         globalUi.disableSideBarButton();
     });
-    import {CreateDataUi} from "/js/modules/createDataUi.js";
+    import {CreateDataUi} from "/static/js/modules/createDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
 </script>
 <body>
@@ -161,7 +161,7 @@
                             </th:block>
                         </select>
                         <script th:inline="javascript" type="module">
-                            import {default as SelectUser} from "/js/modules/selectUser.js";
+                            import {default as SelectUser} from "/static/js/modules/selectUser.js";
                             new SelectUser("targetEmailsSelect");
                         </script>
                     </div>

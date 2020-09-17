@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FilesInput} from "/js/modules/filesInput.js";
+    import {default as FilesInput} from "/static/js/modules/filesInput.js";
     new FilesInput($("#multipartFiles"), [[${workflow != null ? workflow.name : name}]], [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
 </script>
 <body>

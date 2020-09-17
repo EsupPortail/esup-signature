@@ -1,7 +1,7 @@
 export default class SelectUser {
 
     constructor(selectName, limit) {
-        console.debug("init slim-select users : " + selectName);
+        console.debug("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         let valuePrefix = "";

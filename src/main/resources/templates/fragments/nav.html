@@ -347,7 +347,7 @@
                             </select>
                         </div>
                         <script th:inline="javascript" type="module">
-                            import {default as FilesInputSimple} from "/js/modules/filesInputSimple.js";
+                            import {default as FilesInputSimple} from "/static/js/modules/filesInputSimple.js";
                             new FilesInputSimple($("#inputGroupFile02"), "Demande Simple", "inputGroupFile02", null, true, [[${_csrf.parameterName}]], [[${_csrf.token}]], null);
                         </script>
                         <div class="form-group" id="_allSignToComplete_div_id">

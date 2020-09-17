@@ -162,7 +162,7 @@ export class GlobalUi {
     }
 
     checkSelectUser() {
-        $(".select-users").each(function () {
+        $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
             new SelectUser(selectId);
@@ -170,7 +170,7 @@ export class GlobalUi {
     }
 
     checkSlimSelect() {
-        $(".slim-select").each(function () {
+        $("select[class='slim-select']").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select for : " + selectName);
             new SlimSelect({
@@ -179,7 +179,7 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $(".slim-select-simple").each(function () {
+        $("select[class='slim-select-simple']").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             new SlimSelect({

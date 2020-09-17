@@ -17,6 +17,7 @@ export class SignUi {
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
+        this.signModal = $('#signModal');
         this.initListeners();
     }
 
@@ -32,7 +33,7 @@ export class SignUi {
     }
 
     launchSign() {
-        $('#signModal').modal('hide');
+        this.signModal.modal('hide');
         this.percent = 0;
         let inputs = this.signForm.getElementsByTagName("input");
         let good = true;
@@ -48,7 +49,7 @@ export class SignUi {
             this.wait.modal({backdrop: 'static', keyboard: false});
             this.submitSignRequest();
         } else {
-            $('#signModal').on('hidden.bs.modal', function () {
+            this.signModal.on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();
             })
         }
