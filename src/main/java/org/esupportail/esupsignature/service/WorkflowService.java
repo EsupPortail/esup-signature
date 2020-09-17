@@ -164,25 +164,27 @@ public class WorkflowService {
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
-
+                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
+                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                        String documentName = fsFile.getName();
+                        if(metadatas.get("Title") != null && !metadatas.get("Creator").isEmpty()) {
+                            documentName = metadatas.get("Creator");
+                        }
                         SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName() + "_" + nbImportedFiles, user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                        SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
+                        SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
                         if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                             user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                             user.setIp("127.0.0.1");
                         }
-
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
-                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);
                         signBook.getSignRequests().add(signRequest);
 
                         if(workflow.getScanPdfMetadatas()) {
-                            Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
                             if(creator != null) {
