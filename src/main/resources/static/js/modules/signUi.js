@@ -28,6 +28,7 @@ export class SignUi {
                 $("#launchSignButton").click();
             }
         });
+        $("#copyButton").on('click', e => this.copy());
     }
 
     launchSign() {

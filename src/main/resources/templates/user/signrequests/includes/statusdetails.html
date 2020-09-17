@@ -73,7 +73,7 @@
 	<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
 		<div class="alert alert-dark mb-1">
 			<p>Le document signé a été exporté vers son emplacement définitif :</p>
-			<button title="Copier le lien" class="btn btn-light btn-sm" onclick="copy();"><i class="fas fa-copy"></i> Copier le lien</button>
+			<button id="copyButton" title="Copier le lien" class="btn btn-light btn-sm"><i class="fas fa-copy"></i> Copier le lien</button>
 		</div>
 	</div>
 </div>
