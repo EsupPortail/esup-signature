@@ -64,6 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf().ignoringAntMatchers("/ws/**");
 		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
+		http.csrf().ignoringAntMatchers("/log/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}

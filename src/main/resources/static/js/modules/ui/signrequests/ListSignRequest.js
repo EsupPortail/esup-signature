@@ -14,7 +14,13 @@ export default class ListSignRequest {
 
     addToPage() {
         console.info("Add to page");
+        $.get("/user/signrequests/list-ws?page=2", function( data ) {
+            console.log(data);
+            $('#signRequestTable tr:last').after('' +
+                '<tr>data.</tr><tr>...</tr>' +
+                '');
 
+        });
     }
 
 }

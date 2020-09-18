@@ -38,6 +38,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
@@ -115,6 +117,10 @@ public class SignRequestController {
 
     @Resource
     private OtpService otpService;
+
+    @Resource
+    private TemplateEngine templateEngine;
+
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -142,12 +148,15 @@ public class SignRequestController {
 
     @GetMapping(value = "/list-ws")
     @ResponseBody
-    public List<SignRequest> listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
+    public String listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                                     @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                                    @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable) {
+                                    @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         List<SignRequest> signRequests = signRequestService.getSignRequests(user, statusFilter);
         Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
-        return signRequestPage.getContent();
+        final Context ctx = new Context(Locale.FRENCH);
+        model.addAttribute("signRequests", signRequestPage);
+        ctx.setVariables(model.asMap());
+        return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #user)")
