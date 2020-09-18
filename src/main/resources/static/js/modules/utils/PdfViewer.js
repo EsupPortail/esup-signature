@@ -1,5 +1,5 @@
-import {EventBus} from "../customs/ui_utils.js";
-import {EventFactory} from "./utils/EventFactory.js";
+import {EventBus} from "../../customs/ui_utils.js";
+import {EventFactory} from "./EventFactory.js";
 
 export class PdfViewer extends EventFactory {
 

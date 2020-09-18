@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:gitlab" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9dfc6545-ebf3-43ab-bcf4-d93af9ae7770" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/js.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/ui/users/UserSignatureCrop.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/ui/users/UserSignaturePad.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/modules/ui/users/UserUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/createDataUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/datas/CreateDataUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/filesInput.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils/FilesInput.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/filesInputSimple.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils/FilesInputSimple.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/formUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/forms/FormUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/globalUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/GlobalUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/homeUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/HomeUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/listSignRequest.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/signrequests/ListSignRequest.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/nexu.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/signrequests/Nexu.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/pdfViewer.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils/PdfViewer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/selectUser.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/utils/SelectUser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/shareUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/users/ShareUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/signPosition.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/signrequests/SignPosition.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/signUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/signrequests/SignUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/step.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/userUi.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/workflowUi.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/workflows/WorkflowUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/workspaceOther.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/workspacePdf.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/ui/signrequests/WorkspacePdf.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/admin/signrequests/show.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/admin/signrequests/show.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/admin/workflows/show.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/admin/workflows/show.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/admin/workflows/update.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/admin/workflows/update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/fragments/nav.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/fragments/nav.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/datas/create-pdf.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/datas/create-pdf.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/home/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/home/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signbooks/update.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signbooks/update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/cards/recipientscard.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/cards/recipientscard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/nexu-signature-process.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/nexu-signature-process.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/show-frame.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/show-frame.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/show.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/show.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/signrequests/update.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/signrequests/update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/users/shares.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/users/shares.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/users/update.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/users/update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/wizard/wiz2.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/wizard/wiz2.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../templates/user/wizard/wiz4.html" beforeDir="false" afterPath="$PROJECT_DIR$/../../templates/user/wizard/wiz4.html" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../../.." />
+  </component>
+  <component name="ProjectId" id="1hfz7LMIM9nlgGYzxtrbNMb4t6z" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="RunManager" selected="JavaScript Debug.Chrome">
+    <configuration name="Unnamed" type="FirefoxRemoteDebugType" nameIsGenerated="true">
+      <method v="2" />
+    </configuration>
+    <configuration name="Chrome" type="JavascriptDebugType" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://dsi-7.univ-rouen.fr">
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Firefox Remote.Unnamed" />
+      <item itemvalue="JavaScript Debug.Chrome" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9dfc6545-ebf3-43ab-bcf4-d93af9ae7770" name="Default Changelist" comment="" />
+      <created>1600416765427</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1600416765427</updated>
+      <workItem from="1600416766536" duration="513000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="2090" y="344" width="461" height="452" key="#Web_Browsers" timestamp="1600416855840">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2090" y="344" width="461" height="452" key="#Web_Browsers/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416855840" />
+    <state x="1784" y="211" width="1084" height="711" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1600416874546">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="1784" y="211" width="1084" height="711" key="#com.intellij.execution.impl.EditConfigurationsDialog/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416874546" />
+    <state width="1897" height="340" key="GridCell.Tab.0.bottom" timestamp="1600416899202">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="340" key="GridCell.Tab.0.bottom/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416899202" />
+    <state width="1897" height="340" key="GridCell.Tab.0.center" timestamp="1600416899202">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="340" key="GridCell.Tab.0.center/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416899202" />
+    <state width="1897" height="340" key="GridCell.Tab.0.left" timestamp="1600416899202">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="340" key="GridCell.Tab.0.left/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416899202" />
+    <state width="1897" height="340" key="GridCell.Tab.0.right" timestamp="1600416899202">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state width="1897" height="340" key="GridCell.Tab.0.right/1366.0.1920.1080/0.27.1366.741@1366.0.1920.1080" timestamp="1600416899202" />
+  </component>
+</project>

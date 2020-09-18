@@ -1,7 +1,7 @@
-import {PdfViewer} from "./pdfViewer.js";
-import {SignPosition} from "./signPosition.js";
-import {SignRequestParams} from "../prototypes/SignRequestParams.js";
-import {WheelDetector} from "./utils/WheelDetector.js";
+import {PdfViewer} from "../../utils/PdfViewer.js";
+import {SignPosition} from "./SignPosition.js";
+import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
+import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
@@ -67,14 +67,14 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + postit.id);
             postitButton.on('click', e => this.focusComment(postit));
         });
-        console.log("init listener workspace");
+        console.info("init listener workspace");
         $("#visaLaunchButton").on('click', e => this.launchSignModal(e));
         $("#signLaunchButton").on('click', e => this.launchSignModal(e));
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
     launchSignModal(e) {
-        console.log("test form");
+        console.info("test form");
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
         }

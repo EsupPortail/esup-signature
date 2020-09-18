@@ -11,7 +11,7 @@
         globalUi.hideSideBar();
         globalUi.disableSideBarButton();
     });
-    import {CreateDataUi} from "/static/js/modules/createDataUi.js";
+    import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
     new CreateDataUi([[${form.document.id}]], [[${fields}]]);
 </script>
 <body>
@@ -161,7 +161,7 @@
                             </th:block>
                         </select>
                         <script th:inline="javascript" type="module">
-                            import {default as SelectUser} from "/static/js/modules/selectUser.js";
+                            import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
                             new SelectUser("targetEmailsSelect");
                         </script>
                     </div>

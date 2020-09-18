@@ -15,6 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {GlobalUi} from "./modules/globalUi.js";
+import {GlobalUi} from "./modules/ui/GlobalUi.js";
 let globalUi = new GlobalUi();
 export default globalUi;

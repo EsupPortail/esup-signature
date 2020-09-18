@@ -1,4 +1,4 @@
-import {PdfViewer} from "./pdfViewer.js";
+import {PdfViewer} from "../../utils/PdfViewer.js";
 
 export class CreateDataUi {
 

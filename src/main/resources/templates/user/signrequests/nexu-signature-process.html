@@ -3,7 +3,7 @@
 <head th:replace="fragments/head"></head>
 <script th:src="${nexuUrl} + '/nexu.js'" ></script>
 <script th:inline="javascript" type="module">
-	import {Nexu} from "/static/js/modules/nexu.js";
+	import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
 	let	nexu = new Nexu([[${nexuUrl}]], [[${nexuVersion}]], [[${rootUrl}]], [[${addDate}]], [[${addName}]]);
 	nexu.getCertificates();
 </script>

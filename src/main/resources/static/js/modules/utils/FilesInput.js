@@ -1,4 +1,4 @@
-import {Preview} from "../prototypes/Preview.js";
+import {Preview} from "../../prototypes/Preview.js";
 
 export default class FilesInput {
 

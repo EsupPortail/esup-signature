@@ -38,7 +38,7 @@ public class SetGlobalAttributs {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
         List<Message> messages = new ArrayList<>();
-        if((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash()) {
+        if((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
             Message splashMessage = new Message();
             splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
             splashMessage.setId(0L);

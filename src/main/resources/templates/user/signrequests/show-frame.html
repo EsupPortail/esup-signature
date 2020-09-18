@@ -11,8 +11,8 @@
     import globalUi from "/static/js/main.js";
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
-    import {Nexu} from "/static/js/modules/nexu.js";
-    import {SignUi} from "/static/js/modules/signUi";
+    import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
+    import {SignUi} from "/static/js/modules/ui/signrequests/SignUi";
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
     if(signable && currentSignType === 'nexuSign') {
@@ -149,7 +149,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from "/static/js/modules/filesInput.js";
+                    import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                     new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
                 </script>

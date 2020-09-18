@@ -1,4 +1,4 @@
-import {WheelDetector} from "./utils/WheelDetector.js";
+import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export default class ListSignRequest {
 

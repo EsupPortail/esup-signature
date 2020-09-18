@@ -1,4 +1,4 @@
-import {WorkspacePdf} from "./workspacePdf.js";
+import {WorkspacePdf} from "./WorkspacePdf.js";
 
 export class SignUi {
 

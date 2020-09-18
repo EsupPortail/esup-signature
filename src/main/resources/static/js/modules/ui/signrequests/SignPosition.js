@@ -1,5 +1,5 @@
-import {SignRequestParams} from "../prototypes/SignRequestParams.js";
-import {EventFactory} from "./utils/EventFactory.js";
+import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
+import {EventFactory} from "../../utils/EventFactory.js";
 
 export class SignPosition extends EventFactory {
 
