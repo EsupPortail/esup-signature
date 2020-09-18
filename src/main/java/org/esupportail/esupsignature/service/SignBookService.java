@@ -62,7 +62,7 @@ public class SignBookService {
         return list;
     }
 
-    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) throws EsupSignatureException {
+    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
         String name = generateName(prefix, suffix, user);
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
@@ -75,7 +75,6 @@ public class SignBookService {
             return signBook;
         } else {
             return signBookRepository.findByName(name).get(0);
-//            throw new EsupSignatureException("Un circuit porte déjà le nom : " + name);
         }
     }
 
@@ -358,11 +357,11 @@ public class SignBookService {
             signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-");
             signBookName += "_";
         }
-        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
-        signBookName += user.getName().substring(0, 1).toUpperCase();
-        signBookName += "_";
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        signBookName += format.format(new Date());
+//        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
+//        signBookName += user.getName().substring(0, 1).toUpperCase();
+//        signBookName += "_";
+//        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+//        signBookName += format.format(new Date());
         if(!suffix.isEmpty()) {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");

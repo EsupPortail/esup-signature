@@ -170,7 +170,7 @@ public class WorkflowService {
                         if(metadatas.get("Title") != null && !metadatas.get("Creator").isEmpty()) {
                             documentName = metadatas.get("Creator");
                         }
-                        SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName() + "_" + nbImportedFiles, user, false);
+                        SignBook signBook = signBookService.createSignBook(workflow.getName() , documentName  + "_" + nbImportedFiles, user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
