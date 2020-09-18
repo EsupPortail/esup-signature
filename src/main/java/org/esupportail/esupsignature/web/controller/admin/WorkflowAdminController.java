@@ -133,7 +133,7 @@ public class WorkflowAdminController {
     @PostMapping(value = "/update/{id}")
     public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
-						 @RequestParam(required = false) List<String> managers) throws EsupSignatureUserException {
+						 @RequestParam(required = false) List<String> managers) {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(managers != null && managers.size() > 0) {
 			workflowToUpdate.getManagers().clear();
@@ -151,6 +151,7 @@ public class WorkflowAdminController {
 		workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
 		workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		workflowToUpdate.setDescription(workflow.getDescription());
+		workflowToUpdate.setTitle(workflow.getTitle());
 		workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
 		workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
 		workflowToUpdate.setRole(workflow.getRole());

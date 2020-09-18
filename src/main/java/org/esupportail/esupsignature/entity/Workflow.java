@@ -23,6 +23,8 @@ public class Workflow {
 	@Column(unique=true)
 	private String name;
 
+    private String title;
+
     private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -86,6 +88,14 @@ public class Workflow {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {

@@ -168,9 +168,9 @@ public class WorkflowService {
                         Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
                         String documentName = fsFile.getName();
                         if(metadatas.get("Title") != null && !metadatas.get("Creator").isEmpty()) {
-                            documentName = metadatas.get("Creator");
+                            documentName = metadatas.get("Title");
                         }
-                        SignBook signBook = signBookService.createSignBook(workflow.getName() , documentName  + "_" + nbImportedFiles, user, false);
+                        SignBook signBook = signBookService.createSignBook(workflow.getTitle() , documentName  + "_" + nbImportedFiles, user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(documentName, user);

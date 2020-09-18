@@ -355,7 +355,6 @@ public class SignBookService {
 
         if(!prefix.isEmpty()) {
             signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-");
-            signBookName += "_";
         }
 //        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
 //        signBookName += user.getName().substring(0, 1).toUpperCase();
