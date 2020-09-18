@@ -4,6 +4,7 @@ export default class ListSignRequest {
 
     constructor() {
         this.wheelDetector = new WheelDetector();
+        this.signRequestTable = $("#signRequestTable")
         this.initListeners();
     }
 
@@ -13,6 +14,7 @@ export default class ListSignRequest {
 
     addToPage() {
         console.info("Add to page");
+
     }
 
 }
