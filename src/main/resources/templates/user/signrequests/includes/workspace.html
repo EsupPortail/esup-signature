@@ -84,7 +84,7 @@
                         th:onclick="'$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"
                         th:onmouseover="'$(\'#' + ${postit.id} + '\').addClass(\'text-danger\');'"
                         th:onmouseout="'$(\'#' + ${postit.id} + '\').removeClass(\'text-danger\');'">
-                        <b th:text="${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                        <b th:text="${postit.user.firstname + ' ' + postit.user.name}"></b>
                         <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
                         <p class="postitarea" th:text="${postit.comment}"></p>
                     </li>

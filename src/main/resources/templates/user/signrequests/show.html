@@ -127,7 +127,7 @@
                     <!--                <span class="paper-clip"></span>-->
                     <!--            </div>-->
                     <div class="postit-global d-none" th:style="'position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
-                        <b th:text="'Postit de ' + ${@userService.getUserByEppn(postit.eppn).firstname + ' ' + @userService.getUserByEppn(postit.eppn).name}"></b>
+                        <b th:text="'Postit de ' + ${postit.user.firstname + ' ' + postit.user.name}"></b>
                         <button type="button" class="close">
                             <i class="fas fa-times"></i>
                         </button>

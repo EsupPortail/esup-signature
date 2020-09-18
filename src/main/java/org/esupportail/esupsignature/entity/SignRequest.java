@@ -90,6 +90,10 @@ public class SignRequest {
     @Transient
     transient Boolean signable = false;
 
+    @JsonIgnore
+    @Transient
+    transient Data data;
+
     public Long getId() {
         return id;
     }
@@ -264,6 +268,14 @@ public class SignRequest {
 
     public void setSignable(Boolean signable) {
         this.signable = signable;
+    }
+
+    public Data getData() {
+        return data;
+    }
+
+    public void setData(Data data) {
+        this.data = data;
     }
 
     public Date getEndDate() {

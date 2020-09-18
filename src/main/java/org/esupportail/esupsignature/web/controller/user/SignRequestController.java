@@ -107,6 +107,9 @@ public class SignRequestController {
     private LogRepository logRepository;
 
     @Resource
+    private LogService logService;
+
+    @Resource
     private DocumentRepository documentRepository;
 
     @Resource
@@ -244,12 +247,11 @@ public class SignRequestController {
         if(signRequestService.getTempUsers(signRequest).size() > 0) {
             isTempUsers = true;
         }
-        List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
+        List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         model.addAttribute("isTempUsers", isTempUsers);
         model.addAttribute("refuseLogs", refuseLogs);
-        model.addAttribute("postits", logRepository.findBySignRequestIdAndPageNumberIsNotNull(signRequest.getId()));
-        List<Log> globalPostits =logRepository.findBySignRequestIdAndStepNumberIsNotNull(signRequest.getId());
-        model.addAttribute("globalPostits", globalPostits);
+        model.addAttribute("postits", logService.getLogs(signRequest.getId()));
+        model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, signRequest));
         signRequestService.setStep("");

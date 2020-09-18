@@ -1,5 +1,4 @@
-<!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signRequest : ${signRequests}">
 <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
     <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
@@ -75,7 +74,7 @@
                 <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                     <i class="fas fa-download pr-2"></i> Télécharger
                 </a>
-                <a th:if="${@dataService.getDataFromSignRequest(signRequest) != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
+                <a th:if="${signRequest.data != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
                     <i class="fas fa-copy pr-2"></i> Dupliquer
                 </a>
                 <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">

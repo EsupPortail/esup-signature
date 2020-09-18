@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import globalUi from "/static/js/main.js";
@@ -10,7 +11,7 @@
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
 
-    new ListSignRequest();
+    new ListSignRequest([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -31,7 +32,7 @@
             </div>
             <div class="card col-lg-11">
                 <div id="myDocs" class="card-body">
-                    <table id="signRequestTable" class="table table-borderless table-hover mt-2">
+                    <table class="table table-borderless table-hover mt-2">
                         <thead class="thead-dark">
                         <tr>
                             <th class="w-20 d-none d-xxl-table-cell">Circuit</th>
@@ -44,7 +45,7 @@
                             <th>Actions</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="signRequestTable" >
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
@@ -120,7 +121,7 @@
                                             <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                                                 <i class="fas fa-download pr-2"></i> Télécharger
                                             </a>
-                                            <a th:if="${@dataService.getDataFromSignRequest(signRequest) != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
+                                            <a th:if="${signRequest.data != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
                                                 <i class="fas fa-copy pr-2"></i> Dupliquer
                                             </a>
                                             <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
@@ -135,7 +136,7 @@
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="command" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                                                <form id="signBookDel" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -181,7 +182,7 @@
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
+                                                <form id="signRequestDel" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -203,13 +204,6 @@
                             </tr>
                         </th:block>
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="100%">
-                                    <nav th:replace="fragments/pagination :: pagination"></nav>
-                                </td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>

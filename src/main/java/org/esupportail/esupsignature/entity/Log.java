@@ -23,6 +23,9 @@ public class Log {
 
 	private String eppn;
 
+	@Transient
+	private User user;
+
     private String eppnFor;
 
 	private String action;
@@ -70,6 +73,14 @@ public class Log {
 
 	public void setEppn(String eppn) {
         this.eppn = eppn;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getEppnFor() {
@@ -175,4 +186,5 @@ public class Log {
     public void setStepNumber(Integer stepNumber) {
         this.stepNumber = stepNumber;
     }
+
 }

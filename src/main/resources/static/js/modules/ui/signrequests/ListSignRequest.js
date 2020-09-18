@@ -2,9 +2,11 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export default class ListSignRequest {
 
-    constructor() {
+    constructor(totalElementsToDisplay) {
+        this.totalElementsToDisplay = totalElementsToDisplay;
         this.wheelDetector = new WheelDetector();
         this.signRequestTable = $("#signRequestTable")
+        this.page = 1;
         this.initListeners();
     }
 
@@ -13,14 +15,12 @@ export default class ListSignRequest {
     }
 
     addToPage() {
-        console.info("Add to page");
-        $.get("/user/signrequests/list-ws?page=2", function( data ) {
-            console.log(data);
-            $('#signRequestTable tr:last').after('' +
-                '<tr>data.</tr><tr>...</tr>' +
-                '');
-
-        });
+        if(this.totalElementsToDisplay >= this.page * 5) {
+            console.info("Add to page");
+            this.page++;
+            $.get("/user/signrequests/list-ws?page=" + this.page, function (data) {
+                $('#signRequestTable').append(data);
+            });
+        }
     }
-
 }

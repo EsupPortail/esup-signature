@@ -124,7 +124,7 @@ public class SignRequestService {
 	private FsAccessFactory fsAccessFactory;
 
 	@Resource
-	private PreFillService preFillService;
+	private DataService dataService;
 
 	private String step = "";
 
@@ -909,7 +909,9 @@ public class SignRequestService {
 		}
 		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
 			signRequest.setViewTitle(signRequest.getTitle());
+			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
 			signRequestsGrouped.add(signRequest);
+
 		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
