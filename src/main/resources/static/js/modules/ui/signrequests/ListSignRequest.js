@@ -15,7 +15,7 @@ export default class ListSignRequest {
     }
 
     addToPage() {
-        if(this.totalElementsToDisplay >= this.page * 5) {
+        if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
             console.info("Add to page");
             this.page++;
             $.get("/user/signrequests/list-ws?page=" + this.page, function (data) {
