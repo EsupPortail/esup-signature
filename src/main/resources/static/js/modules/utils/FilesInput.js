@@ -3,7 +3,7 @@ import {Preview} from "../../prototypes/Preview.js";
 export default class FilesInput {
 
     constructor(input, workflowName, name, document, readOnly, csrfParameterName, csrfToken, signRequestId) {
-        console.info("Enable file input for : " + name + " with " + csrfParameterName + "=" + csrfToken);
+        console.info("enable complete file input for : " + name + " with " + csrfParameterName + "=" + csrfToken);
         this.input = input;
         this.name = name;
         this.workflowName = workflowName;

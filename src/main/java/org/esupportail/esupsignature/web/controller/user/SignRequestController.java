@@ -183,6 +183,15 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
+        List<SignRequest> toSignRequests = signRequestService.getToSignRequests(user);
+        SignRequest nextSignRequest = null;
+        for(SignRequest nextSignRequest1 : toSignRequests) {
+            if(!nextSignRequest1.equals(signRequest)) {
+                nextSignRequest = nextSignRequest1;
+                break;
+            }
+        }
+        model.addAttribute("nextSignRequest", nextSignRequest);
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)) {

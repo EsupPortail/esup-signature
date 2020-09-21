@@ -1,12 +1,9 @@
 export default class FilesInputSimple {
 
-    constructor(input, csrfParameterName, csrfToken) {
-        console.info("Enable file input simple for : " + name + " with " + csrfParameterName + "=" + csrfToken);
+    constructor(input) {
+        console.info("Enable file input simple for : " + input.attr('id'));
         this.input = input;
-        this.csrfParameterName = csrfParameterName;
-        this.csrfToken = csrfToken;
         this.async = false;
-        this.uploadUrl = null;
         this.initListeners();
         this.initFileInput();
     }
@@ -17,16 +14,12 @@ export default class FilesInputSimple {
     initFileInput() {
         let urls = [];
         let previews = [];
-        let type = 'other';
-        let csrfParameterName = this.csrfParameterName;
-        let csrfToken = this.csrfToken;
         this.input.fileinput({
             language: "fr",
             showCaption: false,
             showClose: false,
             showUpload: false,
             browseOnZoneClick: true,
-            uploadUrl: this.uploadUrl,
             uploadAsync: false,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
@@ -77,7 +70,7 @@ export default class FilesInputSimple {
                 }
             },
             fileActionSettings: {
-                showDrag: false,
+                showDrag: true,
                 showZoom: function(config) {
                     if (config.type === 'pdf' || config.type === 'image') {
                         return true;

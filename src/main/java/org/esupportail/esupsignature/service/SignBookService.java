@@ -359,6 +359,7 @@ public class SignBookService {
         }
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         signBookName += "_" + format.format(new Date());
+
         if(!suffix.isEmpty()) {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
