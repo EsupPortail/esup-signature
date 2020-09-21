@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonClientSideError;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -495,6 +496,27 @@ public class SignRequestController {
         } else {
             return "redirect:/user/signrequests/";
         }
+    }
+
+    @PostMapping(value = "delete-multiple", consumes = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUser") User authUser, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+        for(Long id : ids) {
+            if(signBookRepository.countById(id) > 0 ){
+                SignBook signBook = signBookRepository.findById(id).get();
+                if(signBookService.preAuthorizeManage(id, authUser)) {
+                    signBookService.delete(signBook);
+                }
+            } else if(signRequestRepository.countById(id) > 0) {
+                SignRequest signRequest = signRequestRepository.findById(id).get();
+                if (signRequestService.preAuthorizeOwner(id, authUser)) {
+                    signRequestService.delete(signRequest);
+                }
+            }
+        }
+        redirectAttributes.addFlashAttribute("messageInfo", "Suppressions effectuées");
+        redirectAttributes.addAttribute("messageInfo", "Suppressions effectuées");
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")

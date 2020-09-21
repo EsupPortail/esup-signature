@@ -11,7 +11,7 @@
     globalUi.showSideBar();
     globalUi.disableSideBarButton();
 
-    new ListSignRequest([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]]);
+    new ListSignRequest([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]], [[${_csrf.parameterName}]], [[${_csrf.token}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -35,6 +35,7 @@
                     <table class="table table-borderless table-hover mt-2">
                         <thead class="thead-dark">
                         <tr>
+                            <th class="w-20 d-none d-xxl-table-cell"><button id="deleteMultipleButton" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></th>
                             <th class="w-20 d-none d-xxl-table-cell">Circuit</th>
                             <th class="w-20">Titre des documents</th>
                             <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
@@ -48,6 +49,7 @@
                         <tbody id="signRequestTable" >
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                <td><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature simple</td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.viewTitle}"></span></td>
@@ -136,7 +138,7 @@
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="signBookDel" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                                                <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -182,7 +184,7 @@
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="signRequestDel" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
+                                                <form th:id="'signRequestDel' + ${signRequest.id}" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
                                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">

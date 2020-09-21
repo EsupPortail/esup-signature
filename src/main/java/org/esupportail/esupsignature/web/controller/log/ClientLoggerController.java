@@ -1,20 +1,18 @@
 package org.esupportail.esupsignature.web.controller.log;
 
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.web.controller.user.UserController;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonClientSideError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("log")
