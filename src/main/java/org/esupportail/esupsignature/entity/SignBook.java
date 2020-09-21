@@ -26,6 +26,8 @@ public class SignBook {
 	@Column(unique=true)
 	private String name;
 
+    private String title;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -96,6 +98,14 @@ public class SignBook {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Date getCreateDate() {

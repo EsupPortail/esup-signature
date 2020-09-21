@@ -48,7 +48,7 @@
                         <tbody id="signRequestTable" >
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+                                <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature simple</td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.viewTitle}"></span></td>
                                 <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>

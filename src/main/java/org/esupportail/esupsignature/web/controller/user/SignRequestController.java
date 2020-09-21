@@ -389,7 +389,8 @@ public class SignRequestController {
 
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("user") User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signType") SignType signType, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+                                    @RequestParam("signType") SignType signType,
+                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             if(signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
@@ -418,6 +419,8 @@ public class SignRequestController {
     public String sendSignRequest(@ModelAttribute("user") User user, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(value = "pending", required = false) Boolean pending,
+                                  @RequestParam(value = "comment", required = false) String comment,
                                   @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
@@ -425,7 +428,7 @@ public class SignRequestController {
                 allSignToComplete = false;
             }
 
-            SignBook signBook = signRequestService.addDocsInSignBook(user, "Demande simple", "", multipartFiles);
+            SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
             signBook.setCurrentWorkflowStepNumber(1);
             try {
                 signBookRepository.save(signBook);
@@ -434,14 +437,18 @@ public class SignRequestController {
                 logger.error("error with users on create signbook " + signBook.getId());
                 redirectAttributes.addFlashAttribute("messageError", "Problème lors de l’envoi");
             }
-//            signBookService.addSignRequest(signBook, signRequest);
-            //enable for auto pending
-//          signBookService.pendingSignBook(signBook, user);
-//          if(!comment.isEmpty()) {
-//              signRequest.setComment(comment);
-//              signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
-//          }
-            redirectAttributes.addFlashAttribute("messageWarn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande");
+            if(pending != null && pending) {
+                signBookService.pendingSignBook(signBook, user);
+                if(!comment.isEmpty()) {
+                    for(SignRequest signRequest : signBook.getSignRequests()) {
+                        signRequest.setComment(comment);
+                        signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+                    }
+                }
+                redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été envoyée");
+            } else {
+                redirectAttributes.addFlashAttribute("messageWarn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande");
+            }
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
             logger.warn("no file to import");

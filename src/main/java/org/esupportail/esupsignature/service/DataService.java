@@ -110,8 +110,10 @@ public class DataService {
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
         Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
         workflow.setName(workflow.getName() + "_" + form.getName());
-        SignBook signBook = signBookService.createSignBook("Formulaire", name, user, false);
-        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        SignBook signBook = signBookService.createSignBook(form.getTitle(), name, user, false);
+        String docName = user.getFirstname().substring(0, 1).toUpperCase();
+        docName += user.getName().substring(0, 1).toUpperCase();
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);

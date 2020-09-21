@@ -68,6 +68,7 @@ public class SignBookService {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
             signBook.setName(name);
+            signBook.setTitle(prefix);
             signBook.setCreateBy(user);
             signBook.setCreateDate(new Date());
             signBook.setExternal(external);
@@ -350,17 +351,14 @@ public class SignBookService {
         }
     }
 
-    private String generateName(String prefix, String suffix, User user) {
+    public String generateName(String prefix, String suffix, User user) {
         String signBookName = "";
 
         if(!prefix.isEmpty()) {
-            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-");
+            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-").replace(" ", "-");
         }
-//        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
-//        signBookName += user.getName().substring(0, 1).toUpperCase();
-//        signBookName += "_";
-//        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-//        signBookName += format.format(new Date());
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        signBookName += "_" + format.format(new Date());
         if(!suffix.isEmpty()) {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");

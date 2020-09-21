@@ -367,8 +367,25 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-success">
-                        Enregistrer
+                        <i class="fas fa-eye"></i> Vérifier avant envoi
                     </button>
+                    <button type="button" class="btn btn-success" onclick="$('#sendPending').modal('show');">
+                        <i class="fas fa-paper-plane"></i> Envoyer la demande
+                    </button>
+                    <div id="sendPending" class="modal fade">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">Commentaire</div>
+                                <div class="modal-body">
+                                    <textarea placeholder="Vous pouvez saisir un commentaire" class="form-control" name="comment"></textarea>
+                                    <button type="submit" class="btn btn-success" name="pending" value="true">
+                                        Valider l'envoi
+                                    </button>
+                                </div>
+                                <div class="modal-header"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>

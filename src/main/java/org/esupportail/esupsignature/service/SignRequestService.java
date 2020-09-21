@@ -267,7 +267,7 @@ public class SignRequestService {
 	public SignBook addDocsInSignBook(User user, String name, String workflowName, MultipartFile[] multipartFiles) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
 		for (MultipartFile multipartFile : multipartFiles) {
-			SignRequest signRequest = createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+			SignRequest signRequest = createSignRequest(workflowName + "_" + multipartFile.getOriginalFilename(), user);
 			addDocsToSignRequest(signRequest, multipartFile);
 			signBookService.addSignRequest(signBook, signRequest);
 		}
