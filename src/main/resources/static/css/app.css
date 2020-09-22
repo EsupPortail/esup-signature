@@ -15,6 +15,7 @@ body {
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
+    position: relative;
 
 }
 
@@ -58,6 +59,12 @@ td {
   width: 100%;
   height: 38px;
   line-height: 38px;
+}
+
+.mini-menu {
+    width:250px;
+    right: 10px;
+    z-index: 1000;
 }
 
 code {

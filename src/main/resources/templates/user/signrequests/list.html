@@ -105,10 +105,11 @@
                                     <div th:replace="user/signrequests/includes/status :: status"></div>
                                 </td>
                                 <td th:if="${signRequest.parentSignBook != null}">
+                                    <div class="position-relative">
                                     <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
+                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
                                         <div class=" card-body">
                                             <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter
@@ -129,6 +130,7 @@
                                                 <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                             </a>
                                         </div>
+                                    </div>
                                     </div>
 
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
@@ -154,10 +156,11 @@
                                     </div>
                                 </td>
                                 <td th:unless="${signRequest.parentSignBook != null}">
+                                    <div class="position-relative">
                                     <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
-                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:250px; right: 100px;z-index: 1000;">
+                                    <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
                                         <div class=" card-body">
                                             <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                 <i class="fas fa-eye pr-2"></i> Consulter
@@ -176,7 +179,7 @@
                                             </a>
                                         </div>
                                     </div>
-
+                                    </div>
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
