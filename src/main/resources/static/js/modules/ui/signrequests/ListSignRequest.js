@@ -48,7 +48,7 @@ export default class ListSignRequest {
         if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
             console.info("Add to page");
             this.page++;
-            $.get("/user/signrequests/list-ws?page=" + this.page, function (data) {
+            $.get("/user/signrequests/list-ws?" + this.csrfParameterName + "=" + this.csrfToken + "&page=" + this.page, function (data) {
                 $('#signRequestTable').append(data);
             });
         }

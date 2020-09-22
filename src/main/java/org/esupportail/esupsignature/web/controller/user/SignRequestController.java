@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.springframework.security.test.web.support.WebTestUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,8 +33,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -160,8 +161,7 @@ public class SignRequestController {
                                     @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         List<SignRequest> signRequests = signRequestService.getSignRequests(user, statusFilter);
         Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
-        CsrfTokenRepository repository = WebTestUtils.getCsrfTokenRepository(httpServletRequest);
-        CsrfToken token = repository.generateToken(httpServletRequest);
+        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         model.addAttribute("signRequests", signRequestPage);
         ctx.setVariables(model.asMap());
