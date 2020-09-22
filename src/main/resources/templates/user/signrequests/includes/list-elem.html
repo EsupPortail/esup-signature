@@ -33,6 +33,7 @@
             <tbody>
             <th:block th:each="recipient : ${signRequest.recipients}">
                 <tr>
+                    <td><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
                     <td class="w-100" th:title="${recipient.user.email}"
                         th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                     <td class="align-content-center">
