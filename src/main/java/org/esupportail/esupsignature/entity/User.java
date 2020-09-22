@@ -51,7 +51,7 @@ public class User {
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)
-    private EmailAlertFrequency emailAlertFrequency;
+    private EmailAlertFrequency emailAlertFrequency = EmailAlertFrequency.immediately;
 
     public enum EmailAlertFrequency {
 		never, immediately, daily, weekly;
