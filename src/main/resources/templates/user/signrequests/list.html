@@ -27,7 +27,8 @@
             </div>
             <div class="card col-lg-11">
                 <div id="myDocs" class="card-body">
-                    <table class="table table-borderless table-hover mt-2">
+                    <div id="listSignRequestTable" class="tableFixHead">
+                        <table class="table table-borderless table-hover">
                         <thead class="thead-dark">
                         <tr>
                             <th class="w-20 d-none d-xxl-table-cell"><button id="deleteMultipleButton" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button></th>
@@ -41,7 +42,7 @@
                             <th>Actions</th>
                         </tr>
                         </thead>
-                        <tbody id="signRequestTable" >
+                        <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                 <td><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
@@ -202,6 +203,7 @@
                         </th:block>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
 

@@ -50,6 +50,10 @@ td {
     font-size: 0.9em;
 }
 
+.tableFixHead          { overflow-y: auto; height: calc(100vh - 172px); }
+.tableFixHead thead th { position: sticky; top: 0; }
+/*.tableFixHead tbody { height: 100vh; }*/
+
 .footer {
   width: 100%;
   height: 38px;

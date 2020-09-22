@@ -1,20 +1,23 @@
-import {WheelDetector} from "../../utils/WheelDetector.js";
-
 export default class ListSignRequest {
 
     constructor(totalElementsToDisplay, csrfParameterName, csrfToken) {
         this.totalElementsToDisplay = totalElementsToDisplay;
         this.csrfParameterName = csrfParameterName;
         this.csrfToken = csrfToken;
-        this.wheelDetector = new WheelDetector();
         this.signRequestTable = $("#signRequestTable")
         this.page = 1;
         this.initListeners();
     }
 
     initListeners() {
-        this.wheelDetector.addEventListener("pagebottom", e => this.addToPage());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
+        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
+    }
+
+    detectEndDiv(e) {
+        if ($(e.target).scrollTop() + $(e.target).innerHeight() >= $(e.target)[0].scrollHeight) {
+            this.addToPage();
+        }
     }
 
     deleteMultiple() {
