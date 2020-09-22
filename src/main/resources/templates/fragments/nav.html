@@ -331,7 +331,11 @@
                 <div class="modal-body">
                     <div class="form-group">
                         <input required id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
-                        </div>
+                        <script th:inline="javascript" type="module">
+                            import {default as FilesInputSimple} from "/static/js/modules/utils/FilesInputSimple.js";
+                            new FilesInputSimple($("#inputGroupFile02"));
+                        </script>
+                    </div>
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
                         <select name="signType" id="signType2" class="slim-select-simple">
@@ -347,10 +351,6 @@
                                     required="required">
                             </select>
                         </div>
-                        <script th:inline="javascript" type="module">
-                            import {default as FilesInputSimple} from "/static/js/modules/utils/FilesInputSimple.js";
-                            new FilesInputSimple($("#inputGroupFile02"));
-                        </script>
                         <div class="form-group" id="_allSignToComplete_div_id">
                             <label for="_allSignToComplete">
                                 Tous les participants doivent-ils signer ?

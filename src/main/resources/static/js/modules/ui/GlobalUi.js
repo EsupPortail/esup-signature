@@ -21,7 +21,7 @@ export class GlobalUi {
 
     initListeners() {
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
-        $('#sidebarCollapse').on('click', e => this.toggleSideBarAction());
+        $('#sidebarCollapse').unbind('click').on('click', e => this.toggleSideBarAction());
 
         $("#closeUserInfo").on('click', function() {
             $("#user-toggle").click();
@@ -133,27 +133,21 @@ export class GlobalUi {
         }
 
         if(this.sideBarStatus === 'on' && this.sideBar.hasClass('active')) {
-            this.toggleSideBar();
+            this.showSideBar();
         }
     }
 
     toggleSideBarAction() {
+        console.info("toggle side bar");
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
-        this.toggleSideBar();
+
         if(this.sideBarStatus === 'on') {
+            this.hideSideBar();
             localStorage.setItem('sideBarStatus', 'off');
         } else {
+            this.showSideBar()
             localStorage.setItem('sideBarStatus', 'on');
         }
-    }
-
-    toggleSideBar() {
-        console.info("toggle side bar");
-        this.sideBar.toggleClass('active');
-        this.sideBar2.toggleClass('d-none');
-        this.sideBarLabels.toggleClass('d-none');
-        this.content.toggleClass('content-full');
-        this.breadcrumb.toggleClass('breadcrumb-nav-full');
     }
 
     showSideBar() {
