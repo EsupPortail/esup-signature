@@ -64,7 +64,11 @@ public class User {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
-    
+
+    public EmailAlertFrequency getEmailAlertFrequency() {
+        return this.emailAlertFrequency;
+    }
+
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
@@ -166,10 +170,6 @@ public class User {
 
 	public void setKeystore(Document keystore) {
         this.keystore = keystore;
-    }
-
-	public EmailAlertFrequency getEmailAlertFrequency() {
-        return this.emailAlertFrequency;
     }
 
 	public String getEmailAlertHour() {
