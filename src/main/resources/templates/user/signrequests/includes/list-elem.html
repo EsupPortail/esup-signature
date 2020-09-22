@@ -92,6 +92,7 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                        <input type="hidden" th:name="${token.parameterName}" th:value="${token.token}">
                         <div class="modal-header">
                             <h2>Attention</h2>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
