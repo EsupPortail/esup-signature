@@ -13,6 +13,7 @@
             <tbody th:if="${signRequest.parentSignBook.workflowSteps.size() > 0 && signRequest.currentStepNumber > 0}">
             <th:block th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.currentStepNumber - 1).recipients}">
                 <tr>
+                    <td><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
                     <td class="w-100" th:title="${recipient.user.email}"
                         th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                     <td class="align-content-center">
