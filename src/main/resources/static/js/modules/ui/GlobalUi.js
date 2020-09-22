@@ -267,7 +267,7 @@ export class GlobalUi {
             this.hideSideBar();
             this.disableSideBarButton();
         }
-        if(url.match("^/user/signrequests$")) {
+        if(url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
             this.showSideBar();
             this.disableSideBarButton();
         }
