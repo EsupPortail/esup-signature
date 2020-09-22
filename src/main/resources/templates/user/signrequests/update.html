@@ -3,9 +3,6 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import globalUi from "/static/js/main.js";
-    globalUi.hideSideBar();
-    globalUi.disableSideBarButton();
     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], false, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
 </script>

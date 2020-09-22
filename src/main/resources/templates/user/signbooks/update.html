@@ -3,9 +3,6 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
 <script type="module">
-    import globalUi from "/static/js/main.js";
-    globalUi.hideSideBar();
-    globalUi.disableSideBarButton();
     import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
     new SelectUser("recipientsEmails2");
 </script>

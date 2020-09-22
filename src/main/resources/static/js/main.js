@@ -16,24 +16,4 @@
  * limitations under the License.
  */
 import {GlobalUi} from "./modules/ui/GlobalUi.js";
-let globalUi = new GlobalUi();
-export default globalUi;
-
-window.onerror = function (msg, url, lineNo, columnNo, error) {
-    var clientSideError = {
-        msg: msg,
-        url: url,
-        lineNumber: lineNo,
-        columnNumber: columnNo,
-        error: error
-    };
-
-    $.ajax({
-        type: 'POST',
-        contentType : 'application/json; charset=utf-8',
-        url: "/log",
-        dataType: "json",
-        data: JSON.stringify(clientSideError)
-    });
-    return false;
-};
+new GlobalUi();

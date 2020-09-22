@@ -17,9 +17,29 @@ export class GlobalUi {
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.initListeners();
         this.initSideBar();
+        this.checkCurrentPage();
     }
 
     initListeners() {
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            var clientSideError = {
+                msg: msg,
+                url: url,
+                lineNumber: lineNo,
+                columnNumber: columnNo,
+                error: error
+            };
+
+            $.ajax({
+                type: 'POST',
+                contentType : 'application/json; charset=utf-8',
+                url: "/log",
+                dataType: "json",
+                data: JSON.stringify(clientSideError)
+            });
+            return false;
+        };
+
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         $('#sidebarCollapse').unbind('click').on('click', e => this.toggleSideBarAction());
 
@@ -49,6 +69,13 @@ export class GlobalUi {
 
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
+    }
+
+    checkCurrentPage() {
+        let url = window.location.pathname;
+        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
+            this.resetMode();
+        }
     }
 
     listenMarkAsReadButton(btn) {
@@ -235,6 +262,15 @@ export class GlobalUi {
         this.enableSummerNote();
         this.adjustUi();
         this.displayToasts();
+        let url = window.location.pathname;
+        if(!url.match("/user/users+[\\w\\W]+") && !url.match("/admin/+[\\w\\W]+") && !url.match("^/user/$") && !url.match("^/user/signrequests$") && !url.match("/user/signrequests/+[\\w\\W]+")) {
+            this.hideSideBar();
+            this.disableSideBarButton();
+        }
+        if(url.match("^/user/signrequests$")) {
+            this.showSideBar();
+            this.disableSideBarButton();
+        }
     }
 
 }
