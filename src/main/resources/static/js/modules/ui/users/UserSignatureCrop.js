@@ -25,7 +25,7 @@ export class UserSignatureCrop extends EventFactory {
             },
             enableExif: true,
             enableOrientation: true,
-            enableResize: true,
+            enableResize: false,
             enforceBoundary: false,
             mouseWheelZoom: true
         });
