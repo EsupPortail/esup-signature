@@ -1,4 +1,4 @@
-import {Preview} from "../../prototypes/Preview.js";
+import {DocumentPreview} from "../../prototypes/DocumentPreview.js";
 import {CsrfToken} from "../../prototypes/CsrfToken.js";
 
 export default class FilesInput {
@@ -41,6 +41,8 @@ export default class FilesInput {
         let urls = [];
         let previews = [];
         let type = 'other';
+        let csrfParameterName = this.csrf.parameterName;
+        let csrfToken = this.csrf.token;
         if (documents != null) {
             documents.forEach(function (document) {
                 urls.push("/user/documents/getfile/" + document.id);
@@ -58,12 +60,12 @@ export default class FilesInput {
                         type = "other";
                 }
 
-                let preview = new Preview(
+                let preview = new DocumentPreview(
                     type,
                     document.size,
                     document.contentType,
                     document.fileName,
-                    "/user/signrequests/remove-doc/" + document.id + "/?" + this.csrf.parameterName + "=" + this.csrf.token,
+                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrfParameterName + "=" + csrfToken,
                     document.id,
                     "/user/documents/getfile/" + document.id,
                     document.fileName
