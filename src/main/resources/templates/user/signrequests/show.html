@@ -26,7 +26,9 @@
         [[${documentType == 'pdf'}]],
         [[${signRequest.currentStepNumber}]],
         [[${signImages}]],
-        [[${user.firstname + ' ' + user.name}]]);
+        [[${user.firstname + ' ' + user.name}]],
+        [[${_csrf}]]
+    );
     signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
 </script>
 <main role="main">
@@ -162,8 +164,8 @@
                 </div>
                 <script th:inline="javascript" type="module">
                     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
-                    new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#signedFiles"),"", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
                 </script>
             </div>
         </div>

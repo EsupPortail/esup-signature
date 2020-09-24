@@ -1,21 +1,21 @@
 import {Preview} from "../../prototypes/Preview.js";
+import {CsrfToken} from "../../prototypes/CsrfToken.js";
 
 export default class FilesInput {
 
-    constructor(input, workflowName, name, document, readOnly, csrfParameterName, csrfToken, signRequestId) {
-        console.info("enable complete file input for : " + name + " with " + csrfParameterName + "=" + csrfToken);
+    constructor(input, workflowName, name, document, readOnly, csrf, signRequestId) {
+        console.info("enable complete file input for : " + name);
         this.input = input;
         this.name = name;
         this.workflowName = workflowName;
-        this.csrfParameterName = csrfParameterName;
-        this.csrfToken = csrfToken;
+        this.csrf = new CsrfToken(csrf);
         this.async = true;
         this.uploadUrl = null;
         if(signRequestId == null) {
-            this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ csrfParameterName + '=' + csrfToken;
+            this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
         } else {
             this.async = false;
-            this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ csrfParameterName + '=' + csrfToken;
+            this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
         }
         this.initListeners();
         this.initFileInput(document, readOnly);
@@ -41,8 +41,6 @@ export default class FilesInput {
         let urls = [];
         let previews = [];
         let type = 'other';
-        let csrfParameterName = this.csrfParameterName;
-        let csrfToken = this.csrfToken;
         if (documents != null) {
             documents.forEach(function (document) {
                 urls.push("/user/documents/getfile/" + document.id);
@@ -65,7 +63,7 @@ export default class FilesInput {
                     document.size,
                     document.contentType,
                     document.fileName,
-                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrfParameterName + "=" + csrfToken,
+                    "/user/signrequests/remove-doc/" + document.id + "/?" + this.csrf.parameterName + "=" + this.csrf.token,
                     document.id,
                     "/user/documents/getfile/" + document.id,
                     document.fileName
@@ -168,12 +166,12 @@ export default class FilesInput {
         if ($('#unique :checkbox').is(":checked")){
             console.info('to group mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.workflowName + '/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
             });
         } else {
             console.info('to unique mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrfParameterName + '=' + this.csrfToken
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
         });
         }
         console.groupEnd();

@@ -1,9 +1,10 @@
+import {CsrfToken} from "../../../prototypes/CsrfToken.js";
+
 export default class ListSignRequest {
 
-    constructor(totalElementsToDisplay, csrfParameterName, csrfToken) {
+    constructor(totalElementsToDisplay, csrf) {
         this.totalElementsToDisplay = totalElementsToDisplay;
-        this.csrfParameterName = csrfParameterName;
-        this.csrfToken = csrfToken;
+        this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable")
         this.page = 1;
         this.initListeners();
@@ -31,7 +32,7 @@ export default class ListSignRequest {
         if(ids.length > 0) {
             if(confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?")) {
                 $.ajax({
-                    url: "/user/signrequests/delete-multiple?" + this.csrfParameterName + "=" + this.csrfToken,
+                    url: "/user/signrequests/delete-multiple?" + this.csrf.parameterName + "=" + this.csrf.token,
                     type: 'POST',
                     dataType : 'json',
                     contentType: "application/json",
@@ -48,7 +49,7 @@ export default class ListSignRequest {
         if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
             console.info("Add to page");
             this.page++;
-            $.get("/user/signrequests/list-ws?" + this.csrfParameterName + "=" + this.csrfToken + "&page=" + this.page, function (data) {
+            $.get("/user/signrequests/list-ws?" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
                 $('#signRequestTable').append(data);
             });
         }

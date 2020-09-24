@@ -3,7 +3,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
-    new FilesInput($("#multipartFiles"), [[${workflow != null ? workflow.name : name}]], [[${name}]], null, false, [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+    new FilesInput($("#multipartFiles"), [[${workflow != null ? workflow.name : name}]], [[${name}]], null, false, [[${_csrf}]]);
 </script>
 <body>
 <div id="stepper1" class="bs-stepper linear">

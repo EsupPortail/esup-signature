@@ -1,13 +1,14 @@
 export class SignRequest {
 
+    id;
+    title;
+    signPageNumber;
+    xPos;
+    yPos;
+    addName;
+    addDate;
+    
     constructor(signRequest) {
-        this.id;
-        this.title;
-        this.signPageNumber;
-        this.xPos;
-        this.yPos;
-        this.addName;
-        this.addDate;
         Object.assign(this, signRequest);
     }
 }

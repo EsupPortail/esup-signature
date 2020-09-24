@@ -15,8 +15,6 @@ body {
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
-    position: relative;
-
 }
 
 .truncate {

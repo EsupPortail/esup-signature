@@ -1,13 +1,14 @@
 export class SignRequestParams {
 
+    pdSignatureFieldName;
+    signImageNumber;
+    signPageNumber;
+    xPos;
+    yPos;
+    addName;
+    addDate;
+
     constructor(signRequestParams) {
-        this.pdSignatureFieldName;
-        this.signImageNumber;
-        this.signPageNumber;
-        this.xPos;
-        this.yPos;
-        this.addName;
-        this.addDate;
         Object.assign(this, signRequestParams);
     }
 

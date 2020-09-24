@@ -70,6 +70,8 @@ spring:
         encoding: UTF-8
         mode: HTML
 
+
+
 ldap:
     search-base: ou=people
     search-filter: (uid={0})
@@ -84,6 +86,21 @@ sms:
     url: https://smsu-api.univ-rouen.fr/
     username: sms-univ-rouen-account
     password: GeR4SmsK
+
+#extdb:
+#    data-sources:
+#        -
+#            name: test1
+#            driver-class-name: org.postgresql.Driver
+#            password: esup
+#            url: jdbc:postgresql://localhost:5432/esupsignature
+#            username: esupsignature
+#        -
+#            name: test2
+#            driver-class-name: org.postgresql.Driver
+#            password: esup
+#            url: jdbc:postgresql://localhost:5432/esupsignature
+#            username: esupsignature
 
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
