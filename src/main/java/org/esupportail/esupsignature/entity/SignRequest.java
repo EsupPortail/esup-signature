@@ -288,15 +288,16 @@ public class SignRequest {
 
     public SignRequestParams getCurrentSignRequestParams() {
         if(currentStepNumber > 0 && getSignRequestParams().size() > currentStepNumber - 1) {
-            return getSignRequestParams().get(currentStepNumber - 1);
-        } else {
-            SignRequestParams signRequestParams = new SignRequestParams();
-            signRequestParams.setSignImageNumber(0);
-            signRequestParams.setSignPageNumber(1);
-            signRequestParams.setxPos(0);
-            signRequestParams.setyPos(0);
-            return signRequestParams;
+            if(parentSignBook == null || (signedDocuments.size() < 1 || !allSignToComplete)) {
+                return getSignRequestParams().get(currentStepNumber - 1);
+            }
         }
+        SignRequestParams signRequestParams = new SignRequestParams();
+        signRequestParams.setSignImageNumber(0);
+        signRequestParams.setSignPageNumber(1);
+        signRequestParams.setxPos(0);
+        signRequestParams.setyPos(0);
+        return signRequestParams;
     }
 
     public List<Document> getLiteOriginalDocuments() {
