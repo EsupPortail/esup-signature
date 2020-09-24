@@ -1,5 +1,6 @@
 import {WorkspacePdf} from "./WorkspacePdf.js";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js";
+import {PrintDocument} from "../../utils/PrintDocument.js";
 
 export class SignUi {
 
@@ -20,6 +21,7 @@ export class SignUi {
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
+        this.printDocument = new PrintDocument();
         this.initListeners();
     }
 
@@ -32,6 +34,11 @@ export class SignUi {
             }
         });
         $("#copyButton").on('click', e => this.copy());
+        $("#print").on('click', e => this.launchPrint());
+    }
+
+    launchPrint() {
+        this.printDocument.launchPrint("/user/signrequests/get-last-file-base-64/" + this.signRequestId)
     }
 
     launchSign() {

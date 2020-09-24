@@ -626,6 +626,28 @@ public class SignRequestController {
         }
     }
 
+    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @GetMapping(value = "/get-last-file-base-64/{id}")
+    @ResponseBody
+    public String getLastFileBase64(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException, EsupSignatureException {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        InputStream inputStream = null;
+        if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            if (documents.size() == 1) {
+                inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
+            }
+        } else {
+            FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
+            inputStream = fsFile.getInputStream();
+        }
+        if(inputStream != null) {
+            return new String(Base64.getEncoder().encode(inputStream.readAllBytes()));
+        } else {
+            return "";
+        }
+    }
+
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
