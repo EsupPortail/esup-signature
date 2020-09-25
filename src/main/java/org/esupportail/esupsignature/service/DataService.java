@@ -121,7 +121,11 @@ public class DataService {
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
             signBook.setTargetType(form.getTargetType());
-            signBook.setDocumentsTargetUri(targetEmails.get(0));
+            if(form.getTargetType().equals(DocumentIOType.mail)) {
+                signBook.setDocumentsTargetUri(targetEmails.get(0));
+            } else {
+                signBook.setDocumentsTargetUri(form.getTargetUri());
+            }
         }
         signBookRepository.save(signBook);
         signBookService.pendingSignBook(signBook, user);
