@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.sms.SmsService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -87,7 +88,7 @@ public class WsOtpSignController {
                 return "redirect:/user/signrequests/" + otp.getSignRequestId();
             } else {
                 model.addAttribute("result", "KO");
-                redirectAttributes.addFlashAttribute("messageError", "Mauvais mot de passe");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
                 return "redirect:/otp/" + urlId;
             }
         } else {

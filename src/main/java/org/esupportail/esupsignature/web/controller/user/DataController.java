@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -162,7 +163,7 @@ public class DataController {
 				return "user/datas/create";
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Formulaire non autorisé");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
 		}
 
@@ -213,7 +214,7 @@ public class DataController {
 			data = new Data();
 		}
 		data = dataService.updateData(formData, user, form, data);
-		redirectAttributes.addFlashAttribute("messageSuccess", "Données enregistrées");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 
@@ -253,15 +254,15 @@ public class DataController {
 			if(data.getStatus().equals(SignRequestStatus.draft)) {
 			try {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-				redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage(), e);
-				redirectAttributes.addFlashAttribute("messageError", e.getMessage());
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 				return "redirect:/user/datas/" + id;
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Attention, la procédure est déjà démarée");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Attention, la procédure est déjà démarée"));
 		}
 		return "redirect:/user/signrequests/";
 	}
@@ -272,9 +273,9 @@ public class DataController {
 		Data data = dataRepository.findById(id).get();
 		if(user.getEppn().equals(data.getCreateBy())) {
 			dataService.delete(data);
-			redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Suppression impossible");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Suppression impossible"));
 		}
 		return "redirect:/user/datas/";
 	}
@@ -312,7 +313,7 @@ public class DataController {
 	public String cloneData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getDataById(id);
 		Data cloneData = dataService.cloneData(data);
-		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}
 
@@ -322,7 +323,7 @@ public class DataController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Data data = dataService.getDataFromSignRequest(signRequest);
 		Data cloneData = dataService.cloneData(data);
-		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}
 

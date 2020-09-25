@@ -78,7 +78,7 @@ public class AdminSignRequestController {
 			@RequestParam(value = "statusFilter", required = false) String statusFilter,
 			@RequestParam(value = "signBookId", required = false) Long signBookId,
 			@RequestParam(value = "messageError", required = false) String messageError,
-			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, RedirectAttributes redirectAttrs, Model model) {
+			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, RedirectAttributes redirectAttributes, Model model) {
 		if(statusFilter != null) {
 			if(!statusFilter.equals("all")) {
 				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
@@ -100,7 +100,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/{id}")
 	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
-		//User user = userService.getCurrentUser();
+
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
@@ -142,7 +142,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		//User user = userService.getCurrentUser();
+
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			List<Document> documents = signRequestService.getToSignDocuments(signRequest);
 			try {
@@ -189,7 +189,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/comment/{id}")
 	public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
+			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequestService.checkUserViewRights(user, signRequest)) {
 			signRequest.setComment(comment);
@@ -197,7 +197,7 @@ public class AdminSignRequestController {
 		} else {
 			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
 		}
-		redirectAttrs.addFlashAttribute("messageSuccess", "Commentaire ajouté");
+		redirectAttributes.addFlashAttribute("messageSuccess", "Commentaire ajouté");
 		return "redirect:/admin/signrequests/" + id;
 	}
 

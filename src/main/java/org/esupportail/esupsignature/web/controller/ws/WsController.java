@@ -109,7 +109,7 @@ public class WsController {
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
-        //User user = userService.getCurrentUser();
+
         user.setIp(httpServletRequest.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
@@ -125,7 +125,7 @@ public class WsController {
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        //User user = userService.getCurrentUser();
+
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
@@ -287,7 +287,7 @@ public class WsController {
     )
     @GetMapping(value = "/get-last-file-by-token/{token}")
     public void getLastFileByToken(@ModelAttribute("user") User user, @PathVariable("token") String token, HttpServletResponse response) {
-        //User user = userService.getCurrentUser();
+
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserViewRights(user, signRequest)) {
             List<Document> documents = signRequestService.getToSignDocuments(signRequest);

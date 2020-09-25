@@ -43,7 +43,7 @@ public class DocumentController {
 
     @GetMapping(value = "/getfile/{id}")
 	public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		//User user = userService.getCurrentUser();
+
 		Document document = documentRepository.findById(id).get();
 		if(document.equals(user.getKeystore())) {
 			return getDocumentResponseEntity(response, document);

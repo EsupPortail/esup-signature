@@ -7,7 +7,7 @@ public class LdapProperties {
 
     private String searchBase = "ou=people";
     private String searchFilter = "(uid={0})";
-    private String affiliationFilter = "staff, member, affiliate";
+    private String affiliationFilter = "member";
 
     public String getSearchBase() {
         return searchBase;

@@ -62,9 +62,6 @@ import java.util.Map;
 						field.setDefaultValue((String) defaultValues.get(extValueName));
 					}
 				}
-				if(field.getExtValue().equals("covid(duree)")) {
-					field.setDefaultValue("1");
-				}
 			}
 			filledFields.add(field);
 		}

@@ -17,8 +17,12 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
+import ch.rasc.sse.eventbus.SseEvent;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.repository.MessageRepository;
+import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,6 +51,9 @@ public class MessageAdminController {
 	@Resource
 	private MessageRepository messageRepository;
 
+	@Resource
+	private EventService eventService;
+
 	@GetMapping
 	public String messages(Pageable pageable, Model model) {
 		model.addAttribute("messages", messageRepository.findAll(pageable));
@@ -60,13 +67,14 @@ public class MessageAdminController {
 		message.setEndDate(date);
 		message.setText(text);
 		messageRepository.save(message);
+		eventService.publishEvent(new JsonMessage("custom", message.getText()));
 		return "redirect:/admin/messages";
 	}
 
 	@DeleteMapping("{id}")
 	public String messages(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 		messageRepository.deleteById(id);
-		redirectAttributes.addFlashAttribute("messageError", "Message supprimé");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Message supprimé"));
 		return "redirect:/admin/messages";
 	}
 

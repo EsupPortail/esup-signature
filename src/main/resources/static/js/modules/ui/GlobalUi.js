@@ -249,19 +249,11 @@ export class GlobalUi {
         });
     }
 
-    displayToasts() {
-        $('.toast').each(function() {
-            console.info("display toast : " + $(this).attr('id'));
-            $(this).toast('show');
-        });
-    }
-
     onDocumentLoad() {
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
-        this.displayToasts();
         let url = window.location.pathname;
         if(!url.match("/user/users+[\\w\\W]+") && !url.match("/admin/+[\\w\\W]+") && !url.match("^/user/$") && !url.match("^/user/signrequests$") && !url.match("/user/signrequests/+[\\w\\W]+")) {
             this.hideSideBar();

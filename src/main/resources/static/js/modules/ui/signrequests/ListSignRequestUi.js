@@ -1,6 +1,6 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 
-export default class ListSignRequest {
+export default class ListSignRequestUi {
 
     constructor(totalElementsToDisplay, csrf) {
         this.totalElementsToDisplay = totalElementsToDisplay;

@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.sign.SignService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -60,7 +61,7 @@ public class NexuProcessController {
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model,
-										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
+										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
 		if (signRequestService.checkUserSignRights(user, signRequest)) {
@@ -79,7 +80,7 @@ public class NexuProcessController {
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {
-			redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
 			return "redirect:/user/signrequests/";
 		}
 	}

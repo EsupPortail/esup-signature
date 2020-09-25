@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -91,7 +92,7 @@ public class SignBookController {
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
-        redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         return "redirect:/user/signrequests";
     }
 
@@ -116,7 +117,7 @@ public class SignBookController {
 //
 //    @GetMapping(value = "/update-step/{id}/{step}")
 //    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-//        //User user = userService.getCurrentUser();
+//
 //        SignBook signBook = signBookRepository.findById(id).get();
 //        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
 //            signBookService.changeSignType(signBook, step, signType);
@@ -156,10 +157,10 @@ public class SignBookController {
             workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         } catch (EsupSignatureUserException e) {
             logger.error("error on add step", e);
-            redirectAttributes.addFlashAttribute("messageError", "Erreur lors de l'ajout des participants");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
         }
         signBook.getWorkflowSteps().add(workflowStep);
-        redirectAttributes.addFlashAttribute("messageSuccess", "Étape ajoutée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
@@ -210,7 +211,7 @@ public class SignBookController {
                                  @RequestParam(value = "recipientId") Long recipientId, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.removeStepRecipient(signBook, step, recipientId);
-        redirectAttributes.addFlashAttribute("messageInfo", "Le destinataire à été supprimé");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le destinataire à été supprimé"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 

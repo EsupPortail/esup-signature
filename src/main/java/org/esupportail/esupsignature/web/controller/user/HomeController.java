@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -36,6 +37,7 @@ import java.util.List;
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
+
 
     @Resource
     private GlobalProperties globalProperties;

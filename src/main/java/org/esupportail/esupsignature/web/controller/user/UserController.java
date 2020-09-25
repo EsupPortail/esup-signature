@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -107,7 +108,7 @@ public class UserController {
     	authUser.setEmailAlertFrequency(emailAlertFrequency);
     	authUser.setEmailAlertHour(emailAlertHour);
     	authUser.setEmailAlertDay(emailAlertDay);
-    	redirectAttributes.addFlashAttribute("messageSuccess", "Vos paramètres on été enregistrés");
+    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres on été enregistrés"));
 		return "redirect:/user/users";
     }
 
@@ -115,20 +116,20 @@ public class UserController {
 	public String deleteSign(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
     	Document signDocument = documentRepository.findById(id).get();
 		authUser.getSignImages().remove(signDocument);
-		redirectAttributes.addFlashAttribute("messageInfo", "Signature supprimée");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
 		return "redirect:/user/users";
 	}
 
 
 	@GetMapping(value = "/view-cert")
-    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) {
+    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		User user = userService.getUserFromAuthentication();
 		try {
 			logger.info(user.getKeystore().getInputStream().read() + "");
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password));
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password)));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
-        	redirectAttrs.addFlashAttribute("messageError", "Mauvais mot de passe");
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users/?form";
     }
@@ -196,7 +197,7 @@ public class UserController {
 		if (userShare.getUser().equals(authUser)) {
 			userShareRepository.delete(userShare);
 		}
-		redirectAttributes.addFlashAttribute("messageInfo", "Élément supprimé");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Élément supprimé"));
 		return "redirect:/user/users/shares";
 	}
 
@@ -204,12 +205,12 @@ public class UserController {
 	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		if(userService.switchToShareUser(eppn)) {
 			if(eppn == null || eppn.isEmpty()) {
-				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation désactivée");
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 			} else {
-				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Aucune délégation active en ce moment");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
 		}
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;

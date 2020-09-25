@@ -49,14 +49,14 @@ public class CurrentSessionsController {
 	private SessionRegistry sessionRegistry;
 
 	@GetMapping
-	public String getCurrentSessions(Model uiModel) {
+	public String getCurrentSessions(Model model) {
 		List<String> sessions = new Vector<>();
 		List<Object> principals = sessionRegistry.getAllPrincipals();
 		for(Object p: principals) {
 			sessions.add(((UserDetails) p).getUsername());
 		}
-		uiModel.addAttribute("currentSessions", sessions);
-		uiModel.addAttribute("active", "sessions");
+		model.addAttribute("currentSessions", sessions);
+		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
 

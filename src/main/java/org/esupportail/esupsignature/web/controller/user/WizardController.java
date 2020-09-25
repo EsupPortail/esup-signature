@@ -150,7 +150,7 @@ public class WizardController {
 
     @GetMapping(value = "/wiz5/{id}")
     public String saveForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
-        //User user = userService.getCurrentUser();
+
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);

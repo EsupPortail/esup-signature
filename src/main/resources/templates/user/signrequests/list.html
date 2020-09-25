@@ -5,8 +5,8 @@
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import ListSignRequest from "/static/js/modules/ui/signrequests/ListSignRequest.js";
-    new ListSignRequest([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]], [[${_csrf.parameterName}]], [[${_csrf.token}]]);
+    import ListSignRequestUi from "/static/js/modules/ui/signrequests/ListSignRequestUi.js";
+    new ListSignRequestUi([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]], [[${_csrf.parameterName}]], [[${_csrf.token}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

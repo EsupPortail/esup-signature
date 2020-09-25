@@ -174,7 +174,7 @@ public class UserService {
 		if(userRepository.countByEppn("creator") > 0) {
 			return  userRepository.findByEppn("creator").get(0);
 		} else {
-			return createUser("creator", "Createur de la demande", "", "", UserType.system);
+			return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
 		}
 	}
 
@@ -630,15 +630,18 @@ public class UserService {
 	}
 
 	public UserType checkMailDomain(String email) {
-		String domain = email.split("@")[1];
-		for(SecurityService securityService : securityServices) {
-			if(casProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
-				return UserType.ldap;
-			}
-			if(securityService instanceof ShibSecurityServiceImpl) {
-				File whiheListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
-				if(fileService.isFileContainsText(whiheListFile, domain)) {
-					return UserType.shib;
+		String[] emailSplit = email.split("@");
+		if(emailSplit.length > 1) {
+			String domain = emailSplit[1];
+			for (SecurityService securityService : securityServices) {
+				if (casProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
+					return UserType.ldap;
+				}
+				if (securityService instanceof ShibSecurityServiceImpl) {
+					File whiteListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
+					if (fileService.isFileContainsText(whiteListFile, domain)) {
+						return UserType.shib;
+					}
 				}
 			}
 		}

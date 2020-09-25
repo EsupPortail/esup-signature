@@ -83,7 +83,7 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         User creator;
         if (userRepository.countByEppn("creator") == 0) {
-            creator = userService.createUser("creator", "Createur de la demande", "", "", UserType.system);
+            creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system);
         } else {
             creator = userRepository.findByEppn("creator").get(0);
         }

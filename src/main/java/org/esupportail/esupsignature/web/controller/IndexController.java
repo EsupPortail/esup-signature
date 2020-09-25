@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -102,12 +103,12 @@ public class IndexController {
 					User suUser = signRequestService.checkShare(signRequest);
 					if (suUser != null) {
 						if (userService.switchToShareUser(suUser.getEppn())) {
-							redirectAttributes.addFlashAttribute("messageWarn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+							redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
 						}
 						return "redirect:" + forwardUri;
 					}
 				} else {
-					redirectAttributes.addFlashAttribute("messageError", "Demande non trouvée");
+					redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
 					return "redirect:/user/signrequests";
 				}
 			}

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.service;
 
+import ch.rasc.sse.eventbus.SseEvent;
+import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -7,9 +9,15 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -55,6 +63,9 @@ public class SignBookService {
 
     @Resource
     private RecipientRepository recipientRepository;
+
+    @Resource
+    private EventService eventService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -292,6 +303,9 @@ public class SignBookService {
             if(!emailSended) {
                 signRequestService.sendEmailAlerts(signRequest, user);
                 emailSended = true;
+            }
+            for(Recipient recipient : signRequest.getRecipients()) {
+                eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", signRequest), recipient.getUser());
             }
         }
 

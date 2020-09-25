@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.prefill.PreFill;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -138,14 +139,14 @@ public class FormAdminController {
 		form.setDescription(updateForm.getDescription());
 		form.setPublicUsage(updateForm.getPublicUsage());
 		formRepository.save(form);
-		redirectAttributes.addFlashAttribute("messageSuccess", "Modifications enregistrées");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
 	
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
-		redirectAttributes.addFlashAttribute("messageInfo", "Le formulaire à bien été supprimé");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
 		return "redirect:/admin/forms";
 	}
 	

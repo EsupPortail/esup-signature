@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -179,9 +180,9 @@ public class SignRequestController {
         User newUser = userRepository.findById(recipientId).get();
         if(newUser.getUserType().equals(UserType.external)) {
             otpService.generateOtpForSignRequest(signRequest, newUser);
-            redirectAttributes.addFlashAttribute("messageSuccess", "Demande OTP envoyée");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
         } else {
-            redirectAttributes.addFlashAttribute("messageError", "Problème d'envoi OTP");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
         }
         return "redirect:/user/signrequests/" + id;
     }
@@ -394,7 +395,7 @@ public class SignRequestController {
 
     @GetMapping("/sign-by-token/{token}")
     public String signByToken(@ModelAttribute("user") User user, @PathVariable("token") String token) {
-        //User user = userService.getCurrentUser();
+
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserSignRights(user, signRequest)) {
             return "redirect:/user/signrequests/" + signRequest.getId();
@@ -414,7 +415,7 @@ public class SignRequestController {
                 try {
                     signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
                 } catch (EsupSignatureIOException e) {
-                    redirectAttributes.addFlashAttribute("messageError", "Impossible de charger le document : documents corrompu");
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de charger le document : documents corrompu"));
                     return "redirect:" + request.getHeader("Referer");
                 }
                 signRequestService.addRecipients(signRequest, user);
@@ -422,7 +423,7 @@ public class SignRequestController {
                 signRequestService.pendingSignRequest(signRequest, signType, false);
                 return "redirect:/user/signrequests/" + signRequest.getId();
             } else {
-                redirectAttributes.addFlashAttribute("messageError", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType()));
                 return "redirect:" + request.getHeader("Referer");
             }
         } else {
@@ -451,7 +452,7 @@ public class SignRequestController {
                 signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
             } catch (EsupSignatureUserException e) {
                 logger.error("error with users on create signbook " + signBook.getId());
-                redirectAttributes.addFlashAttribute("messageError", "Problème lors de l’envoi");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème lors de l’envoi"));
             }
             if(pending != null && pending) {
                 signBookService.pendingSignBook(signBook, user);
@@ -461,14 +462,14 @@ public class SignRequestController {
                         signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
                     }
                 }
-                redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été envoyée");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
             } else {
-                redirectAttributes.addFlashAttribute("messageWarn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
             logger.warn("no file to import");
-            redirectAttributes.addFlashAttribute("messageError", "Pas de fichier à importer");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pas de fichier à importer"));
         }
         return "redirect:/user/signrequests";
     }
@@ -483,11 +484,11 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
     @GetMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttrs, HttpServletRequest request) {
+    public String refuse(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
-        redirectAttrs.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
+        redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         return "redirect:/user/signrequests/?statusFilter=tosign";
     }
 
@@ -496,7 +497,7 @@ public class SignRequestController {
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.delete(signRequest);
-        redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         if (signRequest.getParentSignBook() != null) {
             return "redirect:" + request.getHeader("referer");
         } else {
@@ -520,7 +521,7 @@ public class SignRequestController {
                 }
             }
         }
-        redirectAttributes.addFlashAttribute("messageInfo", "Suppressions effectuées");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppressions effectuées"));
         redirectAttributes.addAttribute("messageInfo", "Suppressions effectuées");
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -543,7 +544,7 @@ public class SignRequestController {
         if(link != null && !link.isEmpty()) {
             signRequest.getLinks().add(link);
         }
-        redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à bien été ajoutée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à bien été ajoutée"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -554,13 +555,13 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         Document attachement = documentRepository.findById(attachementId).get();
         if (!attachement.getParentId().equals(signRequest.getId())) {
-            redirectAttributes.addFlashAttribute("messageError", "Pièce jointe non trouvée ...");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
         } else {
             signRequest.getAttachments().remove(attachement);
             signRequestRepository.save(signRequest);
             documentRepository.delete(attachement);
         }
-        redirectAttributes.addFlashAttribute("messageInfo", "La pieces jointe à été supprimée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à été supprimée"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -572,7 +573,7 @@ public class SignRequestController {
         String toRemove = signRequest.getLinks().get(linkId);
         signRequest.getLinks().remove(toRemove);
         signRequestRepository.save(signRequest);
-        redirectAttributes.addFlashAttribute("messageInfo", "Le lien à été supprimé");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien à été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -583,7 +584,7 @@ public class SignRequestController {
         Document attachement = documentRepository.findById(attachementId).get();
         try {
             if (!attachement.getParentId().equals(signRequest.getId())) {
-                redirectAttributes.addFlashAttribute("messageError", "Pièce jointe non trouvée ...");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
                 response.sendRedirect("/user/signsignrequests/" + id);
             } else {
                 response.setHeader("Content-Disposition", "inline;filename=\"" + attachement.getFileName() + "\"");
@@ -700,7 +701,7 @@ public class SignRequestController {
                     userNumber++;
                 }
             } else {
-                redirectAttributes.addFlashAttribute("messageError", "Merci de compléter tous les utilisateurs externes");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
                 return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
@@ -718,7 +719,7 @@ public class SignRequestController {
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
         }
-        redirectAttributes.addFlashAttribute("messageSuccess", "Votre demande à bien été transmise");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/";
     }
 

@@ -75,7 +75,7 @@ spring:
 ldap:
     search-base: ou=people
     search-filter: (uid={0})
-    affiliation-filter: staff, member, affiliate
+    affiliation-filter: member
 
 mail:
     from: no-reply.esup-signature@univ-rouen.fr
