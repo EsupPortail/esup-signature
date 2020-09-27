@@ -177,7 +177,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
@@ -217,7 +217,7 @@ public class SignBookController {
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
+    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.pendingSignBook(signBook, user);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.ws.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class JsonMessage {
 
     String type;

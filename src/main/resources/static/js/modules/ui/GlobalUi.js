@@ -1,4 +1,5 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
+import {SseSubscribe} from "../utils/SseSubscribe.js";
 
 export class GlobalUi {
 
@@ -18,6 +19,7 @@ export class GlobalUi {
         this.initListeners();
         this.initSideBar();
         this.checkCurrentPage();
+        this.sseSubscribe = new SseSubscribe();
     }
 
     initListeners() {
@@ -79,7 +81,7 @@ export class GlobalUi {
     }
 
     listenMarkAsReadButton(btn) {
-        console.log("listen to" + btn);
+        console.debug("listen to" + btn);
         $(btn).on('click', e => this.markAsRead(e));
     }
 

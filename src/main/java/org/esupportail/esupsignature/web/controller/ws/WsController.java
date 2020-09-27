@@ -180,7 +180,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException {
+    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException, InterruptedException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         signBookService.nextWorkFlowStep(signBook);
         signBookService.pendingSignBook(signBook, userService.getSystemUser());

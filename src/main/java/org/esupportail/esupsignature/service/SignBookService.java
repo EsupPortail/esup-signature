@@ -293,7 +293,7 @@ public class SignBookService {
         return false;
     }
 
-    public void pendingSignBook(SignBook signBook, User user) {
+    public void pendingSignBook(SignBook signBook, User user) throws InterruptedException {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), "SUCCESS", signBook.getComment());
         boolean emailSended = false;
@@ -305,7 +305,7 @@ public class SignBookService {
                 emailSended = true;
             }
             for(Recipient recipient : signRequest.getRecipients()) {
-                eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", signRequest), recipient.getUser());
+                eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", recipient.getUser());
             }
         }
 

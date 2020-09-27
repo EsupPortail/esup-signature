@@ -90,7 +90,7 @@ public class WizardController {
     public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestParam(value = "selfSign", required = false) Boolean selfSign,
-                       Model model) {
+                       Model model) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
@@ -120,7 +120,7 @@ public class WizardController {
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
-                       Model model) throws EsupSignatureUserException {
+                       Model model) throws EsupSignatureUserException, InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {

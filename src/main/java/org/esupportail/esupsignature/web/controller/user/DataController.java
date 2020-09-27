@@ -256,7 +256,7 @@ public class DataController {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureException | InterruptedException e) {
 				logger.error(e.getMessage(), e);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 				return "redirect:/user/datas/" + id;

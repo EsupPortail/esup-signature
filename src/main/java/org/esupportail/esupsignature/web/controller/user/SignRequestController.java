@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -34,12 +35,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -129,6 +131,9 @@ public class SignRequestController {
 
     @Resource
     private TemplateEngine templateEngine;
+
+    @Resource
+    private EventService eventService;
 
 //
 //    @Resource
@@ -271,7 +276,6 @@ public class SignRequestController {
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, signRequest));
-        signRequestService.setStep("");
         if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";
         } else {
@@ -311,12 +315,18 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
-    public ResponseEntity sign(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+    public ResponseEntity<String> sign(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
+                               @RequestParam(value = "password", required = false) String password) throws JsonProcessingException, InterruptedException {
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
+            public void afterCommit(){
+                eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", user);
+            }
+        });
         if (visual == null) visual = true;
         ObjectMapper objectMapper = new ObjectMapper();
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -351,19 +361,18 @@ public class SignRequestController {
         }
 
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-            signRequestService.setStep("Démarrage de l'application NexU");
-            signRequestService.setStep("initNexu");
-            return new ResponseEntity(HttpStatus.OK);
+            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", this), "sign", user);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         try {
+            eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", this), "sign", user);
             signRequest.setComment(comment);
             signRequestService.sign(signRequest, user, password, visual, formDataMap);
-            signRequestService.setStep("end");
-            return new ResponseEntity(HttpStatus.OK);
-        } catch (EsupSignatureException | IOException e) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (EsupSignatureException | IOException | InterruptedException e) {
             logger.error(e.getMessage());
         }
-        return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
@@ -438,7 +447,7 @@ public class SignRequestController {
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                   @RequestParam(value = "pending", required = false) Boolean pending,
                                   @RequestParam(value = "comment", required = false) String comment,
-                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
+                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException, InterruptedException {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             if(allSignToComplete == null) {
@@ -472,14 +481,6 @@ public class SignRequestController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pas de fichier à importer"));
         }
         return "redirect:/user/signrequests";
-    }
-
-
-    @ResponseBody
-    @GetMapping(value = "/get-step")
-    public String getStep() {
-        logger.debug("getStep : " + signRequestService.getStep());
-        return signRequestService.getStep();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
@@ -677,7 +678,7 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) String names[],
                           @RequestParam(value = "firstnames", required = false) String firstnames[],
                           @RequestParam(value = "phones", required = false) String phones[],
-                          RedirectAttributes redirectAttributes) throws MessagingException {
+                          RedirectAttributes redirectAttributes) throws MessagingException, InterruptedException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<User> tempUsers = signRequestService.getTempUsers(signRequest);
         int countExternalUsers = 0;

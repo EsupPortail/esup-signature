@@ -61,13 +61,13 @@ public class MessageAdminController {
 	}
 
 	@PostMapping("/add")
-	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException {
+	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException, InterruptedException {
 		Message message = new Message();
 		Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 		message.setEndDate(date);
 		message.setText(text);
 		messageRepository.save(message);
-		eventService.publishEvent(new JsonMessage("custom", message.getText()));
+		eventService.publishEvent(new JsonMessage("custom", message.getText()), "global", null);
 		return "redirect:/admin/messages";
 	}
 

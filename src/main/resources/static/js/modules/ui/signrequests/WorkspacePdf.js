@@ -40,8 +40,10 @@ export class WorkspacePdf {
             document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
             if (this.signable) {
                 document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
+                let visualButton = document.getElementById('visualButton')
                 if (this.currentSignType !== "pdfImageStamp") {
-                    document.getElementById('visualButton').addEventListener('click', e => this.signPosition.toggleVisual());
+                    visualButton.classList.remove("d-none");
+                    visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
                 }
                 document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
                 document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());

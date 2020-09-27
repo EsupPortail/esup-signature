@@ -15,23 +15,14 @@ export default class Toast {
     }
 
     initListener() {
-        let eventSource = new EventSource('/user/sse');
-        eventSource.addEventListener('global', response => {
-            console.log(response.data);
-            let message = new Message(JSON.parse(response.data));
-            console.info("new global event : ");
-            console.info(message);
-            this.launch(message);
-        }, false);
-
-        eventSource.addEventListener('user', response => {
-            let message = new Message(JSON.parse(response.data));
-            console.info("new user event : " + message);
-            this.launch(message);
-        }, false);
+        document.addEventListener("global", e => this.launch(e.detail));
+        document.addEventListener("user", e => this.launch(e.detail));
     }
 
     launch(message) {
+        console.info("new message : ");
+        console.info(message);
+
         console.info("display toast : " + message.type + " " + message.text);
         let toast = $("#toast-" + message.type);
         let toastMessage = $("#message-" + message.type);

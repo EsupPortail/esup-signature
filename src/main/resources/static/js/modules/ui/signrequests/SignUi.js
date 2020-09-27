@@ -35,6 +35,7 @@ export class SignUi {
         });
         $("#copyButton").on('click', e => this.copy());
         $("#print").on('click', e => this.launchPrint());
+        document.addEventListener("sign", e => this.updateWaitModal(e));
     }
 
     launchPrint() {
@@ -78,12 +79,12 @@ export class SignUi {
     // }
 
     submitSignRequest() {
-        var formData = { };
+        let formData = { };
         $.each($('#signForm').serializeArray(), function() {
-
-            formData[this.name] = this.value;
+            if(!this.name.startsWith("comment")) {
+                formData[this.name] = this.value;
+            }
         });
-        console.log(formData);
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
@@ -94,7 +95,7 @@ export class SignUi {
             ;
         } else {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
-                "&" + csrf.name + "=" + csrf.value;
+                "&" + this.csrf.name + "=" + this.csrf.value;
         }
         console.info("params to send : " + this.signRequestUrlParams);
         this.sendData(this.signRequestUrlParams);
@@ -107,8 +108,43 @@ export class SignUi {
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
         // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(signRequestUrlParams);
-        this.getProgressTimer = setInterval(e => this.getStep(), 500);
+        //this.getProgressTimer = setInterval(e => this.getStep(), 500);
     }
+
+    updateWaitModal(e) {
+        console.info("update wait modal");
+        let message = e.detail
+        console.info(message);
+        this.percent = this.percent + 5;
+        if (message.type === "security_bad_password") {
+            console.error("sign error : bad password");
+            this.passwordError.style.display = "block";
+            document.getElementById("closeModal").style.display = "block";
+            document.getElementById("bar").classList.remove("progress-bar-animated");
+        } else if(message.type === "sign_system_error" || message.type === "not_authorized") {
+            console.error("sign error : system error");
+            document.getElementById("signError").style.display = "block";
+            document.getElementById("closeModal").style.display = "block";
+            document.getElementById("bar").classList.remove("progress-bar-animated");
+            this.reset();
+        } else if(message.type === "initNexu") {
+            console.info("redirect to NexU sign proccess");
+            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
+        }else if(message.type === "end") {
+            console.info("sign end");
+            document.getElementById("bar-text").innerHTML = "";
+            document.getElementById("bar").classList.remove("progress-bar-animated");
+            document.getElementById("bar-text").innerHTML = message.text;
+            document.getElementById("bar").style.width = 100 + "%";
+            document.location.href="/user/signrequests/" + this.signRequestId;
+        } else {
+            console.debug("update bar");
+            document.getElementById("bar").style.display = "block";
+            document.getElementById("bar").style.width = this.percent + "%";
+            document.getElementById("bar-text").innerHTML = message.text;
+        }
+    }
+
 
     getStep() {
         this.percent = this.percent + 2;
@@ -128,41 +164,41 @@ export class SignUi {
         document.getElementById("bar").classList.add("progress-bar-animated");
     }
 
-    updateWaitModal(xmlHttp) {
-        let result = xmlHttp.responseText;
-        console.log("getStep : " + result);
-        if (result === "security_bad_password") {
-            console.error("bad password");
-            this.passwordError.style.display = "block";
-            clearInterval(this.getProgressTimer);
-            document.getElementById("closeModal").style.display = "block";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-        } else if(result === "sign_system_error" || result === "not_authorized") {
-            console.error("bad password");
-            clearInterval(this.getProgressTimer);
-            document.getElementById("signError").style.display = "block";
-            document.getElementById("closeModal").style.display = "block";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-            this.reset();
-        } else if(result === "initNexu") {
-            console.info("redirect to NexU sign proccess");
-            clearInterval(this.getProgressTimer);
-            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
-        }else if(result === "end") {
-            console.info("get end");
-            clearInterval(this.getProgressTimer);
-            document.getElementById("bar-text").innerHTML = "";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-            document.getElementById("bar-text").innerHTML = "Signature terminée";
-            document.getElementById("bar").style.width = 100 + "%";
-            document.location.href="/user/signrequests/" + this.signRequestId;
-        } else if(result !== ""){
-            console.debug("update bar : " + result);
-            document.getElementById("bar").style.display = "block";
-            document.getElementById("bar").style.width = this.percent + "%";
-            document.getElementById("bar-text").innerHTML = result;
-        }
-    }
+    // updateWaitModal(xmlHttp) {
+    //     let result = xmlHttp.responseText;
+    //     console.log("getStep : " + result);
+    //     if (result === "security_bad_password") {
+    //         console.error("bad password");
+    //         this.passwordError.style.display = "block";
+    //         clearInterval(this.getProgressTimer);
+    //         document.getElementById("closeModal").style.display = "block";
+    //         document.getElementById("bar").classList.remove("progress-bar-animated");
+    //     } else if(result === "sign_system_error" || result === "not_authorized") {
+    //         console.error("bad password");
+    //         clearInterval(this.getProgressTimer);
+    //         document.getElementById("signError").style.display = "block";
+    //         document.getElementById("closeModal").style.display = "block";
+    //         document.getElementById("bar").classList.remove("progress-bar-animated");
+    //         this.reset();
+    //     } else if(result === "initNexu") {
+    //         console.info("redirect to NexU sign proccess");
+    //         clearInterval(this.getProgressTimer);
+    //         document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
+    //     }else if(result === "end") {
+    //         console.info("get end");
+    //         clearInterval(this.getProgressTimer);
+    //         document.getElementById("bar-text").innerHTML = "";
+    //         document.getElementById("bar").classList.remove("progress-bar-animated");
+    //         document.getElementById("bar-text").innerHTML = "Signature terminée";
+    //         document.getElementById("bar").style.width = 100 + "%";
+    //         document.location.href="/user/signrequests/" + this.signRequestId;
+    //     } else if(result !== ""){
+    //         console.debug("update bar : " + result);
+    //         document.getElementById("bar").style.display = "block";
+    //         document.getElementById("bar").style.width = this.percent + "%";
+    //         document.getElementById("bar-text").innerHTML = result;
+    //     }
+    // }
 
     end() {
         if(this.xmlHttpMain.status === 200) {

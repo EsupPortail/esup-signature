@@ -95,7 +95,7 @@ public class DataService {
         dataRepository.save(data);
     }
 
-    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException, InterruptedException {
         if (recipientEmails == null) {
             recipientEmails = new ArrayList<>();
         }
