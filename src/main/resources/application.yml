@@ -1,22 +1,21 @@
 global:
-    root-url: http://dsi-7.univ-rouen.fr
+    root-url: https://esup-signature.univ-ville.fr
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle.zip
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
-#    archive-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat/Archive/dev
-#    delay-before-cleaning : 0
-    enable-su: true
-    enable-splash: true
-    version: '@project.version@'
+    #   archive-uri: smb://serveur_fichier/archives
+    #   delay-before-cleaning : 0
+    enable-su: false
 
-tomcat:
-    ajp:
-        port: 6009
+#tomcat:
+#    ajp:
+#        port: 6009
 
 spring:
+
     data:
         ldap:
             repositories:
@@ -40,25 +39,25 @@ spring:
                         non_contextual_creation: true
         show-sql: false
     ldap:
-        base: dc=univ-rouen,dc=fr
-        password: Esupw7&56MZ
-        urls: ldap://ldap.univ-rouen.fr
-        username: cn=cons-esupSignature,dc=univ-rouen,dc=fr
+        base: dc=univ-ville,dc=fr
+        password: password
+        urls: ldap://ldap.univ-ville.fr
+        username: cn=consult,dc=univ-ville,dc=fr
     mail:
-        host: smtp.univ-rouen.fr
+        host: smtp.univ-ville.fr
     messages:
         basename: i18n/messages
         encoding: UTF-8
         fallback-to-system-locale: false
-    security:
-#        oauth2:
-#            client:
-#                registration:
-#                    google:
-#                        client-id: 295837101524-b9kj77m2kp30ahr01kk5abaprr9r3h12.apps.googleusercontent.com
-#                        client-secret: OPeG_a0fifx1r5qcN5RONL_o
-#                        redirect-uri: http://dsi-7.univ-rouen.fr/login/oauth2/code/google
-#                        scope: profile, email
+    #    security:
+    #        oauth2:
+    #            client:
+    #                registration:
+    #                    google:
+    #                        client-id: *
+    #                        client-secret: *
+    #                        redirect-uri: https://esup-signature.univ-ville.fr/login/oauth2/code/google
+    #                        scope: profile, email
     servlet:
         multipart:
             enabled: true
@@ -70,37 +69,20 @@ spring:
         encoding: UTF-8
         mode: HTML
 
-
-
 ldap:
     search-base: ou=people
     search-filter: (uid={0})
-    affiliation-filter: member
+    affiliation-filter: staff, member, affiliate
 
 mail:
-    from: no-reply.esup-signature@univ-rouen.fr
+    from: no-reply.esup-signature@univ-ville.fr
 
 sms:
-    enable-sms : true
-    service-name: SMSU
-    url: https://smsu-api.univ-rouen.fr/
-    username: sms-univ-rouen-account
-    password: GeR4SmsK
-
-#extdb:
-#    data-sources:
-#        -
-#            name: test1
-#            driver-class-name: org.postgresql.Driver
-#            password: esup
-#            url: jdbc:postgresql://localhost:5432/esupsignature
-#            username: esupsignature
-#        -
-#            name: test2
-#            driver-class-name: org.postgresql.Driver
-#            password: esup
-#            url: jdbc:postgresql://localhost:5432/esupsignature
-#            username: esupsignature
+    enable-sms : false
+#    service-name: SMSU
+#    url: https://smsu-api.univ-ville.fr/
+#    username: sms-account
+#    password: ********
 
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
@@ -112,7 +94,7 @@ dss:
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
     tsp-server: http://tsa.belgium.be/connect
-    ks-filename: /opt/tomcat-esup-signature/temp/oj_keystore.p12
+    ks-filename: oj_keystore.p12
     ks-password: dss-password
     ks-type: PKCS12
     lotl-country-code: EU
@@ -121,11 +103,11 @@ dss:
     trusted-certificat-url-list: https://services.renater.fr/_media/tcs/geant_personal_ca_4.pem, https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
 
 fs:
-    smb-login: esup-signature
-    smb-password: BT28ap3R!
-    smb-uri: smb://stockage.univ-rouen.fr/groupdirs/COMMUN/Demat
+    #    smb-login: esup-signature
+    #    smb-password: ********
+    #    smb-uri: smb://smb.univ-ville.fr
     vfs-uri: /tmp
-#    cmis-uri: https://esup-signature.univ-rouen.fr:8083/nuxeo
+#    cmis-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
 #    cmis-password: Administrator
 #    cmis-respository-id: default
@@ -142,19 +124,19 @@ pdf:
 
 security:
     cas:
-        domain: univ-rouen.fr
+        domain: univ-ville.fr
         group-search-base: ou=groups
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
-        service: http://dsi-7.univ-rouen.fr/login/cas
-        title: Compte Université de Rouen Normandie (CAS)
-        url: https://cas.univ-rouen.fr
-    shib:
-        credentials-request-header: MEMBER
-        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-rouen
-        idp-url: https://idp.univ-rouen.fr
-        principal-request-header: REMOTE_USER
-        title: Compte d’un autre établissement (Shibboleth)
-        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+        service: https://esup-signature.univ-ville.fr/login/cas
+        title: Compte Université (CAS)
+        url: https://cas.univ-ville.fr
+        #    shib:
+        #        credentials-request-header: MEMBER
+        #        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
+        #        idp-url: https://idp.univ-ville.fr
+        #        principal-request-header: REMOTE_USER
+        #        title: Compte d’un autre établissement (Shibboleth)
+        #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     ws:
         ws-access-authorize-ips: 127.0.0.1
 
@@ -162,7 +144,6 @@ server:
     error:
         include-stacktrace: always
     port: 8080
-    #max-http-header-size: 1MB
 
 sign:
     cades-digest-algorithm: SHA256
