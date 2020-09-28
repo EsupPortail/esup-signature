@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.enums.SearchType;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -41,6 +42,11 @@ public class Field {
 	private String eppnEditRight;
 
 	transient String defaultValue;
+
+	private String searchDataSource;
+
+	@Enumerated(EnumType.STRING)
+	private SearchType searchType;
 	
 	@Enumerated(EnumType.STRING)
     private FieldType type;
@@ -181,5 +187,21 @@ public class Field {
 
 	public void setEppnEditRight(String eppnEditRight) {
 		this.eppnEditRight = eppnEditRight;
+	}
+
+	public String getSearchDataSource() {
+		return searchDataSource;
+	}
+
+	public void setSearchDataSource(String searchDataSource) {
+		this.searchDataSource = searchDataSource;
+	}
+
+	public SearchType getSearchType() {
+		return searchType;
+	}
+
+	public void setSearchType(SearchType searchType) {
+		this.searchType = searchType;
 	}
 }

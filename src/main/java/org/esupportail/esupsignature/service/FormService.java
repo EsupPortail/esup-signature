@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.enums.SearchType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -176,11 +177,13 @@ public class FormService {
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
 				String type = "text";
-				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
-					COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-					type = cosString.toString();
+				logger.info(field.getName());
+				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject() != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
+					if(pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
+						COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
+						type = cosString.getString();
+					}
 				}
-				logger.info(type);
 				if(type.equals("text")) {
 					field.setType(FieldType.text);
 				} else if(type.contains("Time")) {
@@ -189,6 +192,15 @@ public class FormService {
 					field.setType(FieldType.date);
 				} else if(type.contains("Number")) {
 					field.setType(FieldType.number);
+				}
+
+				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C) != null) {
+					COSString calculString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C).getItem(COSName.JS);
+					String[] splitcalculString = calculString.getString().split("\\$");
+					if("search".equals(splitcalculString[0])) {
+						field.setSearchDataSource(splitcalculString[1]);
+						field.setSearchType(SearchType.valueOf(splitcalculString[2]));
+					}
 				}
 
 				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
@@ -226,6 +238,19 @@ public class FormService {
 					fieldService.updateField(field);
 					fields.add(field);
 				}
+			} else if(pdField instanceof PDChoice) {
+				Field field = new Field();
+				this.resolveFieldName(field, pdField.getPartialName());
+				field.setLabel(pdField.getAlternateFieldName());
+				field.setPage(page);
+				field.setType(FieldType.select);
+				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
+				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
+				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
+				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
+				fieldService.updateField(field);
+				fields.add(field);
 			}
 		}
 		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).collect(Collectors.toList());

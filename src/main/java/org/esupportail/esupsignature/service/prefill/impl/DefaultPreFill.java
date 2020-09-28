@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-	public class DefaultPreFill implements PreFill {
+public class DefaultPreFill implements PreFill {
 
 	private String name = "default";
 	private String description = "Pré-remplissage par défaut (données LDAP)";

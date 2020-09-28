@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
+import org.esupportail.esupsignature.entity.enums.SearchType;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -16,9 +17,7 @@ import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class LdapExtValue implements ExtValue {
@@ -32,6 +31,11 @@ public class LdapExtValue implements ExtValue {
 
 	public LdapExtValue(@Autowired(required = false) LdapPersonService ldapPersonService) {
 		this.ldapPersonService = ldapPersonService;
+	}
+
+	@Override
+	public String getName() {
+		return "ldap";
 	}
 
 	@Override
@@ -58,8 +62,17 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public String getName() {
-		return "ldap";
+	public List<Map<String, Object>> search(SearchType searchType, String searchString) {
+		List<Map<String, Object>> mapList = new ArrayList<>();
+		Map<String, Object> stringObjectMap = new HashMap<>();
+		stringObjectMap.put("value", "toto");
+		stringObjectMap.put("text", "Toto");
+		Map<String, Object> stringObjectMap2 = new HashMap<>();
+		stringObjectMap2.put("value", "toto2");
+		stringObjectMap2.put("text", "Toto2");
+		mapList.add(stringObjectMap);
+		mapList.add(stringObjectMap2);
+		return mapList;
 	}
 
 	@Override
@@ -87,5 +100,7 @@ public class LdapExtValue implements ExtValue {
 		}
 		return values;
 	}
-	
+
+
+
 }

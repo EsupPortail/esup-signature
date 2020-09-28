@@ -272,17 +272,17 @@ export class PdfViewer extends EventFactory {
                 signField.addClass("d-none");
                 signField.parent().remove();
             }
-            if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
-                console.debug("found sign field");
-                visaFieldNumber = visaFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ visa ' + visaFieldNumber + '<br>');
-                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
-            }
+            // if(items[i].fieldType === undefined && items[i].title.toLowerCase().startsWith('visa')) {
+            //     console.debug("found sign field");
+            //     visaFieldNumber = visaFieldNumber + 1;
+            //     $('.popupWrapper').remove();
+            //     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+            //     signField.append('Champ visa ' + visaFieldNumber + '<br>');
+            //     //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
+            //     signField.addClass("sign-field");
+            //     signField.addClass("d-none");
+            //     signField.parent().remove();
+            // }
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
@@ -291,7 +291,6 @@ export class PdfViewer extends EventFactory {
                 console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
-                    //TODO debug
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
                         inputField.val(dataField.defaultValue);

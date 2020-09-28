@@ -50,7 +50,7 @@ public class Form {
     private Document document = new Document();
 
 	@OrderColumn
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
 	private List<Field> fields = new ArrayList<>();
 
 	public Long getId() {
