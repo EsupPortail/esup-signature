@@ -237,7 +237,7 @@ public class SignRequestController {
                 if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
                     if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
-                        model.addAttribute("messageWarn", "Pour signer ce document merci d’ajouter un certificat à votre profil");
+                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d’ajouter un certificat à votre profil"));
                     }
                     List<String> signImages = new ArrayList<>();
                     for(Document signImage : user.getSignImages()) {
@@ -249,7 +249,7 @@ public class SignRequestController {
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
-                        model.addAttribute("messageWarn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users'>Mes paramètres</a>");
+                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users'>Mes paramètres</a>"));
                         signRequest.setSignable(false);
                     }
                 }

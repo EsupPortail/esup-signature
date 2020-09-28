@@ -3,14 +3,15 @@ import {Message} from "../../prototypes/Message.js";
 export default class Toast {
 
     constructor(message) {
+        this.resetToasts();
         this.message = new Message(message);
-        $('.toast').each(function() {
-            $(this).css('z-index', -1);
-        });
         if(message) {
-            this.launch(this.message);
-            $(document).ready(e =>this.launch(this.message));
+            $(document).ready(e => this.launch(this.message));
         }
+        $("div[id^='toast-message']").each(function() {
+            $(this).css('z-index', 10000);
+            $(this).toast('show');
+        });
         this.initListener();
     }
 
@@ -19,10 +20,16 @@ export default class Toast {
         document.addEventListener("user", e => this.launch(e.detail));
     }
 
-    launch(message) {
-        console.info("new message : ");
-        console.info(message);
+    resetToasts() {
+        $('.toast').each(function() {
+            $(this).css('z-index', -1);
+            $(this).on('hidden.bs.toast', function (){
+                toast.css('z-index', -1);
+            })
+        });
+    }
 
+    launch(message) {
         console.info("display toast : " + message.type + " " + message.text);
         let toast = $("#toast-" + message.type);
         let toastMessage = $("#message-" + message.type);
@@ -33,9 +40,6 @@ export default class Toast {
         }
         toast.css('z-index', 10000);
         toast.toast('show');
-        toast.on('hidden.bs.toast', function (){
-            toast.css('z-index', -1);
-        })
         new Notification(message.text);
     }
 

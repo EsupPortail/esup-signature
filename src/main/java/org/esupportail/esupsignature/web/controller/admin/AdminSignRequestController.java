@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -93,7 +94,7 @@ public class AdminSignRequestController {
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("statusFilter", this.statusFilter);
 		model.addAttribute("statuses", SignRequestStatus.values());
-		model.addAttribute("messageError", messageError);
+		model.addAttribute("message", new JsonMessage("error", messageError));
 
 		return "admin/signrequests/list";
 	}

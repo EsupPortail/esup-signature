@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -165,7 +166,7 @@ public class WizardController {
             signBookService.saveWorkflow(name, user, signBook);
         } catch (EsupSignatureException e) {
             model.addAttribute("signBook", signBook);
-            model.addAttribute("messageError", "Un circuit de signature porte déjà ce nom");
+            model.addAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
             return "redirect:/user/wizard/wiz5/" + signBook.getId();
         }
         return "redirect:/user/wizard/wizend/" + signBook.getId();

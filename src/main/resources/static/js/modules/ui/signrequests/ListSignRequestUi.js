@@ -31,8 +31,9 @@ export default class ListSignRequestUi {
 
         if(ids.length > 0) {
             if(confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?")) {
+                let csrf = this.csrf;
                 $.ajax({
-                    url: "/user/signrequests/delete-multiple?" + this.csrf.parameterName + "=" + this.csrf.token,
+                    url: "/user/signrequests/delete-multiple?" + csrf.parameterName + "=" + csrf.token,
                     type: 'POST',
                     dataType : 'json',
                     contentType: "application/json",
