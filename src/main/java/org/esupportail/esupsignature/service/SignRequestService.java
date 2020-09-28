@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -37,21 +38,14 @@ import org.esupportail.esupsignature.service.sign.SignService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.beans.support.SortDefinition;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -954,7 +948,7 @@ public class SignRequestService {
 		SignBook signBook = signRequest.getParentSignBook();
 		if(signBook != null) {
 			User toUser = userService.getUserFromAuthentication();
-			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareType(Collections.singletonList(toUser), UserShare.ShareType.sign);
+			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareType(Collections.singletonList(toUser), ShareType.sign);
 			for (UserShare userShare : userShares) {
 				if(userShare.getWorkflows().contains(signBook.getWorkflow()) && checkUserSignRights(userShare.getUser(), signRequest)) {
 					return userShare.getUser();

@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
@@ -73,7 +74,7 @@ public class FormService {
 		if(user.equals(authUser)) {
 			forms = formRepository.findAutorizedFormByUser(user);
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
+			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.create)) {
 				forms.addAll(userShare.getForms());
 			}
 		}

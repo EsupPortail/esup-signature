@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -137,7 +138,7 @@ public class WorkflowService {
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
         } else {
-            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
+            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.create)) {
                 workflows.addAll(userShare.getWorkflows());
             }
         }

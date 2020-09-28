@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -101,7 +102,7 @@ public class DataController {
 		if(!user.equals(authUser)) {
 			List<Data> datasOk = new ArrayList<>();
 			for(Data data : datas) {
-				if(userService.checkServiceShare(user, authUser, UserShare.ShareType.create, data.getForm())) {
+				if(userService.checkServiceShare(user, authUser, ShareType.create, data.getForm())) {
 					datasOk.add(data);
 				}
 			}
@@ -135,7 +136,7 @@ public class DataController {
 	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userService.checkServiceShare(user, authUser, UserShare.ShareType.create, form)) {
+		if(autorizedForms.contains(form) && userService.checkServiceShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}

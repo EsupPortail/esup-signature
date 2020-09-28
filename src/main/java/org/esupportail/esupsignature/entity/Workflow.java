@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -41,13 +42,14 @@ public class Workflow {
 
     private String role;
 
+    @ElementCollection(targetClass= ShareType.class)
+    private List<ShareType> autorizedShareTypes = new ArrayList<>();
+
     private Boolean external = false;
 
     private Boolean publicUsage = false;
 
     private Boolean scanPdfMetadatas = false;
-
-    private Boolean archive = false;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
@@ -154,14 +156,6 @@ public class Workflow {
         this.publicUsage = publicUsage;
     }
 
-    public Boolean getArchive() {
-        return archive;
-    }
-
-    public void setArchive(Boolean archive) {
-        this.archive = archive;
-    }
-
     public DocumentIOType getSourceType() {
         return sourceType;
     }
@@ -216,6 +210,14 @@ public class Workflow {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<ShareType> getAutorizedShareTypes() {
+        return autorizedShareTypes;
+    }
+
+    public void setAutorizedShareTypes(List<ShareType> autorizedShareTypes) {
+        this.autorizedShareTypes = autorizedShareTypes;
     }
 
     public Boolean getScanPdfMetadatas() {

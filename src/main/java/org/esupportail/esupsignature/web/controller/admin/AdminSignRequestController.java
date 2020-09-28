@@ -94,8 +94,6 @@ public class AdminSignRequestController {
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("statusFilter", this.statusFilter);
 		model.addAttribute("statuses", SignRequestStatus.values());
-		model.addAttribute("message", new JsonMessage("error", messageError));
-
 		return "admin/signrequests/list";
 	}
 

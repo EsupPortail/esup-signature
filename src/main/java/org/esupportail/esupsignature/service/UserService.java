@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
@@ -352,7 +353,7 @@ public class UserService {
 		List<String> toEmails = new ArrayList<>();
 		toEmails.add(recipientUser.getEmail());
 		for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-			if (userShare.getShareType().equals(UserShare.ShareType.sign)) {
+			if (userShare.getShareType().equals(ShareType.sign)) {
 				for (User toUser : userShare.getToUsers()) {
 					List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 					for (SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
@@ -389,7 +390,7 @@ public class UserService {
 //			toEmails.add(recipientEmail);
 			toEmails.add(recipientUser.getEmail());
 			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-				if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
+				if(userShare.getShareType().equals(ShareType.sign)) {
 					for(User toUser : userShare.getToUsers()) {
 						List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
@@ -425,7 +426,7 @@ public class UserService {
 	}
 
 	public Boolean getSignShare(User user, User authUser) {
-		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.sign) > 0) {
+		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.sign) > 0) {
 			return true;
 		};
 		return false;
@@ -544,7 +545,7 @@ public class UserService {
 	}
 
 	public Boolean checkSignShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), UserShare.ShareType.sign);
+		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), ShareType.sign);
 		for(UserShare userShare : userShares) {
 			if (checkUserShareDate(userShare)) {
 				return true;
@@ -563,12 +564,12 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, Form form) {
+	public Boolean checkServiceShare(User fromUser, User toUser, ShareType shareType, Form form) {
 		if(fromUser.equals(toUser)) {
 			return true;
 		}
 		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
-		if(shareType.equals(UserShare.ShareType.sign) && userShares.size() > 0) {
+		if(shareType.equals(ShareType.sign) && userShares.size() > 0) {
 			return true;
 		}
 		for(UserShare userShare : userShares) {
@@ -579,7 +580,7 @@ public class UserService {
 		return false;
 	}
 
-	public Boolean checkOneServiceShare(User fromUser, User toUser, UserShare.ShareType shareType) {
+	public Boolean checkOneServiceShare(User fromUser, User toUser, ShareType shareType) {
 		if(fromUser.equals(toUser)) {
 			return true;
 		}
@@ -601,7 +602,7 @@ public class UserService {
 	public void createUserShare(List<Long> forms, List<Long> workflows, String type, List<User> userEmails, Date beginDate, Date endDate, User user) {
 		UserShare userShare = new UserShare();
 		userShare.setUser(user);
-		userShare.setShareType(UserShare.ShareType.valueOf(type));
+		userShare.setShareType(ShareType.valueOf(type));
 		for(Long form : forms) {
 			userShare.getForms().add(formRepository.findById(form).get());
 		}

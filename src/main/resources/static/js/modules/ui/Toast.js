@@ -24,7 +24,7 @@ export default class Toast {
         $('.toast').each(function() {
             $(this).css('z-index', -1);
             $(this).on('hidden.bs.toast', function (){
-                toast.css('z-index', -1);
+                $(this).css('z-index', -1);
             })
         });
     }

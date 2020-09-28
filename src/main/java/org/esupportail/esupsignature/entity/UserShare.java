@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.ShareType;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,10 +34,6 @@ public class UserShare {
 
     @Enumerated(EnumType.STRING)
     private ShareType shareType;
-
-    public enum ShareType {
-        create, sign;
-    }
 
     public Long getId() {
         return id;

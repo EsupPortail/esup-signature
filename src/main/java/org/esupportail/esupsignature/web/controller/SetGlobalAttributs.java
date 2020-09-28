@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.controller;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.springframework.ui.Model;
@@ -50,8 +50,8 @@ public class SetGlobalAttributs {
         model.addAttribute("messageNews", messages);
         model.addAttribute("suUsers", userService.getSuUsers(authUser));
         model.addAttribute("globalProperties", this.globalProperties);
-        model.addAttribute("isOneCreateShare", userService.checkOneServiceShare(user, authUser, UserShare.ShareType.create));
-        model.addAttribute("isOneSignShare", userService.checkOneServiceShare(user, authUser, UserShare.ShareType.sign));
+        model.addAttribute("isOneCreateShare", userService.checkOneServiceShare(user, authUser, ShareType.create));
+        model.addAttribute("isOneSignShare", userService.checkOneServiceShare(user, authUser, ShareType.sign));
     }
 
 }
