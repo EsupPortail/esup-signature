@@ -64,14 +64,9 @@ public class HomeController {
 
     @GetMapping
     public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) {
-        List<SignRequest> signRequestsToSign = signRequestService.getToSignRequests(user);
-        if(user.equals(authUser) || userService.getSignShare(user, authUser)) {
-            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
-        } else {
-            model.addAttribute("signRequests", new PageImpl<>(new ArrayList<>()));
-        }
+        List<SignRequest> signRequestsToSign = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, "tosign");
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
         List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
-        model.addAttribute("globalProperties", globalProperties);
         model.addAttribute("datas", datas);
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));

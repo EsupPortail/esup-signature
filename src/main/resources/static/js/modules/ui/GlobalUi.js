@@ -215,21 +215,21 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $("select[class='slim-select-simple']").each(function () {
-            let selectName = $(this).attr('id');
-            console.info("auto enable slim-select-simple for : " + selectName);
-            new SlimSelect({
-                select: '#' + selectName,
-                showSearch: false,
-                searchHighlight: false,
-                hideSelectedOption: false,
-                closeOnSelect: true,
-                ajax: function (search, callback) {
-                    callback(false)
-                }
-            });
-            $(this).addClass("slim-select-hack");
-        })
+        // $("select[class='slim-select-simple']").each(function () {
+        //     let selectName = $(this).attr('id');
+        //     console.info("auto enable slim-select-simple for : " + selectName);
+        //     new SlimSelect({
+        //         select: '#' + selectName,
+        //         showSearch: false,
+        //         searchHighlight: false,
+        //         hideSelectedOption: false,
+        //         closeOnSelect: true,
+        //         ajax: function (search, callback) {
+        //             callback(false)
+        //         }
+        //     });
+        //     $(this).addClass("slim-select-hack");
+        // })
     }
 
     enableSummerNote() {

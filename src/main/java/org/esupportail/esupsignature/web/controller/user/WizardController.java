@@ -34,9 +34,6 @@ public class WizardController {
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
     @Resource
-    private UserService userService;
-
-    @Resource
     private WorkflowRepository workflowRepository;
 
     @Resource
@@ -90,19 +87,12 @@ public class WizardController {
     @GetMapping(value = "/wiz4/{id}")
     public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
-                       @RequestParam(value = "selfSign", required = false) Boolean selfSign,
                        Model model) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
-                signBookService.importWorkflow(signBook, workflow);
-                signBookService.nextWorkFlowStep(signBook);
-                signBookService.pendingSignBook(signBook, user);
-                return "redirect:/user/wizard/wizend/" + signBook.getId();
-            } else if(selfSign != null) {
-                Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
                 signBookService.importWorkflow(signBook, workflow);
                 signBookService.nextWorkFlowStep(signBook);
                 signBookService.pendingSignBook(signBook, user);

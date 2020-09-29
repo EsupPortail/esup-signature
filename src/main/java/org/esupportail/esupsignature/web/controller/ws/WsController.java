@@ -286,10 +286,10 @@ public class WsController {
             }
     )
     @GetMapping(value = "/get-last-file-by-token/{token}")
-    public void getLastFileByToken(@ModelAttribute("user") User user, @PathVariable("token") String token, HttpServletResponse response) {
+    public void getLastFileByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,  @PathVariable("token") String token, HttpServletResponse response) {
 
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
+        if (signRequestService.checkUserViewRights(user, authUser, signRequest)) {
             List<Document> documents = signRequestService.getToSignDocuments(signRequest);
             try {
                 if (documents.size() > 1) {

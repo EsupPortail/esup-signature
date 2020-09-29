@@ -3,9 +3,11 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -56,6 +58,9 @@ public class FormAdminController {
 
 	@Resource
 	private PreFillService preFillService;
+
+	@Resource
+	private UserShareRepository userShareRepository;
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
@@ -145,6 +150,11 @@ public class FormAdminController {
 	
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		Form form = formRepository.findById(id).get();
+		List<UserShare> userShares = userShareRepository.findByFormsContains(form);
+		for(UserShare userShare : userShares) {
+			userShareRepository.deleteById(userShare.getId());
+		}
 		formService.deleteForm(id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
 		return "redirect:/admin/forms";

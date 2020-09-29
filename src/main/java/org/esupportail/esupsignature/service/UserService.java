@@ -353,7 +353,7 @@ public class UserService {
 		List<String> toEmails = new ArrayList<>();
 		toEmails.add(recipientUser.getEmail());
 		for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-			if (userShare.getShareType().equals(ShareType.sign)) {
+			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				for (User toUser : userShare.getToUsers()) {
 					List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 					for (SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
@@ -390,7 +390,7 @@ public class UserService {
 //			toEmails.add(recipientEmail);
 			toEmails.add(recipientUser.getEmail());
 			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-				if(userShare.getShareType().equals(ShareType.sign)) {
+				if(userShare.getShareTypes().contains(ShareType.sign)) {
 					for(User toUser : userShare.getToUsers()) {
 						List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
@@ -415,18 +415,8 @@ public class UserService {
 		}
 	}
 
-	public List<User> getSuUsers(User authUser) {
-		List<User> suUsers = new ArrayList<>();
-		for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
-			if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
-				suUsers.add(userShare.getUser());
-			}
-		}
-		return suUsers;
-	}
-
 	public Boolean getSignShare(User user, User authUser) {
-		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.sign) > 0) {
+		if(userShareRepository.countByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.sign) > 0) {
 			return true;
 		};
 		return false;
@@ -529,90 +519,6 @@ public class UserService {
 			return organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale()).get(0);
 		}
 		return null;
-	}
-
-	public Boolean switchToShareUser(String eppn) {
-		if(eppn == null || eppn.isEmpty()) {
-			setSuEppn(null);
-			return true;
-		}else {
-			if(checkShare(getUserByEppn(eppn), getUserFromAuthentication())) {
-				setSuEppn(eppn);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkSignShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), ShareType.sign);
-		for(UserShare userShare : userShares) {
-			if (checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
-		for(UserShare userShare : userShares) {
-			if (checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkServiceShare(User fromUser, User toUser, ShareType shareType, Form form) {
-		if(fromUser.equals(toUser)) {
-			return true;
-		}
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
-		if(shareType.equals(ShareType.sign) && userShares.size() > 0) {
-			return true;
-		}
-		for(UserShare userShare : userShares) {
-			if(userShare.getForms().contains(form) && checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkOneServiceShare(User fromUser, User toUser, ShareType shareType) {
-		if(fromUser.equals(toUser)) {
-			return true;
-		}
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
-		if(userShares.size() > 0 ) {
-			return true;
-		}
-		return false;
-	}
-
-	public Boolean checkUserShareDate(UserShare userShare) {
-		Date today = new Date();
-		if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
-			return true;
-		}
-		return false;
-	}
-
-	public void createUserShare(List<Long> forms, List<Long> workflows, String type, List<User> userEmails, Date beginDate, Date endDate, User user) {
-		UserShare userShare = new UserShare();
-		userShare.setUser(user);
-		userShare.setShareType(ShareType.valueOf(type));
-		for(Long form : forms) {
-			userShare.getForms().add(formRepository.findById(form).get());
-		}
-		for(Long workflow : workflows) {
-			userShare.getWorkflows().add(workflowRepository.findById(workflow).get());
-		}
-		userShare.getToUsers().addAll(userEmails);
-		userShare.setBeginDate(beginDate);
-		userShare.setEndDate(endDate);
-		userShareRepository.save(userShare);
 	}
 
     public List<Message> getMessages(User authUser) {

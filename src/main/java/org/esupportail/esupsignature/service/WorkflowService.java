@@ -138,7 +138,7 @@ public class WorkflowService {
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
         } else {
-            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.create)) {
+            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
                 workflows.addAll(userShare.getWorkflows());
             }
         }

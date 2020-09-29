@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -21,6 +22,7 @@ import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -38,7 +40,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -76,7 +77,7 @@ public class SignRequestController {
     private GlobalProperties globalProperties;
 
     @Resource
-    private UserService userService;
+    private UserShareService userShareService;
 
     @Resource
     private UserRepository userRepository;
@@ -144,28 +145,22 @@ public class SignRequestController {
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         model.addAttribute("statusFilter", statusFilter);
-        if(user.equals(authUser) || userService.getSignShare(user, authUser)) {
-            List<SignRequest> signRequests;
-            signRequests = signRequestService.getSignRequests(user, statusFilter);
-            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
-            if (user.getKeystore() != null) {
-                model.addAttribute("keystore", user.getKeystore().getFileName());
-            }
-        } else {
-            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(new ArrayList<>(), pageable));
-        }
+        List<SignRequest> signRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, statusFilter);
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(user, authUser));
         model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
         return "user/signrequests/list";
     }
 
+
+
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                                     @RequestParam(value = "statusFilter", required = false) String statusFilter,
                                     @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequests(user, statusFilter);
+        List<SignRequest> signRequests = signRequestService.getSignRequestsByStatus(user, statusFilter);
         Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
@@ -206,7 +201,7 @@ public class SignRequestController {
         }
         model.addAttribute("nextSignRequest", nextSignRequest);
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
-                && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0
+                && signRequestService.checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)) {
             signRequest.setSignable(true);
             model.addAttribute("currentSignType", signRequestService.getCurrentSignType(signRequest));
@@ -235,7 +230,7 @@ public class SignRequestController {
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
                 if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-                    if(signRequestService.checkUserSignRights(user, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequestService.checkUserSignRights(user, authUser, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
                         model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d’ajouter un certificat à votre profil"));
                     }
@@ -275,7 +270,7 @@ public class SignRequestController {
         model.addAttribute("postits", logService.getLogs(signRequest.getId()));
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, signRequest));
+        model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, authUser, signRequest));
         if (frameMode != null && frameMode) {
             return "user/signrequests/show-frame";
         } else {
@@ -302,7 +297,7 @@ public class SignRequestController {
         }
         model.addAttribute("signRequest", signRequest);
 
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
             signRequest.setSignable(true);
         }
         model.addAttribute("signTypes", SignType.values());
@@ -312,10 +307,10 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
+    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
-    public ResponseEntity<String> sign(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+    public ResponseEntity<String> sign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
@@ -403,10 +398,10 @@ public class SignRequestController {
     }
 
     @GetMapping("/sign-by-token/{token}")
-    public String signByToken(@ModelAttribute("user") User user, @PathVariable("token") String token) {
+    public String signByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,  @PathVariable("token") String token) {
 
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserSignRights(user, signRequest)) {
+        if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
             return "redirect:/user/signrequests/" + signRequest.getId();
         } else {
             return "redirect:/";
@@ -483,9 +478,9 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user)")
+    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @GetMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public String refuse(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);

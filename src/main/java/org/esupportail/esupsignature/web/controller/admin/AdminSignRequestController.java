@@ -69,9 +69,6 @@ public class AdminSignRequestController {
 	private LogRepository logRepository;
 
 	@Resource
-	private PdfService pdfService;
-	
-	@Resource
 	private FileService fileService;
 
 	@GetMapping
@@ -141,23 +138,18 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-			try {
-				if(documents.size() > 1) {
-					response.sendRedirect("/user/signrequests/" + id);
-				} else {
-					Document document = documents.get(0);
-					response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
-					response.setContentType(document.getContentType());
-					IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-				}
-			} catch (Exception e) {
-				logger.error("get file error", e);
+		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+		try {
+			if(documents.size() > 1) {
+				response.sendRedirect("/user/signrequests/" + id);
+			} else {
+				Document document = documents.get(0);
+				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+				response.setContentType(document.getContentType());
+				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 			}
-		} else {
-			logger.warn(user.getEppn() + " try to access " + signRequest.getId() + " without view rights");
+		} catch (Exception e) {
+			logger.error("get file error", e);
 		}
 	}
 
@@ -178,7 +170,7 @@ public class AdminSignRequestController {
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
-		if(signRequestService.checkUserViewRights(user, signRequest) && signRequest.getStatus().equals(SignRequestStatus.draft)) {
+		if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
 			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
 		} else {
 			logger.warn(user.getEppn() + " try to send for sign " + signRequest.getId() + " without rights");
@@ -190,12 +182,8 @@ public class AdminSignRequestController {
 	public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		if(signRequestService.checkUserViewRights(user, signRequest)) {
-			signRequest.setComment(comment);
-			signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", null, null, null);
-		} else {
-			logger.warn(user.getEppn() + " try to add comment" + signRequest.getId() + " without rights");
-		}
+		signRequest.setComment(comment);
+		signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", null, null, null);
 		redirectAttributes.addFlashAttribute("messageSuccess", "Commentaire ajouté");
 		return "redirect:/admin/signrequests/" + id;
 	}

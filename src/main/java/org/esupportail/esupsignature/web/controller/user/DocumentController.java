@@ -42,14 +42,14 @@ public class DocumentController {
 	private SignRequestService signRequestService;
 
     @GetMapping(value = "/getfile/{id}")
-	public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+	public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
 
 		Document document = documentRepository.findById(id).get();
 		if(document.equals(user.getKeystore())) {
 			return getDocumentResponseEntity(response, document);
 		}
 		Long nbSignRequest = signRequestRepository.countById(document.getParentId());
-		if(nbSignRequest > 0 && signRequestService.checkUserViewRights(user, signRequestRepository.findById(document.getParentId()).get())) {
+		if(nbSignRequest > 0 && signRequestService.checkUserViewRights(user, authUser, signRequestRepository.findById(document.getParentId()).get())) {
 			return getDocumentResponseEntity(response, document);
 		}
 		Long nbForm = formRepository.countById(document.getParentId());

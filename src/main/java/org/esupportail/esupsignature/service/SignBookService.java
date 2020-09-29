@@ -143,7 +143,11 @@ public class SignBookService {
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
             for(Recipient recipient : workflowStep.getRecipients()) {
-                recipientEmails.add(recipient.getUser().getEmail());
+                if(recipient.getUser().equals(userService.getCreatorUser())) {
+                    recipientEmails.add(signBook.getCreateBy().getEmail());
+                } else {
+                    recipientEmails.add(recipient.getUser().getEmail());
+                }
             }
             WorkflowStep newWorkflowStep = null;
             try {
@@ -153,6 +157,7 @@ public class SignBookService {
             }
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
+        signBook.setWorkflowId(workflow.getId());
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }

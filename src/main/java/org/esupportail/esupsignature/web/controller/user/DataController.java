@@ -76,6 +76,9 @@ public class DataController {
 	private UserService userService;
 
 	@Resource
+	private UserShareService userShareService;
+
+	@Resource
 	private UserPropertieRepository userPropertieRepository;
 
 	@Resource
@@ -102,7 +105,7 @@ public class DataController {
 		if(!user.equals(authUser)) {
 			List<Data> datasOk = new ArrayList<>();
 			for(Data data : datas) {
-				if(userService.checkServiceShare(user, authUser, ShareType.create, data.getForm())) {
+				if(userShareService.checkFormShare(user, authUser, ShareType.create, data.getForm())) {
 					datasOk.add(data);
 				}
 			}
@@ -136,7 +139,7 @@ public class DataController {
 	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userService.checkServiceShare(user, authUser, ShareType.create, form)) {
+		if(autorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}

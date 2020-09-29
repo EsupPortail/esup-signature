@@ -19,9 +19,11 @@ package org.esupportail.esupsignature.web.controller;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -53,7 +55,10 @@ public class IndexController {
 
 	@Resource
 	private List<SecurityService> securityServices;
-	
+
+	@Resource
+	private UserShareService userShareService;
+
 	@Resource
 	private UserService userService;
 
@@ -102,7 +107,7 @@ public class IndexController {
 					SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
 					User suUser = signRequestService.checkShare(signRequest);
 					if (suUser != null) {
-						if (userService.switchToShareUser(suUser.getEppn())) {
+						if (userShareService.switchToShareUser(suUser.getEppn())) {
 							redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
 						}
 						return "redirect:" + forwardUri;

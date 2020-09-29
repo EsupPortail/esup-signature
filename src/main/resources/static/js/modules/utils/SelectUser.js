@@ -32,7 +32,7 @@ export default class SelectUser {
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
             searchHighlight: false,
-            hideSelectedOption: true,
+            hideSelectedOption: false,
             closeOnSelect: true,
             limit: this.limit,
             addable: e => this.validateEmail(e),

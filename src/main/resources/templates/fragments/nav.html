@@ -283,7 +283,7 @@
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
-                        <select name="signType" id="signType" class="slim-select-simple">
+                        <select name="signType" id="signType" class="form-control">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
@@ -338,7 +338,7 @@
                     </div>
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
-                        <select name="signType" id="signType2" class="slim-select-simple">
+                        <select name="signType" id="signType2" class="form-control">
                             <th:block th:each="signType : ${@signService.getSignTypes()}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>

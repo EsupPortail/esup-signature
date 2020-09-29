@@ -6,18 +6,18 @@ export default class ShareUi {
     }
 
     initListeners() {
-        $('#selectType').on('change', e => this.toggleShareForm());
+        $('#selectTarget').on('change', e => this.toggleShareForm());
     }
 
     toggleShareForm() {
-        let selectedTypeValue = $("#selectType :selected").val();
-        console.info("toggle share form" + selectedTypeValue);
-        if(selectedTypeValue === 'create') {
+        let selectedTargetValue = $("#selectTarget :selected").val();
+        console.info("toggle share form" + selectedTargetValue);
+        if(selectedTargetValue === 'form') {
             $('#selectFormDiv').removeClass('d-none');
-            $('#selectWorkflowDiv').removeClass('d-none');
+            $('#selectWorkflowDiv').addClass('d-none');
         } else {
             $('#selectFormDiv').addClass('d-none');
-            $('#selectWorkflowDiv').addClass('d-none');
+            $('#selectWorkflowDiv').removeClass('d-none');
         }
     }
 

@@ -5,8 +5,8 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -70,6 +70,9 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private UserShareService userShareService;
 
 	@Resource
 	private UserShareRepository userShareRepository;
@@ -156,18 +159,32 @@ public class UserController {
 	public String params(@ModelAttribute("authUser") User authUser, Model model) {
 		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
+		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
 		model.addAttribute("workflows", workflowService.getWorkflowsForUser(authUser, authUser));
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "shares");
-		return "user/users/shares";
+		return "user/users/shares/list";
+	}
+
+	@GetMapping("/shares/update/{id}")
+	public String params(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		UserShare userShare = userShareRepository.findById(id).get();
+		if(userShare.getUser().equals(authUser)) {
+			model.addAttribute("shareTypes", ShareType.values());
+			model.addAttribute("userShare", userShare);
+			return "user/users/shares/update";
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
+			return "redirect:/user/users/shares";
+		}
 	}
 
 	@PostMapping("/add-share")
 	public String addShare(@ModelAttribute("authUser") User authUser,
 						   @RequestParam(value = "form", required = false) Long[] form,
 						   @RequestParam(value = "workflow", required = false) Long[] workflow,
-						   @RequestParam("type") String type,
+						   @RequestParam("types") String[] types,
 						   @RequestParam("userIds") String[] userEmails,
 						   @RequestParam("beginDate") String beginDate,
 						   @RequestParam("endDate") String endDate) {
@@ -187,7 +204,37 @@ public class UserController {
 				logger.error("error on parsing dates");
 			}
 		}
-		userService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), type, users, beginDateDate, endDateDate, authUser);
+		userShareService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+		return "redirect:/user/users/shares";
+	}
+
+	@PostMapping("/update-share/{id}")
+	public String updateShare(@ModelAttribute("authUser") User authUser,
+							  @PathVariable("id") Long id,
+							  @RequestParam("types") String[] types,
+							  @RequestParam("userIds") String[] userEmails,
+							  @RequestParam("beginDate") String beginDate,
+							  @RequestParam("endDate") String endDate) {
+		UserShare userShare = userShareRepository.findById(id).get();
+		if(userShare.getUser().equals(authUser)) {
+			userShare.getToUsers().clear();
+			for (String userEmail : userEmails) {
+				userShare.getToUsers().add(userService.checkUserByEmail(userEmail));
+			}
+			userShare.getShareTypes().clear();
+			for(String type : types) {
+				userShare.getShareTypes().add(ShareType.valueOf(type));
+			}
+			if (beginDate != null && endDate != null) {
+				try {
+					userShare.setBeginDate(new SimpleDateFormat("yyyy-MM-dd").parse(beginDate));
+					userShare.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(endDate));
+				} catch (ParseException e) {
+					logger.error("error on parsing dates");
+				}
+			}
+		}
+
 		return "redirect:/user/users/shares";
 	}
 
@@ -203,7 +250,7 @@ public class UserController {
 
 	@GetMapping("/change-share")
 	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-		if(userService.switchToShareUser(eppn)) {
+		if(userShareService.switchToShareUser(eppn)) {
 			if(eppn == null || eppn.isEmpty()) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 			} else {

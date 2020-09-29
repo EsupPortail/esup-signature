@@ -32,8 +32,8 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @Enumerated(EnumType.STRING)
-    private ShareType shareType;
+    @ElementCollection(targetClass= ShareType.class)
+    private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -91,11 +91,11 @@ public class UserShare {
         this.endDate = endDate;
     }
 
-    public ShareType getShareType() {
-        return shareType;
+    public List<ShareType> getShareTypes() {
+        return shareTypes;
     }
 
-    public void setShareType(ShareType shareType) {
-        this.shareType = shareType;
+    public void setShareTypes(List<ShareType> shareTypes) {
+        this.shareTypes = shareTypes;
     }
 }

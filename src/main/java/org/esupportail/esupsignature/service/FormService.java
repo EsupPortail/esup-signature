@@ -72,7 +72,7 @@ public class FormService {
 		if(user.equals(authUser)) {
 			forms = formRepository.findAutorizedFormByUser(user);
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), ShareType.create)) {
+			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
 				forms.addAll(userShare.getForms());
 			}
 		}
