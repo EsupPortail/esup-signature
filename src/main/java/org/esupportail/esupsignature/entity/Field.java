@@ -26,10 +26,6 @@ public class Field {
 	private Integer topPos;
 	
 	private Integer leftPos;
-	
-	private Integer width;
-	
-	private Integer height;
 
 	private Integer page;
 
@@ -123,22 +119,6 @@ public class Field {
 
 	public void setLeftPos(Integer left) {
 		this.leftPos = left;
-	}
-
-	public Integer getWidth() {
-		return width;
-	}
-
-	public void setWidth(Integer width) {
-		this.width = width;
-	}
-
-	public Integer getHeight() {
-		return height;
-	}
-
-	public void setHeight(Integer height) {
-		this.height = height;
 	}
 
 	public String getDefaultValue() {

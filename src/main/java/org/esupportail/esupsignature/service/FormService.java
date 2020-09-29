@@ -169,9 +169,7 @@ public class FormService {
 			}
 			if(pdField instanceof PDTextField){
 				Field field = new Field();
-				this.resolveFieldName(field, pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
-				field.setPage(page);
 				PDTextField pdTextField = (PDTextField) pdField;
 				field.setRequired(pdTextField.isRequired());
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
@@ -196,60 +194,37 @@ public class FormService {
 
 				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C) != null) {
 					COSString calculString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C).getItem(COSName.JS);
-					String[] splitcalculString = calculString.getString().split("\\$");
-					if("search".equals(splitcalculString[0])) {
-						field.setSearchDataSource(splitcalculString[1]);
-						field.setSearchType(SearchType.valueOf(splitcalculString[2]));
+					String[] splitCalculString = calculString.getString().split("\\$");
+					if("search".equals(splitCalculString[0])) {
+						field.setSearchDataSource(splitCalculString[1]);
+						field.setSearchType(SearchType.valueOf(splitCalculString[2]));
 					}
 				}
-
-				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-				fieldService.updateField(field);
+				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox){
 				Field field = new Field();
-				this.resolveFieldName(field, pdField.getPartialName());
-				field.setLabel(pdField.getAlternateFieldName());
-				field.setPage(page);
 				field.setType(FieldType.checkbox);
+				field.setLabel(pdField.getAlternateFieldName());
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-				fieldService.updateField(field);
+				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 			} else if(pdField instanceof PDRadioButton){
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
 					Field field = new Field();
-					this.resolveFieldName(field, pdField.getPartialName());
+					field.setType(FieldType.radio);
 					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
 					field.setLabel(labelCOSName.getName());
-					field.setPage(page);
-					field.setType(FieldType.radio);
-					field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-					field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-					field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-					field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-					fieldService.updateField(field);
+					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
 				}
 			} else if(pdField instanceof PDChoice) {
 				Field field = new Field();
-				this.resolveFieldName(field, pdField.getPartialName());
-				field.setLabel(pdField.getAlternateFieldName());
-				field.setPage(page);
 				field.setType(FieldType.select);
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-				fieldService.updateField(field);
+				field.setLabel(pdField.getAlternateFieldName());
+				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 			}
 		}
@@ -261,6 +236,14 @@ public class FormService {
 			fieldService.updateField(field);
 		}
 		return fields;
+	}
+
+	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
+		this.resolveFieldName(field, pdField.getPartialName());
+		field.setPage(page);
+		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
+		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
+		fieldService.updateField(field);
 	}
 
 	private void resolveFieldName(Field field, String name) {
