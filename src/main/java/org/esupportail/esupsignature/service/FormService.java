@@ -43,9 +43,6 @@ public class FormService {
 	private PdfService pdfService;
 
 	@Resource
-	private UserService userService;
-
-	@Resource
 	private UserShareRepository userShareRepository;
 
 	@Resource
