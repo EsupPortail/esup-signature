@@ -42,12 +42,8 @@
                         <th:block th:each="userShare : ${userShares}">
                             <tr>
                                 <td>
-                                    <ul class="text-left" th:each="form : ${userShare.forms}">
-                                        <li class="text-left" th:text="${form.title}"></li>
-                                    </ul>
-                                    <ul class="text-left" th:each="workflow : ${userShare.workflows}">
-                                        <li class="text-left" th:text="${workflow.description}"></li>
-                                    </ul>
+                                    <span th:if="${userShare.form}" class="text-left" th:text="${userShare.form.title}"></span>
+                                    <span th:if="${userShare.workflow}" class="text-left" th:text="${userShare.workflow.description}"></span>
                                 </td>
                                 <td>
                                     <ul class="text-left">
@@ -144,8 +140,8 @@
 
                         <div id="selectFormDiv" class="form-group d-none">
                             <label for="selectForm">Formulaires à déléguer</label>
-                            <select id="selectForm" class="slim-select-simple" name="form" multiple>
-                                <option value="" data-placeholder="true">Choisir un ou plusieurs formulaire(s)</option>
+                            <select id="selectForm" class="form-control" name="form">
+                                <option value="" data-placeholder="true">Choisir un formulaire</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:value="${form.id}" th:text="${form.title}"></option>
                                 </th:block>
@@ -154,8 +150,8 @@
 
                         <div id="selectWorkflowDiv" class="form-group d-none">
                             <label for="selectWorkflow">Circuits à déléguer</label>
-                            <select id="selectWorkflow" class="slim-select-simple" name="workflow" multiple>
-                                <option value="" data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>
+                            <select id="selectWorkflow" class="form-control" name="workflow">
+                                <option value="" data-placeholder="true">Choisir un circuit</option>
                                 <th:block th:each="workflow : ${workflows}">
                                     <option th:value="${workflow.id}" th:text="${workflow.description}"></option>
                                 </th:block>

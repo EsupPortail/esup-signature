@@ -11,12 +11,12 @@ import java.util.List;
 
 public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
 	List<UserShare> findByUser(User user);
-	List<UserShare> findByFormsContains(Form form);
-	List<UserShare> findByUserAndWorkflowsContains(User user, Workflow workflow);
+	List<UserShare> findByForm(Form form);
+	List<UserShare> findByUserAndWorkflow(User user, Workflow workflow);
 	List<UserShare> findByToUsersIn(List<User> toUsers);
 	List<UserShare> findByUserAndToUsersIn(User user, List<User> toUsers);
 	List<UserShare> findByUserAndToUsersInAndShareTypesContains(User user, List<User> toUsers, ShareType shareType);
-	List<UserShare> findByUserAndToUsersInAndWorkflowsContainsAndShareTypesContains(User user, List<User> toUsers, Workflow workflow, ShareType shareType);
+	List<UserShare> findByUserAndToUsersInAndWorkflowAndShareTypesContains(User user, List<User> toUsers, Workflow workflow, ShareType shareType);
 	List<UserShare> findByToUsersInAndShareTypesContains(List<User> toUsers, ShareType shareType);
 	Long countByUserAndToUsersInAndShareTypesContains(User user, List<User> toUsers, ShareType shareType);
 }

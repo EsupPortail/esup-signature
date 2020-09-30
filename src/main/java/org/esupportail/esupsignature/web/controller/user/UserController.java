@@ -162,7 +162,7 @@ public class UserController {
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
-		model.addAttribute("workflows", workflowService.getWorkflowsForUser(authUser, authUser));
+		model.addAttribute("workflows", workflowService.getAutorizedToShareWorkflows());
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "shares");
 		return "user/users/shares/list";

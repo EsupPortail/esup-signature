@@ -16,7 +16,8 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
-                <li class="breadcrumb-item active" th:text="${userShare.workflows.get(0).description}"></li>
+                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.description}"></li>
+                <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.description}"></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -29,22 +30,14 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body text-center">
                     <form id="shareForm" th:action="'/user/users/update-share/' + ${userShare.id}" method="post">
-                            <div id="selectFormDiv" class="form-group" th:if="${userShare.forms.size() > 0}">
+                            <div id="selectFormDiv" class="form-group" th:if="${userShare.form}">
                                 <label>Formulaires délégué</label>
-                                <ul class="text-left">
-                                    <th:block th:each="form : ${userShare.forms}">
-                                        <li th:text="${form.title}"></li>
-                                    </th:block>
-                                </ul>
+                                <span th:text="${userShare.form.title}"></span>
                             </div>
 
-                            <div id="selectWorkflowDiv" class="form-group" th:if="${userShare.workflows.size() > 0}">
-                                <label>Circuits délégueé</label>
-                                <ul class="text-left">
-                                    <th:block th:each="workflow : ${userShare.workflows}">
-                                        <li th:text="${workflow.description}" selected></li>
-                                    </th:block>
-                                </ul>
+                            <div id="selectWorkflowDiv" class="form-group" th:if="${userShare.workflow}">
+                                <label>Circuits délégué : </label>
+                                <span th:text="${userShare.workflow.description}" selected></span>
                             </div>
 
 <!--                            <div class="form-group">-->

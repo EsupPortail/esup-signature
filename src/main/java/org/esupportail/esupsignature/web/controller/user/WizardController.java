@@ -88,7 +88,7 @@ public class WizardController {
     @GetMapping(value = "/wiz4/{id}")
     public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
-                       Model model) throws InterruptedException {
+                       Model model) {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);

@@ -151,7 +151,7 @@ public class FormAdminController {
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Form form = formRepository.findById(id).get();
-		List<UserShare> userShares = userShareRepository.findByFormsContains(form);
+		List<UserShare> userShares = userShareRepository.findByForm(form);
 		for(UserShare userShare : userShares) {
 			userShareRepository.deleteById(userShare.getId());
 		}

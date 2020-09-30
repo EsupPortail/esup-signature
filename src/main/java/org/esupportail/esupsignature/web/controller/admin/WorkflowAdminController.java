@@ -137,7 +137,7 @@ public class WorkflowAdminController {
     @PostMapping(value = "/update/{id}")
     public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
-						 @RequestParam("types") String[] types,
+						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> managers) {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(managers != null && managers.size() > 0) {
@@ -151,8 +151,11 @@ public class WorkflowAdminController {
 		} else {
 			workflowToUpdate.getManagers().clear();
 		}
-		for(String type : types) {
-			workflowToUpdate.getAutorizedShareTypes().add(ShareType.valueOf(type));
+		workflowToUpdate.getAutorizedShareTypes().clear();
+		if(types != null) {
+			for (String type : types) {
+				workflowToUpdate.getAutorizedShareTypes().add(ShareType.valueOf(type));
+			}
 		}
 		workflowToUpdate.setSourceType(workflow.getSourceType());
 		workflowToUpdate.setTargetType(workflow.getTargetType());

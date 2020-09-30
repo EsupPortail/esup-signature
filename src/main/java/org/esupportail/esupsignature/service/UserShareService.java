@@ -57,7 +57,7 @@ public class UserShareService {
         }
         for(Long workflowId : workflowsIds) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
-            if(userShareRepository.findByUserAndWorkflowsContains(user, workflow).size() == 0) {
+            if(userShareRepository.findByUserAndWorkflow(user, workflow).size() == 0) {
                 if (workflow.getAutorizedShareTypes().containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
                 } else {
@@ -90,7 +90,7 @@ public class UserShareService {
     public Boolean checkSignShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
         if(signRequest.getParentSignBook() != null && signRequest.getParentSignBook().getWorkflowId() != null) {
             Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
-            List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowsContainsAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
+            List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
             for (UserShare userShare : userShares) {
                 if (checkUserShareDate(userShare)) {
                     return true;

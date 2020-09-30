@@ -140,7 +140,7 @@ public class FormService {
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareRepository.findByFormsContains(testForms.get(0));
+			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
 			for (UserShare userShare : userShares) {
 				userShare.setForm(form);
 			}

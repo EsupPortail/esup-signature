@@ -297,7 +297,7 @@ public class SignBookService {
         return false;
     }
 
-    public void pendingSignBook(SignBook signBook, User user) throws InterruptedException {
+    public void pendingSignBook(SignBook signBook, User user) {
         WorkflowStep currentWorkflowStep = getCurrentWorkflowStep(signBook);
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), "SUCCESS", signBook.getComment());
         boolean emailSended = false;

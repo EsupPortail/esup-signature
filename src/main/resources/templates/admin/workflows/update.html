@@ -16,8 +16,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span
-                        th:text="${workflow.name}"></span>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
         </nav>
@@ -74,7 +73,7 @@
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${shareTypes}">
                                 <div class="form-check text-left">
-                                    <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
+                                    <input th:checked="${workflow.autorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                 </div>
                             </th:block>
