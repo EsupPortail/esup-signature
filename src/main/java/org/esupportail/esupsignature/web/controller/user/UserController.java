@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -169,6 +170,7 @@ public class UserController {
 
 	@GetMapping("/shares/update/{id}")
 	public String params(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		model.addAttribute("activeMenu", "shares");
 		UserShare userShare = userShareRepository.findById(id).get();
 		if(userShare.getUser().equals(authUser)) {
 			model.addAttribute("shareTypes", ShareType.values());
@@ -187,7 +189,8 @@ public class UserController {
 						   @RequestParam("types") String[] types,
 						   @RequestParam("userIds") String[] userEmails,
 						   @RequestParam("beginDate") String beginDate,
-						   @RequestParam("endDate") String endDate) {
+						   @RequestParam("endDate") String endDate,
+						   RedirectAttributes redirectAttributes) {
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
@@ -204,7 +207,11 @@ public class UserController {
 				logger.error("error on parsing dates");
 			}
 		}
-		userShareService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+		try {
+			userShareService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+		} catch (EsupSignatureUserException e) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		}
 		return "redirect:/user/users/shares";
 	}
 
@@ -222,8 +229,17 @@ public class UserController {
 				userShare.getToUsers().add(userService.checkUserByEmail(userEmail));
 			}
 			userShare.getShareTypes().clear();
+			List<ShareType> autorizedShareTypes = new ArrayList<>();
+			if(userShare.getWorkflows().size() > 0 ) {
+				autorizedShareTypes.addAll(userShare.getWorkflows().get(0).getAutorizedShareTypes());
+			}
+			if(userShare.getForms().size() > 0 ) {
+				autorizedShareTypes.addAll(userShare.getForms().get(0).getAutorizedShareTypes());
+			}
 			for(String type : types) {
-				userShare.getShareTypes().add(ShareType.valueOf(type));
+				if(autorizedShareTypes.contains(ShareType.valueOf(type))) {
+					userShare.getShareTypes().add(ShareType.valueOf(type));
+				}
 			}
 			if (beginDate != null && endDate != null) {
 				try {

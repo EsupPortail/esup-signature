@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -32,6 +33,9 @@ public class Form {
 	private String preFillType;
 
 	private String role;
+
+	@ElementCollection(targetClass= ShareType.class)
+	private List<ShareType> autorizedShareTypes = new ArrayList<>();
 
 	private Boolean publicUsage = false;
 
@@ -123,6 +127,14 @@ public class Form {
 
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	public List<ShareType> getAutorizedShareTypes() {
+		return autorizedShareTypes;
+	}
+
+	public void setAutorizedShareTypes(List<ShareType> autorizedShareTypes) {
+		this.autorizedShareTypes = autorizedShareTypes;
 	}
 
 	public Boolean getPublicUsage() {

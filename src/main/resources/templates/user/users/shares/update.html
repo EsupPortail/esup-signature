@@ -15,7 +15,8 @@
         <nav th:insert="fragments/side-user"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Délégations</li>
+                <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
+                <li class="breadcrumb-item active" th:text="${userShare.workflows.get(0).description}"></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -41,7 +42,7 @@
                                 <label>Circuits délégueé</label>
                                 <ul class="text-left">
                                     <th:block th:each="workflow : ${userShare.workflows}">
-                                        <li th:text="${workflow.name}" selected></li>
+                                        <li th:text="${workflow.description}" selected></li>
                                     </th:block>
                                 </ul>
                             </div>

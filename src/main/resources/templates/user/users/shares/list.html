@@ -30,10 +30,9 @@
                     <table class="table table-hover table-striped table-borderless">
                         <thead class="thead-dark">
                         <tr>
+                            <th style="width: 15%">Elément délégué</th>
                             <th style="width: 10%">Type de délégation</th>
-                            <th style="width: 15%">Formulaire</th>
-                            <th style="width: 15%">Circuit</th>
-                            <th style="width: 15%">Utilisateurs</th>
+                            <th style="width: 15%">Délégataire</th>
                             <th style="width: 10%">Date de début</th>
                             <th style="width: 10%">Date de fin</th>
                             <th style="width: 15px%">Actions</th>
@@ -43,20 +42,18 @@
                         <th:block th:each="userShare : ${userShares}">
                             <tr>
                                 <td>
-                                    <ul class="text-left">
-                                    <th:block th:each="shareType : ${userShare.shareTypes}">
-                                        <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
-                                    </th:block>
-                                    </ul>
-                                </td>
-                                <td>
                                     <ul class="text-left" th:each="form : ${userShare.forms}">
                                         <li class="text-left" th:text="${form.title}"></li>
                                     </ul>
+                                    <ul class="text-left" th:each="workflow : ${userShare.workflows}">
+                                        <li class="text-left" th:text="${workflow.description}"></li>
+                                    </ul>
                                 </td>
                                 <td>
-                                    <ul class="text-left" th:each="workflow : ${userShare.workflows}">
-                                        <li class="text-left" th:text="${workflow.name}"></li>
+                                    <ul class="text-left">
+                                        <th:block th:each="shareType : ${userShare.shareTypes}">
+                                            <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
+                                        </th:block>
                                     </ul>
                                 </td>
                                 <td>
@@ -138,7 +135,7 @@
 
                         <div class="form-group">
                             <label for="selectTarget">Type d'élément à déléguer (circuit ou formulaire)</label>
-                            <select id="selectTarget" class="slim-select-simple" name="target" required="required">
+                            <select id="selectTarget" class="form-control" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="workflow">Circuit</option>
                                 <option value="form">Formulaire</option>
@@ -160,21 +157,31 @@
                             <select id="selectWorkflow" class="slim-select-simple" name="workflow" multiple>
                                 <option value="" data-placeholder="true">Choisir un ou plusieurs circuit(s)</option>
                                 <th:block th:each="workflow : ${workflows}">
-                                    <option th:value="${workflow.id}" th:text="${workflow.name}"></option>
+                                    <option th:value="${workflow.id}" th:text="${workflow.description}"></option>
                                 </th:block>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="selectType">Type de délégation</label>
-                            <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">
-                                <option value="" data-placeholder="true">Choisir un type de délégation</option>
-                                <th:block th:each="shareType : ${shareTypes}">
-                                    <option th:value="${shareType.name()}"
-                                            th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>
-                                </th:block>
-                            </select>
+                            <label>Type de délégation</label>
+                            <th:block th:each="shareType : ${shareTypes}">
+                                <div class="form-check text-left">
+                                    <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
+                                    <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
+                                </div>
+                            </th:block>
                         </div>
+
+<!--                        <div class="form-group">-->
+<!--                            <label for="selectType">Type de délégation</label>-->
+<!--                            <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">-->
+<!--                                <option value="" data-placeholder="true">Choisir un type de délégation</option>-->
+<!--                                <th:block th:each="shareType : ${shareTypes}">-->
+<!--                                    <option th:value="${shareType.name()}"-->
+<!--                                            th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>-->
+<!--                                </th:block>-->
+<!--                            </select>-->
+<!--                        </div>-->
 
                         <div class="form-group">
                             <label for="selectUsers">Choix des utilisateurs</label>

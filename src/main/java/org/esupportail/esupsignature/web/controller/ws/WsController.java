@@ -214,11 +214,12 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/create-workflow")
-    public String createWorkflow(@RequestParam String workflowString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+    public String createWorkflow(@RequestParam String workflowString, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class).getName(), user, true);
+        String name = mapper.readValue(workflowString, Workflow.class).getName();
+        Workflow workflow = workflowService.createWorkflow(name, name, user, true);
         return workflow.getName();
     }
 

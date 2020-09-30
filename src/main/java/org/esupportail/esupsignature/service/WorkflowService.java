@@ -109,11 +109,14 @@ public class WorkflowService {
         }
     }
 
-    public Workflow createWorkflow(String name, User user, boolean external) throws EsupSignatureException {
+    public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
+        String name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
+        name = name.replaceAll("[^a-zA-Z0-9]", "") + "BaseWorkflow";
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
-            workflow.setDescription(name);
+            workflow.setDescription(description);
+            workflow.setTitle(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
             workflow.setCreateBy(user.getEppn());
             workflow.setCreateDate(new Date());
             workflow.setExternal(external);

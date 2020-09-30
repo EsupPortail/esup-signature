@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -38,17 +39,33 @@ public class UserShareService {
         return suUsers;
     }
 
-    public void createUserShare(List<Long> forms, List<Long> workflows, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) {
+    public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
+        List<ShareType> shareTypes = new ArrayList<>();
         for(String type : types) {
-            userShare.getShareTypes().add(ShareType.valueOf(type));
+            shareTypes.add(ShareType.valueOf(type));
         }
-        for(Long form : forms) {
-            userShare.getForms().add(formRepository.findById(form).get());
+        userShare.getShareTypes().addAll(shareTypes);
+        for(Long formId : formsIds) {
+            Form form = formRepository.findById(formId).get();
+            if(form.getAutorizedShareTypes().containsAll(shareTypes)) {
+                userShare.getForms().add(form);
+            } else {
+                throw new EsupSignatureUserException("La délégation du formulaire : " + form.getTitle() + " n'est pas autorisée");
+            }
         }
-        for(Long workflow : workflows) {
-            userShare.getWorkflows().add(workflowRepository.findById(workflow).get());
+        for(Long workflowId : workflowsIds) {
+            Workflow workflow = workflowRepository.findById(workflowId).get();
+            if(userShareRepository.findByUserAndWorkflowsContains(user, workflow).size() == 0) {
+                if (workflow.getAutorizedShareTypes().containsAll(shareTypes)) {
+                 userShare.getWorkflows().add(workflow);
+                } else {
+                 throw new EsupSignatureUserException("La délégation du circuit : " + workflow.getDescription() + " n'est pas autorisée");
+                }
+            } else {
+                throw new EsupSignatureUserException("Une délégation pour ce circuit existe déjà, merci de la modifier");
+            }
         }
         userShare.getToUsers().addAll(userEmails);
         userShare.setBeginDate(beginDate);

@@ -13,13 +13,13 @@
         <nav th:insert="fragments/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active"><a href="/admin">Liste des circuits de visas</a></li>
+                <li class="breadcrumb-item active"><a href="/admin/workflows">Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit
                     : <span th:text="${workflow.name}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content col-lg-8">
+        <div id="content" class="content">
             <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-ellipsis-v"></i>
@@ -49,7 +49,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="card">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Titre</dt>
@@ -70,6 +70,16 @@
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Rôle</dt>
                         <dd th:text="${workflow.role}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Types de délégation autorizés</dt>
+                        <dd>
+                            <ul class="text-left">
+                                <th:block th:each="shareType : ${workflow.autorizedShareTypes}">
+                                    <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
+                                </th:block>
+                            </ul>
+                        </dd>
                     </dl>
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>

@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -69,13 +70,18 @@ public class WorkflowAdminController {
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
-		if("system".equals(displayWorkflowType)) {
-			User systemUser = userService.getSystemUser();
+		User systemUser = userService.getSystemUser();
+		if("system".equals(displayWorkflowType) || displayWorkflowType == null) {
+			displayWorkflowType = "system";
 			workflows.addAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
-		} else {
+		} else if("all".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getAllWorkflows());
+		} else if("users".equals(displayWorkflowType)) {
+			workflows.addAll(workflowService.getAllWorkflows());
+			workflows.removeAll(workflowService.getClassesWorkflows());
+			workflows.removeAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflows);
@@ -101,12 +107,10 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute("user") User user, @RequestParam(name = "name") String name, RedirectAttributes redirectAttributes) {
-		Workflow newWorkflow = new Workflow();
-		newWorkflow.setName(name);
+	public String create(@ModelAttribute("user") User user, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(name, userService.getSystemUser(),false);
+			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false);
 		} catch (EsupSignatureException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
 			return "redirect:/admin/workflows/";
@@ -122,8 +126,9 @@ public class WorkflowAdminController {
 //		}
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("users", userRepository.findAll());
-		model.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-		model.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
+		model.addAttribute("sourceTypes", DocumentIOType.values());
+		model.addAttribute("targetTypes", DocumentIOType.values());
+		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("signrequests", signRequestRepository.findAll());
         return "admin/workflows/update";
@@ -132,6 +137,7 @@ public class WorkflowAdminController {
     @PostMapping(value = "/update/{id}")
     public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
+						 @RequestParam("types") String[] types,
 						 @RequestParam(required = false) List<String> managers) {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(managers != null && managers.size() > 0) {
@@ -144,6 +150,9 @@ public class WorkflowAdminController {
 			}
 		} else {
 			workflowToUpdate.getManagers().clear();
+		}
+		for(String type : types) {
+			workflowToUpdate.getAutorizedShareTypes().add(ShareType.valueOf(type));
 		}
 		workflowToUpdate.setSourceType(workflow.getSourceType());
 		workflowToUpdate.setTargetType(workflow.getTargetType());

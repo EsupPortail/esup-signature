@@ -15,19 +15,17 @@ import java.util.List;
 @Component
 public class VisaAndSignWorkflowTest extends DefaultWorkflow {
 
-    private String name = "VisaAndSignWorkflowTest";
-    private String description = "Visa du responsable puis signature de taverpa2";
-    private List<WorkflowStep> workflowSteps;
-
     @Override
     public String getName() {
-        return name;
+        return "VisaAndSignTestClassWorkflow";
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return "Visa du responsable puis signature de Test";
     }
+
+    private List<WorkflowStep> workflowSteps;
 
     @Override
     public List<WorkflowStep> getWorkflowSteps() {

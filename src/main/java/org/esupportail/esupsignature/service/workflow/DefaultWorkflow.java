@@ -29,7 +29,12 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
 
     @Override
     public String getName() {
-        return "DefaultWorkflow";
+        return "DefaultClassWorkflow";
+    }
+
+    @Override
+    public String getDescription() {
+        return "Workflow par défaut";
     }
 
     @Override
@@ -40,11 +45,6 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
     @Override
     public DocumentIOType getTargetType() {
         return DocumentIOType.none;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Workflow par défaut";
     }
 
     @Override

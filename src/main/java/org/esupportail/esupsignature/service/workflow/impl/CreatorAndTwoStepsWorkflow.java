@@ -13,19 +13,17 @@ import java.util.List;
 @Component
 public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 
-	private String name = "CreatorAndTwoStepsWorkflow";
-	private String description = "Signature du créateur puis de deux signataires en série";
-	private List<WorkflowStep> workflowSteps;
-
 	@Override
 	public String getName() {
-		return name;
+		return "CreatorAndTwoStepsClassWorkflow";
 	}
 	
 	@Override
 	public String getDescription() {
-		return description;
+		return "Signature du créateur puis de deux signataires en série";
 	}
+
+	private List<WorkflowStep> workflowSteps;
 
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {

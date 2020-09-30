@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
@@ -150,13 +151,12 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz5/{id}")
-    public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
+    public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         try {
-            signBookService.saveWorkflow(name, user, signBook);
+            signBookService.saveWorkflow(name, name, user, signBook);
         } catch (EsupSignatureException e) {
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
             return "redirect:/user/wizard/wiz5/" + signBook.getId();
         }
         return "redirect:/user/wizard/wizend/" + signBook.getId();
@@ -171,6 +171,17 @@ public class WizardController {
         } else {
             throw new EsupSignatureException("not authorized");
         }
+    }
+
+    @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
+    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Workflow workflow = workflowRepository.findById(id).get();
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
+		} else {
+            workflowRepository.delete(workflow);
+        }
+        return "redirect:/user/";
     }
 
 }
