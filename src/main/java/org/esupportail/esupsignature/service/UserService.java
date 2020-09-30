@@ -360,7 +360,7 @@ public class UserService {
 						if (toSignSharedSignRequest.getParentSignBook() != null) {
 							List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
 							if(datas.size() > 0) {
-								if (userShare.getForms().contains(datas.get(0).getForm())) {
+								if (userShare.getForm().equals(datas.get(0).getForm())) {
 									if (!signRequest.equals(toSignSharedSignRequest)) {
 										toEmails.add(toUser.getEmail());
 									}
@@ -396,7 +396,7 @@ public class UserService {
 						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 							if(toSignSharedSignRequest.getParentSignBook() != null) {
 								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
-								if(datas.size() > 0 && userShare.getForms().contains(datas.get(0).getForm())) {
+								if(datas.size() > 0 && userShare.getForm().equals(datas.get(0).getForm())) {
 									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
 										toSignSignRequests.add(toSignSharedSignRequest);
 										toEmails.add(toUser.getEmail());

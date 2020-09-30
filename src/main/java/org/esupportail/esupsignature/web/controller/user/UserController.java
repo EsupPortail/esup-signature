@@ -230,11 +230,11 @@ public class UserController {
 			}
 			userShare.getShareTypes().clear();
 			List<ShareType> autorizedShareTypes = new ArrayList<>();
-			if(userShare.getWorkflows().size() > 0 ) {
-				autorizedShareTypes.addAll(userShare.getWorkflows().get(0).getAutorizedShareTypes());
+			if(userShare.getWorkflow() != null) {
+				autorizedShareTypes.addAll(userShare.getWorkflow().getAutorizedShareTypes());
 			}
-			if(userShare.getForms().size() > 0 ) {
-				autorizedShareTypes.addAll(userShare.getForms().get(0).getAutorizedShareTypes());
+			if(userShare.getForm() != null ) {
+				autorizedShareTypes.addAll(userShare.getForm().getAutorizedShareTypes());
 			}
 			for(String type : types) {
 				if(autorizedShareTypes.contains(ShareType.valueOf(type))) {

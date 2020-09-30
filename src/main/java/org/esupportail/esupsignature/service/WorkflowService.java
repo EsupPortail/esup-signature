@@ -142,7 +142,7 @@ public class WorkflowService {
             workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
         } else {
             for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
-                workflows.addAll(userShare.getWorkflows());
+                workflows.add(userShare.getWorkflow());
             }
         }
         workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
