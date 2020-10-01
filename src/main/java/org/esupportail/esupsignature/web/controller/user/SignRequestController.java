@@ -75,9 +75,6 @@ public class SignRequestController {
     private GlobalProperties globalProperties;
 
     @Resource
-    private UserShareService userShareService;
-
-    @Resource
     private UserRepository userRepository;
 
     @Resource
@@ -189,7 +186,7 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<SignRequest> toSignRequests = signRequestService.getToSignRequests(user);
+        List<SignRequest> toSignRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, "tosign");
         SignRequest nextSignRequest = null;
         for(SignRequest nextSignRequest1 : toSignRequests) {
             if(!nextSignRequest1.equals(signRequest)) {
