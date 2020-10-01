@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -74,7 +73,7 @@ public class WizardController {
         List<SignBook> signBooks = signBookRepository.findByCreateBy(user);
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());

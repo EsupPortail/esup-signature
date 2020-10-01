@@ -68,12 +68,15 @@ public class FormService {
 	}
 	
 	public List<Form> getFormsByUser(User user, User authUser){
+		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
 		List<Form> forms = new ArrayList<>();
 		if(user.equals(authUser)) {
-			forms = formRepository.findAuthorizedFormByUser(user);
+			forms = authorizedForms;
 		} else {
 			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
-				forms.add(userShare.getForm());
+				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
+					forms.add(userShare.getForm());
+				}
 			}
 		}
 		return forms;
@@ -83,6 +86,10 @@ public class FormService {
 		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(e -> list.add(e));
 		return list;
+	}
+
+	public List<Form> getAuthorizedToShareForms() {
+		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
 	}
 
 	public void updateForm(Form form) {

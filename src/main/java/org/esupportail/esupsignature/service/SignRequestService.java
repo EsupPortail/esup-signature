@@ -141,8 +141,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = getSignRequestsByStatus(user, statusFilter);
 		if(!user.equals(authUser)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkSignShare(user, authUser, signRequest, ShareType.read)
-				|| userShareService.checkSignShare(user, authUser, signRequest, ShareType.sign)) {
+				if(userShareService.checkShare(user, authUser, signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -183,6 +182,10 @@ public class SignRequestService {
 					signRequests.add(signRequest);
 				}
 			}
+		}
+		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+			signRequest.setViewTitle(signRequest.getTitle());
+			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
 		}
 		return signRequests;
 	}
@@ -836,7 +839,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserSignRights(User user, User authUser, SignRequest signRequest) {
-		if(user.equals(authUser) || userShareService.checkSignShare(user, authUser, signRequest, ShareType.sign)) {
+		if(user.equals(authUser) || userShareService.checkShare(user, authUser, signRequest, ShareType.sign)) {
 			if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
 					&& recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
 				return true;
@@ -846,7 +849,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(User user, User authUser, SignRequest signRequest) {
-		if(user.equals(authUser) || userShareService.checkSignShare(user, authUser, signRequest, ShareType.read)) {
+		if(user.equals(authUser) || userShareService.checkShare(user, authUser, signRequest)) {
 			List<Log> log = logRepository.findByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
 			log.addAll(logRepository.findByEppnForAndSignRequestId(user.getEppn(), signRequest.getId()));
 			if (signRequest.getCreateBy().equals(user) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getRecipients(), user) > 0) {
@@ -919,10 +922,7 @@ public class SignRequestService {
 			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
 		}
 		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-			signRequest.setViewTitle(signRequest.getTitle());
-			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
 			signRequestsGrouped.add(signRequest);
-
 		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();

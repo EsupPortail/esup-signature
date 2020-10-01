@@ -8,6 +8,7 @@ export default class ShareUi {
     initListeners() {
         $('#selectTarget').on('change', e => this.toggleShareForm());
         $('#selectWorkflow').on('change', e => this.updateTypeCheckboxes(e));
+        $('#selectForm').on('change', e => this.updateTypeCheckboxes(e));
     }
 
     toggleShareForm() {
@@ -30,7 +31,7 @@ export default class ShareUi {
         let authorizedSignTypesData = optionSelected.attr("data");
         if(authorizedSignTypesData) {
             let authorizedSignTypes = authorizedSignTypesData.replace("[", "").replace("]", "").split(",");
-            $.each(authorizedSignTypes, function (e, value) {
+            $.each(authorizedSignTypes, function (id, value) {
                 $("#check-" + value.trim()).removeAttr("disabled");
                 console.log(value);
             });

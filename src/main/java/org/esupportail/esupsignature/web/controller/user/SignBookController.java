@@ -83,7 +83,7 @@ public class SignBookController {
         model.addAttribute("logs", logs);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
         return "user/signbooks/update";
     }
 

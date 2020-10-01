@@ -73,7 +73,7 @@ public class WorkflowAdminController {
 		User systemUser = userService.getSystemUser();
 		if("system".equals(displayWorkflowType) || displayWorkflowType == null) {
 			displayWorkflowType = "system";
-			workflows.addAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
+			workflows.addAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else if("all".equals(displayWorkflowType)) {
@@ -81,7 +81,7 @@ public class WorkflowAdminController {
 		} else if("users".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getAllWorkflows());
 			workflows.removeAll(workflowService.getClassesWorkflows());
-			workflows.removeAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
+			workflows.removeAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflows);

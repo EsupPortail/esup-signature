@@ -10,7 +10,7 @@
             <div id="newScroll" class="text-center text-nowrap col-12 overflow-auto text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Signature simple</h5>
-                    <a th:if="${user == authUser || isOneSignShare}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                    <a th:if="${user == authUser}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                        title="Vous devez signer un document présent sur votre poste">
                         <div class="crop">

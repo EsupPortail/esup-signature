@@ -45,7 +45,7 @@
 
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${user == authUser || isOneSignShare}" >
+                <li class="nav-item text-white" th:if="${user == authUser || isOneSignShare || isOneReadShare}" >
                     <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user, T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending).size()}"
                        th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">

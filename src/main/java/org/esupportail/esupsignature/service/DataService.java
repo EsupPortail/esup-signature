@@ -137,8 +137,8 @@ public class DataService {
 
 
     public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-        data.setName(format.format(new Date()) + "_" + form.getTitle());
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        data.setName(form.getTitle() + "_" + format.format(new Date()));
         data.getDatas().putAll(formData.toSingleValueMap());
         data.setForm(form);
         data.setFormName(form.getName());

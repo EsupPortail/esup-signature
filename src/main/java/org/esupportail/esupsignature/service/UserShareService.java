@@ -29,6 +29,9 @@ public class UserShareService {
     @Resource
     private WorkflowRepository workflowRepository;
 
+    @Resource
+    private DataService dataService;
+
     public List<User> getSuUsers(User authUser) {
         List<User> suUsers = new ArrayList<>();
         for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
@@ -87,20 +90,40 @@ public class UserShareService {
         return false;
     }
 
-    public Boolean checkSignShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
-        if(signRequest.getParentSignBook() != null && signRequest.getParentSignBook().getWorkflowId() != null) {
-            Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
-            List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
-            for (UserShare userShare : userShares) {
-                if (checkUserShareDate(userShare)) {
-                    return true;
+    public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
+        if(signRequest.getParentSignBook() != null) {
+            if (signRequest.getParentSignBook().getWorkflowId() != null) {
+                Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
+                List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
+                for (UserShare userShare : userShares) {
+                    if (checkUserShareDate(userShare)) {
+                        return true;
+                    }
+                }
+            }
+            if (signRequest.getParentSignBook() != null) {
+                Data data = dataService.getDataFromSignRequest(signRequest);
+                if(data != null) {
+                    List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndFormAndShareTypesContains(fromUser, Arrays.asList(toUser), data.getForm(), shareType);
+                    for (UserShare userShare : userShares) {
+                        if (checkUserShareDate(userShare)) {
+                            return true;
+                        }
+                    }
                 }
             }
         }
         return false;
     }
 
-    public Boolean checkShare(User fromUser, User toUser) {
+    public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest) {
+        return checkShare(fromUser, toUser, signRequest, ShareType.read)
+                || checkShare(fromUser, toUser, signRequest, ShareType.sign)
+                || checkShare(fromUser, toUser, signRequest, ShareType.create);
+    }
+
+
+        public Boolean checkShare(User fromUser, User toUser) {
         List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
         for(UserShare userShare : userShares) {
             if (checkUserShareDate(userShare)) {

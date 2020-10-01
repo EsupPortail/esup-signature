@@ -56,6 +56,7 @@ public class SetGlobalAttributs {
         model.addAttribute("globalProperties", this.globalProperties);
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
+        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
     }
 
 }

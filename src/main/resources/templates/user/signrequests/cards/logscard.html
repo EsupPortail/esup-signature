@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="logs" type="java.util.List<esupportail.esupsignature.entity.Log>"*/-->
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="logscard">
-    <div class="card mb-1 col-lg-8 mx-auto">
+    <div class="card mb-1 col-lg-10 mx-auto">
         <div id="collapseLogs" class="show" aria-labelledby="headingOne"
              data-parent="#accordion">
             <div class="card-body">
@@ -11,7 +11,8 @@
                     <thead class="thead-dark">
                     <tr>
                         <th>Date</th>
-                        <th>Eppn</th>
+                        <th>Utilisateur</th>
+                        <th>Utilisateur authentifié</th>
                         <th>Action</th>
                         <th>Statut initial</th>
                         <th>Statut final</th>
@@ -21,12 +22,13 @@
                     <tbody>
                     <th:block th:each="log : ${logs}">
                         <tr>
-                            <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                            <td><span th:text="${log.eppn}"></span></td>
-                            <td><span th:text="${log.action}"></span></td>
-                            <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
-                            <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
-                            <td><span th:text="${log.comment}"></span></td>
+                            <td th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td th:text="${log.eppnFor}"></td>
+                            <td th:text="${log.eppn}"></td>
+                            <td th:text="${log.action}"></td>
+                            <td th:text="#{'signbook.status.' + ${log.initialStatus}}"></td>
+                            <td th:text="#{'signbook.status.' + ${log.finalStatus}}"></td>
+                            <td th:text="${log.comment}"></td>
                         </tr>
                     </th:block>
                     </tbody>

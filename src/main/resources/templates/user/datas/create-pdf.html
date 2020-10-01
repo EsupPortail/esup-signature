@@ -17,7 +17,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Formulaire : <span th:text="${form.title}"></span>
+                <li class="breadcrumb-item active" aria-current="page">Formulaire&nbsp;<span th:text="${form.title}"></span>&nbsp;<span th:if="${data.name}" th:text="' : ' + ${data.name}"></span>
                 </li>
             </ol>
         </nav>
@@ -137,7 +137,7 @@
                     <hr>
                     <th:block th:each="step,iterator : ${steps}">
                         <div th:if="${step.changeable == true}" class="form-group">
-                            <label th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable : ' + ${step.name}"></label>
+                            <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
                             <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >
                                 <th:block th:each="recipient : ${step.recipients}">
                                     <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>

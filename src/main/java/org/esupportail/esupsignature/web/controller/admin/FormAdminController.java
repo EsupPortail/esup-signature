@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -25,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -109,6 +111,7 @@ public class FormAdminController {
 		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
 		List<PreFill> aaa = preFillService.getPreFillValues();
 		model.addAttribute("preFillTypes", aaa);
+		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
 		return "admin/forms/update";
@@ -131,7 +134,9 @@ public class FormAdminController {
 	}
 	
 	@PutMapping()
-	public String updateForm(@ModelAttribute Form updateForm, RedirectAttributes redirectAttributes) {
+	public String updateForm(@ModelAttribute Form updateForm,
+							 @RequestParam(value = "types", required = false) String[] types,
+							 RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.setName(updateForm.getName());
@@ -143,6 +148,19 @@ public class FormAdminController {
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
 		form.setPublicUsage(updateForm.getPublicUsage());
+		form.getAuthorizedShareTypes().clear();
+		List<ShareType> shareTypes = new ArrayList<>();
+		if(types != null) {
+			for (String type : types) {
+				ShareType shareType = ShareType.valueOf(type);
+				form.getAuthorizedShareTypes().add(shareType);
+				shareTypes.add(shareType);
+			}
+		}
+		List<UserShare> userShares = userShareRepository.findByFormId(form.getId());
+		for(UserShare userShare : userShares) {
+			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
+		}
 		formRepository.save(form);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();

@@ -134,15 +134,18 @@ public class WorkflowService {
         }
     }
 
-    public Set<Workflow> getWorkflowsForUser(User user, User authUser) {
+    public Set<Workflow> getWorkflowsByUser(User user, User authUser) {
+        List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByUser(user);
         Set<Workflow> workflows = new HashSet<>();
         if(user.equals(authUser)) {
             workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
-            workflows.addAll(workflowRepository.findAuthorizedWorkflowByUser(user));
+            workflows.addAll(authorizedWorkflows);
         } else {
             for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
-                workflows.add(userShare.getWorkflow());
+                if(userShare.getWorkflow() != null && authorizedWorkflows.contains(userShare.getWorkflow())) {
+                    workflows.add(userShare.getWorkflow());
+                }
             }
         }
         workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
@@ -349,7 +352,7 @@ public class WorkflowService {
 
     public Workflow getWorkflowByName(String name) {
         for(Workflow workflow : this.workflows ) {
-            if(workflow.getClass().getSimpleName().equals(name)) {
+            if(workflow.getName().equals(name)) {
                 return workflow;
             }
         }

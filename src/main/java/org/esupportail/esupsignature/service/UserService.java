@@ -179,6 +179,10 @@ public class UserService {
 		}
 	}
 
+	public boolean preAuthorizeNotInShare(User user, User authUser) {
+		return user.equals(authUser);
+	}
+
 	public User checkUserByEmail(String email) {
 		if(userRepository.countByEmail(email) > 0) {
 			return userRepository.findByEmail(email).get(0);

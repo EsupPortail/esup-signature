@@ -100,7 +100,7 @@ public class DataController {
 
 	@GetMapping
 	public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+		List<Data> datas =  dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
 		Page<Data> datasPage;
 		if(!user.equals(authUser)) {
 			List<Data> datasOk = new ArrayList<>();
@@ -114,6 +114,8 @@ public class DataController {
 			datasPage = new PageImpl<>(datas, pageable, datas.size());
 		}
 
+		model.addAttribute("forms", formService.getFormsByUser(user, authUser));
+		model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
 		model.addAttribute("datas", datasPage);
 		return "user/datas/list";
 	}
@@ -136,7 +138,9 @@ public class DataController {
 	}
 
 	@GetMapping("form/{id}")
-	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,
+							 @PathVariable("id") Long id,
+							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
 		Form form = formService.getFormById(id);
 		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
@@ -208,7 +212,10 @@ public class DataController {
 	}
 
 	@PostMapping("form/{id}")
-	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+						  @RequestParam Long dataId,
+						  @RequestParam MultiValueMap<String, String> formData,
+						  RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
 		Data data;
@@ -275,7 +282,7 @@ public class DataController {
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataRepository.findById(id).get();
-		if(user.getEppn().equals(data.getCreateBy())) {
+		if(user.getEppn().equals(data.getCreateBy()) || user.getEppn().equals(data.getOwner())) {
 			dataService.delete(data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		} else {

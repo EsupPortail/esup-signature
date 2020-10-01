@@ -5,7 +5,6 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from "/static/js/modules/ui/users/ShareUi.js";
-
     new ShareUi();
 </script>
 <body>
@@ -55,7 +54,10 @@
                                 <label>Type de délégation</label>
                                 <th:block th:each="shareType : ${shareTypes}">
                                     <div class="form-check text-left">
-                                        <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:checked="${userShare.shareTypes.contains(shareType)}" th:value="${shareType.name()}"/>
+                                        <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types"
+                                               th:checked="${userShare.shareTypes.contains(shareType)}"
+                                               th:value="${shareType.name()}"
+                                               th:disabled="${(userShare.form != null && !userShare.form.authorizedShareTypes.contains(shareType)) || (userShare.workflow != null &&!userShare.workflow.authorizedShareTypes.contains(shareType))}"/>
                                         <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                     </div>
                                 </th:block>

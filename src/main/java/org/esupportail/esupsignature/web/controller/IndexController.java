@@ -103,18 +103,22 @@ public class IndexController {
 		if(forwardUri !=null) {
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
-				if(signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
-					SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
-					User suUser = signRequestService.checkShare(signRequest);
-					if (suUser != null) {
-						if (userShareService.switchToShareUser(suUser.getEppn())) {
-							redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
+				try {
+					if (signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
+						SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+						User suUser = signRequestService.checkShare(signRequest);
+						if (suUser != null) {
+							if (userShareService.switchToShareUser(suUser.getEppn())) {
+								redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
+							}
+							return "redirect:" + forwardUri;
 						}
-						return "redirect:" + forwardUri;
+					} else {
+						redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+						return "redirect:/user/signrequests";
 					}
-				} else {
-					redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
-					return "redirect:/user/signrequests";
+				} catch (Exception e) {
+					return "redirect:/user/";
 				}
 			}
 		}
