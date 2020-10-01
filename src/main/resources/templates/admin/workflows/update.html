@@ -73,7 +73,7 @@
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${shareTypes}">
                                 <div class="form-check text-left">
-                                    <input th:checked="${workflow.autorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
+                                    <input th:checked="${workflow.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                 </div>
                             </th:block>

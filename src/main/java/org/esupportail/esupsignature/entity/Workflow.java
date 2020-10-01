@@ -43,7 +43,7 @@ public class Workflow {
     private String role;
 
     @ElementCollection(targetClass= ShareType.class)
-    private List<ShareType> autorizedShareTypes = new ArrayList<>();
+    private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean external = false;
 
@@ -212,12 +212,12 @@ public class Workflow {
         this.role = role;
     }
 
-    public List<ShareType> getAutorizedShareTypes() {
-        return autorizedShareTypes;
+    public List<ShareType> getAuthorizedShareTypes() {
+        return authorizedShareTypes;
     }
 
-    public void setAutorizedShareTypes(List<ShareType> autorizedShareTypes) {
-        this.autorizedShareTypes = autorizedShareTypes;
+    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+        this.authorizedShareTypes = authorizedShareTypes;
     }
 
     public Boolean getScanPdfMetadatas() {

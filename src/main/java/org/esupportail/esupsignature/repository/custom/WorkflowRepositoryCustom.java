@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface WorkflowRepositoryCustom {
 
-    List<Workflow> findAutorizedWorkflowByUser(User user);
+    List<Workflow> findAuthorizedWorkflowByUser(User user);
 
 
 }

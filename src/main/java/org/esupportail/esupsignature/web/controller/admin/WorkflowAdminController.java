@@ -151,12 +151,12 @@ public class WorkflowAdminController {
 		} else {
 			workflowToUpdate.getManagers().clear();
 		}
-		workflowToUpdate.getAutorizedShareTypes().clear();
+		workflowToUpdate.getAuthorizedShareTypes().clear();
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
 				ShareType shareType = ShareType.valueOf(type);
-				workflowToUpdate.getAutorizedShareTypes().add(shareType);
+				workflowToUpdate.getAuthorizedShareTypes().add(shareType);
 				shareTypes.add(shareType);
 			}
 		}

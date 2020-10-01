@@ -70,7 +70,7 @@ public class FormService {
 	public List<Form> getFormsByUser(User user, User authUser){
 		List<Form> forms = new ArrayList<>();
 		if(user.equals(authUser)) {
-			forms = formRepository.findAutorizedFormByUser(user);
+			forms = formRepository.findAuthorizedFormByUser(user);
 		} else {
 			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
 				forms.add(userShare.getForm());

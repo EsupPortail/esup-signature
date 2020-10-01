@@ -137,9 +137,9 @@ public class DataController {
 
 	@GetMapping("form/{id}")
 	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
+		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
+		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}

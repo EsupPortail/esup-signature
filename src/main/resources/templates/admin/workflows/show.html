@@ -74,7 +74,7 @@
                         <dt class="col-lg-5">Types de délégation autorisés</dt>
                         <dd>
                             <ul class="text-left">
-                                <th:block th:each="shareType : ${workflow.autorizedShareTypes}">
+                                <th:block th:each="shareType : ${workflow.authorizedShareTypes}">
                                     <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
                                 </th:block>
                             </ul>

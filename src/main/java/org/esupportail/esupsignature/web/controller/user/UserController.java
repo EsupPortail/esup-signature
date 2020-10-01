@@ -162,7 +162,7 @@ public class UserController {
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
-		model.addAttribute("workflows", workflowService.getAutorizedToShareWorkflows());
+		model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "shares");
 		return "user/users/shares/list";
@@ -229,15 +229,15 @@ public class UserController {
 				userShare.getToUsers().add(userService.checkUserByEmail(userEmail));
 			}
 			userShare.getShareTypes().clear();
-			List<ShareType> autorizedShareTypes = new ArrayList<>();
+			List<ShareType> authorizedShareTypes = new ArrayList<>();
 			if(userShare.getWorkflow() != null) {
-				autorizedShareTypes.addAll(userShare.getWorkflow().getAutorizedShareTypes());
+				authorizedShareTypes.addAll(userShare.getWorkflow().getAuthorizedShareTypes());
 			}
 			if(userShare.getForm() != null ) {
-				autorizedShareTypes.addAll(userShare.getForm().getAutorizedShareTypes());
+				authorizedShareTypes.addAll(userShare.getForm().getAuthorizedShareTypes());
 			}
 			for(String type : types) {
-				if(autorizedShareTypes.contains(ShareType.valueOf(type))) {
+				if(authorizedShareTypes.contains(ShareType.valueOf(type))) {
 					userShare.getShareTypes().add(ShareType.valueOf(type));
 				}
 			}

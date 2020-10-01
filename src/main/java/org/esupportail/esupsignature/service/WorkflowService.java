@@ -139,7 +139,7 @@ public class WorkflowService {
         if(user.equals(authUser)) {
             workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
-            workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
+            workflows.addAll(workflowRepository.findAuthorizedWorkflowByUser(user));
         } else {
             for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
                 workflows.add(userShare.getWorkflow());
@@ -327,8 +327,8 @@ public class WorkflowService {
         return workflowRepository.findAll();
     }
 
-    public List<Workflow> getAutorizedToShareWorkflows() {
-        return workflowRepository.findByAutorizedShareTypesIsNotNull();
+    public List<Workflow> getAuthorizedToShareWorkflows() {
+        return workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
     }
 
     public List<Workflow> getAllWorkflows() {

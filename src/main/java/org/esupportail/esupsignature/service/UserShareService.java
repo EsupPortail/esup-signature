@@ -49,7 +49,7 @@ public class UserShareService {
         userShare.getShareTypes().addAll(shareTypes);
         for(Long formId : formsIds) {
             Form form = formRepository.findById(formId).get();
-            if(form.getAutorizedShareTypes().containsAll(shareTypes)) {
+            if(form.getAuthorizedShareTypes().containsAll(shareTypes)) {
                 userShare.setForm(form);
             } else {
                 throw new EsupSignatureUserException("La délégation du formulaire : " + form.getTitle() + " n'est pas autorisée");
@@ -58,7 +58,7 @@ public class UserShareService {
         for(Long workflowId : workflowsIds) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             if(userShareRepository.findByUserAndWorkflow(user, workflow).size() == 0) {
-                if (workflow.getAutorizedShareTypes().containsAll(shareTypes)) {
+                if (workflow.getAuthorizedShareTypes().containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
                 } else {
                  throw new EsupSignatureUserException("La délégation du circuit : " + workflow.getDescription() + " n'est pas autorisée");

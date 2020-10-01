@@ -43,7 +43,7 @@ public class ExportController {
 
 	@GetMapping
 	public String list(@ModelAttribute("user") User user, Model model) {
-		List<Form> forms = formRepository.findAutorizedFormByUser(user);
+		List<Form> forms = formRepository.findAuthorizedFormByUser(user);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}
