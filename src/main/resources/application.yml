@@ -40,7 +40,7 @@ spring:
         show-sql: false
     ldap:
         base: dc=univ-ville,dc=fr
-        password: password
+        password: ldap-password
         urls: ldap://ldap.univ-ville.fr
         username: cn=consult,dc=univ-ville,dc=fr
     mail:
@@ -82,7 +82,7 @@ sms:
 #    service-name: SMSU
 #    url: https://smsu-api.univ-ville.fr/
 #    username: sms-account
-#    password: ********
+#    password: sms-password
 
 dss:
     cache-data-source-driver-class-name: org.hsqldb.jdbc.JDBCDriver
