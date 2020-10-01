@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -66,6 +63,9 @@ public class WorkflowAdminController {
 
 	@Resource
 	private SignRequestRepository signRequestRepository;
+
+	@Resource
+	private UserShareRepository userShareRepository;
 
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
@@ -134,7 +134,7 @@ public class WorkflowAdminController {
         return "admin/workflows/update";
     }
 	
-    @PostMapping(value = "/update/{id}")
+    @PostMapping(value = "/update")
     public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
@@ -152,10 +152,17 @@ public class WorkflowAdminController {
 			workflowToUpdate.getManagers().clear();
 		}
 		workflowToUpdate.getAutorizedShareTypes().clear();
+		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
-				workflowToUpdate.getAutorizedShareTypes().add(ShareType.valueOf(type));
+				ShareType shareType = ShareType.valueOf(type);
+				workflowToUpdate.getAutorizedShareTypes().add(shareType);
+				shareTypes.add(shareType);
 			}
+		}
+		List<UserShare> userShares = userShareRepository.findByWorkflowId(workflowToUpdate.getId());
+		for(UserShare userShare : userShares) {
+			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
 		}
 		workflowToUpdate.setSourceType(workflow.getSourceType());
 		workflowToUpdate.setTargetType(workflow.getTargetType());

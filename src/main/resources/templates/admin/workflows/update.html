@@ -27,9 +27,9 @@
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <div class="card col-lg-10">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <form th:object="${workflow}" th:action="'/admin/workflows/update/' + ${workflow.id}" method="post" id="updateSignBook">
+                    <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group">
                             <label><strong>Titre</strong></label>

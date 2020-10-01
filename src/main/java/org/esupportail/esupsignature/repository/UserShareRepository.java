@@ -16,6 +16,7 @@ public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
 	List<UserShare> findByToUsersIn(List<User> toUsers);
 	List<UserShare> findByUserAndToUsersIn(User user, List<User> toUsers);
 	List<UserShare> findByUserAndToUsersInAndShareTypesContains(User user, List<User> toUsers, ShareType shareType);
+	List<UserShare> findByWorkflowId(Long workflowId);
 	List<UserShare> findByUserAndToUsersInAndWorkflowAndShareTypesContains(User user, List<User> toUsers, Workflow workflow, ShareType shareType);
 	List<UserShare> findByToUsersInAndShareTypesContains(List<User> toUsers, ShareType shareType);
 	Long countByUserAndToUsersInAndShareTypesContains(User user, List<User> toUsers, ShareType shareType);
