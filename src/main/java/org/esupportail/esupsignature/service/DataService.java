@@ -100,6 +100,13 @@ public class DataService {
             recipientEmails = new ArrayList<>();
         }
         Form form = data.getForm();
+        for(Field field : form.getFields()) {
+            if("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
+                if(field.getExtValueReturn().equals("id")) {
+                    data.getDatas().put("id", data.getId().toString());
+                }
+            }
+        }
         if (form.getTargetType().equals(DocumentIOType.mail)) {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");

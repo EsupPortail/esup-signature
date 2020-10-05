@@ -331,10 +331,14 @@ public class SignRequestController {
                     List<Field> fields = data.getForm().getFields();
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
                         List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
-                        if(formfields.size()> 0 ) {
-                            List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split("#"));
-                            if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
-                                data.getDatas().put(entry.getKey(), entry.getValue());
+                        if(formfields.size() > 0) {
+                            if(!formfields.get(0).getExtValueType().equals("system")) {
+                                List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
+                                if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
+                                    data.getDatas().put(entry.getKey(), entry.getValue());
+                                }
+                            } else {
+                                data.getDatas().remove(entry.getKey());
                             }
                         }
                     }
