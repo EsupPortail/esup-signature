@@ -15,7 +15,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
-import org.esupportail.esupsignature.entity.enums.SearchType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -257,15 +256,15 @@ public class FormService {
 				field.setStepNumbers("");
 				if(nameValues[0].equals("prefill")) {
 					field.setExtValueServiceName(nameValues[1].trim());
-					field.setExtValueType(SearchType.valueOf(nameValues[2].trim()));
-					field.setExtValueReturn(nameValues[3].trim());
+					field.setExtValueType(nameValues[2].trim());
+					field.setExtValueReturn(nameValues[3].trim().replace(")", ""));
 				} else if(nameValues[0].equals("search")) {
 					field.setSearchServiceName(nameValues[1].trim());
-					field.setSearchType(SearchType.valueOf(nameValues[2].trim()));
-					field.setSearchReturn(nameValues[3].trim());
+					field.setSearchType(nameValues[2].trim());
+					field.setSearchReturn(nameValues[3].trim().replace(")", ""));
 				}
-				if(nameValues.length > 4) {
-					for (int i = 4; i < nameValues.length; i++) {
+				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
+					for (int i = 2; i < nameValues.length; i++) {
 						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
 					}
 				}

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
-import org.esupportail.esupsignature.entity.enums.SearchType;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -68,10 +67,10 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public List<Map<String, Object>> search(SearchType searchType, String searchString, String searchReturn) {
+	public List<Map<String, Object>> search(String searchType, String searchString, String searchReturn) {
 		List<Map<String, Object>> mapList = new ArrayList<>();
 		String name = "get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1);
-		if(searchType.equals(SearchType.person)) {
+		if(searchType.equals("person")) {
 			List<PersonLdap> personLdaps = ldapPersonService.search(searchString, null);
 			for (PersonLdap personLdap : personLdaps) {
 				Map<String, Object> stringObjectMap = new HashMap<>();
@@ -83,7 +82,7 @@ public class LdapExtValue implements ExtValue {
 				stringObjectMap.put("text", personLdap.getDisplayName() + "(" + personLdap.getMail() + ")");
 				mapList.add(stringObjectMap);
 			}
-		} else if (searchType.equals(SearchType.organizationalUnit)) {
+		} else if (searchType.equals("organizationalUnit")) {
 			List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);
 			for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
 				Map<String, Object> stringObjectMap = new HashMap<>();

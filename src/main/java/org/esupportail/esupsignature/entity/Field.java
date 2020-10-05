@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.FieldType;
-import org.esupportail.esupsignature.entity.enums.SearchType;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -35,8 +34,7 @@ public class Field {
 
 	private String extValueServiceName;
 
-	@Enumerated(EnumType.STRING)
-	private SearchType extValueType;
+	private String extValueType;
 
 	private String extValueReturn;
 
@@ -44,8 +42,7 @@ public class Field {
 
 	private String searchServiceName;
 
-	@Enumerated(EnumType.STRING)
-	private SearchType searchType;
+	private String searchType;
 
 	private String searchReturn;
 	
@@ -166,11 +163,11 @@ public class Field {
 		this.extValueServiceName = extValueServiceName;
 	}
 
-	public SearchType getExtValueType() {
+	public String getExtValueType() {
 		return extValueType;
 	}
 
-	public void setExtValueType(SearchType extValueType) {
+	public void setExtValueType(String extValueType) {
 		this.extValueType = extValueType;
 	}
 
@@ -190,11 +187,11 @@ public class Field {
 		this.searchServiceName = serviceName;
 	}
 
-	public SearchType getSearchType() {
+	public String getSearchType() {
 		return searchType;
 	}
 
-	public void setSearchType(SearchType searchType) {
+	public void setSearchType(String searchType) {
 		this.searchType = searchType;
 	}
 
