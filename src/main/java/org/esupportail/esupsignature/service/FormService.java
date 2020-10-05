@@ -3,12 +3,12 @@ package org.esupportail.esupsignature.service;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -29,6 +29,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -176,16 +178,20 @@ public class FormService {
 				field.setLabel(pdField.getAlternateFieldName());
 				PDTextField pdTextField = (PDTextField) pdField;
 				field.setRequired(pdTextField.isRequired());
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
+				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
+				logger.info(pdField.getFullyQualifiedName());
 				String type = "text";
-				logger.info(field.getName());
-				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject() != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
-					if(pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
-						COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-						type = cosString.getString();
+				if(pdFormFieldAdditionalActions != null) {
+					if(pdFormFieldAdditionalActions.getK() != null) {
+						type = pdFormFieldAdditionalActions.getK().getType();
+					}
+					PDAction pdAction = pdFormFieldAdditionalActions.getC();
+					String actionsString = pdAction.getCOSObject().getString(COSName.JS);
+					if(actionsString != null) {
+						computeActions(field, actionsString);
 					}
 				}
+
 				if(type.equals("text")) {
 					field.setType(FieldType.text);
 				} else if(type.contains("Time")) {
@@ -196,15 +202,7 @@ public class FormService {
 					field.setType(FieldType.number);
 				}
 
-				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C) != null) {
-					COSString calculString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C).getItem(COSName.JS);
-					String[] splitCalculString = calculString.getString().split("\\$");
-					if("search".equals(splitCalculString[0])) {
-						field.setSearchServiceName(splitCalculString[1]);
-						field.setSearchType(SearchType.valueOf(splitCalculString[2]));
-						field.setSearchReturn(splitCalculString[3]);
-					}
-				}
+				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox){
@@ -244,25 +242,32 @@ public class FormService {
 	}
 
 	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
-		this.resolveFieldName(field, pdField.getPartialName());
+		field.setName(pdField.getPartialName());
 		field.setPage(page);
 		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
 		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
 		fieldService.updateField(field);
 	}
 
-	private void resolveFieldName(Field field, String name) {
-		String[] nameValues = name.split("(?=>|\\$|#|!)");
-		field.setName(nameValues[0]);
-		if(nameValues.length > 1) {
-			field.setStepNumbers("");
-			for (int i = 1; i < nameValues.length; i++) {
-				if (nameValues[i].contains("$")) {
-					field.setExtValue(nameValues[i].replace("$", ""));
-				} else if (nameValues[i].contains("#")) {
-					field.setStepNumbers(field.getStepNumbers() + nameValues[i]);
-				} else if (nameValues[i].contains("!")) {
-					field.setEppnEditRight(nameValues[i].replace("!", ""));
+	private void computeActions(Field field, String actionsString) {
+		String[] actionsStrings = actionsString.split(";");
+		for(String actionString : actionsStrings) {
+			String[] nameValues = actionString.trim().split("\\.|,|\\(");
+			if (nameValues.length > 1) {
+				field.setStepNumbers("");
+				if(nameValues[0].equals("prefill")) {
+					field.setExtValueServiceName(nameValues[1].trim());
+					field.setExtValueType(SearchType.valueOf(nameValues[2].trim()));
+					field.setExtValueReturn(nameValues[3].trim());
+				} else if(nameValues[0].equals("search")) {
+					field.setSearchServiceName(nameValues[1].trim());
+					field.setSearchType(SearchType.valueOf(nameValues[2].trim()));
+					field.setSearchReturn(nameValues[3].trim());
+				}
+				if(nameValues.length > 4) {
+					for (int i = 4; i < nameValues.length; i++) {
+						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
+					}
 				}
 			}
 		}

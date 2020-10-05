@@ -46,20 +46,18 @@ public class DefaultPreFill implements PreFill {
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
 		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
-			if(field.getExtValue() != null && !field.getExtValue().isEmpty()) {
-				if(field.getExtValue().split("\\(")[0].equals("ldap")) {
-					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
-					if(ldapValues.containsKey(extValueName)) {
-						if(extValueName.equals("schacDateOfBirth")) {
+			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
+				if(field.getExtValueServiceName().equals("ldap")) {
+					if(ldapValues.containsKey(field.getExtValueReturn())) {
+						if(field.getExtValueReturn().equals("schacDateOfBirth")) {
 							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
 						} else {
-							field.setDefaultValue((String) ldapValues.get(extValueName));
+							field.setDefaultValue((String) ldapValues.get(field.getExtValueReturn().trim()));
 						}
 					}
-				} else if(field.getExtValue().split("\\(")[0].equals("default")) {
-					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
-					if(defaultValues.containsKey(extValueName)) {
-						field.setDefaultValue((String) defaultValues.get(extValueName));
+				} else if(field.getExtValueServiceName().equals("default")) {
+					if(defaultValues.containsKey(field.getExtValueReturn())) {
+						field.setDefaultValue((String) defaultValues.get(field.getExtValueReturn()));
 					}
 				}
 			}

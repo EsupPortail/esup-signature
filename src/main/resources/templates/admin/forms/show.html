@@ -29,12 +29,14 @@
                         <th>Id</th>
                         <th>Nom</th>
                         <th>Type</th>
-                        <th>Pré-remplissage</th>
+                        <th>Requis</th>
+                        <th>Pré-remplissage : Nom du service</th>
+                        <th>Pré-remplissage : Type</th>
+                        <th>Pré-remplissage : Attribut retourné</th>
                         <th>Autocompletion : Nom du service</th>
                         <th>Autocompletion : Type</th>
                         <th>Autocompletion : Attribut retourné</th>
                         <th>Etapes autorisées</th>
-                        <th>Utilisateurs concernés</th>
                         <th class="d-none">Aperçu</th>
                     </tr>
                     </thead>
@@ -44,12 +46,14 @@
                             <td th:text="${field.name}"></td>
                             <td th:text="${field.label}"></td>
                             <td th:text="${field.type}"></td>
-                            <td th:text="${field.extValue}"></td>
+                            <td th:text="${field.required}"></td>
+                            <td th:text="${field.extValueServiceName}"></td>
+                            <td th:text="${field.extValueType}"></td>
+                            <td th:text="${field.extValueReturn}"></td>
                             <td th:text="${field.searchServiceName}"></td>
                             <td th:text="${field.searchType}"></td>
                             <td th:text="${field.searchReturn}"></td>
                             <td th:text="${field.stepNumbers}"></td>
-                            <td th:text="${field.eppnEditRight}"></td>
                             <td  class="d-none">
                                 <div class="form-group">
                                     <div th:switch="${#strings.toString(field.type)}">

@@ -33,9 +33,12 @@ public class Field {
 
 	private String stepNumbers = "0";
 
-	private String extValue;
+	private String extValueServiceName;
 
-	private String eppnEditRight;
+	@Enumerated(EnumType.STRING)
+	private SearchType extValueType;
+
+	private String extValueReturn;
 
 	transient String defaultValue;
 
@@ -155,20 +158,28 @@ public class Field {
 		this.stepNumbers = stepNumbers;
 	}
 
-	public String getExtValue() {
-		return extValue;
+	public String getExtValueServiceName() {
+		return extValueServiceName;
 	}
 
-	public void setExtValue(String extValue) {
-		this.extValue = extValue;
+	public void setExtValueServiceName(String extValueServiceName) {
+		this.extValueServiceName = extValueServiceName;
 	}
 
-	public String getEppnEditRight() {
-		return eppnEditRight;
+	public SearchType getExtValueType() {
+		return extValueType;
 	}
 
-	public void setEppnEditRight(String eppnEditRight) {
-		this.eppnEditRight = eppnEditRight;
+	public void setExtValueType(SearchType extValueType) {
+		this.extValueType = extValueType;
+	}
+
+	public String getExtValueReturn() {
+		return extValueReturn;
+	}
+
+	public void setExtValueReturn(String extValueReturn) {
+		this.extValueReturn = extValueReturn;
 	}
 
 	public String getSearchServiceName() {

@@ -43,19 +43,19 @@ export class PdfViewer extends EventFactory {
         console.info("listen to search autocompletion");
         $(".search-completion").each(function () {
             let serviceName = $(this).attr("search-completion-service-name");
+            let searchType = $(this).attr("search-completion-type");
             let searchReturn = $(this).attr("search-completion-return");
             let url =
             $(this).autocomplete({
                 source: function( request, response ) {
                     $.ajax({
-                        url: "/user/user-ws/search-extvalue/?searchType=user&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                        url: "/user/user-ws/search-extvalue/?searchType="+ searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                         dataType: "json",
                         data: {
                             q: request.term
                         },
                         success: function( data ) {
                             response($.map(data, function (item) {
-                                console.log(item);
                                 return {
                                     label: item.text,
                                     value: item.value
