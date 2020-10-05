@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.esupportail.esupsignature.entity.enums.SearchType;
+import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -28,7 +29,11 @@ public class LdapExtValue implements ExtValue {
 	@Resource
 	private UserService userService;
 
+	@Resource
 	private LdapPersonService ldapPersonService;
+
+	@Resource
+	private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
 	public LdapExtValue(@Autowired(required = false) LdapPersonService ldapPersonService) {
 		this.ldapPersonService = ldapPersonService;
@@ -64,17 +69,32 @@ public class LdapExtValue implements ExtValue {
 
 	@Override
 	public List<Map<String, Object>> search(SearchType searchType, String searchString, String searchReturn) {
-		List<PersonLdap> personLdaps = ldapPersonService.search(searchString, null);
 		List<Map<String, Object>> mapList = new ArrayList<>();
-		for (PersonLdap personLdap : personLdaps) {
-			Map<String, Object> stringObjectMap = new HashMap<>();
-			try {
-				stringObjectMap.put("value", PersonLdap.class.getMethod("get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1), null).invoke(personLdap));
-			} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-				logger.error("error on get ldap search return attribut : " + searchReturn, e);
+		String name = "get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1);
+		if(searchType.equals(SearchType.person)) {
+			List<PersonLdap> personLdaps = ldapPersonService.search(searchString, null);
+			for (PersonLdap personLdap : personLdaps) {
+				Map<String, Object> stringObjectMap = new HashMap<>();
+				try {
+					stringObjectMap.put("value", PersonLdap.class.getMethod(name, null).invoke(personLdap));
+				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					logger.error("error on get ldap search return attribut : " + searchReturn, e);
+				}
+				stringObjectMap.put("text", personLdap.getDisplayName() + "(" + personLdap.getMail() + ")");
+				mapList.add(stringObjectMap);
 			}
-			stringObjectMap.put("text", personLdap.getDisplayName() + "(" + personLdap.getMail() + ")");
-			mapList.add(stringObjectMap);
+		} else if (searchType.equals(SearchType.organizationalUnit)) {
+			List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);
+			for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
+				Map<String, Object> stringObjectMap = new HashMap<>();
+				try {
+					stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name, null).invoke(organizationalUnitLdap));
+				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					logger.error("error on get ldap search return attribut : " + searchReturn, e);
+				}
+				stringObjectMap.put("text", organizationalUnitLdap.getDescription());
+				mapList.add(stringObjectMap);
+			}
 		}
 		return mapList;
 	}
@@ -94,7 +114,7 @@ public class LdapExtValue implements ExtValue {
 					}
 				}
 				if(personLdap.getSupannEntiteAffectationPrincipale() != null && ldapPersonService != null) {
-					OrganizationalUnitLdap organizationalUnitLdap = ldapPersonService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
+					OrganizationalUnitLdap organizationalUnitLdap = ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
 					if (organizationalUnitLdap != null) {
 						values.put("organizationalUnit-postalAddress", organizationalUnitLdap.getPostalAddress());
 						values.put("organizationalUnit-description", organizationalUnitLdap.getDescription());

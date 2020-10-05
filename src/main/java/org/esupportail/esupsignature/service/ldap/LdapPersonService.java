@@ -32,9 +32,6 @@ public class LdapPersonService {
     @Resource
     private PersonLdapRepository personLdapRepository;
 
-    @Resource
-    private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
-
     private Map<String, LdapTemplate> ldapTemplates;
 
     @Autowired
@@ -62,15 +59,6 @@ public class LdapPersonService {
             log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
         }
         return new ArrayList<>();
-    }
-
-
-    public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
-        List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
-        if(organizationalUnitLdap.size() > 0) {
-            return organizationalUnitLdap.get(0);
-        }
-        return null;
     }
 
 }
