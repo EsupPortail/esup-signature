@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.barcode.DdDocService;
+import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;

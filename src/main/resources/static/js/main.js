@@ -17,3 +17,17 @@
  */
 import {GlobalUi} from "./modules/ui/GlobalUi.js";
 new GlobalUi();
+
+(function($) {
+    $.fn.changeElementType = function(newType) {
+        let attrs = {};
+
+        $.each(this[0].attributes, function(idx, attr) {
+            attrs[attr.nodeName] = attr.nodeValue;
+        });
+
+        this.replaceWith(function() {
+            return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+    }
+})(jQuery);

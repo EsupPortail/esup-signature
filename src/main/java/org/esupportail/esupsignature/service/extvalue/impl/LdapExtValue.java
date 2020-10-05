@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,16 +63,19 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public List<Map<String, Object>> search(SearchType searchType, String searchString) {
+	public List<Map<String, Object>> search(SearchType searchType, String searchString, String searchReturn) {
+		List<PersonLdap> personLdaps = ldapPersonService.search(searchString, null);
 		List<Map<String, Object>> mapList = new ArrayList<>();
-		Map<String, Object> stringObjectMap = new HashMap<>();
-		stringObjectMap.put("value", "toto");
-		stringObjectMap.put("text", "Toto");
-		Map<String, Object> stringObjectMap2 = new HashMap<>();
-		stringObjectMap2.put("value", "toto2");
-		stringObjectMap2.put("text", "Toto2");
-		mapList.add(stringObjectMap);
-		mapList.add(stringObjectMap2);
+		for (PersonLdap personLdap : personLdaps) {
+			Map<String, Object> stringObjectMap = new HashMap<>();
+			try {
+				stringObjectMap.put("value", PersonLdap.class.getMethod("get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1), null).invoke(personLdap));
+			} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+				logger.error("error on get ldap search return attribut : " + searchReturn, e);
+			}
+			stringObjectMap.put("text", personLdap.getDisplayName() + "(" + personLdap.getMail() + ")");
+			mapList.add(stringObjectMap);
+		}
 		return mapList;
 	}
 

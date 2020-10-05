@@ -200,8 +200,9 @@ public class FormService {
 					COSString calculString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.C).getItem(COSName.JS);
 					String[] splitCalculString = calculString.getString().split("\\$");
 					if("search".equals(splitCalculString[0])) {
-						field.setSearchDataSource(splitCalculString[1]);
+						field.setSearchServiceName(splitCalculString[1]);
 						field.setSearchType(SearchType.valueOf(splitCalculString[2]));
+						field.setSearchReturn(splitCalculString[3]);
 					}
 				}
 				parseField(field, pdField, pdAnnotationWidget, page);

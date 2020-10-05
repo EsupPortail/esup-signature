@@ -30,6 +30,8 @@
                         <th>Nom</th>
                         <th>Type</th>
                         <th>ExtValue</th>
+                        <th>Autocompletion : Source de données</th>
+                        <th>Autocompletion : Type</th>
                         <th>Etapes autorisées</th>
                         <th>Utilisateurs concernés</th>
                         <th class="d-none">Aperçu</th>
@@ -42,6 +44,8 @@
                             <td th:text="${field.label}"></td>
                             <td th:text="${field.type}"></td>
                             <td th:text="${field.extValue}"></td>
+                            <td th:text="${field.searchServiceName}"></td>
+                            <td th:text="${field.searchType}"></td>
                             <td th:text="${field.stepNumbers}"></td>
                             <td th:text="${field.eppnEditRight}"></td>
                             <td  class="d-none">

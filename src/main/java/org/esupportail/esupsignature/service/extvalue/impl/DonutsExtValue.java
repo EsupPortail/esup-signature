@@ -18,7 +18,7 @@ public class DonutsExtValue implements ExtValue {
 	}
 
 	@Override
-	public List<Map<String, Object>> search(SearchType searchType, String searchString) {
+	public List<Map<String, Object>> search(SearchType searchType, String searchString, String searchReturn) {
 		return null;
 	}
 

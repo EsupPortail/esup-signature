@@ -1,5 +1,6 @@
 import {EventBus} from "../../customs/ui_utils.js";
 import {EventFactory} from "./EventFactory.js";
+import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
@@ -16,7 +17,7 @@ export class PdfViewer extends EventFactory {
         this.pageNum = 1;
         this.numPages = 1;
         this.page = null;
-        this.dataFields = null;
+        this.dataFields = [];
         this.savedFields = new Map();
         this.signable = signable;
         this.events = {};
@@ -35,7 +36,36 @@ export class PdfViewer extends EventFactory {
         document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
         document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
         window.addEventListener('resize', e => this.adjustZoom());
+        this.addEventListener("render", e => this.listenToSearchCompletion());
+   }
 
+    listenToSearchCompletion() {
+        console.info("listen to search autocompletion");
+        $(".search-completion").each(function () {
+            let serviceName = $(this).attr("search-completion-service-name");
+            let searchReturn = $(this).attr("search-completion-return");
+            let url =
+            $(this).autocomplete({
+                source: function( request, response ) {
+                    $.ajax({
+                        url: "/user/user-ws/search-extvalue/?searchType=user&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                        dataType: "json",
+                        data: {
+                            q: request.term
+                        },
+                        success: function( data ) {
+                            response($.map(data, function (item) {
+                                console.log(item);
+                                return {
+                                    label: item.text,
+                                    value: item.value
+                                };
+                            }));
+                        }
+                    });
+                }
+            });
+        });
     }
 
     fullWidth() {
@@ -136,7 +166,6 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.rotation = this.rotation;
         this.pdfPageView.setPdfPage(page);
         this.pdfPageView.draw().then(e => this.postRender());
-
     }
 
     postRender() {
@@ -144,7 +173,6 @@ export class PdfViewer extends EventFactory {
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();
-
     }
 
     promiseRenderForm(isField) {
@@ -290,6 +318,7 @@ export class PdfViewer extends EventFactory {
                 console.debug(inputField);
                 console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
@@ -312,6 +341,13 @@ export class PdfViewer extends EventFactory {
                         inputField.addClass('required-field');
                     }
                 }
+                if(dataField.searchServiceName) {
+                    $(inputField).addClass("search-completion");
+                    $(inputField).attr("search-completion-service-name", dataField.searchServiceName);
+                    $(inputField).attr("search-completion-return", dataField.searchReturn);
+                    $(inputField).attr("search-completion-type", dataField.searchType);
+                }
+
                 if (dataField.type === "number") {
                     inputField.get(0).type = "number";
                 }
@@ -388,7 +424,6 @@ export class PdfViewer extends EventFactory {
                         inputField.addClass('disabled-field disable-selection');
                         inputField.parent().addClass('disable-div-selection');
                     } else {
-                        console.log(dataField.defaultValue);
                         inputField.val(dataField.defaultValue);
                         inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                         inputField.prop('disabled', false);
@@ -503,8 +538,13 @@ export class PdfViewer extends EventFactory {
 
 
     setDataFields(dataFields) {
-        this.dataFields = dataFields;
+        dataFields.forEach(e => this.addDataField(e));
     }
+
+    addDataField(dataField) {
+        this.dataFields.push(new DataField(dataField));
+    }
+
 
     printPdf() {
         this.pdfPageView.eventBus.dispatch('print', {

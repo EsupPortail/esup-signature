@@ -39,10 +39,12 @@ public class Field {
 
 	transient String defaultValue;
 
-	private String searchDataSource;
+	private String searchServiceName;
 
 	@Enumerated(EnumType.STRING)
 	private SearchType searchType;
+
+	private String searchReturn;
 	
 	@Enumerated(EnumType.STRING)
     private FieldType type;
@@ -169,12 +171,12 @@ public class Field {
 		this.eppnEditRight = eppnEditRight;
 	}
 
-	public String getSearchDataSource() {
-		return searchDataSource;
+	public String getSearchServiceName() {
+		return searchServiceName;
 	}
 
-	public void setSearchDataSource(String searchDataSource) {
-		this.searchDataSource = searchDataSource;
+	public void setSearchServiceName(String serviceName) {
+		this.searchServiceName = serviceName;
 	}
 
 	public SearchType getSearchType() {
@@ -183,5 +185,13 @@ public class Field {
 
 	public void setSearchType(SearchType searchType) {
 		this.searchType = searchType;
+	}
+
+	public String getSearchReturn() {
+		return searchReturn;
+	}
+
+	public void setSearchReturn(String searchReturn) {
+		this.searchReturn = searchReturn;
 	}
 }

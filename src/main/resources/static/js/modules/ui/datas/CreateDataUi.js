@@ -21,7 +21,6 @@ export class CreateDataUi {
         console.info("init change control")
         let inputs = $("#newData :input");
         $.each(inputs, function() {
-            console.log($(this));
             $(this).change(function () {
                 let sendModalButton = $('#sendModalButton');
                 sendModalButton.addClass('disabled');
