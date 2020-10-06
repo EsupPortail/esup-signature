@@ -24,7 +24,8 @@ public class UserWsController {
     @ResponseBody
     public List<Map<String, Object>> searchValue(@RequestParam(value="searchType") String searchType, @RequestParam(value="searchString") String searchString, @RequestParam(value = "serviceName") String serviceName, @RequestParam(value = "searchReturn") String searchReturn) {
         ExtValue extValue = extValueService.getExtValueServiceByName(serviceName);
-        return extValue.search(searchType, searchString, searchReturn).stream().limit(15).collect(Collectors.toList());
+        List<Map<String, Object>> values = extValue.search(searchType, searchString, searchReturn);
+        return values.stream().limit(10).collect(Collectors.toList());
     }
 
 }

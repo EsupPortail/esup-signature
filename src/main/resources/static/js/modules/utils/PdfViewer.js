@@ -45,7 +45,6 @@ export class PdfViewer extends EventFactory {
             let serviceName = $(this).attr("search-completion-service-name");
             let searchType = $(this).attr("search-completion-type");
             let searchReturn = $(this).attr("search-completion-return");
-            let url =
             $(this).autocomplete({
                 source: function( request, response ) {
                     $.ajax({

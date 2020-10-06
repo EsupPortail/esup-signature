@@ -45,7 +45,7 @@ public class LdapPersonService {
             ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
         }
         if (ldapTemplateSelected != null) {
-            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidOrMailStartingWith(searchString, searchString, searchString, searchString);
+            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
             List<PersonLdap> filteredPersons = new ArrayList<>();
             for(PersonLdap personLdap : results) {
                 for(String affiationName : ldapProperties.getAffiliationFilter().split(",")) {
