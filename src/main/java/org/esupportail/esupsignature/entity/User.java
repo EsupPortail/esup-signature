@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
@@ -53,10 +54,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private EmailAlertFrequency emailAlertFrequency = EmailAlertFrequency.immediately;
 
-    public enum EmailAlertFrequency {
-		never, immediately, daily, weekly;
-	}
-    
     private String emailAlertHour;
     
     @Enumerated(EnumType.STRING)

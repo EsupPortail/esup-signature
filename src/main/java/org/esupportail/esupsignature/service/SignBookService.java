@@ -4,6 +4,7 @@ import ch.rasc.sse.eventbus.SseEvent;
 import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +67,9 @@ public class SignBookService {
     private RecipientRepository recipientRepository;
 
     @Resource
+    private UserShareRepository userShareRepository;
+
+    @Resource
     private EventService eventService;
 
     public List<SignBook> getAllSignBooks() {
@@ -95,6 +100,29 @@ public class SignBookService {
             return signBookRepository.findByName(name).get(0);
         }
         return null;
+    }
+
+    public List<SignBook> getSharedSignBooks(User user) {
+        List<SignBook> sharedSignBook = new ArrayList<>();
+        for(UserShare userShare : userShareRepository.findByToUsersInAndShareTypesContains(Arrays.asList(user), ShareType.sign)) {
+            if(userShare.getWorkflow() != null) {
+                sharedSignBook.addAll(signBookRepository.findByWorkflowId(userShare.getWorkflow().getId()));
+            } else if(userShare.getForm() != null) {
+                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser());
+                for (SignRequest signRequest : signRequests) {
+                    if (signRequest.getParentSignBook() != null) {
+                        List<Data> datas = dataRepository.findBySignBook(signRequest.getParentSignBook());
+                        for (Data data : datas) {
+                            if(data.getForm().equals(userShare.getForm())) {
+                                sharedSignBook.add(signRequest.getParentSignBook());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return sharedSignBook;
     }
 
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {

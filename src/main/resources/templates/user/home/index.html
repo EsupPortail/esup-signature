@@ -30,8 +30,7 @@
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                         <td class="text-break w-5 d-none d-md-inline"><i class="fas fa-book p-2"></i></td>
-                                        <td class="text-break w-35" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                        <td class="text-break w-35" th:unless="${signRequest.parentSignBook != null}" th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-35" th:text="${signRequest.title}"></td>
                                         <td class="text-break w-15 d-none d-md-inline">
                                             <span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
                                         </td>

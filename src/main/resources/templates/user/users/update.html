@@ -178,7 +178,7 @@
                     <div class="card-body">
                         <h5 class="text-center"><b>Fréquence des alertes</b></h5>
                         <div class="form-group" id="emailAlertFrequency">
-                            <label class="col-form-label" for="_emailAlertFrequency_id"> <strong>Fréquence
+                            <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
                                 d'alerte</strong>
                                 <button data-target="#collapseHelpEmailAlertFrequency" data-toggle="collapse"
                                         type="button" class="btn btn-sm btn-transparent">
@@ -191,8 +191,8 @@
                                     </div>
                                 </div>
                             </label>
-                            <select class="slim-select-simple" id="_emailAlertFrequency_id" name="emailAlertFrequency"
-                                    size="1" onchange="checkAlertFrequency();">
+                            <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
+                                    size="1">
                                 <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
                                 <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
                                     <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"

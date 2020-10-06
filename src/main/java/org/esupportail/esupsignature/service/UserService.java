@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -77,12 +77,6 @@ public class UserService {
 
 	@Resource
 	private DataRepository dataRepository;
-
-	@Resource
-	private FormRepository formRepository;
-
-	@Resource
-	private WorkflowRepository workflowRepository;
 
 	@Resource
 	private MailService mailService;
@@ -342,10 +336,11 @@ public class UserService {
 		if(user.getLastSendAlertDate() != null) {
 			diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
 		}
-		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+		long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if((user.getEmailAlertFrequency() == null && diff > 0)
-		|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff > 0)
-		|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff > 7)) {
+			|| (EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
+			|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24)
+			|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168)) {
 			return true;
 		}
 		return false;
@@ -384,37 +379,10 @@ public class UserService {
 	public void sendEmailAlertSummary(User recipientUser) {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
-		List<String> toEmails = new ArrayList<>();
-		//List<SignRequest> signRequestsToSend = new ArrayList<>();
-		//pour ne pas recevoir ses propres demandes
-		if(getUserFromAuthentication() != null && recipientUser.equals(getUserFromAuthentication())) {
-			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
-			toEmails.add(recipientUser.getEmail());
-		} else {
-//			toEmails.add(recipientEmail);
-			toEmails.add(recipientUser.getEmail());
-			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-				if(userShare.getShareTypes().contains(ShareType.sign)) {
-					for(User toUser : userShare.getToUsers()) {
-						List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
-						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
-							if(toSignSharedSignRequest.getParentSignBook() != null) {
-								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
-								if(datas.size() > 0 && userShare.getForm().equals(datas.get(0).getForm())) {
-									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
-										toSignSignRequests.add(toSignSharedSignRequest);
-										toEmails.add(toUser.getEmail());
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		toSignSignRequests.addAll(signRequestService.getSharedToSignSignRequests(recipientUser));
 		if(toSignSignRequests.size() > 0 ) {
 			recipientUser.setLastSendAlertDate(date);
-			mailService.sendSignRequestSummaryAlert(toEmails, toSignSignRequests);
+			mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
 			userRepository.save(recipientUser);
 		}
 	}

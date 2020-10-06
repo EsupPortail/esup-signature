@@ -13,8 +13,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByCreateBy(User createBy);
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
+    List<SignBook> findByWorkflowId(Long workflowId);
     Long countByName(String name);
     Long countById(Long id);
     List<SignBook> findByExternal(Boolean external);
 }
-

@@ -5,7 +5,7 @@ export default class UserUi {
 
     constructor(lastSign, signWidth, signHeight) {
         console.log('Starting user UI');
-        this.emailAlertFrequencySelect = document.getElementById("_emailAlertFrequency_id");
+        this.emailAlertFrequencySelect = document.getElementById("emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
         this.emailAlertHour = document.getElementById("emailAlertHour");
         this.userSignaturePad = new UserSignaturePad(lastSign, signWidth, signHeight);
@@ -15,7 +15,8 @@ export default class UserUi {
     }
 
     initListeners() {
-        this.userSignatureCrop.addEventListener('started', e => this.userSignaturePad.clear());
+        this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
+        this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
     }
 
     checkAlertFrequency() {

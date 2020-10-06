@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -161,7 +161,7 @@ public class SignRequestService {
 			} else if (statusFilter.equals("refusedByMe")) {
 				signRequests = getSignRequestsRefusedByUser(user);
 			} else if (statusFilter.equals("sharedSign")) {
-				signRequests = getSignRequestsSharedSign(user);
+				signRequests = getSharedSignedSignRequests(user);
 			} else {
 				signRequests = signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.valueOf(statusFilter));
 			}
@@ -212,26 +212,38 @@ public class SignRequestService {
 	}
 
 	private List<SignRequest> getSignRequestsFromLogs(List<Log> logs) {
-		List<SignRequest> signRequests = new ArrayList<>();
+		Set<SignRequest> signRequests = new HashSet<>();
 		for (Log log : logs) {
 			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
 			try {
 				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
+				signRequests.add(signRequest);
 			} catch (Exception e) {
 				logger.debug(e.getMessage());
 			}
 		}
-		return signRequests;
+		return new ArrayList<>(signRequests);
 	}
 
-	public List<SignRequest> getSignRequestsSharedSign(User user) {
-		List<Log> logs = new ArrayList<>();
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
-		logs.addAll(logRepository.findByEppnAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
+	public List<SignRequest> getSharedToSignSignRequests(User user) {
+		List<SignRequest> sharedSignRequests = new ArrayList<>();
+		List<SignBook> sharedSignBooks = signBookService.getSharedSignBooks(user);
+		for(SignBook signBook: sharedSignBooks) {
+			sharedSignRequests.addAll(signBook.getSignRequests());
+		}
+		return sharedSignRequests;
+	}
+
+	public List<SignRequest> getSharedSignedSignRequests(User user) {
+		List<Log> logs = logRepository.findByEppn(user.getEppn()).stream().filter(
+				log -> !log.getEppn().equals(log.getEppnFor())
+					&&
+						(log.getFinalStatus().equals(SignRequestStatus.signed.name())
+						||
+						log.getFinalStatus().equals(SignRequestStatus.checked.name())
+						||
+						log.getFinalStatus().equals(SignRequestStatus.refused.name()))
+				).collect(Collectors.toList());
 		return getSignRequestsFromLogs(logs);
 	}
 
