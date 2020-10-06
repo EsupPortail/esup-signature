@@ -54,7 +54,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private EmailAlertFrequency emailAlertFrequency = EmailAlertFrequency.immediately;
 
-    private String emailAlertHour;
+    private Integer emailAlertHour;
     
     @Enumerated(EnumType.STRING)
     private DayOfWeek emailAlertDay;
@@ -169,11 +169,11 @@ public class User {
         this.keystore = keystore;
     }
 
-	public String getEmailAlertHour() {
+	public Integer getEmailAlertHour() {
         return this.emailAlertHour;
     }
 
-	public void setEmailAlertHour(String emailAlertHour) {
+	public void setEmailAlertHour(Integer emailAlertHour) {
         this.emailAlertHour = emailAlertHour;
     }
 

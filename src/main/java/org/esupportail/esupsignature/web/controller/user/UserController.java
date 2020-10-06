@@ -96,7 +96,7 @@ public class UserController {
     @PostMapping
     public String create(@ModelAttribute("authUser") User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
-    		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
+    		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {

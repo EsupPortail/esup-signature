@@ -30,6 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.time.DayOfWeek;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -336,18 +337,19 @@ public class UserService {
 		if(user.getLastSendAlertDate() != null) {
 			diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
 		}
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int minute = calendar.get(Calendar.MINUTE);
 		long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 		if((user.getEmailAlertFrequency() == null && diff > 0)
-			|| (EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
-			|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24)
-			|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168)) {
+			|| (EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1 && minute == 0)
+			|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour().equals(hour))
+			|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay().equals(DayOfWeek.of(calendar.get(Calendar.DAY_OF_WEEK))))) {
 			return true;
 		}
 		return false;
 	}
 
 	public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
-		logger.warn("test");
 		Date date = new Date();
 		List<String> toEmails = new ArrayList<>();
 		toEmails.add(recipientUser.getEmail());

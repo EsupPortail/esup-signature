@@ -207,8 +207,11 @@
                         <div class="form-group" id="emailAlertHour" style="display: none;">
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
                             </label>
-                            <input id="emailAlertHour" name="emailAlertHour" class="form-control" type="time"
-                                   th:value="${authUser.emailAlertHour}" autocomplete="off"/>
+<!--                            <input name="emailAlertHour" step="3600000" class="form-control" type="time"-->
+<!--                                   th:value="${authUser.emailAlertHour}" autocomplete="off"/>-->
+                            <select name="emailAlertHour" class="form-control">
+                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i}" th:selected="${i==authUser.emailAlertHour}"></option>
+                            </select>
                         </div>
                         <div class="form-group" id="emailAlertDay" style="display: none;">
                             <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de
