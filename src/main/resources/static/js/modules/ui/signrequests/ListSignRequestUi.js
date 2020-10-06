@@ -3,6 +3,7 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 export default class ListSignRequestUi {
 
     constructor(totalElementsToDisplay, csrf) {
+        console.info("Starting list sign UI");
         this.totalElementsToDisplay = totalElementsToDisplay;
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable")
@@ -13,6 +14,20 @@ export default class ListSignRequestUi {
     initListeners() {
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
+        $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
+        $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
+    }
+
+    selectAllCheckboxes() {
+        $("input[name^='ids']").each(function() {
+            $(this).prop("checked", true);
+        });
+    }
+
+    unSelectAllCheckboxes() {
+        $("input[name^='ids']").each(function() {
+            $(this).prop("checked", false);
+        });
     }
 
     detectEndDiv(e) {

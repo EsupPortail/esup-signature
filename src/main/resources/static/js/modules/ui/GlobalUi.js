@@ -52,7 +52,15 @@ export class GlobalUi {
             window.location = $(this).closest('tr').attr('data-href');
         });
         this.clickableTd.on('click',  function() {
-            window.location = $(this).closest('tr').attr('data-href');
+            let test = false;
+            $(".card").each(function (index, e) {
+                if(e.classList.contains("show")) {
+                    test = true;
+                }
+            });
+            if(!test) {
+                window.location = $(this).closest('tr').attr('data-href');
+            }
         });
         this.inputFile.on('change', e => this.changeFileInputName(e));
         let delay = 0;

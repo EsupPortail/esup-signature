@@ -49,9 +49,14 @@ td {
     font-size: 0.9em;
 }
 
-.tableFixHead          { overflow-y: auto; height: calc(100vh - 172px); }
-.tableFixHead thead th { position: sticky; top: 0; }
-/*.tableFixHead tbody { height: 100vh; }*/
+.tableFixHead {
+    overflow-y: auto;
+    height: calc(100vh - 172px); }
+.tableFixHead thead th {
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+}
 
 .footer {
   width: 100%;
@@ -62,6 +67,12 @@ td {
 .mini-menu {
     width:250px;
     right: 10px;
+    z-index: 1000;
+}
+
+.mini-menu-thead {
+    width:250px;
+    margin-top: 20px;
     z-index: 1000;
 }
 
