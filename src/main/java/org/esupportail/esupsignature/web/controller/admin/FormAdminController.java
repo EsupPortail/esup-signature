@@ -1,5 +1,8 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
@@ -12,11 +15,14 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.prefill.PreFill;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -25,7 +31,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +72,9 @@ public class FormAdminController {
 
 	@Resource
 	private UserShareRepository userShareRepository;
+
+	@Resource
+	private DataExportService dataExportService;
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
@@ -177,5 +189,25 @@ public class FormAdminController {
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
 		return "redirect:/admin/forms";
 	}
-	
+
+	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
+	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
+		List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+		if (forms.size() > 0) {
+			try {
+				response.setContentType("text/csv; charset=utf-8");
+				response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
+				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
+				IOUtils.copy(csvInputStream, response.getOutputStream());
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (Exception e) {
+				logger.error("get file error", e);
+			}
+		} else {
+			logger.warn("form " + name + " not found");
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 } 

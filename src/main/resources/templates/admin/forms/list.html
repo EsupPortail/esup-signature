@@ -30,12 +30,13 @@
                             <thead class="thead-dark">
                             <tr>
                                 <th class="w-50">Titre</th>
-                                <th scope="col">Nom</th>
-                                <th scope="col">Version</th>
-                                <th scope="col">Actif</th>
-                                <th scope="col">Rôle</th>
+                                <th>Nom</th>
+                                <th>Version</th>
+                                <th>Actif</th>
+                                <th>Rôle</th>
                                 <th class="text-center">Liste des champs</th>
                                 <th class="text-center">Modifier</th>
+                                <th class="text-center">Exporter les données</th>
                                 <th class="text-center">Supprimer</th>
                             </tr>
                             </thead>
@@ -56,6 +57,9 @@
                                     <a type="button" th:href="'/admin/forms/update/' + ${form.id}" class="btn btn-sm btn-warning text-white">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
+                                </td>
+                                <td class="show text-center">
+                                    <a type="button" th:href="'/admin/forms/' + ${form.name} + '/datas/csv'" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a>
                                 </td>
                                 <td class="delete text-center">
                                     <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-sm btn-danger">
