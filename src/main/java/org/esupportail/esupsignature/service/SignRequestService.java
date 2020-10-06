@@ -407,7 +407,7 @@ public class SignRequestService {
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-						signedInputStream = pdfService.stampImage(filledInputStream, getCurrentSignType(signRequest), signRequestParams, user);
+						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user);
 					}
 				}
 			}

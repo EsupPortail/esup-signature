@@ -538,7 +538,9 @@ export class PdfViewer extends EventFactory {
 
 
     setDataFields(dataFields) {
-        dataFields.forEach(e => this.addDataField(e));
+        if(dataFields) {
+            dataFields.forEach(e => this.addDataField(e));
+        }
     }
 
     addDataField(dataField) {

@@ -338,7 +338,8 @@ public class SignRequestController {
                                     data.getDatas().put(entry.getKey(), entry.getValue());
                                 }
                             } else {
-                                data.getDatas().remove(entry.getKey());
+                                data.getDatas().remove(entry.getKey()
+                                );
                             }
                         }
                     }

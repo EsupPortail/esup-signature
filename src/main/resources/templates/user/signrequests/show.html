@@ -90,12 +90,12 @@
                         <button class="btn btn-light btn-outline-dark ml-1" data-toggle="modal" data-target="#attachment">
                             <i class="fas fa-paperclip"></i> <span class="d-none d-xl-inline">Pièces jointes</span> <div th:if="${signRequest.attachments.size() + signRequest.links.size() > 0 }" th:text="${signRequest.attachments.size() + signRequest.links.size()}" class="badge badge-primary"></div>
                         </button>
-                        <div class="border ml-3 mr-3 "></div>
+                        <div class="border ml-3 mr-3"></div>
                         <div id="signTools" th:if="${documentType == 'pdf' && signRequest.signable}">
                             <div class="alert alert-success m-0 " style="width: 300px;padding: 2px;">
-                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="addSignButton" title="Ajouter une signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-plus"></i></button>
-                                <button th:if="${currentSignType == 'pdfImageStamp'}" id="removeSignButton" title="Supprimer la dernière signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-minus"></i></button>
-                                <button th:if="${currentSignType != 'pdfImageStamp'}" id="visualButton" title="Inserer un visuel" class="btn btn-sm btn-light btn-outline-success ml-1 d-none"><i class="fas fa-eye"></i></button>
+                                <button th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}" id="addSignButton" title="Ajouter une signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-plus"></i></button>
+                                <button th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}" id="removeSignButton" title="Supprimer la dernière signature" class="btn btn-sm btn-light btn-outline-dark ml-1" disabled><i class="fas fa-minus"></i></button>
+                                <button th:unless="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}" id="visualButton" title="Inserer un visuel" class="btn btn-sm btn-light btn-outline-success ml-1 d-none"><i class="fas fa-eye"></i></button>
                                 <button id="nameButton" title="Inserer le nom" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-user-alt"></i></button>
                                 <button id="dateButton" title="Inserer la date" class="btn btn-sm btn-light btn-outline-dark ml-1"><i class="fas fa-clock"></i></button>
                             </div>

@@ -3,6 +3,7 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 export class CreateDataUi {
 
     constructor(documentId, fields) {
+        console.info("Starting data UI");
         this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
         this.pdfViewer.setDataFields(fields);
         this.pdfViewer.scale = 0.70;
