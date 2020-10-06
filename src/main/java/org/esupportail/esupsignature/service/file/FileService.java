@@ -225,7 +225,7 @@ public class FileService {
 		final BufferedImage signImage = ImageIO.read(imageStream);
 		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight() + (30 * lineNumber), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.drawImage(signImage, 0, 30 * lineNumber, null);
+		graphics2D.drawImage(signImage, 0, 50 * lineNumber, null);
 		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		if(text != null && !text.isEmpty() && lineNumber > 0) {
 			int lineCount = 1;
