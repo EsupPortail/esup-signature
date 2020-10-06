@@ -63,10 +63,13 @@
                                                 <td class="align-content-center">
                                                     <div th:switch="${recipient.signed}">
                                                         <th:block th:case="true">
-                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
-                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fas fa-check-circle text-success"></i>
+                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fas fa-times-circle text-danger"></i>
                                                         </th:block>
-                                                        <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                                                        <th:block th:case="false">
+                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fas fa-clock text-warning"></i>
+                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                                        </th:block>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -85,7 +88,10 @@
                                                             <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
                                                             <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
                                                         </th:block>
-                                                        <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                                                        <th:block th:case="false">
+                                                            <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fas fa-clock text-warning"></i>
+                                                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                                        </th:block>
                                                     </div>
                                                 </td>
                                             </tr>

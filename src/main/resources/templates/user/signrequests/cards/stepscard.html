@@ -39,8 +39,12 @@
                                             <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                                 <td th:if="${(iterator.index + 1 > signRequest.parentSignBook.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.currentWorkflowStepNumber) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
-                                                    <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                    <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                                                </td>
+                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" th:switch="${recipient.signed}">
+                                                    <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                    <i title="N'a pas signé le document" th:case="false" class="fas fa-minus-circle text-secondary"></i>
                                                 </td>
                                             </tr>
                                             <div th:if="${recipient.user.userType.name() == 'external'}" class="card position-absolute collapse mini-menu" th:id="'menu-' + ${recipient.id}" style="    width: 200px">

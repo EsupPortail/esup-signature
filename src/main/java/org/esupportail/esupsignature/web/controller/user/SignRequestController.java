@@ -462,7 +462,7 @@ public class SignRequestController {
             }
             if (pending != null && pending) {
                 signBookService.pendingSignBook(signBook, user);
-                if (!comment.isEmpty()) {
+                if (comment != null && !comment.isEmpty()) {
                     for (SignRequest signRequest : signBook.getSignRequests()) {
                         signRequest.setComment(comment);
                         signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);

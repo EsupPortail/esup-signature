@@ -320,8 +320,9 @@
 <div class="modal fade" id="sendSignRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/send-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+            <form id="sendSignRequestForm" th:action="'/user/signrequests/send-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                   method="post" enctype="multipart/form-data">
+                <input type="hidden" id="pending" name="pending" value="false" />
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Créer une demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -370,25 +371,30 @@
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-eye"></i> Vérifier avant envoi
                     </button>
-                    <button type="button" class="btn btn-success" onclick="$('#sendPending').modal('show');">
-                        <i class="fas fa-paper-plane"></i> Envoyer la demande
+                    <button type="button" id="sendPendingButton" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Envoyer la demande immédiatement
                     </button>
-                    <div id="sendPending" class="modal fade">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">Commentaire</div>
-                                <div class="modal-body">
-                                    <textarea placeholder="Vous pouvez saisir un commentaire" class="form-control" name="comment"></textarea>
-                                    <button type="submit" class="btn btn-success" name="pending" value="true">
-                                        Valider l'envoi
-                                    </button>
-                                </div>
-                                <div class="modal-header"></div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+<div id="sendPending" class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                Envoyer immédiatement
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea placeholder="Vous pouvez saisir un commentaire" class="form-control" name="comment"></textarea>
+                <button type="button" id="submitSendPending" class="btn btn-success">
+                    Valider l'envoi
+                </button>
+            </div>
+            <div class="modal-header"></div>
         </div>
     </div>
 </div>

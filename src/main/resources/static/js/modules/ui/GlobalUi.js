@@ -71,6 +71,20 @@ export class GlobalUi {
 
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
+
+        $("#sendPendingButton").on('click', e => this.showSendPendingModal());
+        $("#submitSendPending").on('click', e => this.submitSendPending());
+
+    }
+
+    submitSendPending() {
+        $("#pending").val(true);
+        $("#sendSignRequestForm").submit();
+    }
+
+    showSendPendingModal() {
+        $('#sendPending').modal('toggle');
+        $('#sendSignRequestModal').modal('toggle');
     }
 
     checkCurrentPage() {
