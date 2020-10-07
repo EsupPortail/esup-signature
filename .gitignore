@@ -1,6 +1,7 @@
 *
 !src/
 !src/**
+src/main/resources/application-dev.yml
 !LICENCE
 !README.md
 !NOTICE
