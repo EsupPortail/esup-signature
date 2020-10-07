@@ -266,11 +266,8 @@ public class SignRequestController {
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, authUser, signRequest));
-        if (frameMode != null && frameMode) {
-            return "user/signrequests/show-frame";
-        } else {
-            return "user/signrequests/show";
-        }
+        model.addAttribute("frameMode", frameMode);
+        return "user/signrequests/show";
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")

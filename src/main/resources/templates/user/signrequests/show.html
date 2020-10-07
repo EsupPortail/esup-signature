@@ -6,7 +6,8 @@
 <!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<header th:replace="fragments/nav"></header>
+<header th:if="${frameMode}" th:replace="fragments/nav-empty"></header>
+<header th:unless="${frameMode}" th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
