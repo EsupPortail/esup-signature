@@ -71,7 +71,7 @@ public class LdapExtValue implements ExtValue {
 		List<Map<String, Object>> mapList = new ArrayList<>();
 		String name = "get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1);
 		if(searchType.equals("person")) {
-			List<PersonLdap> personLdaps = ldapPersonService.search(searchString, null);
+			List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
 			for (PersonLdap personLdap : personLdaps) {
 				Map<String, Object> stringObjectMap = new HashMap<>();
 				try {

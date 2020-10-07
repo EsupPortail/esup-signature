@@ -126,6 +126,7 @@ security:
     cas:
         domain: univ-ville.fr
         group-search-base: ou=groups
+        group-prefix-role-name: ROLE_FOR.ESUP-SIGNATURE
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)

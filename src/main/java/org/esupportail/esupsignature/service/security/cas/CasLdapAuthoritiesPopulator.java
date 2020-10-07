@@ -1,43 +1,52 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.service.security.GroupService;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 
+import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
-	
+
+	protected GroupService groupService;
+
 	protected Map<String, String> mappingGroupesRoles;
 	
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
 	}
-	
+
+	public void setGroupService(GroupService groupService) {
+		this.groupService = groupService;
+	}
+
 	public CasLdapAuthoritiesPopulator(ContextSource contextSource,
-			String groupSearchBase) {
+									   String groupSearchBase) {
 		super(contextSource, groupSearchBase);
 	}
 
 	@Override
-	 protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
+	protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
 
-		String userDn = user.getNameInNamespace();
+		Set<GrantedAuthority> additionalRoles = new HashSet<>();
 
-		Set<GrantedAuthority> roles = getGroupMembershipRoles(userDn, username.toLowerCase());
-
-		Set<GrantedAuthority> extraRoles = new HashSet<>();
-
-		for(GrantedAuthority role: roles) {
-			if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(role.getAuthority())) 
-				extraRoles.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(role.getAuthority())));
+		for(String groupName : groupService.getGroups(username.toLowerCase())) {
+			if(groupName != null) {
+				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
+					additionalRoles.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
+				} else {
+					additionalRoles.add(new SimpleGrantedAuthority(groupName));
+				}
+			}
 		}
 
-		return extraRoles;
+		return additionalRoles;
 	}
 
 }

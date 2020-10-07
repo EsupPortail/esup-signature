@@ -140,9 +140,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdaps(searchString, ldapTemplateName);
+		return userService.getPersonLdaps(searchString);
    }
 
 	@GetMapping("/properties")

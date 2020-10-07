@@ -2,8 +2,12 @@ package org.esupportail.esupsignature.service.security.cas;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
+import org.esupportail.esupsignature.service.ldap.LdapGroupService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -30,6 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 public class CasSecurityServiceImpl implements SecurityService {
+
+	@Resource
+	private LdapTemplate ldapTemplate;
+
+	@Resource
+	private LdapPersonService ldapPersonService;
 
 	@Resource
 	private CasProperties casProperties;
@@ -128,11 +138,28 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public LdapUserDetailsService ldapUserDetailsService() {
 
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
+
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, casProperties.getGroupSearchBase());
 
-		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
+		Map<String, String> mappingGroupesRoles = new HashMap<>();
 		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
+
+		Map<String, String> ldapFiltersGroups = new HashMap<>();
+
+		ldapFiltersGroups.put("eduPersonAffiliation:=student", casProperties.getGroupPrefixRoleName() + ".ROLE." + "STUDENT");
+		ldapFiltersGroups.put("eduPersonAffiliation:=staff", casProperties.getGroupPrefixRoleName() + ".ROLE." + "STAFF");
+
+		LdapGroupService ldapGroupService = new LdapGroupService();
+		ldapGroupService.setPrefixRoleName(casProperties.getGroupPrefixRoleName());
+		ldapGroupService.setLdapFiltersGroups(ldapFiltersGroups);
+		ldapGroupService.setLdapTemplate(ldapTemplate);
+		ldapGroupService.setGroupSearchBase("ou=groups");
+	    ldapGroupService.setGroupSearchFilter("member={0}");
+	    ldapGroupService.setMemberSearchBase("ou=people");
+		ldapGroupService.setMemberSearchFilter("(&(uid={0})({1}))");
+
+		casLdapAuthoritiesPopulator.setGroupService(ldapGroupService);
 
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
 				casLdapAuthoritiesPopulator);
@@ -144,7 +171,9 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 		return ldapUserDetailsService;
 	}
-	
+
+
+
 //	public SingleSignOutFilter singleLogoutFilter() {
 //		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
 //		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");

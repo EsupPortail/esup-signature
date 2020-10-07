@@ -12,7 +12,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +19,6 @@ import java.util.Map;
 @ConditionalOnProperty(prefix = "spring.ldap", name = "base")
 @EnableConfigurationProperties(LdapProperties.class)
 public class LdapOrganizationalUnitService {
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Resource
     private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;

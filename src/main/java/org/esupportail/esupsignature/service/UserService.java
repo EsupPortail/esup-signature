@@ -40,7 +40,6 @@ public class UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-
 	private LdapPersonService ldapPersonService;
 
 	private CasProperties casProperties;
@@ -317,8 +316,8 @@ public class UserService {
 			if (authorities.size() > 0) {
 				user.getRoles().clear();
 				for (GrantedAuthority authority : authorities) {
-					if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.ROLE")) {
-						user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.ROLE.", ""));
+					if (authority.getAuthority().startsWith(casProperties.getGroupPrefixRoleName() + ".ROLE.")) {
+						user.getRoles().add(authority.getAuthority().replace(casProperties.getGroupPrefixRoleName() + ".ROLE.", ""));
 					}
 				}
 			}
@@ -396,7 +395,7 @@ public class UserService {
 		return false;
 	 }
 
-	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
+	public List<PersonLdap> getPersonLdaps(String searchString) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
 		List<User> users = new ArrayList<>();
 		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
@@ -406,7 +405,7 @@ public class UserService {
 			personLdaps.add(getPersonLdapFromUser(user));
 		}
 		if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString);
 			if(ldapSearchList.size() > 0) {
 				List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
 				for (PersonLdap personLdapList : ldapList) {
