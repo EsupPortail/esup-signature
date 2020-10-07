@@ -317,8 +317,8 @@ public class UserService {
 			if (authorities.size() > 0) {
 				user.getRoles().clear();
 				for (GrantedAuthority authority : authorities) {
-					if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.USER")) {
-						user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.USER.", ""));
+					if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.ROLE")) {
+						user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.ROLE.", ""));
 					}
 				}
 			}

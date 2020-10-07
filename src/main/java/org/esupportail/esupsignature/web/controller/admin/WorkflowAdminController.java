@@ -121,9 +121,6 @@ public class WorkflowAdminController {
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
-//		if (!workflowService.checkUserManageRights(user, workflow)) {
-//			return "redirect:/admin/workflows/" + workflow.getName();
-//		}
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("sourceTypes", DocumentIOType.values());

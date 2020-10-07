@@ -77,7 +77,7 @@
 <!--                           title="Demander la signature d'un document présent sur votre poste">-->
 <!--                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
 <!--                        </a>-->
-                        <div class="dropdown-divider"></div>
+                        <div th:unless="${globalProperties.hideWizard}" class="dropdown-divider"></div>
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/?form">
                             <i class="fas fa-user-cog"></i> Modifier mes paramètres
                         </a>

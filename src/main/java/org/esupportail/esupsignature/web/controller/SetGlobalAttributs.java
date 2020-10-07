@@ -52,11 +52,33 @@ public class SetGlobalAttributs {
             messages.addAll(userService.getMessages(authUser));
         }
         model.addAttribute("messageNews", messages);
-        model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
+        parseRoles(user);
         model.addAttribute("globalProperties", this.globalProperties);
+        model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
         model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
+    }
+
+    private void parseRoles(User user) {
+        if(user.getRoles().contains("CREATE_SIGNREQUEST")) {
+            globalProperties.setHideSendSignRequest("false");
+        }
+        if(user.getRoles().contains("CREATE_WIZARD")) {
+            globalProperties.setHideWizard("false");
+        }
+        if(user.getRoles().contains("CREATE_AUTOSIGN")) {
+            globalProperties.setHideAutoSign("false");
+        }
+        if(user.getRoles().contains("NO_CREATE_SIGNREQUEST")) {
+            globalProperties.setHideSendSignRequest("true");
+        }
+        if(user.getRoles().contains("NO_CREATE_WIZARD")) {
+            globalProperties.setHideWizard("true");
+        }
+        if(user.getRoles().contains("NO_CREATE_AUTOSIGN")) {
+            globalProperties.setHideAutoSign("true");
+        }
     }
 
 }

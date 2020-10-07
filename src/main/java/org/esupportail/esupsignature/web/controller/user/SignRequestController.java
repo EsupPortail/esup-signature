@@ -310,7 +310,7 @@ public class SignRequestController {
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "password", required = false) String password) throws JsonProcessingException, InterruptedException {
+                               @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
             public void afterCommit(){
@@ -322,6 +322,7 @@ public class SignRequestController {
         SignRequest signRequest = signRequestRepository.findById(id).get();
 
         Map<String, String> formDataMap = null;
+        List<String> toRemoveKeys = new ArrayList<>();
         if(formData != null) {
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
@@ -338,15 +339,17 @@ public class SignRequestController {
                                     data.getDatas().put(entry.getKey(), entry.getValue());
                                 }
                             } else {
-                                data.getDatas().remove(entry.getKey()
-                                );
+                                toRemoveKeys.add(entry.getKey());
                             }
                         }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("form datas error", e);
             }
+        }
+        for (String toRemoveKey : toRemoveKeys) {
+            formDataMap.remove(toRemoveKey);
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
         signRequest.getSignRequestParams().clear();
