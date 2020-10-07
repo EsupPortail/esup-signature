@@ -1,4 +1,5 @@
 *
+!.gitignore
 !src/
 !src/**
 src/main/resources/application-dev.yml
