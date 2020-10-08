@@ -73,9 +73,6 @@ public class DataController {
 	private FormRepository formRepository;
 
 	@Resource
-	private UserService userService;
-
-	@Resource
 	private UserShareService userShareService;
 
 	@Resource

@@ -11,6 +11,8 @@ global:
     #   archive-uri: smb://serveur_fichier/archives
     #   delay-before-cleaning : 0
     enable-su: false
+    enable-splash: true
+    version: '@project.version@'
 
 #tomcat:
 #    ajp:
