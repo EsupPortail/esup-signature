@@ -81,11 +81,12 @@ public class IndexController {
 			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			logger.info("auth user : " + auth.getName());
 			if("anonymousUser".equals(auth.getName())) {
+				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
 				return "signin";
 			} else {
+				logger.info("auth user : " + auth.getName());
 				userService.createUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
 				return "redirect:/user/";
 			}

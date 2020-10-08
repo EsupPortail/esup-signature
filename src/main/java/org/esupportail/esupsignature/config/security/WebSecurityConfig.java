@@ -92,7 +92,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "spring.ldap.base")
+	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnExpression("${global.enable-su}")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();

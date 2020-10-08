@@ -41,12 +41,14 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 
 	private static final Logger logger = LoggerFactory.getLogger(ShibAuthenticatedUserDetailsService.class);
 
-	protected Map<String, String> mappingGroupesRoles;
+	private Map<String, String> mappingGroupesRoles;
 	
-	protected Group2UserRoleService group2UserRoleService;
+	private Group2UserRoleService group2UserRoleService;
 
 	private LdapGroupService ldapGroupService;
-	
+
+	private String prefix;
+
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
 	}
@@ -59,41 +61,53 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		this.ldapGroupService = ldapGroupService;
 	}
 
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-		logger.debug("load user details from : " + token.getName());
-		String credentials = (String) token.getCredentials();
-		logger.debug("credentials : " + credentials);
-		try {
-			for (String credential : StringUtils.split(credentials, ";")) {
-				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
-					authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
-				}
-			}
-		} catch (Exception e) {
-			logger.debug("unable to find credentials", e);
-		}
-		try {
-			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
-				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-				logger.debug("loading authorities : " + authorities.get(0).getAuthority());
-			}
-
-			if(ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-				for (String groupName : ldapGroupService.getGroups(token.getName())) {
-					if (groupName != null) {
-						if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
-							authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
-						} else {
-							authorities.add(new SimpleGrantedAuthority(groupName));
+		if(!token.getCredentials().equals("")) {
+			logger.debug("load user details from : " + token.getName());
+			String credentials = (String) token.getCredentials();
+			logger.debug("credentials : " + credentials);
+			String[] splitCredentials = credentials.split(";");
+			try {
+				for (String credential : splitCredentials) {
+					if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
+						authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
+					} else {
+						if(credential.contains(prefix)) {
+							authorities.add(new SimpleGrantedAuthority(credential));
 						}
 					}
 				}
+			} catch (Exception e) {
+				logger.debug("unable to find credentials", e);
 			}
-		} catch (Exception e) {
-			logger.warn("unable to find authorities", e);
+			try {
+				for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
+					authorities.add(new SimpleGrantedAuthority(roleFromLdap));
+					logger.debug("loading authorities : " + authorities.get(0).getAuthority());
+				}
+
+				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
+					for (String groupName : ldapGroupService.getGroups(token.getName())) {
+						if (groupName != null) {
+							if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
+								authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
+							} else {
+								authorities.add(new SimpleGrantedAuthority(groupName));
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				logger.warn("unable to find authorities", e);
+			}
 		}
 		return createUserDetails(token, authorities);
+
 	}
 
 	protected UserDetails createUserDetails(Authentication token, Collection<? extends GrantedAuthority> authorities) {

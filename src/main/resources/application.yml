@@ -1,5 +1,7 @@
 global:
     root-url: https://esup-signature.univ-ville.fr
+    group-prefix-role-name: for.esup-signature.role
+    domain: univ-ville.fr
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle.zip
@@ -73,9 +75,12 @@ ldap:
     search-base: ou=people
     group-search-base: ou=groups
     search-filter: (uid={0})
-    affiliation-filter: staff, member, affiliate
-    domain: univ-ville.fr
-    group-prefix-role-name: ROLE_FOR.ESUP-SIGNATURE
+    group-search-filter: member={0}
+    member-search-filter: (&(uid={0})({1}))
+    affiliation-filter: member
+    ldap-filters-groups:
+        student : "eduPersonAffiliation:=student"
+        staff : "eduPersonAffiliation:=staff"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
@@ -127,18 +132,17 @@ pdf:
 
 security:
     cas:
-        group-search-base: ou=groups
-        group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
+        group-mapping-role-admin: for.esup-signature.admin
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)
         url: https://cas.univ-ville.fr
-        #    shib:
-        #        credentials-request-header: MEMBER
-        #        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
-        #        idp-url: https://idp.univ-ville.fr
-        #        principal-request-header: REMOTE_USER
-        #        title: Compte d’un autre établissement (Shibboleth)
-        #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+    shib:
+        credentials-request-header: MEMBER
+        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
+        idp-url: https://idp.univ-ville.fr
+        principal-request-header: REMOTE_USER
+        title: Compte d’un autre établissement (Shibboleth)
+        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     ws:
         ws-access-authorize-ips: 127.0.0.1
 

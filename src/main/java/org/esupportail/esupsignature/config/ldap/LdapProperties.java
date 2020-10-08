@@ -8,14 +8,12 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "ldap")
 public class LdapProperties {
 
-    private String searchBase = "ou=people";
-    private String groupSearchBase = "ou=groups";
-    private String groupSearchFilter = "member={0}";
-    private String memberSearchFilter = "(&(uid={0})({1}))";
-    private String searchFilter = "(uid={0})";
-    private String affiliationFilter = "member";
-    private String groupPrefixRoleName = "";
-    private String domain;
+    private String searchBase;
+    private String groupSearchBase;
+    private String groupSearchFilter;
+    private String memberSearchFilter;
+    private String searchFilter;
+    private String affiliationFilter;
     private Map<String, String> ldapFiltersGroups = new HashMap<>();
 
     public String getSearchBase() {
@@ -64,22 +62,6 @@ public class LdapProperties {
 
     public void setAffiliationFilter(String affiliationFilter) {
         this.affiliationFilter = affiliationFilter;
-    }
-
-    public String getGroupPrefixRoleName() {
-        return groupPrefixRoleName;
-    }
-
-    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
-        this.groupPrefixRoleName = groupPrefixRoleName;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 
     public Map<String, String> getLdapFiltersGroups() {

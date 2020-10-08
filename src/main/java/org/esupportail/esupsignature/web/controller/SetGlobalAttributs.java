@@ -61,22 +61,22 @@ public class SetGlobalAttributs {
     }
 
     private void parseRoles(User user) {
-        if(user.getRoles().contains("CREATE_SIGNREQUEST")) {
+        if(user.getRoles().contains("create_signrequest")) {
             globalProperties.setHideSendSignRequest("false");
         }
-        if(user.getRoles().contains("CREATE_WIZARD")) {
+        if(user.getRoles().contains("create_wizard")) {
             globalProperties.setHideWizard("false");
         }
-        if(user.getRoles().contains("CREATE_AUTOSIGN")) {
+        if(user.getRoles().contains("create_autosign")) {
             globalProperties.setHideAutoSign("false");
         }
-        if(user.getRoles().contains("NO_CREATE_SIGNREQUEST")) {
+        if(user.getRoles().contains("no_create_signrequest")) {
             globalProperties.setHideSendSignRequest("true");
         }
-        if(user.getRoles().contains("NO_CREATE_WIZARD")) {
+        if(user.getRoles().contains("no_create_wizard")) {
             globalProperties.setHideWizard("true");
         }
-        if(user.getRoles().contains("NO_CREATE_AUTOSIGN")) {
+        if(user.getRoles().contains("no_create_autosign")) {
             globalProperties.setHideAutoSign("true");
         }
     }

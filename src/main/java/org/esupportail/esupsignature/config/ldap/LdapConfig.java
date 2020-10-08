@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.ldap;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,12 +13,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@ConditionalOnProperty(prefix = "spring.ldap", name = "base")
+@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
 @EnableConfigurationProperties(LdapProperties.class)
 public class LdapConfig {
 
     @Resource
     private LdapProperties ldapProperties;
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private LdapTemplate ldapTemplate;
@@ -27,7 +31,7 @@ public class LdapConfig {
         Map<String, String> ldapFiltersGroups = new HashMap<>();
 
         for(Map.Entry<String, String> entry : ldapProperties.getLdapFiltersGroups().entrySet()) {
-            ldapFiltersGroups.put(entry.getValue(), ldapProperties.getGroupPrefixRoleName() + ".ROLE." + entry.getKey().toUpperCase());
+            ldapFiltersGroups.put(entry.getValue(), globalProperties.getGroupPrefixRoleName() + "." + entry.getKey().toUpperCase());
         }
 
         LdapGroupService ldapGroupService = new LdapGroupService();
@@ -37,8 +41,7 @@ public class LdapConfig {
         ldapGroupService.setGroupSearchFilter(ldapProperties.getGroupSearchFilter());
         ldapGroupService.setMemberSearchBase(ldapProperties.getSearchBase());
         ldapGroupService.setMemberSearchFilter(ldapProperties.getMemberSearchFilter());
-        ldapGroupService.setDomain(ldapProperties.getDomain());
-        //todo mettre en conf
+        ldapGroupService.setDomain(globalProperties.getDomain());
 
         return ldapGroupService;
     }

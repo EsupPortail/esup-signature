@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -41,6 +42,9 @@ public class UserService {
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
 	private LdapPersonService ldapPersonService;
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	private LdapProperties ldapProperties;
 
@@ -200,7 +204,7 @@ public class UserService {
 			if (eppn.split("@").length == 1) {
 				for (SecurityService securityService : this.securityServices) {
 					if (securityService instanceof CasSecurityServiceImpl) {
-						eppn = eppn + "@" + securityService.getDomain();
+						eppn = eppn + "@" + globalProperties.getDomain();
 					}
 				}
 			}
@@ -226,7 +230,7 @@ public class UserService {
 		String eppn = null;
 		for (SecurityService securityService : securityServices) {
 			if (securityService instanceof CasSecurityServiceImpl) {
-				eppn = personLdap.getUid() + "@" + securityService.getDomain();
+				eppn = personLdap.getUid() + "@" + globalProperties.getDomain();
 			}
 		}
 		return eppn;
@@ -315,11 +319,14 @@ public class UserService {
 			Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 			if (authorities.size() > 0) {
 				user.getRoles().clear();
+				Set<String> roles = new HashSet<>();
 				for (GrantedAuthority authority : authorities) {
-					if (authority.getAuthority().startsWith(ldapProperties.getGroupPrefixRoleName() + ".ROLE.")) {
-						user.getRoles().add(authority.getAuthority().replace(ldapProperties.getGroupPrefixRoleName() + ".ROLE.", ""));
+					if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+						String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
+						roles.add(role);
 					}
 				}
+				user.getRoles().addAll(roles);
 			}
 		} catch (Exception e) {
 			logger.error("unable to get roles " + e);
@@ -514,7 +521,7 @@ public class UserService {
 		if(emailSplit.length > 1) {
 			String domain = emailSplit[1];
 			for (SecurityService securityService : securityServices) {
-				if (ldapProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(ldapProperties.getDomain())) {
+				if (securityService instanceof CasSecurityServiceImpl && domain.equals(globalProperties.getDomain())) {
 					return UserType.ldap;
 				}
 				if (securityService instanceof ShibSecurityServiceImpl) {

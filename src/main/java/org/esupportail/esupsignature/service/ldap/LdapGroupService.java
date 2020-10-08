@@ -85,8 +85,7 @@ public class LdapGroupService implements GroupService {
             groups = ldapTemplate.search(
                     groupSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
-                        String groupName = searchResultContext.getStringAttribute("cn");
-                        return "ROLE_" + groupName.toUpperCase();
+                        return searchResultContext.getStringAttribute("cn");
                     });
         }
 
@@ -97,8 +96,7 @@ public class LdapGroupService implements GroupService {
             List<String> filterDns = ldapTemplate.search(query().filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
-                        String dn = searchResultContext.getNameInNamespace();
-                        return dn;
+                        return searchResultContext.getNameInNamespace();
                     });
 
             if(!filterDns.isEmpty()) {

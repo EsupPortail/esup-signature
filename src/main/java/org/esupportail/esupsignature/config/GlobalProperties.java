@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class GlobalProperties {
 
     private String rootUrl;
+    private String groupPrefixRoleName;
+    private String domain;
     private String nexuUrl;
     private String nexuVersion;
     private String nexuDownloadUrl;
@@ -26,6 +28,22 @@ public class GlobalProperties {
 
     public void setRootUrl(String rootUrl) {
         this.rootUrl = rootUrl;
+    }
+
+    public String getGroupPrefixRoleName() {
+        return groupPrefixRoleName;
+    }
+
+    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
+        this.groupPrefixRoleName = groupPrefixRoleName;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public String getNexuUrl() {

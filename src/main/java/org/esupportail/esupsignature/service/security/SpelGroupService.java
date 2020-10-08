@@ -19,7 +19,6 @@ public class SpelGroupService implements GroupService {
 		this.groups4eppnSpel = groups4eppnSpel;
 	}
 
-
 	@Override
 	public List<String> getGroups(String eppn) {
 		
