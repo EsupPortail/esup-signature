@@ -43,21 +43,23 @@ public class SetGlobalAttributs {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
         List<Message> messages = new ArrayList<>();
-        if((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
-            Message splashMessage = new Message();
-            splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
-            splashMessage.setId(0L);
-            messages.add(splashMessage);
-        } else if(!authUser.getEppn().equals("system") && user.equals(authUser)) {
-            messages.addAll(userService.getMessages(authUser));
+        if(authUser != null) {
+            if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+                Message splashMessage = new Message();
+                splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
+                splashMessage.setId(0L);
+                messages.add(splashMessage);
+            } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {
+                messages.addAll(userService.getMessages(authUser));
+            }
+            model.addAttribute("messageNews", messages);
+            parseRoles(user);
+            model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
+            model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
+            model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
+            model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
         }
-        model.addAttribute("messageNews", messages);
-        parseRoles(user);
         model.addAttribute("globalProperties", this.globalProperties);
-        model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
-        model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
-        model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
-        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
     }
 
     private void parseRoles(User user) {

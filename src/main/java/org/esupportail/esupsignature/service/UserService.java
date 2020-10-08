@@ -220,7 +220,8 @@ public class UserService {
 			}
 			return user;
 		}
-		return getSystemUser();
+		logger.error("unable to find user : " + eppn);
+		return null;
 	}
 
 	private String buildEppn(PersonLdap personLdap) {
