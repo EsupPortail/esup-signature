@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.service.security.shib;
 
+import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -43,6 +45,7 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	
 	protected Group2UserRoleService group2UserRoleService;
 
+	private LdapGroupService ldapGroupService;
 	
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
@@ -51,7 +54,11 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 	public void setGroup2UserRoleService(Group2UserRoleService group2UserRoleService) {
 		this.group2UserRoleService = group2UserRoleService;
 	}
-	
+
+	public void setLdapGroupService(LdapGroupService ldapGroupService) {
+		this.ldapGroupService = ldapGroupService;
+	}
+
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 		logger.debug("load user details from : " + token.getName());
@@ -69,7 +76,19 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		try {
 			for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
 				authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-				logger.debug("loading authorities : " + authorities.get(0).getAuthority());
+				logger.debug("loading authorities : " + authorities.get(0).getAuthority());
+			}
+
+			if(ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
+				for (String groupName : ldapGroupService.getGroups(token.getName())) {
+					if (groupName != null) {
+						if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
+							authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
+						} else {
+							authorities.add(new SimpleGrantedAuthority(groupName));
+						}
+					}
+				}
 			}
 		} catch (Exception e) {
 			logger.warn("unable to find authorities", e);

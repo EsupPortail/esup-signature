@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.security.shib;
 
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
@@ -21,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 public class ShibSecurityServiceImpl implements SecurityService {
+
+	@Resource
+	private LdapGroupService ldapGroupService;
 
 	@Resource
 	private ShibProperties shibProperties;
@@ -88,6 +92,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
+
 		Map<String, String> mappingGroupesRoles = new HashMap<>();
 		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
 
@@ -102,6 +107,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		group2UserRoleService.setGroupService(groupService);
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
+		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService);
 		return shibAuthenticatedUserDetailsService;
 	}
 

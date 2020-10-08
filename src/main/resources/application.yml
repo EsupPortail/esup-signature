@@ -71,8 +71,11 @@ spring:
 
 ldap:
     search-base: ou=people
+    group-search-base: ou=groups
     search-filter: (uid={0})
     affiliation-filter: staff, member, affiliate
+    domain: univ-ville.fr
+    group-prefix-role-name: ROLE_FOR.ESUP-SIGNATURE
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
@@ -124,9 +127,7 @@ pdf:
 
 security:
     cas:
-        domain: univ-ville.fr
         group-search-base: ou=groups
-        group-prefix-role-name: ROLE_FOR.ESUP-SIGNATURE
         group-mapping-role-admin: ROLE_FOR.ESUP-SIGNATURE.ADMIN
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)

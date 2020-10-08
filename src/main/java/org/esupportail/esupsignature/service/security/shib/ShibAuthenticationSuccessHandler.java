@@ -38,16 +38,7 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
         if(eppn == null || email == null || name == null || firstName == null) {
         	throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		} else {
-			User user = userService.getUserByEmail(email);
-			if(user == null) {
-				userService.createUser(eppn, name, firstName, email, UserType.shib);
-			} else {
-				user.setEppn(eppn);
-				user.setName(name);
-				user.setFirstname(firstName);
-				user.setEmail(email);
-				userRepository.save(user);
-			}
+			userService.createUser(eppn, name, firstName, email, UserType.shib);
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
         /*

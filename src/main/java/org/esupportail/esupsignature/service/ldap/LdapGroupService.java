@@ -16,17 +16,17 @@ public class LdapGroupService implements GroupService {
 
     Map<String, String> ldapFiltersGroups;
 
-    LdapTemplate ldapTemplate;
+    private LdapTemplate ldapTemplate;
 
-    String groupSearchBase;
+    private String groupSearchBase;
 
-    String groupSearchFilter;
+    private String groupSearchFilter;
 
-    String memberSearchBase;
+    private String memberSearchBase;
 
-    String memberSearchFilter;
+    private String memberSearchFilter;
 
-    String prefixRoleName;
+    private String domain;
 
     public Map<String, String> getLdapFiltersGroups() {
         return ldapFiltersGroups;
@@ -56,8 +56,12 @@ public class LdapGroupService implements GroupService {
         this.memberSearchFilter = memberSearchFilter;
     }
 
-    public void setPrefixRoleName(String prefixRoleName) {
-        this.prefixRoleName = prefixRoleName;
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     @Override
@@ -65,7 +69,7 @@ public class LdapGroupService implements GroupService {
 
         String username = eppn.replaceAll("@.*", "");
 
-        List<String> dns = ldapTemplate.search(query().where("uid").is(eppn),
+        List<String> dns = ldapTemplate.search(query().where("uid").is(username),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                     String dn = searchResultContext.getNameInNamespace();
@@ -88,7 +92,7 @@ public class LdapGroupService implements GroupService {
 
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
 
-            String hardcodedFilter = MessageFormat.format(memberSearchFilter, new String[] {eppn, ldapFilter});
+            String hardcodedFilter = MessageFormat.format(memberSearchFilter, new String[] {username, ldapFilter});
 
             List<String> filterDns = ldapTemplate.search(query().filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {

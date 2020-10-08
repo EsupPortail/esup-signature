@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -42,7 +42,7 @@ public class UserService {
 
 	private LdapPersonService ldapPersonService;
 
-	private CasProperties casProperties;
+	private LdapProperties ldapProperties;
 
 	@Autowired(required = false)
 	public void setLdapPersonService(LdapPersonService ldapPersonService) {
@@ -50,8 +50,8 @@ public class UserService {
 	}
 
 	@Autowired(required = false)
-	public void setCasProperties(CasProperties casProperties) {
-		this.casProperties = casProperties;
+	public void setLdapProperties(LdapProperties ldapProperties) {
+		this.ldapProperties = ldapProperties;
 	}
 
 	@Resource
@@ -316,8 +316,8 @@ public class UserService {
 			if (authorities.size() > 0) {
 				user.getRoles().clear();
 				for (GrantedAuthority authority : authorities) {
-					if (authority.getAuthority().startsWith(casProperties.getGroupPrefixRoleName() + ".ROLE.")) {
-						user.getRoles().add(authority.getAuthority().replace(casProperties.getGroupPrefixRoleName() + ".ROLE.", ""));
+					if (authority.getAuthority().startsWith(ldapProperties.getGroupPrefixRoleName() + ".ROLE.")) {
+						user.getRoles().add(authority.getAuthority().replace(ldapProperties.getGroupPrefixRoleName() + ".ROLE.", ""));
 					}
 				}
 			}
@@ -514,7 +514,7 @@ public class UserService {
 		if(emailSplit.length > 1) {
 			String domain = emailSplit[1];
 			for (SecurityService securityService : securityServices) {
-				if (casProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
+				if (ldapProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(ldapProperties.getDomain())) {
 					return UserType.ldap;
 				}
 				if (securityService instanceof ShibSecurityServiceImpl) {
