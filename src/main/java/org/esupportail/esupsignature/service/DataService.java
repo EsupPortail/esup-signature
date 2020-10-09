@@ -19,12 +19,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -183,7 +186,16 @@ public class DataService {
 
     public InputStream generateFile(Data data) {
         Form form = data.getForm();
-        return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+        if(form.getDocument() != null) {
+            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+        } else {
+            try {
+                return pdfService.generatePdfFromData(data);
+            } catch (IOException e) {
+                logger.error("pdf generation error", e);
+            }
+        }
+        return null;
     }
 
     public Data getDataFromSignRequest(SignRequest signRequest) {

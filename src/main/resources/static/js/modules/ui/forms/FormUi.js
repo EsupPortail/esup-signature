@@ -1,6 +1,7 @@
-export class FormUi {
+export default class FormUi {
 
     constructor() {
+        console.info("Starting Form UI")
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
         this.initListeners();

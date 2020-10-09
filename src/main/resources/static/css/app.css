@@ -17,6 +17,12 @@ body {
     width: 100%;
 }
 
+#actionDiv {
+    position: relative;
+    width: 100%;
+    height: 500px;
+}
+
 .truncate {
     white-space: nowrap;
     overflow: hidden;

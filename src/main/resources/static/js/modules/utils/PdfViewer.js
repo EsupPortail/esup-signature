@@ -310,9 +310,9 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
-                console.log(items[i]);
-                console.log(inputField);
-                console.log(dataField);
+                console.debug(items[i]);
+                console.debug(inputField);
+                console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
@@ -435,6 +435,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly) {
                     inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
                 }
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.prop('required', false);

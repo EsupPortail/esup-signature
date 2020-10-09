@@ -83,6 +83,19 @@ export class GlobalUi {
         $("#sendPendingButton").on('click', e => this.showSendPendingModal());
         $("#submitSendPending").on('click', e => this.submitSendPending());
 
+        $(window).bind('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch (String.fromCharCode(event.which).toLowerCase()) {
+                    case 's':
+                        event.preventDefault();
+                        let saveButton = $("#saveButton");
+                        if(saveButton) {
+                            saveButton.click();
+                        }
+                        break;
+                }
+            }
+        });
     }
 
     submitSendPending() {
