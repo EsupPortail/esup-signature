@@ -18,6 +18,7 @@ export class DataField {
         this.stepNumbers;
         this.topPos;
         this.type;
+        this.action;
         Object.assign(this, dataField);
     }
 

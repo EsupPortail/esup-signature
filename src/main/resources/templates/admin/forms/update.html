@@ -10,7 +10,6 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
-                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
@@ -113,6 +112,10 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="action">Action</label>
+                            <textarea id="action" class="form-control" type="text" th:field="*{action}"></textarea>
                         </div>
                     </form>
                 </div>

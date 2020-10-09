@@ -2,11 +2,12 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 
 export class CreateDataUi {
 
-    constructor(documentId, fields) {
+    constructor(action, documentId, fields) {
         console.info("Starting data UI");
         this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
         this.pdfViewer.setDataFields(fields);
         this.pdfViewer.scale = 0.70;
+        this.action = action;
         this.initListeners();
     }
 
@@ -28,6 +29,14 @@ export class CreateDataUi {
                 sendModalButton.removeAttr('data-target');
             });
         });
+        if(this.action) {
+            $(document).ready(e => this.initFormAction());
+        }
+    }
+
+    initFormAction() {
+        console.info("eval : " + this.action);
+        jQuery.globalEval(this.action);
     }
 
     saveData(e) {

@@ -48,7 +48,7 @@ public class FileService {
 	}
 
 	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
-		File file = getTempFile(name);
+		File file = getTempFile("tmp_" + name);
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();

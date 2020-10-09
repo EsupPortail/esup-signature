@@ -6,8 +6,12 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.prefill.PreFill;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DataService {
@@ -31,6 +36,9 @@ public class DataService {
 
     @Resource
     private FormRepository formRepository;
+
+    @Resource
+    private PreFillService preFillService;
 
     @Resource
     private UserPropertieService userPropertieService;
@@ -49,15 +57,6 @@ public class DataService {
 
     @Resource
     private SignBookRepository signBookRepository;
-
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
-
-    @Resource
-    private RecipientRepository recipientRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
 
     @Resource
     private FileService fileService;
@@ -143,10 +142,19 @@ public class DataService {
 
 
 
-    public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
+    public Data updateData(@RequestParam MultiValueMap<String, String> formDatas, User user, Form form, Data data) {
+
+        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
+
+        for(Field field : fields) {
+            if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
+                formDatas.add(field.getName(), field.getDefaultValue());
+            }
+        }
+
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
-        data.getDatas().putAll(formData.toSingleValueMap());
+        data.getDatas().putAll(formDatas.toSingleValueMap());
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());

@@ -45,7 +45,7 @@ public class Field {
 	private String searchType;
 
 	private String searchReturn;
-	
+
 	@Enumerated(EnumType.STRING)
     private FieldType type;
 	
@@ -202,4 +202,5 @@ public class Field {
 	public void setSearchReturn(String searchReturn) {
 		this.searchReturn = searchReturn;
 	}
+
 }

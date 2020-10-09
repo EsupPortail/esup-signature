@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.repository.FieldRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -60,6 +61,9 @@ public class FormAdminController {
 
 	@Resource
 	private FormRepository formRepository;
+
+	@Resource
+	private FieldRepository fieldRepository;
 
 	@Resource
 	private FormService formService;
@@ -129,6 +133,7 @@ public class FormAdminController {
 		return "admin/forms/update";
 	}
 
+
 	@GetMapping("create")
 	public String createForm(Model model) {
 		model.addAttribute("form", new Form());
@@ -160,6 +165,7 @@ public class FormAdminController {
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
 		form.setPublicUsage(updateForm.getPublicUsage());
+		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
@@ -210,4 +216,29 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-} 
+	@PutMapping("/{formId}/field/{fieldId}/update")
+	public String updateField(@PathVariable("fieldId") Long id,
+							  @PathVariable("formId") Long formId,
+							  @RequestParam(value = "required", required = false) Boolean required,
+							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
+							  @RequestParam(value = "extValueType", required = false) String extValueType,
+							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
+							  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
+							  @RequestParam(value = "searchType", required = false) String searchType,
+							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
+							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers,
+							  RedirectAttributes redirectAttributes) {
+		Field field = fieldRepository.findById(id).get();
+		field.setRequired(required);
+		field.setExtValueServiceName(extValueServiceName);
+		field.setExtValueType(extValueType);
+		field.setExtValueReturn(extValueReturn);
+		field.setSearchServiceName(searchServiceName);
+		field.setSearchType(searchType);
+		field.setSearchReturn(searchReturn);
+		field.setStepNumbers(stepNumbers);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le champ à été mis à jour"));
+		return "redirect:/admin/forms/" + formId;
+	}
+
+}

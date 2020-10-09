@@ -215,6 +215,7 @@ public class DataController {
 						  RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
+		formData.remove("dataId");
 		Data data;
 		if(dataId != null) {
 			data = dataRepository.findById(dataId).get();

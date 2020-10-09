@@ -1,8 +1,8 @@
 export class FormUi {
 
     constructor() {
-        this.btnAddField = document.querySelector('btn-add-field');
-        this.btnRemove = document.querySelector('btn-remove');
+        this.btnAddField = $('#btn-add-field');
+        this.btnRemove = $('#btn-remove');
         this.initListeners();
     }
 
@@ -13,8 +13,7 @@ export class FormUi {
 
     addField(e)
     {
-        e.preventDefault();
-        var controlForm = $('#repeatingInputFields:first'),
+        let controlForm = $('#repeatingInputFields:first'),
             currentEntry = this.btnAddField.parents('.entry:first'),
             newEntry = $(currentEntry.clone()).appendTo(controlForm);
         newEntry.find('input').val('');

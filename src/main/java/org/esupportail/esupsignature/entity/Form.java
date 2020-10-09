@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 
@@ -48,14 +49,17 @@ public class Form {
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
 
-    private String targetUri;    
-	
+    private String targetUri;
+
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private Document document = new Document();
 
 	@OrderColumn
 	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
 	private List<Field> fields = new ArrayList<>();
+
+	@Column(columnDefinition = "TEXT")
+	private String action;
 
 	public Long getId() {
 		return id;
@@ -199,5 +203,13 @@ public class Form {
 
 	public void setNeedName(Boolean needName) {
 		this.needName = needName;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 }

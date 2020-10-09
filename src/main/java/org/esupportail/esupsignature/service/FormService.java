@@ -8,6 +8,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -141,7 +142,7 @@ public class FormService {
 		form.setDocument(document);
 		form.setTargetType(targetType);
 		form.setTargetUri(targetUri);
-		form.setRole(roleName.toUpperCase());
+		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
 		form.setFields(getFields(document));
@@ -253,7 +254,6 @@ public class FormService {
 		for(String actionString : actionsStrings) {
 			String[] nameValues = actionString.trim().split("\\.|,|\\(");
 			if (nameValues.length > 1) {
-				field.setStepNumbers("");
 				if(nameValues[0].equals("prefill")) {
 					field.setExtValueServiceName(nameValues[1].trim());
 					field.setExtValueType(nameValues[2].trim());
@@ -267,6 +267,9 @@ public class FormService {
 					for (int i = 2; i < nameValues.length; i++) {
 						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
 					}
+				}
+				if(field.getSearchType() == null) {
+					field.setStepNumbers("0");
 				}
 			}
 		}
