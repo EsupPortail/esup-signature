@@ -54,6 +54,7 @@ export class PdfViewer extends EventFactory {
                             q: request.term
                         },
                         success: function( data ) {
+                            console.debug("search user " + request.term);
                             response($.map(data, function (item) {
                                 return {
                                     label: item.text,

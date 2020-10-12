@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
@@ -142,7 +143,7 @@ public class UserController {
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdaps(searchString);
+		return userService.getPersonLdaps(searchString).stream().sorted((o1, o2) -> o1.getDisplayName().compareTo(o2.getDisplayName())).collect(Collectors.toList());
    }
 
 	@GetMapping("/properties")

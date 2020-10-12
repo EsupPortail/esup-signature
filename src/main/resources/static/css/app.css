@@ -158,6 +158,15 @@ code {
 	content: "Parcourir" !important;
 }
 
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    /* add padding to account for vertical scrollbar */
+    padding-right: 20px;
+}
+
 .anim-border {
     background-color: rgba(173, 255, 47, 0.5);
     background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);

@@ -79,7 +79,7 @@ public class LdapExtValue implements ExtValue {
 				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 					logger.error("error on get ldap search return attribut : " + searchReturn, e);
 				}
-				stringObjectMap.put("text", personLdap.getDisplayName() + "(" + personLdap.getMail() + ")");
+				stringObjectMap.put("text", personLdap.getCn() + "(" + personLdap.getMail() + ")");
 				mapList.add(stringObjectMap);
 			}
 		} else if (searchType.equals("organizationalUnit")) {
