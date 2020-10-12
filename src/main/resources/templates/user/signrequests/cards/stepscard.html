@@ -42,7 +42,7 @@
                                                     <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                 </td>
-                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" th:switch="${recipient.signed}">
+                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" th:switch="${recipient.signed}">
                                                     <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="N'a pas signé le document" th:case="false" class="fas fa-minus-circle text-secondary"></i>
                                                 </td>

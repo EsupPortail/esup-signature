@@ -114,7 +114,7 @@ dss:
 
 fs:
     #    smb-login: esup-signature
-    #    smb-password: ********
+    #    smb-password: password
     #    smb-uri: smb://smb.univ-ville.fr
     vfs-uri: /tmp
 #    cmis-uri: https://esup-signature.univ-ville.fr/nuxeo
