@@ -309,11 +309,6 @@ public class SignRequestController {
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
-            public void afterCommit(){
-                eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", user);
-            }
-        });
         if (visual == null) visual = true;
         ObjectMapper objectMapper = new ObjectMapper();
         SignRequest signRequest = signRequestRepository.findById(id).get();
@@ -363,6 +358,11 @@ public class SignRequestController {
             eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", this), "sign", user);
             signRequest.setComment(comment);
             signRequestService.sign(signRequest, user, password, visual, formDataMap);
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
+                public void afterCommit(){
+                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", user);
+                }
+            });
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EsupSignatureException | IOException | InterruptedException e) {
             logger.error(e.getMessage());
