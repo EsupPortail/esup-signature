@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
@@ -19,7 +21,6 @@ import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceIm
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,6 +31,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.time.DayOfWeek;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -39,10 +41,12 @@ public class UserService {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-
 	private LdapPersonService ldapPersonService;
 
-	private CasProperties casProperties;
+	@Resource
+	private GlobalProperties globalProperties;
+
+	private LdapProperties ldapProperties;
 
 	@Autowired(required = false)
 	public void setLdapPersonService(LdapPersonService ldapPersonService) {
@@ -50,8 +54,8 @@ public class UserService {
 	}
 
 	@Autowired(required = false)
-	public void setCasProperties(CasProperties casProperties) {
-		this.casProperties = casProperties;
+	public void setLdapProperties(LdapProperties ldapProperties) {
+		this.ldapProperties = ldapProperties;
 	}
 
 	@Resource
@@ -77,12 +81,6 @@ public class UserService {
 
 	@Resource
 	private DataRepository dataRepository;
-
-	@Resource
-	private FormRepository formRepository;
-
-	@Resource
-	private WorkflowRepository workflowRepository;
 
 	@Resource
 	private MailService mailService;
@@ -137,6 +135,7 @@ public class UserService {
 		} else {
 			User user = new User();
 			user.setEppn("system");
+			userRepository.save(user);
 			return user;
 		}
 	}
@@ -174,8 +173,12 @@ public class UserService {
 		if(userRepository.countByEppn("creator") > 0) {
 			return  userRepository.findByEppn("creator").get(0);
 		} else {
-			return createUser("creator", "Createur de la demande", "", "", UserType.system);
+			return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
 		}
+	}
+
+	public boolean preAuthorizeNotInShare(User user, User authUser) {
+		return user.equals(authUser);
 	}
 
 	public User checkUserByEmail(String email) {
@@ -201,7 +204,7 @@ public class UserService {
 			if (eppn.split("@").length == 1) {
 				for (SecurityService securityService : this.securityServices) {
 					if (securityService instanceof CasSecurityServiceImpl) {
-						eppn = eppn + "@" + securityService.getDomain();
+						eppn = eppn + "@" + globalProperties.getDomain();
 					}
 				}
 			}
@@ -217,7 +220,8 @@ public class UserService {
 			}
 			return user;
 		}
-		return getSystemUser();
+		logger.error("unable to find user : " + eppn);
+		return null;
 	}
 
 	private String buildEppn(PersonLdap personLdap) {
@@ -227,7 +231,7 @@ public class UserService {
 		String eppn = null;
 		for (SecurityService securityService : securityServices) {
 			if (securityService instanceof CasSecurityServiceImpl) {
-				eppn = personLdap.getUid() + "@" + securityService.getDomain();
+				eppn = personLdap.getUid() + "@" + globalProperties.getDomain();
 			}
 		}
 		return eppn;
@@ -316,11 +320,14 @@ public class UserService {
 			Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
 			if (authorities.size() > 0) {
 				user.getRoles().clear();
+				Set<String> roles = new HashSet<>();
 				for (GrantedAuthority authority : authorities) {
-					if (authority.getAuthority().startsWith("ROLE_FOR.ESUP-SIGNATURE.USER")) {
-						user.getRoles().add(authority.getAuthority().replace("ROLE_FOR.ESUP-SIGNATURE.USER.", ""));
+					if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+						String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
+						roles.add(role);
 					}
 				}
+				user.getRoles().addAll(roles);
 			}
 		} catch (Exception e) {
 			logger.error("unable to get roles " + e);
@@ -337,29 +344,30 @@ public class UserService {
 		if(user.getLastSendAlertDate() != null) {
 			diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
 		}
-		long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-		if((user.getEmailAlertFrequency() == null && diff > 0)
-		|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff > 0)
-		|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff > 7)) {
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int minute = calendar.get(Calendar.MINUTE);
+		long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+		if((EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1 && minute == 0)
+			|| (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour().equals(hour))
+			|| (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay().equals(DayOfWeek.of(calendar.get(Calendar.DAY_OF_WEEK))))) {
 			return true;
 		}
 		return false;
 	}
 
 	public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
-		logger.warn("test");
 		Date date = new Date();
 		List<String> toEmails = new ArrayList<>();
 		toEmails.add(recipientUser.getEmail());
 		for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-			if (userShare.getShareType().equals(UserShare.ShareType.sign)) {
+			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				for (User toUser : userShare.getToUsers()) {
 					List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
 					for (SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
 						if (toSignSharedSignRequest.getParentSignBook() != null) {
 							List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
 							if(datas.size() > 0) {
-								if (userShare.getForms().contains(datas.get(0).getForm())) {
+								if (userShare.getForm().equals(datas.get(0).getForm())) {
 									if (!signRequest.equals(toSignSharedSignRequest)) {
 										toEmails.add(toUser.getEmail());
 									}
@@ -379,69 +387,32 @@ public class UserService {
 	public void sendEmailAlertSummary(User recipientUser) {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
-		List<String> toEmails = new ArrayList<>();
-		//List<SignRequest> signRequestsToSend = new ArrayList<>();
-		//pour ne pas recevoir ses propres demandes
-		if(getUserFromAuthentication() != null && recipientUser.equals(getUserFromAuthentication())) {
-			toSignSignRequests = toSignSignRequests.stream().filter(signRequest -> !signRequest.getCreateBy().equals(recipientUser.getEppn())).collect(Collectors.toList());
-			toEmails.add(recipientUser.getEmail());
-		} else {
-//			toEmails.add(recipientEmail);
-			toEmails.add(recipientUser.getEmail());
-			for(UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-				if(userShare.getShareType().equals(UserShare.ShareType.sign)) {
-					for(User toUser : userShare.getToUsers()) {
-						List<SignRequest> toSignSharedSignRequests = signRequestService.getToSignRequests(toUser);
-						for(SignRequest toSignSharedSignRequest : toSignSharedSignRequests) {
-							if(toSignSharedSignRequest.getParentSignBook() != null) {
-								List<Data> datas = dataRepository.findBySignBook(toSignSharedSignRequest.getParentSignBook());
-								if(datas.size() > 0 && userShare.getForms().contains(datas.get(0).getForm())) {
-									if(!toSignSignRequests.contains(toSignSharedSignRequest)) {
-										toSignSignRequests.add(toSignSharedSignRequest);
-										toEmails.add(toUser.getEmail());
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
+		toSignSignRequests.addAll(signRequestService.getSharedToSignSignRequests(recipientUser));
 		if(toSignSignRequests.size() > 0 ) {
 			recipientUser.setLastSendAlertDate(date);
-			mailService.sendSignRequestSummaryAlert(toEmails, toSignSignRequests);
+			mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
 			userRepository.save(recipientUser);
 		}
 	}
 
-	public List<User> getSuUsers(User authUser) {
-		List<User> suUsers = new ArrayList<>();
-		for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
-			if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
-				suUsers.add(userShare.getUser());
-			}
-		}
-		return suUsers;
-	}
-
 	public Boolean getSignShare(User user, User authUser) {
-		if(userShareRepository.countByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.sign) > 0) {
+		if(userShareRepository.countByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.sign) > 0) {
 			return true;
 		};
 		return false;
 	 }
 
-	public List<PersonLdap> getPersonLdaps(String searchString, String ldapTemplateName) {
+	public List<PersonLdap> getPersonLdaps(String searchString) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
-		List<User> users = new ArrayList<>();
-		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
-		addAllUnique(users, userRepository.findByNameStartingWithIgnoreCase(searchString));
-		addAllUnique(users, userRepository.findByEmailStartingWith(searchString));
+		Set<User> users = new HashSet<>();
+		users.addAll(userRepository.findByEppnStartingWith(searchString));
+		users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
+		users.addAll(userRepository.findByEmailStartingWith(searchString));
 		for (User user : users) {
 			personLdaps.add(getPersonLdapFromUser(user));
 		}
 		if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString, ldapTemplateName);
+			List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString);
 			if(ldapSearchList.size() > 0) {
 				List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
 				for (PersonLdap personLdapList : ldapList) {
@@ -454,14 +425,6 @@ public class UserService {
 			}
 		}
 		return personLdaps;
-	}
-
-	public void addAllUnique(List<User> users, List<User> usersToAdd) {
-		for (User user : usersToAdd) {
-			if(!users.contains(user)) {
-				users.add(user);
-			}
-		}
 	}
 
 	public PersonLdap getPersonLdapFromUser(User user) {
@@ -530,90 +493,6 @@ public class UserService {
 		return null;
 	}
 
-	public Boolean switchToShareUser(String eppn) {
-		if(eppn == null || eppn.isEmpty()) {
-			setSuEppn(null);
-			return true;
-		}else {
-			if(checkShare(getUserByEppn(eppn), getUserFromAuthentication())) {
-				setSuEppn(eppn);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkSignShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), UserShare.ShareType.sign);
-		for(UserShare userShare : userShares) {
-			if (checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkShare(User fromUser, User toUser) {
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersIn(fromUser, Arrays.asList(toUser));
-		for(UserShare userShare : userShares) {
-			if (checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkServiceShare(User fromUser, User toUser, UserShare.ShareType shareType, Form form) {
-		if(fromUser.equals(toUser)) {
-			return true;
-		}
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
-		if(shareType.equals(UserShare.ShareType.sign) && userShares.size() > 0) {
-			return true;
-		}
-		for(UserShare userShare : userShares) {
-			if(userShare.getForms().contains(form) && checkUserShareDate(userShare)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public Boolean checkOneServiceShare(User fromUser, User toUser, UserShare.ShareType shareType) {
-		if(fromUser.equals(toUser)) {
-			return true;
-		}
-		List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareType(fromUser, Arrays.asList(toUser), shareType);
-		if(userShares.size() > 0 ) {
-			return true;
-		}
-		return false;
-	}
-
-	public Boolean checkUserShareDate(UserShare userShare) {
-		Date today = new Date();
-		if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
-			return true;
-		}
-		return false;
-	}
-
-	public void createUserShare(List<Long> forms, List<Long> workflows, String type, List<User> userEmails, Date beginDate, Date endDate, User user) {
-		UserShare userShare = new UserShare();
-		userShare.setUser(user);
-		userShare.setShareType(UserShare.ShareType.valueOf(type));
-		for(Long form : forms) {
-			userShare.getForms().add(formRepository.findById(form).get());
-		}
-		for(Long workflow : workflows) {
-			userShare.getWorkflows().add(workflowRepository.findById(workflow).get());
-		}
-		userShare.getToUsers().addAll(userEmails);
-		userShare.setBeginDate(beginDate);
-		userShare.setEndDate(endDate);
-		userShareRepository.save(userShare);
-	}
-
     public List<Message> getMessages(User authUser) {
 		return messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date());
     }
@@ -630,15 +509,18 @@ public class UserService {
 	}
 
 	public UserType checkMailDomain(String email) {
-		String domain = email.split("@")[1];
-		for(SecurityService securityService : securityServices) {
-			if(casProperties != null && securityService instanceof CasSecurityServiceImpl && domain.equals(casProperties.getDomain())) {
-				return UserType.ldap;
-			}
-			if(securityService instanceof ShibSecurityServiceImpl) {
-				File whiheListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
-				if(fileService.isFileContainsText(whiheListFile, domain)) {
-					return UserType.shib;
+		String[] emailSplit = email.split("@");
+		if(emailSplit.length > 1) {
+			String domain = emailSplit[1];
+			for (SecurityService securityService : securityServices) {
+				if (securityService instanceof CasSecurityServiceImpl && domain.equals(globalProperties.getDomain())) {
+					return UserType.ldap;
+				}
+				if (securityService instanceof ShibSecurityServiceImpl) {
+					File whiteListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
+					if (fileService.isFileContainsText(whiteListFile, domain)) {
+						return UserType.shib;
+					}
 				}
 			}
 		}

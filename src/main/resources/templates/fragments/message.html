@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="messageNews" type="java.util.List<org.esupportail.esupsignature.entity.Message>"*/-->
+<!--/*@thymesVar id="messageError" type="java.lang.String"*/-->
+<!--/*@thymesVar id="messageWarn" type="java.lang.String"*/-->
+<!--/*@thymesVar id="messageSuccess" type="java.lang.String"*/-->
+<!--/*@thymesVar id="messageInfo" type="java.lang.String"*/-->
+<!--/*@thymesVar id="messageCustom" type="java.lang.String"*/-->
 <div th:fragment="message">
+	<script th:inline="javascript" type="module">
+		import Toast from "../../static/js/modules/ui/Toast.js";
+		new Toast([[${message}]]);
+	</script>
 	<th:block th:each="messageNew : ${messageNews}">
-		<div th:id="'toast_' + ${messageNew.id}" class="toast toast-xl" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
-			<div class="toast-header bg-light">
-				<h3 class="mr-auto blinking-black">Nouveauté !</h3>
-				<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
+			<div class="toast-header">
+				<h4 class="mr-auto blinking-black">Nouveauté !</h4>
+				<button type="button" class="close" data-dismiss="toast" aria-label="Close">
 					<i class="fas fa-times"></i>
 				</button>
 			</div>
 			<div class="toast-body toast-news">
-				<p th:utext="${messageNew.text}"></p>
+				<h6 th:utext="${messageNew.text}"></h6>
 			</div>
 			<div class="toast-footer">
 				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
@@ -20,81 +29,51 @@
 				</button>
 			</div>
 		</div>
-		<script>
-			$('#toast_[[${messageNew.id}]]').toast('show');
-
-		</script>
 	</th:block>
-
-	<th:block th:if="${messageError != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="6000" >
-		<div class="toast-header bg-danger">
-			<strong class="mr-auto text-white blinking-white">Erreur</strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-				<i class="fas fa-times"></i>
-			</button>
-		</div>
+	<div id="toast-error" class="toast toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" >
 		<div class="toast-body">
-			<span th:utext="${messageError}"></span>
+			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+				<i class="fas fa-times text-white"></i>
+			</button>
+			<h4 class="mr-auto blinking-white">Erreur</h4>
+			<h6 id="message-error" class="text-white"></h6>
 		</div>
 	</div>
-	<script>$('#toast').toast('show');</script>
-	</th:block>
-<th:block th:if="${messageWarn != null}" >
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
-		<div class="toast-header text-dark bg-warning">
-			<strong class="mr-auto blinking-black">Attention</strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+	<div id="toast-warn" class="toast toast-sm bg-warning" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+		<div class="toast-body">
+			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-		</div>
-		<div class="toast-body">
-			<span th:utext="${messageWarn}"></span>
+			<h4 class="mr-auto blinking-black">Attention</h4>
+			<h6 id="message-warn"></h6>
 		</div>
 	</div>
-	<script>$('#toast').toast('show');</script>
-	</th:block>
-<th:block th:if="${messageSuccess != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
-		<div class="toast-header bg-success">
-			<strong class="mr-auto text-white">Confirmation</strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+	<div id="toast-success" class="toast toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+		<div class="toast-body text-white">
+			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-		</div>
-		<div class="toast-body">
-			<span th:utext="${messageSuccess}"></span>
+			<h4 class="mr-auto">Confirmation</h4>
+			<h6 id="message-success"></h6>
 		</div>
 	</div>
-	<script>$('#toast').toast('show');</script>
-	</th:block>
-	<th:block th:if="${messageInfo != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
-		<div class="toast-header">
-			<strong class="mr-auto text-dark">Information</strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+	<div id="toast-info" class="toast toast-sm bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+		<div class="toast-body">
+			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-		</div>
-		<div class="toast-body">
-			<span th:utext="${messageInfo}"></span>
+			<h4 class="mr-auto text-dark">Information</h4>
+			<h6 id="message-info"></h6>
 		</div>
 	</div>
-	<script>$('#toast').toast('show');</script>
-	</th:block>
-	<th:block th:if="${messageCustom != null}">
-	<div id="toast" class="toast toast-sm" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
-		<div class="toast-header">
-			<strong class="mr-auto text-dark">Message</strong>
-			<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+	<div id="toast-custom" class="toast toast-md bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
+		<div class="toast-body">
+			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-		</div>
-		<div class="toast-body">
-			<pre th:utext="${messageCustom}"></pre>
+			<h4 class="mr-auto text-dark">Message</h4>
+			<h6 id="message-custom"></h6>
 		</div>
 	</div>
-	<script>$('#toast').toast('show');</script>
-	</th:block>
 </div>
 </html>

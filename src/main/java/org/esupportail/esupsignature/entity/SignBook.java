@@ -26,6 +26,8 @@ public class SignBook {
 	@Column(unique=true)
 	private String name;
 
+    private String title;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -49,8 +51,7 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private Workflow workflow = null;
+    private Long workflowId;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
@@ -65,6 +66,7 @@ public class SignBook {
 
     private String exportedDocumentURI;
 
+    @JsonIgnore
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
@@ -95,6 +97,14 @@ public class SignBook {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Date getCreateDate() {
@@ -161,12 +171,12 @@ public class SignBook {
         this.status = status;
     }
 
-    public Workflow getWorkflow() {
-        return workflow;
+    public Long getWorkflowId() {
+        return workflowId;
     }
 
-    public void setWorkflow(Workflow workflow) {
-        this.workflow = workflow;
+    public void setWorkflowId(Long workflowId) {
+        this.workflowId = workflowId;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {

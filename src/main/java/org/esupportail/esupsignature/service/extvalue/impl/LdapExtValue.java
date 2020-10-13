@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -13,12 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class LdapExtValue implements ExtValue {
@@ -28,10 +28,19 @@ public class LdapExtValue implements ExtValue {
 	@Resource
 	private UserService userService;
 
+	@Resource
 	private LdapPersonService ldapPersonService;
+
+	@Resource
+	private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
 	public LdapExtValue(@Autowired(required = false) LdapPersonService ldapPersonService) {
 		this.ldapPersonService = ldapPersonService;
+	}
+
+	@Override
+	public String getName() {
+		return "ldap";
 	}
 
 	@Override
@@ -58,8 +67,35 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public String getName() {
-		return "ldap";
+	public List<Map<String, Object>> search(String searchType, String searchString, String searchReturn) {
+		List<Map<String, Object>> mapList = new ArrayList<>();
+		String name = "get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1);
+		if(searchType.equals("person")) {
+			List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
+			for (PersonLdap personLdap : personLdaps) {
+				Map<String, Object> stringObjectMap = new HashMap<>();
+				try {
+					stringObjectMap.put("value", PersonLdap.class.getMethod(name, null).invoke(personLdap));
+				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					logger.error("error on get ldap search return attribut : " + searchReturn, e);
+				}
+				stringObjectMap.put("text", personLdap.getCn() + "(" + personLdap.getMail() + ")");
+				mapList.add(stringObjectMap);
+			}
+		} else if (searchType.equals("organizationalUnit")) {
+			List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);
+			for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
+				Map<String, Object> stringObjectMap = new HashMap<>();
+				try {
+					stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name, null).invoke(organizationalUnitLdap));
+				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					logger.error("error on get ldap search return attribut : " + searchReturn, e);
+				}
+				stringObjectMap.put("text", organizationalUnitLdap.getDescription());
+				mapList.add(stringObjectMap);
+			}
+		}
+		return mapList;
 	}
 
 	@Override
@@ -77,7 +113,7 @@ public class LdapExtValue implements ExtValue {
 					}
 				}
 				if(personLdap.getSupannEntiteAffectationPrincipale() != null && ldapPersonService != null) {
-					OrganizationalUnitLdap organizationalUnitLdap = ldapPersonService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
+					OrganizationalUnitLdap organizationalUnitLdap = ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
 					if (organizationalUnitLdap != null) {
 						values.put("organizationalUnit-postalAddress", organizationalUnitLdap.getPostalAddress());
 						values.put("organizationalUnit-description", organizationalUnitLdap.getDescription());
@@ -87,5 +123,7 @@ public class LdapExtValue implements ExtValue {
 		}
 		return values;
 	}
-	
+
+
+
 }

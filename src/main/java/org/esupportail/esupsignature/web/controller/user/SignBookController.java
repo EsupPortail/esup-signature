@@ -1,17 +1,20 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -27,6 +30,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/user/signbooks")
@@ -36,25 +40,6 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return userService.getCurrentUser();
-    }
-
-    @ModelAttribute(value = "authUser", binding = false)
-    public User getAuthUser() {
-        return userService.getUserFromAuthentication();
-    }
-
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
-
-    @Resource
-    private GlobalProperties globalProperties;
-
     @Resource
     private UserService userService;
 
@@ -63,9 +48,6 @@ public class SignBookController {
 
     @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -94,21 +76,24 @@ public class SignBookController {
     public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
         User authUser = userService.getUserFromAuthentication();
         SignBook signBook = signBookRepository.findById(id).get();
-        List<Log> logs = logRepository.findBySignRequestId(signBook.getId());
+        List<Log> logs = new ArrayList<>();
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
+        }
         model.addAttribute("logs", logs);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
         return "user/signbooks/update";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.delete(signBook);
-        redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
-        return "redirect:" + request.getHeader("referer");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        return "redirect:/user/signrequests";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
@@ -132,7 +117,7 @@ public class SignBookController {
 //
 //    @GetMapping(value = "/update-step/{id}/{step}")
 //    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-//        //User user = userService.getCurrentUser();
+//
 //        SignBook signBook = signBookRepository.findById(id).get();
 //        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
 //            signBookService.changeSignType(signBook, step, signType);
@@ -172,10 +157,10 @@ public class SignBookController {
             workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         } catch (EsupSignatureUserException e) {
             logger.error("error on add step", e);
-            redirectAttributes.addFlashAttribute("messageError", "Erreur lors de l'ajout des participants");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
         }
         signBook.getWorkflowSteps().add(workflowStep);
-        redirectAttributes.addFlashAttribute("messageSuccess", "Étape ajoutée");
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
@@ -192,7 +177,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if (signBookService.checkUserViewRights(user, signBook)) {
             Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
@@ -213,21 +198,9 @@ public class SignBookController {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
+            WorkflowStep workflowStep = signBookService.getCurrentWorkflowStep(signBook);
+            signRequestService.pendingSignRequest(signRequest, workflowStep.getSignType(), workflowStep.getAllSignToComplete());
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @GetMapping(value = "/send-to-signbook/{id}/{workflowStepId}")
-    public String sendToSignBook(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                                 @PathVariable("workflowStepId") Long workflowStepId,
-                                 @RequestParam(value = "signBookNames") String[] signBookNames, RedirectAttributes redirectAttributes, HttpServletRequest request) throws EsupSignatureUserException {
-        SignBook signBook = signBookRepository.findById(id).get();
-        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        if (signBookNames != null && signBookNames.length > 0) {
-            workflowService.addRecipientsToWorkflowStep(workflowStep, signBookNames);
-        }
-        redirectAttributes.addFlashAttribute("Ajouté au parapheur");
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
@@ -235,19 +208,17 @@ public class SignBookController {
     @DeleteMapping(value = "/remove-step-recipent/{id}/{step}")
     public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                  @PathVariable("step") Integer step,
-                                 @RequestParam(value = "recipientId") Long recipientId, HttpServletRequest request) {
+                                 @RequestParam(value = "recipientId") Long recipientId, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.removeStepRecipient(signBook, step, recipientId);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le destinataire à été supprimé"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment,
-                          HttpServletRequest request) {
+    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
-        signBookService.nextWorkFlowStep(signBook);
         signBookService.pendingSignBook(signBook, user);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }

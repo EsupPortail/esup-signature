@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
+<script th:inline="javascript">
     $(document).ready(function () {
-        globalUi.hideSideBar();
-        globalUi.disableSideBarButton();
+        $('#collapsePolicy').show();
+        $('#collapseInfo').show();
+        $('#collapseETSI').show();
     });
 </script>
 <body>
@@ -65,10 +65,5 @@
         </div>
     </div>
 </main>
-<script>
-    $('#collapsePolicy').show();
-    $('#collapseInfo').show();
-    $('#collapseETSI').show();
-</script>
 </body>
 </html>

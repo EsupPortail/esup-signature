@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.barcode.DdDocService;
+import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
@@ -100,7 +101,7 @@ public class WsController {
         SignRequest signRequest = signRequestService.createSignRequest(title, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
-        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, user);
+        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -109,7 +110,7 @@ public class WsController {
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
-        //User user = userService.getCurrentUser();
+
         user.setIp(httpServletRequest.getRemoteAddr());
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
@@ -125,7 +126,7 @@ public class WsController {
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        //User user = userService.getCurrentUser();
+
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
         SignRequest signRequest = signRequestService.createSignRequest(name, user);
@@ -180,7 +181,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException {
+    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException, InterruptedException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         signBookService.nextWorkFlowStep(signBook);
         signBookService.pendingSignBook(signBook, userService.getSystemUser());
@@ -196,7 +197,7 @@ public class WsController {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
             signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
-            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false, userService.getSystemUser());
+            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false);
         }
     }
 
@@ -214,11 +215,12 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/create-workflow")
-    public String createWorkflow(@RequestParam String workflowString, @RequestParam String signBookType, HttpServletRequest httpServletRequest) throws IOException, ParseException, EsupSignatureException {
+    public String createWorkflow(@RequestParam String workflowString, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureException {
         User user = userService.getSystemUser();
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        Workflow workflow = workflowService.createWorkflow(mapper.readValue(workflowString, Workflow.class).getName(), user, true);
+        String name = mapper.readValue(workflowString, Workflow.class).getName();
+        Workflow workflow = workflowService.createWorkflow(name, name, user, true);
         return workflow.getName();
     }
 
@@ -286,10 +288,10 @@ public class WsController {
             }
     )
     @GetMapping(value = "/get-last-file-by-token/{token}")
-    public void getLastFileByToken(@ModelAttribute("user") User user, @PathVariable("token") String token, HttpServletResponse response) {
-        //User user = userService.getCurrentUser();
+    public void getLastFileByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,  @PathVariable("token") String token, HttpServletResponse response) {
+
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserViewRights(user, signRequest)) {
+        if (signRequestService.checkUserViewRights(user, authUser, signRequest)) {
             List<Document> documents = signRequestService.getToSignDocuments(signRequest);
             try {
                 if (documents.size() > 1) {

@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.ShareType;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,11 +20,11 @@ public class UserShare {
     @ManyToMany
     private List<User> toUsers = new ArrayList<>();
 
-    @OneToMany
-    private List<Form> forms = new ArrayList<>();
+    @ManyToOne
+    private Form form;
 
-    @OneToMany
-    private List<Workflow> workflows = new ArrayList<>();
+    @ManyToOne
+    private Workflow workflow;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date beginDate;
@@ -30,12 +32,8 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @Enumerated(EnumType.STRING)
-    private ShareType shareType;
-
-    public enum ShareType {
-        create, sign;
-    }
+    @ElementCollection(targetClass= ShareType.class)
+    private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -61,20 +59,20 @@ public class UserShare {
         this.toUsers = toUsers;
     }
 
-    public List<Form> getForms() {
-        return forms;
+    public Form getForm() {
+        return form;
     }
 
-    public void setForms(List<Form> forms) {
-        this.forms = forms;
+    public void setForm(Form form) {
+        this.form = form;
     }
 
-    public List<Workflow> getWorkflows() {
-        return workflows;
+    public Workflow getWorkflow() {
+        return workflow;
     }
 
-    public void setWorkflows(List<Workflow> workflows) {
-        this.workflows = workflows;
+    public void setWorkflow(Workflow workflow) {
+        this.workflow = workflow;
     }
 
     public Date getBeginDate() {
@@ -93,11 +91,11 @@ public class UserShare {
         this.endDate = endDate;
     }
 
-    public ShareType getShareType() {
-        return shareType;
+    public List<ShareType> getShareTypes() {
+        return shareTypes;
     }
 
-    public void setShareType(ShareType shareType) {
-        this.shareType = shareType;
+    public void setShareTypes(List<ShareType> shareTypes) {
+        this.shareTypes = shareTypes;
     }
 }

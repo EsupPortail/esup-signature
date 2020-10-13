@@ -1,10 +1,13 @@
 package org.esupportail.esupsignature.service.security.shib;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -21,6 +24,11 @@ import java.util.List;
 import java.util.Map;
 
 public class ShibSecurityServiceImpl implements SecurityService {
+
+	private LdapGroupService ldapGroupService;
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private ShibProperties shibProperties;
@@ -46,9 +54,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		return shibProperties.getIdpUrl() + "/idp/profile/Logout";
 	}
 
-	@Override
-	public String getDomain() {
-		return "";
+	@Autowired(required = false)
+	public void setLdapGroupService(LdapGroupService ldapGroupService) {
+		this.ldapGroupService = ldapGroupService;
 	}
 
 	@Override
@@ -88,12 +96,17 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
+		shibAuthenticatedUserDetailsService.setPrefix(globalProperties.getGroupPrefixRoleName());
 		Map<String, String> mappingGroupesRoles = new HashMap<>();
-		mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
+		if(shibProperties.getGroupMappingRoleAdmin() != null) {
+			mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
+		}
 
 		SpelGroupService groupService = new SpelGroupService();
 		Map<String, String> groups4eppnSpel = new HashMap<>();
-		groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
+		if(shibProperties.getGroupMappingRoleAdmin() != null) {
+			groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
+		}
 		groupService.setGroups4eppnSpel(groups4eppnSpel);
 		
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
@@ -102,6 +115,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		group2UserRoleService.setGroupService(groupService);
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
+		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService);
 		return shibAuthenticatedUserDetailsService;
 	}
 

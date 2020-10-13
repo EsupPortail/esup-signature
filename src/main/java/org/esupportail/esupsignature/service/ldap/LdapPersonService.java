@@ -21,56 +21,23 @@ import java.util.Map;
 @EnableConfigurationProperties(LdapProperties.class)
 public class LdapPersonService {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
     @Resource
     private LdapProperties ldapProperties;
 
     @Resource
-    private LdapTemplate ldapTemplate;
-
-    @Resource
     private PersonLdapRepository personLdapRepository;
 
-    @Resource
-    private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
-
-    private Map<String, LdapTemplate> ldapTemplates;
-
-    @Autowired
-    public LdapPersonService(Map<String, LdapTemplate> ldapTemplates) {
-        this.ldapTemplates = ldapTemplates;
-    }
-
-    public List<PersonLdap> search(String searchString, String ldapTemplateName) {
-        LdapTemplate ldapTemplateSelected = ldapTemplate;
-        if (ldapTemplateName != null && !ldapTemplateName.isEmpty() && ldapTemplates.containsKey(ldapTemplateName)) {
-            ldapTemplateSelected = ldapTemplates.get(ldapTemplateName);
-        }
-        if (ldapTemplateSelected != null) {
-            List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrDisplayNameStartingWithIgnoreCaseOrUidOrMailStartingWith(searchString, searchString, searchString, searchString);
-            List<PersonLdap> filteredPersons = new ArrayList<>();
-            for(PersonLdap personLdap : results) {
-                for(String affiationName : ldapProperties.getAffiliationFilter().split(",")) {
-                    if (personLdap.getEduPersonAffiliation().contains(affiationName.trim()) || personLdap.getEduPersonPrimaryAffiliation().equals(affiationName.trim())) {
-                        filteredPersons.add(personLdap);
-                    }
+    public List<PersonLdap> search(String searchString) {
+        List<PersonLdap> results = personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
+        List<PersonLdap> filteredPersons = new ArrayList<>();
+        for(PersonLdap personLdap : results) {
+            for(String affiationName : ldapProperties.getAffiliationFilter().split(",")) {
+                if (personLdap.getEduPersonAffiliation().contains(affiationName.trim()) || personLdap.getEduPersonPrimaryAffiliation().equals(affiationName.trim())) {
+                    filteredPersons.add(personLdap);
                 }
             }
-            return filteredPersons;
-        } else {
-            log.debug("No ldapTemplate found -> LdapPersonService.searchByCommonName result is empty");
         }
-        return new ArrayList<>();
-    }
-
-
-    public OrganizationalUnitLdap getOrganizationalUnitLdap(String supannCodeEntite) {
-        List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(supannCodeEntite);
-        if(organizationalUnitLdap.size() > 0) {
-            return organizationalUnitLdap.get(0);
-        }
-        return null;
+        return filteredPersons;
     }
 
 }

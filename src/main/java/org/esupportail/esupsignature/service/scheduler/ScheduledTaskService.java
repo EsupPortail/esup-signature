@@ -76,7 +76,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
 	@Transactional
-	public void scanAllSignbooksToClean() throws EsupSignatureException {
+	public void scanAllSignbooksToClean() {
 		logger.trace("scan all signRequest to export");
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
@@ -84,13 +84,13 @@ public class ScheduledTaskService {
 				signBookService.cleanFiles(signBook);
 			}
 		} else {
-			logger.debug("cleanning documents was skipped because neg value");
+			logger.debug("cleaning documents was skipped because neg value");
 		}
 	}
 
 
 
-	//	@Scheduled(fixedRate = 300000)
+	@Scheduled(fixedRate = 30000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();

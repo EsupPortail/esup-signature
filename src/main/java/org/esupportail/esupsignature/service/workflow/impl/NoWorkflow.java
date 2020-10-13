@@ -8,7 +8,7 @@ public class NoWorkflow extends DefaultWorkflow {
 
 	@Override
 	public String getName() {
-		return "NoWorkflow";
+		return "NoWorkflowClassWorkflow";
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;

@@ -6,8 +6,12 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.prefill.PreFill;
+import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,11 +19,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -31,6 +39,9 @@ public class DataService {
 
     @Resource
     private FormRepository formRepository;
+
+    @Resource
+    private PreFillService preFillService;
 
     @Resource
     private UserPropertieService userPropertieService;
@@ -49,15 +60,6 @@ public class DataService {
 
     @Resource
     private SignBookRepository signBookRepository;
-
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
-
-    @Resource
-    private RecipientRepository recipientRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
 
     @Resource
     private FileService fileService;
@@ -95,11 +97,18 @@ public class DataService {
         dataRepository.save(data);
     }
 
-    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException, InterruptedException {
         if (recipientEmails == null) {
             recipientEmails = new ArrayList<>();
         }
         Form form = data.getForm();
+        for(Field field : form.getFields()) {
+            if("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
+                if(field.getExtValueReturn().equals("id")) {
+                    data.getDatas().put("id", data.getId().toString());
+                }
+            }
+        }
         if (form.getTargetType().equals(DocumentIOType.mail)) {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");
@@ -110,8 +119,10 @@ public class DataService {
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
         Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
         workflow.setName(workflow.getName() + "_" + form.getName());
-        SignBook signBook = signBookService.createSignBook("Formulaire", name, user, false);
-        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        SignBook signBook = signBookService.createSignBook(form.getTitle(), name, user, false);
+        String docName = user.getFirstname().substring(0, 1).toUpperCase();
+        docName += user.getName().substring(0, 1).toUpperCase();
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
@@ -134,10 +145,19 @@ public class DataService {
 
 
 
-    public Data updateData(@RequestParam MultiValueMap<String, String> formData, User user, Form form, Data data) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-        data.setName(format.format(new Date()) + "_" + form.getTitle());
-        data.getDatas().putAll(formData.toSingleValueMap());
+    public Data updateData(@RequestParam MultiValueMap<String, String> formDatas, User user, Form form, Data data) {
+
+        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
+
+        for(Field field : fields) {
+            if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
+                formDatas.add(field.getName(), field.getDefaultValue());
+            }
+        }
+
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        data.setName(form.getTitle() + "_" + format.format(new Date()));
+        data.getDatas().putAll(formDatas.toSingleValueMap());
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
@@ -166,7 +186,16 @@ public class DataService {
 
     public InputStream generateFile(Data data) {
         Form form = data.getForm();
-        return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+        if(form.getDocument() != null) {
+            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+        } else {
+            try {
+                return pdfService.generatePdfFromData(data);
+            } catch (IOException e) {
+                logger.error("pdf generation error", e);
+            }
+        }
+        return null;
     }
 
     public Data getDataFromSignRequest(SignRequest signRequest) {

@@ -8,10 +8,7 @@ public class CasProperties {
     private String title;
     private String url;
     private String service;
-    private String groupSearchBase;
     private String groupMappingRoleAdmin;
-    private String domain;
-
 
     public String getTitle() {
         return title;
@@ -37,14 +34,6 @@ public class CasProperties {
         this.service = service;
     }
 
-    public String getGroupSearchBase() {
-        return groupSearchBase;
-    }
-
-    public void setGroupSearchBase(String groupSearchBase) {
-        this.groupSearchBase = groupSearchBase;
-    }
-
     public String getGroupMappingRoleAdmin() {
         return groupMappingRoleAdmin;
     }
@@ -53,11 +42,4 @@ public class CasProperties {
         this.groupMappingRoleAdmin = groupMappingRoleAdmin;
     }
 
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
 }

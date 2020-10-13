@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature;
 
+import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +23,13 @@ public class LdapServiceTest {
     @Autowired(required = false)
     private LdapPersonService ldapPersonService;
 
+    @Autowired(required = false)
+    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
     @Test(timeout = 5000)
     public void testLdap() {
         assumeTrue("ldap not configured", ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().equals(""));
-        ldapPersonService.getOrganizationalUnitLdap("0");
+        ldapOrganizationalUnitService.getOrganizationalUnitLdap("0");
     }
 
 }

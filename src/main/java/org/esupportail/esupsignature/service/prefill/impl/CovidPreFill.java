@@ -47,9 +47,9 @@ public class CovidPreFill implements PreFill {
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
 		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
-			if(field.getExtValue() != null && !field.getExtValue().isEmpty()) {
-				if(field.getExtValue().split("\\(")[0].equals("ldap")) {
-					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
+			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
+				if(field.getExtValueServiceName().equals("ldap")) {
+					String extValueName = field.getExtValueReturn();
 					if(ldapValues.containsKey(extValueName)) {
 						if(extValueName.equals("schacDateOfBirth")) {
 							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
@@ -57,13 +57,13 @@ public class CovidPreFill implements PreFill {
 							field.setDefaultValue((String) ldapValues.get(extValueName));
 						}
 					}
-				} else if(field.getExtValue().split("\\(")[0].equals("default")) {
-					String extValueName = field.getExtValue().split("\\(")[1].replace(")", "");
+				} else if(field.getExtValueServiceName().equals("default")) {
+					String extValueName = field.getExtValueReturn();
 					if(defaultValues.containsKey(extValueName)) {
 						field.setDefaultValue((String) defaultValues.get(extValueName));
 					}
 				}
-				if(field.getExtValue().equals("covid(duree)")) {
+				if(field.getExtValueReturn().equals("covid(duree)")) {
 					field.setDefaultValue("1");
 				}
 			}

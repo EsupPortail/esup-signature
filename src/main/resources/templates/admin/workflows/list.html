@@ -19,16 +19,17 @@
                     <i class="fas fa-plus"></i>
                 </a>
             </div>
-            <div class="card col-10 col-xxl-8">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <div class="input-group mb-3">
                     <div class="input-group-prepend">
                         <span class="input-group-text">Filtrer</span>
                     </div>
                     <select name="displayWorkflowType" class="form-control" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
-                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
                         <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
+                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
+                        <option value="users" th:selected="${displayWorkflowType == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
+                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
                     </select>
                     </div>
                     <table class="table table-sm table-borderless table-hover table-striped">
@@ -76,7 +77,7 @@
 <!--                                       th:href="'/admin/workflows/' + ${workflow.id}">-->
 <!--                                        <i aria-hidden="true" class="fas fa-eye"></i></a>-->
                                     <a role="button" aria-label="Voir"
-                                       class="btn btn-sm btn-primary" title="Voir"
+                                       class="btn btn-sm btn-primary text-white" title="Voir"
                                        th:href="'/admin/workflows/' + ${workflow.name}">
                                         <i aria-hidden="true" class="fas fa-eye"></i></a>
                                 </td>
@@ -101,8 +102,12 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="name"> <strong>Nom</strong></label>
-                        <input id="name" name="name" class="form-control" type="text" value="" required="required">
+                        <label for="description"><strong>Titre</strong></label>
+                        <input id="description" name="description" class="form-control" type="text" value="" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="title"><strong>Prefix</strong></label>
+                        <input id="title" name="title" class="form-control" type="text" value="" required="required">
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -4,10 +4,10 @@
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FilesInput} from "/js/modules/filesInput.js";
+    import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
 
-    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
-    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf.parameterName}]], [[${_csrf.token}]], [[${signRequest.id}]]);
+    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
+    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

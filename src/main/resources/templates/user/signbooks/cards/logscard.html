@@ -15,6 +15,7 @@
                 </tr>
                 </thead>
                 <tbody>
+                <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
                 <th:block th:each="log : ${logs}">
                     <tr>
                         <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>

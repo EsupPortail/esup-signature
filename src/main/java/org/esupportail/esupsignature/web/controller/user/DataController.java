@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -11,7 +11,9 @@ import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -51,34 +54,6 @@ public class DataController {
 		return "datas";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@ModelAttribute(value = "messageNews", binding = false)
-	public List<Message> getMessageNews() {
-		return userService.getMessages(getAuthUser());
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
 	@Resource
 	private DataService dataService;
 
@@ -98,7 +73,7 @@ public class DataController {
 	private FormRepository formRepository;
 
 	@Resource
-	private UserService userService;
+	private UserShareService userShareService;
 
 	@Resource
 	private UserPropertieRepository userPropertieRepository;
@@ -112,6 +87,9 @@ public class DataController {
 	@Resource
 	private RecipientService recipientService;
 
+	@Resource
+	private PdfService pdfService;
+
 	@ModelAttribute("forms")
 	public List<Form> getForms(@ModelAttribute("user") User user, User authUser) {
 		return 	formService.getFormsByUser(user, authUser);
@@ -119,12 +97,12 @@ public class DataController {
 
 	@GetMapping
 	public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		List<Data> datas =  dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+		List<Data> datas =  dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
 		Page<Data> datasPage;
 		if(!user.equals(authUser)) {
 			List<Data> datasOk = new ArrayList<>();
 			for(Data data : datas) {
-				if(userService.checkServiceShare(user, authUser, UserShare.ShareType.create, data.getForm())) {
+				if(userShareService.checkFormShare(user, authUser, ShareType.create, data.getForm())) {
 					datasOk.add(data);
 				}
 			}
@@ -133,6 +111,8 @@ public class DataController {
 			datasPage = new PageImpl<>(datas, pageable, datas.size());
 		}
 
+		model.addAttribute("forms", formService.getFormsByUser(user, authUser));
+		model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
 		model.addAttribute("datas", datasPage);
 		return "user/datas/list";
 	}
@@ -155,17 +135,19 @@ public class DataController {
 	}
 
 	@GetMapping("form/{id}")
-	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		List<Form> autorizedForms = formRepository.findAutorizedFormByUser(user);
+	public String updateData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,
+							 @PathVariable("id") Long id,
+							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
 		Form form = formService.getFormById(id);
-		if(autorizedForms.contains(form) && userService.checkServiceShare(user, authUser, UserShare.ShareType.create, form)) {
+		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
 			}
 			model.addAttribute("form", form);
 			if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
 				Integer finalPage = page;
-				List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == finalPage).collect(Collectors.toList());
+				List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == null || field.getPage().equals(finalPage)).collect(Collectors.toList());
 				List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
 				for (Field field : prefilledFields) {
 					if(!field.getStepNumbers().contains("0")) {
@@ -180,13 +162,13 @@ public class DataController {
 			model.addAttribute("data", new Data());
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("page", page);
-			if (form.getPdfDisplay()) {
+			if (form.getDocument() != null) {
 				return "user/datas/create-pdf";
 			} else {
 				return "user/datas/create";
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Formulaire non autorisé");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
 		}
 
@@ -220,16 +202,24 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
 				model.addAttribute("toSign", true);
 			}
-			return "user/datas/create-pdf";
+			if(form.getDocument() != null) {
+				return "user/datas/create-pdf";
+			} else {
+				return "user/datas/create";
+			}
 		} else {
 			return "redirect:/user/datas/" + data.getId();
 		}
 	}
 
 	@PostMapping("form/{id}")
-	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam Long dataId, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
+	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+						  @RequestParam Long dataId,
+						  @RequestParam MultiValueMap<String, String> formData,
+						  RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(id);
 		formData.remove("_csrf");
+		formData.remove("dataId");
 		Data data;
 		if(dataId != null) {
 			data = dataRepository.findById(dataId).get();
@@ -237,7 +227,7 @@ public class DataController {
 			data = new Data();
 		}
 		data = dataService.updateData(formData, user, form, data);
-		redirectAttributes.addFlashAttribute("messageSuccess", "Données enregistrées");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return "redirect:/user/datas/" + data.getId() + "/update";
 	}
 
@@ -277,15 +267,15 @@ public class DataController {
 			if(data.getStatus().equals(SignRequestStatus.draft)) {
 			try {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-				redirectAttributes.addFlashAttribute("messageSuccess", "La procédure est démarrée");
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureException | InterruptedException e) {
 				logger.error(e.getMessage(), e);
-				redirectAttributes.addFlashAttribute("messageError", e.getMessage());
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 				return "redirect:/user/datas/" + id;
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Attention, la procédure est déjà démarée");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Attention, la procédure est déjà démarée"));
 		}
 		return "redirect:/user/signrequests/";
 	}
@@ -294,11 +284,11 @@ public class DataController {
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataRepository.findById(id).get();
-		if(user.getEppn().equals(data.getCreateBy())) {
+		if(user.getEppn().equals(data.getCreateBy()) || user.getEppn().equals(data.getOwner())) {
 			dataService.delete(data);
-			redirectAttributes.addFlashAttribute("messageInfo", "Suppression effectuée");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Suppression impossible");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Suppression impossible"));
 		}
 		return "redirect:/user/datas/";
 	}
@@ -336,7 +326,7 @@ public class DataController {
 	public String cloneData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getDataById(id);
 		Data cloneData = dataService.cloneData(data);
-		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}
 
@@ -346,8 +336,18 @@ public class DataController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		Data data = dataService.getDataFromSignRequest(signRequest);
 		Data cloneData = dataService.cloneData(data);
-		redirectAttributes.addFlashAttribute("messageInfo", "Le document a été cloné");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
+	}
+
+	@GetMapping("forms/{id}/get-image")
+	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse response) throws Exception {
+		Form form = formRepository.findById(id).get();
+		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
+		response.setContentType(MediaType.IMAGE_PNG_VALUE);
+		IOUtils.copy(in, response.getOutputStream());
+		in.close();
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }

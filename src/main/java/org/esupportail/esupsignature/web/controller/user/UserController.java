@@ -1,17 +1,18 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.User.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -26,10 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
@@ -43,29 +42,6 @@ public class UserController {
 	public String getActiveMenu() {
 		return "active";
 	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
 
 	@Resource
 	private UserRepository userRepository;
@@ -95,6 +71,9 @@ public class UserController {
 	private UserService userService;
 
 	@Resource
+	private UserShareService userShareService;
+
+	@Resource
 	private UserShareRepository userShareRepository;
 
 	@Resource
@@ -115,7 +94,7 @@ public class UserController {
     @PostMapping
     public String create(@ModelAttribute("authUser") User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
-    		@RequestParam(value = "emailAlertHour", required=false) String emailAlertHour,
+    		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
@@ -131,7 +110,7 @@ public class UserController {
     	authUser.setEmailAlertFrequency(emailAlertFrequency);
     	authUser.setEmailAlertHour(emailAlertHour);
     	authUser.setEmailAlertDay(emailAlertDay);
-    	redirectAttributes.addFlashAttribute("messageSuccess", "Vos paramètres on été enregistrés");
+    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres on été enregistrés"));
 		return "redirect:/user/users";
     }
 
@@ -139,29 +118,29 @@ public class UserController {
 	public String deleteSign(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
     	Document signDocument = documentRepository.findById(id).get();
 		authUser.getSignImages().remove(signDocument);
-		redirectAttributes.addFlashAttribute("messageInfo", "Signature supprimée");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
 		return "redirect:/user/users";
 	}
 
 
 	@GetMapping(value = "/view-cert")
-    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttrs) {
+    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		User user = userService.getUserFromAuthentication();
 		try {
 			logger.info(user.getKeystore().getInputStream().read() + "");
-        	redirectAttrs.addFlashAttribute("messageCustom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password));
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password)));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
-        	redirectAttrs.addFlashAttribute("messageError", "Mauvais mot de passe");
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users/?form";
     }
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString, @RequestParam(required=false) String ldapTemplateName) {
+	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdaps(searchString, ldapTemplateName);
+		return userService.getPersonLdaps(searchString).stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
    }
 
 	@GetMapping("/properties")
@@ -179,15 +158,37 @@ public class UserController {
 	public String params(@ModelAttribute("authUser") User authUser, Model model) {
 		List<UserShare> userShares = userShareRepository.findByUser(authUser);
 		model.addAttribute("userShares", userShares);
-		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
-		model.addAttribute("workflows", workflowService.getWorkflowsForUser(authUser, authUser));
+		model.addAttribute("shareTypes", ShareType.values());
+		model.addAttribute("forms", formService. getAuthorizedToShareForms());
+		model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
 		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("activeMenu", "shares");
-		return "user/users/shares";
+		return "user/users/shares/list";
+	}
+
+	@GetMapping("/shares/update/{id}")
+	public String params(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		model.addAttribute("activeMenu", "shares");
+		UserShare userShare = userShareRepository.findById(id).get();
+		if(userShare.getUser().equals(authUser)) {
+			model.addAttribute("shareTypes", ShareType.values());
+			model.addAttribute("userShare", userShare);
+			return "user/users/shares/update";
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
+			return "redirect:/user/users/shares";
+		}
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute("authUser") User authUser, @RequestParam(value = "form", required = false) Long[] form, @RequestParam(value = "workflow", required = false) Long[] workflow, @RequestParam("type") String type, @RequestParam("userIds") String[] userEmails, @RequestParam("beginDate") String beginDate, @RequestParam("endDate") String endDate) throws EsupSignatureUserException {
+	public String addShare(@ModelAttribute("authUser") User authUser,
+						   @RequestParam(value = "form", required = false) Long[] form,
+						   @RequestParam(value = "workflow", required = false) Long[] workflow,
+						   @RequestParam("types") String[] types,
+						   @RequestParam("userIds") String[] userEmails,
+						   @RequestParam("beginDate") String beginDate,
+						   @RequestParam("endDate") String endDate,
+						   RedirectAttributes redirectAttributes) {
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		List<User> users = new ArrayList<>();
@@ -198,13 +199,56 @@ public class UserController {
 		Date endDateDate = null;
 		if (beginDate != null && endDate != null) {
 			try {
-				beginDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(beginDate);
-				endDateDate = new SimpleDateFormat("dd/MM/yyyy").parse(endDate);
+				beginDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(beginDate);
+				endDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 			} catch (ParseException e) {
 				logger.error("error on parsing dates");
 			}
 		}
-		userService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), type, users, beginDateDate, endDateDate, authUser);
+		try {
+			userShareService.createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+		} catch (EsupSignatureUserException e) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		}
+		return "redirect:/user/users/shares";
+	}
+
+	@PostMapping("/update-share/{id}")
+	public String updateShare(@ModelAttribute("authUser") User authUser,
+							  @PathVariable("id") Long id,
+							  @RequestParam("types") String[] types,
+							  @RequestParam("userIds") String[] userEmails,
+							  @RequestParam("beginDate") String beginDate,
+							  @RequestParam("endDate") String endDate) {
+		UserShare userShare = userShareRepository.findById(id).get();
+		if(userShare.getUser().equals(authUser)) {
+			userShare.getToUsers().clear();
+			for (String userEmail : userEmails) {
+				userShare.getToUsers().add(userService.checkUserByEmail(userEmail));
+			}
+			userShare.getShareTypes().clear();
+			List<ShareType> authorizedShareTypes = new ArrayList<>();
+			if(userShare.getWorkflow() != null) {
+				authorizedShareTypes.addAll(userShare.getWorkflow().getAuthorizedShareTypes());
+			}
+			if(userShare.getForm() != null ) {
+				authorizedShareTypes.addAll(userShare.getForm().getAuthorizedShareTypes());
+			}
+			for(String type : types) {
+				if(authorizedShareTypes.contains(ShareType.valueOf(type))) {
+					userShare.getShareTypes().add(ShareType.valueOf(type));
+				}
+			}
+			if (beginDate != null && endDate != null) {
+				try {
+					userShare.setBeginDate(new SimpleDateFormat("yyyy-MM-dd").parse(beginDate));
+					userShare.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(endDate));
+				} catch (ParseException e) {
+					logger.error("error on parsing dates");
+				}
+			}
+		}
+
 		return "redirect:/user/users/shares";
 	}
 
@@ -214,29 +258,35 @@ public class UserController {
 		if (userShare.getUser().equals(authUser)) {
 			userShareRepository.delete(userShare);
 		}
-		redirectAttributes.addFlashAttribute("messageInfo", "Élément supprimé");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Élément supprimé"));
 		return "redirect:/user/users/shares";
 	}
 
 	@GetMapping("/change-share")
 	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-		if(userService.switchToShareUser(eppn)) {
+		if(userShareService.switchToShareUser(eppn)) {
 			if(eppn == null || eppn.isEmpty()) {
-				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation désactivée");
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 			} else {
-				redirectAttributes.addFlashAttribute("messageSuccess", "Délégation activée : " + eppn);
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			}
 		} else {
-			redirectAttributes.addFlashAttribute("messageError", "Aucune délégation active en ce moment");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
 		}
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	public String markAsRead(@ModelAttribute("authUser") User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
+	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
-		userService.disableMessage(authUser, id);
+    	if(id == 0) {
+    		User user = userRepository.findByEppn(authUser.getEppn()).get(0);
+    		user.setSplash(true);
+		} else {
+			userService.disableMessage(authUser, id);
+		}
+
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}

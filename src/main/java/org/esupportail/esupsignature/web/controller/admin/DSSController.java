@@ -6,11 +6,8 @@ import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.utils.Utils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,27 +38,6 @@ public class DSSController {
 	public String getActiveMenu() {
 		return "dss";
 	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UserService userService;
 
 	@Resource
 	@Qualifier("european-lotl-source")

@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {HomeUi} from "/js/modules/homeUi.js";
+    import {HomeUi} from "/static/js/modules/ui/HomeUi.js";
     new HomeUi();
 </script>
 <body>
@@ -21,7 +21,7 @@
             <div class="row">
                 <div th:replace="user/home/include/new"></div>
                 <div id="toSignList" class="d-flex col-12">
-                    <div class="col-12 col-lg-8 card mb-2 mx-auto">
+                    <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div id="myDocs" class="card-body">
                             <h5 class="text-center"><b>Demandes à signer</b></h5>
                             <table th:if="${signRequests.getNumberOfElements() > 0}"
@@ -30,8 +30,7 @@
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                         <td class="text-break w-5 d-none d-md-inline"><i class="fas fa-book p-2"></i></td>
-                                        <td class="text-break w-35" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
-                                        <td class="text-break w-35" th:unless="${signRequest.parentSignBook != null}" th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-35" th:text="${signRequest.title}"></td>
                                         <td class="text-break w-15 d-none d-md-inline">
                                             <span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
                                         </td>

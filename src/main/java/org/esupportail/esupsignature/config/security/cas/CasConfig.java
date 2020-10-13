@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.support.LdapContextSource;
 
 @Configuration
-@ConditionalOnProperty(prefix = "security.cas", name = "service")
+@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 @EnableConfigurationProperties(CasProperties.class)
 public class CasConfig {
 

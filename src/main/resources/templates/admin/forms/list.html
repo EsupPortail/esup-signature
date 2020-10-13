@@ -29,14 +29,15 @@
                     <table th:if="${forms.size() > 0}" class="table table-striped table-hover table-borderless table-responsive">
                             <thead class="thead-dark">
                             <tr>
-                                <th scope="col" class="w-100">Titre</th>
-                                <th scope="col">Nom</th>
-                                <th scope="col">Version</th>
-                                <th scope="col">Actif</th>
-                                <th scope="col">Rôle</th>
-                                <th class="show text-center" scope="col">Voir</th>
-                                <th class="edit text-center" scope="col">Modifier</th>
-                                <th class="dete text-center" scope="col">Supprimer</th>
+                                <th class="w-50">Titre</th>
+                                <th>Nom</th>
+                                <th>Version</th>
+                                <th>Actif</th>
+                                <th>Rôle</th>
+                                <th class="text-center">Liste des champs</th>
+                                <th class="text-center">Modifier</th>
+                                <th class="text-center">Exporter les données</th>
+                                <th class="text-center">Supprimer</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -50,15 +51,18 @@
                                 </td>
                                 <td th:text="${form.role}"></td>
                                 <td class="show text-center">
-                                    <a type="button" th:href="'/admin/forms/' + ${form.id}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                    <a type="button" th:href="'/admin/forms/' + ${form.id}" class="btn btn-sm btn-primary"><i class="fas fa-align-justify"></i></a>
                                 </td>
                                 <td class="edit text-center">
-                                    <a type="button" th:href="'/admin/forms/update/' + ${form.id}" class="btn btn-warning">
+                                    <a type="button" th:href="'/admin/forms/update/' + ${form.id}" class="btn btn-sm btn-warning text-white">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
                                 </td>
+                                <td class="show text-center">
+                                    <a type="button" th:href="'/admin/forms/' + ${form.name} + '/datas/csv'" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a>
+                                </td>
                                 <td class="delete text-center">
-                                    <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-danger">
+                                    <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-sm btn-danger">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                     <div class="modal modal-warning fade in" th:id="modal-warning+${form.id}">
@@ -123,12 +127,12 @@
                         <input type="text" id="title" name="title" class="form-control" required>
                     </div>
                         <div class="form-group">
-                            <label for="inputGroupFile01" class="col-form-label">Modèle PDF Form</label>
+                            <label class="col-form-label">Modèle PDF Form</label>
                             <div class="custom-file">
                                 <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
-                                       data-buttonText="Choisir fichier" id="inputGroupFile01" name="multipartFile"
+                                       data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
                                        type="file" required/>
-                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01">
+                                <label class="custom-file-label" for="modelFile" id="inputGroupLabel01">
                                     Choisir un fichier
                                 </label>
                             </div>

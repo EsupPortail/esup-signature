@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;

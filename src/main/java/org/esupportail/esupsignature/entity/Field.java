@@ -25,10 +25,6 @@ public class Field {
 	private Integer topPos;
 	
 	private Integer leftPos;
-	
-	private Integer width;
-	
-	private Integer height;
 
 	private Integer page;
 
@@ -36,12 +32,20 @@ public class Field {
 
 	private String stepNumbers = "0";
 
-	private String extValue;
+	private String extValueServiceName;
 
-	private String eppnEditRight;
+	private String extValueType;
+
+	private String extValueReturn;
 
 	transient String defaultValue;
-	
+
+	private String searchServiceName;
+
+	private String searchType;
+
+	private String searchReturn;
+
 	@Enumerated(EnumType.STRING)
     private FieldType type;
 	
@@ -119,22 +123,6 @@ public class Field {
 		this.leftPos = left;
 	}
 
-	public Integer getWidth() {
-		return width;
-	}
-
-	public void setWidth(Integer width) {
-		this.width = width;
-	}
-
-	public Integer getHeight() {
-		return height;
-	}
-
-	public void setHeight(Integer height) {
-		this.height = height;
-	}
-
 	public String getDefaultValue() {
 		return defaultValue;
 	}
@@ -167,19 +155,52 @@ public class Field {
 		this.stepNumbers = stepNumbers;
 	}
 
-	public String getExtValue() {
-		return extValue;
+	public String getExtValueServiceName() {
+		return extValueServiceName;
 	}
 
-	public void setExtValue(String extValue) {
-		this.extValue = extValue;
+	public void setExtValueServiceName(String extValueServiceName) {
+		this.extValueServiceName = extValueServiceName;
 	}
 
-	public String getEppnEditRight() {
-		return eppnEditRight;
+	public String getExtValueType() {
+		return extValueType;
 	}
 
-	public void setEppnEditRight(String eppnEditRight) {
-		this.eppnEditRight = eppnEditRight;
+	public void setExtValueType(String extValueType) {
+		this.extValueType = extValueType;
 	}
+
+	public String getExtValueReturn() {
+		return extValueReturn;
+	}
+
+	public void setExtValueReturn(String extValueReturn) {
+		this.extValueReturn = extValueReturn;
+	}
+
+	public String getSearchServiceName() {
+		return searchServiceName;
+	}
+
+	public void setSearchServiceName(String serviceName) {
+		this.searchServiceName = serviceName;
+	}
+
+	public String getSearchType() {
+		return searchType;
+	}
+
+	public void setSearchType(String searchType) {
+		this.searchType = searchType;
+	}
+
+	public String getSearchReturn() {
+		return searchReturn;
+	}
+
+	public void setSearchReturn(String searchReturn) {
+		this.searchReturn = searchReturn;
+	}
+
 }

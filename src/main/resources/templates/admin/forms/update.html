@@ -2,6 +2,10 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
+    new FormUi();
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -10,17 +14,16 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
-                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn" >
-                <a title="Enregistrer" role="button" class="btn-floating btn-lg bg-success wave-effect" onclick="$('#formUpdate').submit();">
+                <a id="saveButton" title="Enregistrer" role="button" class="btn-floating btn-lg bg-success wave-effect" onclick="$('#formUpdate').submit();">
                     <i class="fas fa-save"></i>
                 </a>
             </div>
-            <div class="card col-lg-8 mx-auto">
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="put">
                         <input type="hidden" th:field="*{id}">
@@ -39,6 +42,15 @@
                         <div class="form-check">
                             <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
                             <label for="publicUsage">Visibilité publique ?</label>
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Types de délégation autorisés</strong></label>
+                            <th:block th:each="shareType : ${shareTypes}">
+                                <div class="form-check text-left">
+                                    <input th:checked="${form.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
+                                    <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
+                                </div>
+                            </th:block>
                         </div>
                         <div class="form-group">
                             <label for="name">
@@ -104,6 +116,26 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="actionDiv">Action</label>
+                            <textarea id="actionText" class="form-control" type="text" th:field="*{action}"></textarea>
+                            <div id="actionDiv"></div>
+                            <script language="JavaScript">
+                                ace.require("ace/ext/language_tools");
+                                let editor = ace.edit("actionDiv", {
+                                    mode: "ace/mode/javascript",
+                                    autoScrollEditorIntoView: true,
+                                    enableBasicAutocompletion: true,
+                                    selectionStyle: "text"
+                                });
+                                let textarea = $('#actionText');
+                                textarea.hide();
+                                editor.getSession().setValue(textarea.val());
+                                editor.getSession().on('change', function(){
+                                    textarea.val(editor.getSession().getValue());
+                                });
+                            </script>
                         </div>
                     </form>
                 </div>

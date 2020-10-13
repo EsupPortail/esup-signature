@@ -1,0 +1,164 @@
+<html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
+<th:block th:each="signRequest : ${signRequests}">
+<tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
+    <td><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
+    <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:if="${signRequest.parentSignBook != null}" th:text="${signRequest.parentSignBook.name}"></td>
+    <td class="clickable-td text-break d-none d-xxl-table-cell" th:unless="${signRequest.parentSignBook != null}">Signature simple</td>
+    <td class="clickable-td text-break"><span th:text="${signRequest.viewTitle}"></span></td>
+    <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
+    <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+    </td>
+    <td class="clickable-td d-none d-lg-table-cell">
+        <table th:if="${signRequest.parentSignBook != null}"
+               class="table table-sm">
+            <tbody th:if="${signRequest.parentSignBook.workflowSteps.size() > 0 && signRequest.currentStepNumber > 0}">
+            <th:block th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.currentStepNumber - 1).recipients}">
+                <tr>
+                    <td class="w-100" th:title="${recipient.user.email}"
+                        th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                    <td class="align-content-center">
+                        <div th:switch="${recipient.signed}">
+                            <th:block th:case="true">
+                                <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
+                                <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                            </th:block>
+                            <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+        <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
+            <tbody>
+            <th:block th:each="recipient : ${signRequest.recipients}">
+                <tr>
+                    <td class="w-100" th:title="${recipient.user.email}"
+                        th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                    <td class="align-content-center">
+                        <div th:switch="${recipient.signed}">
+                            <th:block th:case="true">
+                                <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="a signé le document" class="fas fa-check-circle text-success"></i>
+                                <i th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="a refusé le document" class="fas fa-times-circle text-danger"></i>
+                            </th:block>
+                            <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </td>
+    <td class="clickable-td d-none d-xxl-table-cell">
+        <span th:if="${signRequest.endDate != null}" th:text="${#dates.format(signRequest.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+    </td>
+    <td th:if="${signRequest.parentSignBook != null}" class="clickable-td d-none d-md-table-cell"
+        style="width: 150px;">
+        <div th:replace="user/signrequests/includes/status :: status"></div>
+    </td>
+    <td th:unless="${signRequest.parentSignBook != null}" class="clickable-td d-none d-md-table-cell"
+        style="width: 150px;">
+        <div th:replace="user/signrequests/includes/status :: status"></div>
+    </td>
+    <td th:if="${signRequest.parentSignBook != null}">
+        <div class="position-relative">
+        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
+            <div class=" card-body">
+                <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                    <i class="fas fa-eye pr-2"></i> Consulter
+                </a>
+                <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                    <i class="fas fa-signature pr-2"></i> Signer
+                </a>
+                <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                    <i class="fas fa-download pr-2"></i> Télécharger
+                </a>
+                <a th:if="${signRequest.data != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
+                    <i class="fas fa-copy pr-2"></i> Dupliquer
+                </a>
+                <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
+                    <i class="fas fa-pencil-alt pr-2"></i> Modifier
+                </a>
+                <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                </a>
+            </div>
+        </div>
+        </div>
+        <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+                        <input type="hidden" th:name="${token.parameterName}" th:value="${token.token}">
+                        <div class="modal-header">
+                            <h2>Attention</h2>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                            <button type="submit" class="btn btn-danger">Oui</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </td>
+    <td th:unless="${signRequest.parentSignBook != null}">
+        <div class="position-relative">
+        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
+            <div class=" card-body">
+                <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                    <i class="fas fa-eye pr-2"></i> Consulter
+                </a>
+                <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
+                    <i class="fas fa-signature pr-2"></i> Signer
+                </a>
+                <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                    <i class="fas fa-download pr-2"></i> Télécharger
+                </a>
+                <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                    <i class="fas fa-info-circle pr-2"></i> Détails
+                </a>
+                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                </a>
+            </div>
+        </div>
+        </div>
+        <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form th:id="'signRequestDel' + ${signRequest.id}" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
+                        <input type="hidden" th:name="${token.parameterName}" th:value="${token.token}">
+                        <div class="modal-header">
+                            <h2>Attention</h2>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                            <button type="submit" class="btn btn-danger">Oui</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </td>
+</tr>
+</th:block>
+</html>

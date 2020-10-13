@@ -20,7 +20,7 @@ public class WorkflowRepositoryImpl implements WorkflowRepositoryCustom {
 	private EntityManager entityManager;
 
 	@Override
-	public List<Workflow> findAutorizedWorkflowByUser(User user) {
+	public List<Workflow> findAuthorizedWorkflowByUser(User user) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Workflow> query = criteriaBuilder.createQuery(Workflow.class);
         Root<Workflow> queryRoot = query.from(Workflow.class);

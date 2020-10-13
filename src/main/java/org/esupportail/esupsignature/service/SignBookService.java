@@ -1,20 +1,30 @@
 package org.esupportail.esupsignature.service;
 
+import ch.rasc.sse.eventbus.SseEvent;
+import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ApplicationEventMulticaster;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -56,18 +66,25 @@ public class SignBookService {
     @Resource
     private RecipientRepository recipientRepository;
 
+    @Resource
+    private UserShareRepository userShareRepository;
+
+    @Resource
+    private EventService eventService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(e -> list.add(e));
         return list;
     }
 
-    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) throws EsupSignatureException {
+    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
         String name = generateName(prefix, suffix, user);
         if (signBookRepository.countByName(name) == 0) {
             SignBook signBook = new SignBook();
             signBook.setStatus(SignRequestStatus.draft);
             signBook.setName(name);
+            signBook.setTitle(prefix);
             signBook.setCreateBy(user);
             signBook.setCreateDate(new Date());
             signBook.setExternal(external);
@@ -75,7 +92,6 @@ public class SignBookService {
             return signBook;
         } else {
             return signBookRepository.findByName(name).get(0);
-//            throw new EsupSignatureException("Un circuit porte déjà le nom : " + name);
         }
     }
 
@@ -84,6 +100,29 @@ public class SignBookService {
             return signBookRepository.findByName(name).get(0);
         }
         return null;
+    }
+
+    public List<SignBook> getSharedSignBooks(User user) {
+        List<SignBook> sharedSignBook = new ArrayList<>();
+        for(UserShare userShare : userShareRepository.findByToUsersInAndShareTypesContains(Arrays.asList(user), ShareType.sign)) {
+            if(userShare.getWorkflow() != null) {
+                sharedSignBook.addAll(signBookRepository.findByWorkflowId(userShare.getWorkflow().getId()));
+            } else if(userShare.getForm() != null) {
+                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser());
+                for (SignRequest signRequest : signRequests) {
+                    if (signRequest.getParentSignBook() != null) {
+                        List<Data> datas = dataRepository.findBySignBook(signRequest.getParentSignBook());
+                        for (Data data : datas) {
+                            if(data.getForm().equals(userShare.getForm())) {
+                                sharedSignBook.add(signRequest.getParentSignBook());
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return sharedSignBook;
     }
 
     public void addSignRequest(SignBook signBook, SignRequest signRequest) {
@@ -132,7 +171,11 @@ public class SignBookService {
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
             for(Recipient recipient : workflowStep.getRecipients()) {
-                recipientEmails.add(recipient.getUser().getEmail());
+                if(recipient.getUser().equals(userService.getCreatorUser())) {
+                    recipientEmails.add(signBook.getCreateBy().getEmail());
+                } else {
+                    recipientEmails.add(recipient.getUser().getEmail());
+                }
             }
             WorkflowStep newWorkflowStep = null;
             try {
@@ -142,13 +185,13 @@ public class SignBookService {
             }
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
+        signBook.setWorkflowId(workflow.getId());
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
 
-    public void saveWorkflow(String name, User user, SignBook signBook) throws EsupSignatureException {
-        Workflow workflow = workflowService.createWorkflow(name, user, false);
-        workflow.setDescription(name);
+    public void saveWorkflow(String title, String description, User user, SignBook signBook) throws EsupSignatureException {
+        Workflow workflow = workflowService.createWorkflow(title, description, user, false);
         for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
             for (Recipient recipient : workflowStep.getRecipients()) {
@@ -288,22 +331,15 @@ public class SignBookService {
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
-            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete(), user);
+            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
             if(!emailSended) {
                 signRequestService.sendEmailAlerts(signRequest, user);
                 emailSended = true;
             }
+            for(Recipient recipient : signRequest.getRecipients()) {
+                eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", recipient.getUser());
+            }
         }
-
-// TODO : verifier doublon
-//        for (Recipient recipient : currentWorkflowStep.getRecipients()) {
-//            User recipientUser = recipient.getUser();
-//            if (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(User.EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser)) {
-//                if(!recipientUser.equals(user)) {
-//                    userService.sendEmailAlert(recipientUser);
-//                }
-//            }
-//        }
         logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
     }
 
@@ -351,18 +387,15 @@ public class SignBookService {
         }
     }
 
-    private String generateName(String prefix, String suffix, User user) {
+    public String generateName(String prefix, String suffix, User user) {
         String signBookName = "";
 
         if(!prefix.isEmpty()) {
-            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-");
-            signBookName += "_";
+            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-").replace(" ", "-");
         }
-        signBookName += user.getFirstname().substring(0, 1).toUpperCase();
-        signBookName += user.getName().substring(0, 1).toUpperCase();
-        signBookName += "_";
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        signBookName += format.format(new Date());
+        signBookName += "_" + format.format(new Date());
+
         if(!suffix.isEmpty()) {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");

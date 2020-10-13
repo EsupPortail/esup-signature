@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -23,6 +24,8 @@ public class Workflow {
 	@Column(unique=true)
 	private String name;
 
+    private String title;
+
     private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -39,13 +42,14 @@ public class Workflow {
 
     private String role;
 
+    @ElementCollection(targetClass= ShareType.class)
+    private List<ShareType> authorizedShareTypes = new ArrayList<>();
+
     private Boolean external = false;
 
     private Boolean publicUsage = false;
 
     private Boolean scanPdfMetadatas = false;
-
-    private Boolean archive = false;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
@@ -86,6 +90,14 @@ public class Workflow {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -144,14 +156,6 @@ public class Workflow {
         this.publicUsage = publicUsage;
     }
 
-    public Boolean getArchive() {
-        return archive;
-    }
-
-    public void setArchive(Boolean archive) {
-        this.archive = archive;
-    }
-
     public DocumentIOType getSourceType() {
         return sourceType;
     }
@@ -206,6 +210,14 @@ public class Workflow {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public List<ShareType> getAuthorizedShareTypes() {
+        return authorizedShareTypes;
+    }
+
+    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+        this.authorizedShareTypes = authorizedShareTypes;
     }
 
     public Boolean getScanPdfMetadatas() {

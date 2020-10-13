@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 public class GlobalProperties {
 
     private String rootUrl;
+    private String groupPrefixRoleName;
+    private String domain;
     private String nexuUrl;
     private String nexuVersion;
     private String nexuDownloadUrl;
@@ -17,6 +19,8 @@ public class GlobalProperties {
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
+    private Boolean enableSplash = false;
+    private String version = "";
 
     public String getRootUrl() {
         return rootUrl;
@@ -24,6 +28,22 @@ public class GlobalProperties {
 
     public void setRootUrl(String rootUrl) {
         this.rootUrl = rootUrl;
+    }
+
+    public String getGroupPrefixRoleName() {
+        return groupPrefixRoleName;
+    }
+
+    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
+        this.groupPrefixRoleName = groupPrefixRoleName;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
     }
 
     public String getNexuUrl() {
@@ -96,5 +116,21 @@ public class GlobalProperties {
 
     public void setEnableSu(Boolean enableSu) {
         this.enableSu = enableSu;
+    }
+
+    public Boolean getEnableSplash() {
+        return enableSplash;
+    }
+
+    public void setEnableSplash(Boolean enableSplash) {
+        this.enableSplash = enableSplash;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -16,6 +17,7 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 @Configuration 
 @ComponentScan
 @EnableWebMvc
+@EnableAsync
 @EnableAutoConfiguration
 @EnableConfigurationProperties
 public class WebAppConfig implements WebMvcConfigurer {
@@ -29,7 +31,8 @@ public class WebAppConfig implements WebMvcConfigurer {
                 "/images/**",
                 "/css/**",
 				"/doc/**",
-                "/js/**")
+                "/js/**",
+				"/static/js/**")
                 .addResourceLocations(
 						"classpath:/static/images/favicon.ico",
 						"classpath:/static/downloads/",
@@ -37,7 +40,8 @@ public class WebAppConfig implements WebMvcConfigurer {
                         "classpath:/static/images/",
                         "classpath:/static/css/",
 						"classpath:/static/doc/",
-                        "classpath:/static/js/");
+                        "classpath:/static/js/",
+						"classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
 //

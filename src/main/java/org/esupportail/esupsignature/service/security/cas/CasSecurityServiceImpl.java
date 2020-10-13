@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.security.cas;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
 import org.springframework.ldap.core.support.LdapContextSource;
@@ -32,6 +33,9 @@ import java.util.Map;
 public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
+	private LdapGroupService ldapGroupService;
+
+	@Resource
 	private CasProperties casProperties;
 
 	@Resource
@@ -59,11 +63,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 	@Override
 	public String getLogoutUrl() {
 		return casProperties.getUrl() + "/logout";
-	}
-
-	@Override
-	public String getDomain() {
-		return casProperties.getDomain();
 	}
 
 	@Override
@@ -128,11 +127,14 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public LdapUserDetailsService ldapUserDetailsService() {
 
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
-		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, casProperties.getGroupSearchBase());
 
-		Map<String, String> mappingGroupesRoles = new HashMap<String, String>();
+		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
+
+		Map<String, String> mappingGroupesRoles = new HashMap<>();
 		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
+
+		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);
 
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
 				casLdapAuthoritiesPopulator);
@@ -144,7 +146,9 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 		return ldapUserDetailsService;
 	}
-	
+
+
+
 //	public SingleSignOutFilter singleLogoutFilter() {
 //		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
 //		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");

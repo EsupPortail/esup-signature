@@ -15,7 +15,12 @@ body {
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
+}
 
+#actionDiv {
+    position: relative;
+    width: 100%;
+    height: 500px;
 }
 
 .truncate {
@@ -50,10 +55,31 @@ td {
     font-size: 0.9em;
 }
 
+.tableFixHead {
+    overflow-y: auto;
+    height: calc(100vh - 172px); }
+.tableFixHead thead th {
+    vertical-align: middle;
+    position: sticky;
+    top: 0;
+}
+
 .footer {
   width: 100%;
   height: 38px;
   line-height: 38px;
+}
+
+.mini-menu {
+    width:250px;
+    right: 10px;
+    z-index: 1000;
+}
+
+.mini-menu-thead {
+    width:250px;
+    margin-top: 20px;
+    z-index: 1000;
 }
 
 code {
@@ -80,6 +106,18 @@ code {
     border-radius: 50%;
     width: 50px;
     height: 50px;
+}
+
+.select-users {
+    /*for javascript detection : new SelectUser()*/
+}
+
+.slim-select, .slim-select-simple {
+    /*for javascript detection : new SlimSelect()*/
+}
+
+.summer-note {
+    /*for javascript detection : new summernote()*/
 }
 
 .hide-select {
@@ -118,6 +156,15 @@ code {
 
 .custom-file-input:lang(en) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
+}
+
+.ui-autocomplete {
+    max-height: 200px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+    /* add padding to account for vertical scrollbar */
+    padding-right: 20px;
 }
 
 .anim-border {
@@ -235,7 +282,9 @@ input:checked + .slider:before {
 .slim-select-hack {
     opacity: 0;
     height: 0;
+    margin-top: 36px;
     display: block !important;
+    position: absolute;
 }
 
 /* select slim */
@@ -247,11 +296,16 @@ input:checked + .slider:before {
 }
 
 .ss-main .ss-multi-selected {
-    border: 1px solid #ced4da;	
+    border: 1px solid #ced4da;
+    min-height: 38px;
 }
 	
 .ss-value-text {
 	cursor: auto;	
+}
+
+.ss-disabled {
+    cursor: pointer !important;
 }
 
 .text-left {
@@ -676,6 +730,10 @@ float:left;
     border-radius: 50%;
 }
 
+.clickable-td {
+    cursor: pointer;
+}
+
 .nav-tabs {
     border-bottom : 1px solid #000000;
 }
@@ -957,8 +1015,7 @@ float:left;
 }
 
 .toast {
-    background-color: rgba(255,255,255,.95) !important;
-    z-index: 10000;
+
 }
 
 .toast-body-news {
@@ -974,7 +1031,15 @@ float:left;
 }
 
 .toast-sm {
-    min-width: 300px;
+    min-width: 400px;
+    margin: 20px;
+    position: fixed;
+    top: 0;
+    right: 0;
+}
+
+.toast-md {
+    min-width: 800px;
     margin: 20px;
     position: fixed;
     top: 0;
@@ -1098,9 +1163,9 @@ float:left;
 }
 
 .blinking-white {
-    animation:blinkingText 1.2s infinite;
+    animation:blinkingTextWhite 1.2s infinite;
 }
-@keyframes blinkingText {
+@keyframes blinkingTextWhite {
     0%{     color: #FFF;    }
     49%{    color: #FFF; }
     60%{    color: transparent; }
@@ -1303,6 +1368,11 @@ float:left;
         padding-left: 15px;
     }
 }
-.select-mode > div.ss-single-selected {
-    height: 50px;
+.ss-single-selected {
+    min-height: 38px !important;
+}
+
+.ss-main {
+    font-weight: normal !important;
+    margin-bottom: 20px !important;
 }

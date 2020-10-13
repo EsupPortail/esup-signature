@@ -52,11 +52,6 @@ public class OAuthSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
-	public String getDomain() {
-		return "";
-	}
-
-	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
 		return new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/google");
 	}

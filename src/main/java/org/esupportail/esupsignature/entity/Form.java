@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -33,6 +35,9 @@ public class Form {
 
 	private String role;
 
+	@ElementCollection(targetClass= ShareType.class)
+	private List<ShareType> authorizedShareTypes = new ArrayList<>();
+
 	private Boolean publicUsage = false;
 
 	private Boolean pdfDisplay = true;
@@ -44,14 +49,17 @@ public class Form {
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
 
-    private String targetUri;    
-	
+    private String targetUri;
+
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private Document document = new Document();
 
 	@OrderColumn
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
 	private List<Field> fields = new ArrayList<>();
+
+	@Column(columnDefinition = "TEXT")
+	private String action;
 
 	public Long getId() {
 		return id;
@@ -125,6 +133,14 @@ public class Form {
 		this.role = role;
 	}
 
+	public List<ShareType> getAuthorizedShareTypes() {
+		return authorizedShareTypes;
+	}
+
+	public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+		this.authorizedShareTypes = authorizedShareTypes;
+	}
+
 	public Boolean getPublicUsage() {
 		return publicUsage;
 	}
@@ -187,5 +203,13 @@ public class Form {
 
 	public void setNeedName(Boolean needName) {
 		this.needName = needName;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 }

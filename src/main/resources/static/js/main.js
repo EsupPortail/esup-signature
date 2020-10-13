@@ -15,64 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {GlobalUi} from "./modules/globalUi.js";
-let globalUi;
-globalUi = new GlobalUi();
-export default globalUi;
+import {GlobalUi} from "./modules/ui/GlobalUi.js";
+new GlobalUi();
 
-// if(document.URL.match("(\/user\/signrequests\/[\\s\\S]+[^?|^\/])")) {
-//     console.info("show side bar");
-//     globalUi.showSideBar();
-//     $("#sidebarCollapse").attr("disabled", true);
-//     // $("#sidebarCollapse").children().toggleClass("fa-bars fa-arrow-left");
-//     // $("#sidebarCollapse").on("mousedown", function(e){
-//     //     e.preventDefault();
-//     //    document.location.href = "/user/signrequests";
-//     // });
-// }
-//
-// if(document.URL.match("(\/user\/datas\/[\\s\\S]+[^?|^\/])")) {
-//     globalUi.hideSideBar();
-//     $("#sidebarCollapse").attr("disabled", true);
-// }
+(function($) {
+    $.fn.changeElementType = function(newType) {
+        let attrs = {};
 
-export let stepper;
-let stepDiv = document.getElementById("stepperDefault");
-if (stepDiv != null) {
-    import('./modules/step.js').then((step) => {
-        const Step = step.default;
-        stepper = new Step(stepDiv);
-    });
-}
+        $.each(this[0].attributes, function(idx, attr) {
+            attrs[attr.nodeName] = attr.nodeValue;
+        });
 
-$(".select-users").each(function () {
-    let selectId = $(this).attr('id');
-    import('./modules/selectUser.js').then((selectUser) => {
-        const SelectUser = selectUser.default;
-        new SelectUser(selectId);
-    });
-});
-
-$(".slim-select").each(function () {
-    console.info("enable slim-select for : " + $(this).attr('id'));
-    new SlimSelect({
-        select: '#' + $(this).attr('id')
-    });
-})
-
-$( "select").filter(".slim-select-simple").each(function () {
-    let selectName = $(this).attr('id');
-    console.info("enable slim-select-simple for : " + selectName);
-    this.selectField = $("#" + selectName);
-    new SlimSelect({
-        select: '#' + $(this).attr('id'),
-        showSearch: false,
-        searchHighlight: false,
-        hideSelectedOption: true,
-        closeOnSelect: true,
-        ajax: function (search, callback) {
-            callback(false)
-        }
-    });
-    this.selectField.addClass("slim-select-hack");
-})
+        this.replaceWith(function() {
+            return $("<" + newType + "/>", attrs).append($(this).contents());
+        });
+    }
+})(jQuery);

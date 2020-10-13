@@ -17,7 +17,7 @@ public class BigFileService {
 		bigFileRepository.addBinaryFileStream(bigFile, inputStream, length);
 	}
 
-	public void deleteBigFile(long id) {
+	public void delete(long id) {
 		bigFileRepository.deleteById(id);
 	}
 

@@ -15,47 +15,40 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn" >
-                <a title="Créer un nouveau circuit" type="button" th:href="'/admin/forms/update/' + ${form.id}"
-                   class="btn-floating btn-lg bg-warning">
-                    <i class="fas fa-pencil-alt"></i>
-                </a>
-            </div>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card col-lg-12">
                 <div class="card-body">
                 <table class="table table-borderless table-hover">
                     <thead class="thead-dark">
-                    <tr>
-                        <th>Id</th>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>ExtValue</th>
-                        <th>Etapes autorisées</th>
-                        <th>Utilisateurs concernés</th>
-                        <th class="d-none">Aperçu</th>
-                    </tr>
+                        <tr>
+                            <th class="align-middle">Nom</th>
+                            <th class="align-middle">Type</th>
+                            <th class="align-middle">Requis</th>
+                            <th class="align-middle">Pré-remplissage : Nom du service</th>
+                            <th class="align-middle">Pré-remplissage : Type</th>
+                            <th class="align-middle">Pré-remplissage : Attribut retourné</th>
+                            <th class="align-middle">Auto-completion : Nom du service</th>
+                            <th class="align-middle">Auto-completion : Type</th>
+                            <th class="align-middle">Auto-completion : Attribut retourné</th>
+                            <th class="align-middle">Etapes autorisées</th>
+                            <th></th>
+                        </tr>
                     </thead>
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <td th:text="${field.name}"></td>
-                            <td th:text="${field.label}"></td>
-                            <td th:text="${field.type}"></td>
-                            <td th:text="${field.extValue}"></td>
-                            <td th:text="${field.stepNumbers}"></td>
-                            <td th:text="${field.eppnEditRight}"></td>
-                            <td  class="d-none">
-                                <div class="form-group">
-                                    <div th:switch="${#strings.toString(field.type)}">
-                                        <input th:case="radio" type="radio" th:name="${field.name}"
-                                               th:placeholder="${field.name}"/>
-                                        <input th:case="checkbox" type="checkbox" th:name="${field.name}"
-                                               th:placeholder="${field.name}"/>
-                                        <input th:case="'text'" type="text" class="form-control" th:name="${field.name}"
-                                               th:placeholder="${field.label}"/>
-                                    </div>
-                                </div>
-                            </td>
+                            <form th:action="'/admin/forms/' + ${form.id} + '/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <td><span th:text="${field.name}"></span></td>
+                            <td><span th:text="${field.type}" /></td>
+                            <td><input type="text" name="required" th:value="${field.required}" size="4"/></td>
+                            <td><input type="text" name="extValueServiceName" th:value="${field.extValueServiceName}" size="7"/></td>
+                            <td><input type="text" name="extValueType" th:value="${field.extValueType}"  size="7"/></td>
+                            <td><input type="text" name="extValueReturn" th:value="${field.extValueReturn}" size="7"/></td>
+                            <td><input type="text" name="searchServiceName" th:value="${field.searchServiceName}"  size="7"/></td>
+                            <td><input type="text" name="searchType" th:value="${field.searchType}"  size="7"/></td>
+                            <td><input type="text" name="searchReturn" th:value="${field.searchReturn}"  size="7"/></td>
+                            <td><input type="text" name="stepNumbers" th:value="${field.stepNumbers}"  size="7"/></td>
+                            <td><button type="submit" class="btn btn-sm btn-success"><i class="fas fa-save"></i></button></td>
+                            </form>
                         </tr>
                     </th:block>
                     </tbody>

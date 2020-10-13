@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
@@ -29,9 +31,12 @@ public class User {
     @Column(unique=true)
     private String email;
 
+    private Boolean splash = false;
+
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
@@ -41,25 +46,26 @@ public class User {
     
     @Transient
     private String signImageBase64;
-    
+
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)
-    private EmailAlertFrequency emailAlertFrequency;
+    private EmailAlertFrequency emailAlertFrequency = EmailAlertFrequency.immediately;
 
-    public enum EmailAlertFrequency {
-		never, immediately, daily, weekly;
-	}
-    
-    private String emailAlertHour;
+    private Integer emailAlertHour;
     
     @Enumerated(EnumType.STRING)
     private DayOfWeek emailAlertDay;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
-    
+
+    public EmailAlertFrequency getEmailAlertFrequency() {
+        return this.emailAlertFrequency;
+    }
+
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
     }
@@ -115,6 +121,14 @@ public class User {
         this.email = email;
     }
 
+    public Boolean getSplash() {
+        return splash;
+    }
+
+    public void setSplash(Boolean splash) {
+        this.splash = splash;
+    }
+
     public UserType getUserType() {
         return userType;
     }
@@ -155,15 +169,11 @@ public class User {
         this.keystore = keystore;
     }
 
-	public EmailAlertFrequency getEmailAlertFrequency() {
-        return this.emailAlertFrequency;
-    }
-
-	public String getEmailAlertHour() {
+	public Integer getEmailAlertHour() {
         return this.emailAlertHour;
     }
 
-	public void setEmailAlertHour(String emailAlertHour) {
+	public void setEmailAlertHour(Integer emailAlertHour) {
         this.emailAlertHour = emailAlertHour;
     }
 
@@ -190,4 +200,5 @@ public class User {
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
+
 }

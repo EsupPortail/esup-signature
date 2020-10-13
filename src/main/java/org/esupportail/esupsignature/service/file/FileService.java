@@ -6,8 +6,12 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.DefaultResourceLoader;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
@@ -17,7 +21,6 @@ import java.awt.*;
 import java.awt.font.TextAttribute;
 import java.awt.image.*;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -30,8 +33,22 @@ public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
+	public String readFileToString(String path) {
+		ResourceLoader resourceLoader = new DefaultResourceLoader();
+		Resource resource = resourceLoader.getResource(path);
+		return asString(resource);
+	}
+
+	public String asString(Resource resource) {
+		try (Reader reader = new InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+			return FileCopyUtils.copyToString(reader);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	public File inputStreamToTempFile(InputStream inputStream, String name) throws IOException {
-		File file = getTempFile(name);
+		File file = getTempFile("tmp_" + name);
 		OutputStream outputStream = new FileOutputStream(file);
 		IOUtils.copy(inputStream, outputStream);
 		outputStream.close();
@@ -208,7 +225,7 @@ public class FileService {
 		final BufferedImage signImage = ImageIO.read(imageStream);
 		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight() + (30 * lineNumber), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.drawImage(signImage, 0, 30 * lineNumber, null);
+		graphics2D.drawImage(signImage, 0, 50 * lineNumber, null);
 		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		if(text != null && !text.isEmpty() && lineNumber > 0) {
 			int lineCount = 1;

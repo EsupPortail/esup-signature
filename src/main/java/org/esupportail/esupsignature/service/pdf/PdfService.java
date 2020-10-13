@@ -28,6 +28,7 @@ import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
+import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
@@ -386,6 +387,29 @@ public class PdfService {
             throw new EsupSignatureException("check pdf error", e);
         }
         return result;
+    }
+
+    public InputStream generatePdfFromData(Data data) throws IOException {
+        PDDocument doc = new PDDocument();
+        PDPage page = new PDPage();
+        doc.addPage(page);
+        PDPageContentStream contents = new PDPageContentStream(doc, page);
+        contents.beginText();
+        PDFont font = PDType1Font.HELVETICA_BOLD;
+        contents.setFont(font, 15);
+        contents.setLeading(15f);
+        contents.newLineAtOffset(30, 700);
+        contents.newLine();
+        for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
+            contents.newLine();
+            contents.showText(entry.getKey() + " : " + entry.getValue());
+        }
+        contents.endText();
+        contents.close();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        doc.save(out);
+        doc.close();
+        return  new ByteArrayInputStream(out.toByteArray());
     }
 
     public PDDocument addNewPage(PDDocument pdDocument, String template, int position) {

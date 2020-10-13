@@ -14,6 +14,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long>, Work
     List<Workflow> findByCreateBy(String eppn);
     @Query("select w from Workflow w join w.managers m where m = :email")
     List<Workflow> findByManagersContains(@Param("email") String email);
+    List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
     Long countByName(String name);
     List<Workflow> findByExternal(Boolean external);
 }

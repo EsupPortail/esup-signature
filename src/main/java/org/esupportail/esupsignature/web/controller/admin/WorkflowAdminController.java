@@ -1,17 +1,15 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -45,24 +43,6 @@ public class WorkflowAdminController {
 		return "workflows";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
 	@Resource
 	private UserRepository userRepository;
 
@@ -84,16 +64,24 @@ public class WorkflowAdminController {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
+	@Resource
+	private UserShareRepository userShareRepository;
+
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
-		if("system".equals(displayWorkflowType)) {
-			User systemUser = userService.getSystemUser();
-			workflows.addAll(workflowService.getWorkflowsForUser(systemUser, systemUser));
+		User systemUser = userService.getSystemUser();
+		if("system".equals(displayWorkflowType) || displayWorkflowType == null) {
+			displayWorkflowType = "system";
+			workflows.addAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
-		} else {
+		} else if("all".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getAllWorkflows());
+		} else if("users".equals(displayWorkflowType)) {
+			workflows.addAll(workflowService.getAllWorkflows());
+			workflows.removeAll(workflowService.getClassesWorkflows());
+			workflows.removeAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflows);
@@ -101,16 +89,16 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/{name}", produces = "text/html")
-	public String show(@PathVariable("name") String name, Model uiModel, RedirectAttributes redirectAttributes) {
-		uiModel.addAttribute("signTypes", SignType.values());
+	public String show(@PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
+		model.addAttribute("signTypes", SignType.values());
 		List<Workflow> workflows = workflowRepository.findByName(name);
 		if(workflows.size() > 0) {
-			uiModel.addAttribute("workflow", workflows.get(0));
+			model.addAttribute("workflow", workflows.get(0));
 			return "admin/workflows/show";
 		} else {
 			Workflow workflow = workflowService.getWorkflowByClassName(name);
 			if (workflow != null) {
-				uiModel.addAttribute("workflow", workflow);
+				model.addAttribute("workflow", workflow);
 				return "admin/workflows/show-class";
 			}
 		}
@@ -119,40 +107,35 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute("user") User user, @RequestParam(name = "name") String name, RedirectAttributes redirectAttrs) {
-		Workflow newWorkflow = new Workflow();
-		newWorkflow.setName(name);
+	public String create(@ModelAttribute("user") User user, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(name, userService.getSystemUser(),false);
+			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false);
 		} catch (EsupSignatureException e) {
-			redirectAttrs.addFlashAttribute("messageError", "Un circuit porte déjà ce nom");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
 			return "redirect:/admin/workflows/";
 		}
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
     @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model uiModel, RedirectAttributes redirectAttrs) {
-		//User user = userService.getCurrentUser();
+    public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
-//		if (!workflowService.checkUserManageRights(user, workflow)) {
-//			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-//			return "redirect:/admin/workflows/" + workflow.getName();
-//		}
-		uiModel.addAttribute("workflow", workflow);
-		uiModel.addAttribute("users", userRepository.findAll());
-		uiModel.addAttribute("sourceTypes", Arrays.asList(DocumentIOType.values()));
-		uiModel.addAttribute("targetTypes", Arrays.asList(DocumentIOType.values()));
-		uiModel.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		uiModel.addAttribute("signrequests", signRequestRepository.findAll());
+		model.addAttribute("workflow", workflow);
+		model.addAttribute("users", userRepository.findAll());
+		model.addAttribute("sourceTypes", DocumentIOType.values());
+		model.addAttribute("targetTypes", DocumentIOType.values());
+		model.addAttribute("shareTypes", ShareType.values());
+		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
+		model.addAttribute("signrequests", signRequestRepository.findAll());
         return "admin/workflows/update";
     }
 	
-    @PostMapping(value = "/update/{id}")
+    @PostMapping(value = "/update")
     public String update(@ModelAttribute("user") User user,
 						 @Valid Workflow workflow,
-						 @RequestParam(required = false) List<String> managers) throws EsupSignatureUserException {
+						 @RequestParam(value = "types", required = false) String[] types,
+						 @RequestParam(required = false) List<String> managers) {
 		Workflow workflowToUpdate = workflowRepository.findById(workflow.getId()).get();
 		if(managers != null && managers.size() > 0) {
 			workflowToUpdate.getManagers().clear();
@@ -165,11 +148,25 @@ public class WorkflowAdminController {
 		} else {
 			workflowToUpdate.getManagers().clear();
 		}
+		workflowToUpdate.getAuthorizedShareTypes().clear();
+		List<ShareType> shareTypes = new ArrayList<>();
+		if(types != null) {
+			for (String type : types) {
+				ShareType shareType = ShareType.valueOf(type);
+				workflowToUpdate.getAuthorizedShareTypes().add(shareType);
+				shareTypes.add(shareType);
+			}
+		}
+		List<UserShare> userShares = userShareRepository.findByWorkflowId(workflowToUpdate.getId());
+		for(UserShare userShare : userShares) {
+			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
+		}
 		workflowToUpdate.setSourceType(workflow.getSourceType());
 		workflowToUpdate.setTargetType(workflow.getTargetType());
 		workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
 		workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
 		workflowToUpdate.setDescription(workflow.getDescription());
+		workflowToUpdate.setTitle(workflow.getTitle());
 		workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
 		workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
 		workflowToUpdate.setRole(workflow.getRole());
@@ -181,11 +178,11 @@ public class WorkflowAdminController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
-    	//User user = userService.getCurrentUser();
+    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+
     	Workflow workflow = workflowRepository.findById(id).get();
 //		if (!workflowService.checkUserManageRights(user, workflow)) {
-//			redirectAttrs.addFlashAttribute("messageError", "Non autorisé");
+//			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", Non autorisé");
 //			return "redirect:/admin/workflows/" + id;
 //		}
 		workflowRepository.delete(workflow);
@@ -196,7 +193,7 @@ public class WorkflowAdminController {
 	public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
 						  @RequestParam(name="description", required = false) String description,
-						  @RequestParam("recipientsEmails") String[] recipientsEmails,
+						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
 		Workflow workflow = workflowRepository.findById(id).get();
@@ -257,20 +254,15 @@ public class WorkflowAdminController {
 		} else {
 			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
 		}
-		redirectAttributes.addFlashAttribute("messageInfo", "Participant ajouté");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
 	public String addStep(@ModelAttribute("user") User user,
 						  @PathVariable("id") Long id,
-						  @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttrs) {
-		//User user = userService.getCurrentUser();
+						  @PathVariable("stepNumber") Integer stepNumber) {
 		Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
-			return "redirect:/admin/workflows/" + workflow.getName();
-		}
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
 		for(int i = 0; i < workflow.getWorkflowSteps().size(); i++) {
@@ -284,10 +276,10 @@ public class WorkflowAdminController {
 	@PostMapping(value = "/add-params/{id}")
 	public String addParams(@ModelAttribute("user") User user,
 							@PathVariable("id") Long id,
-			RedirectAttributes redirectAttrs) {
+			RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		if (!workflow.getCreateBy().equals(user.getEppn())) {
-			redirectAttrs.addFlashAttribute("messageCustom", "access error");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
 			return "redirect:/admin/workflows/" + workflow.getName();
 		}
 		workflow.setUpdateBy(user.getEppn());
@@ -296,13 +288,13 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttrs) throws Exception {
+	public String getFileFromSource(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws Exception {
 		Workflow workflow = workflowRepository.findById(id).get();
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, user);
 		if(nbImportedFiles == 0) {
-			redirectAttrs.addFlashAttribute("messageError", "Aucun fichier à importer");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
 		} else {
-			redirectAttrs.addFlashAttribute("messageInfo", nbImportedFiles + " ficher(s) importé(s)");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}

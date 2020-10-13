@@ -13,17 +13,16 @@ import java.util.Map;
 
 public class SpelGroupService implements GroupService {
 	
-	private Map<String, String> groups4eppnSpel = new HashMap<String, String>();
+	private Map<String, String> groups4eppnSpel = new HashMap<>();
 
 	public void setGroups4eppnSpel(Map<String, String> groups4eppnSpel) {
 		this.groups4eppnSpel = groups4eppnSpel;
 	}
 
-
 	@Override
 	public List<String> getGroups(String eppn) {
 		
-		List<String> groups = new ArrayList<String>();
+		List<String> groups = new ArrayList<>();
 
 		for(String groupName: groups4eppnSpel.keySet()) {
 			String expression = groups4eppnSpel.get(groupName);
@@ -40,5 +39,10 @@ public class SpelGroupService implements GroupService {
 		return groups;
 		
 	}
-	
+
+	@Override
+	public List<String> getMembers(String groupName) {
+		return null;
+	}
+
 }

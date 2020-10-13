@@ -1,14 +1,11 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
@@ -43,9 +40,6 @@ public class DocumentAdminController {
 	private DocumentRepository documentRepository;
 
 	@Resource
-	private UserService userService;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -53,29 +47,6 @@ public class DocumentAdminController {
 
 	@Resource
 	private PdfService pdfService;
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers(User authUser) {
-		return userService.getSuUsers(authUser);
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
 
 	@GetMapping("/form")
 	public String creatDocument(Model model) {

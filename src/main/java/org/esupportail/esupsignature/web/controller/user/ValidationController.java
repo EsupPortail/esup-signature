@@ -4,16 +4,13 @@ import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -43,27 +40,6 @@ public class ValidationController {
 	public String getActiveMenu() {
 		return "validation";
 	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UserService userService;
 
 	@Resource
 	private XSLTService xsltService;

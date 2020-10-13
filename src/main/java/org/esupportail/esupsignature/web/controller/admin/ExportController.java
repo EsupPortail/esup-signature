@@ -4,11 +4,9 @@ package org.esupportail.esupsignature.web.controller.admin;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,27 +35,6 @@ public class ExportController {
 		return "validation";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UserService userService;
-
 	@Resource
 	private DataExportService dataExportService;
 
@@ -65,8 +42,8 @@ public class ExportController {
 	private FormRepository formRepository;
 
 	@GetMapping
-	public String list(Model model) {
-		List<Form> forms = formRepository.findAutorizedFormByUser(getUser());
+	public String list(@ModelAttribute("user") User user, Model model) {
+		List<Form> forms = formRepository.findAuthorizedFormByUser(user);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}

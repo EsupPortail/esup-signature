@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -83,7 +84,7 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         User creator;
         if (userRepository.countByEppn("creator") == 0) {
-            creator = userService.createUser("creator", "Createur de la demande", "", "", UserType.system);
+            creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system);
         } else {
             creator = userRepository.findByEppn("creator").get(0);
         }
@@ -108,11 +109,14 @@ public class WorkflowService {
         }
     }
 
-    public Workflow createWorkflow(String name, User user, boolean external) throws EsupSignatureException {
+    public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
+        String name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
+        name = name.replaceAll("[^a-zA-Z0-9]", "") + "BaseWorkflow";
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
-            workflow.setDescription(name);
+            workflow.setDescription(description);
+            workflow.setTitle(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
             workflow.setCreateBy(user.getEppn());
             workflow.setCreateDate(new Date());
             workflow.setExternal(external);
@@ -130,15 +134,18 @@ public class WorkflowService {
         }
     }
 
-    public Set<Workflow> getWorkflowsForUser(User user, User authUser) {
+    public Set<Workflow> getWorkflowsByUser(User user, User authUser) {
+        List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByUser(user);
         Set<Workflow> workflows = new HashSet<>();
         if(user.equals(authUser)) {
             workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
-            workflows.addAll(workflowRepository.findAutorizedWorkflowByUser(user));
+            workflows.addAll(authorizedWorkflows);
         } else {
-            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
-                workflows.addAll(userShare.getWorkflows());
+            for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
+                if(userShare.getWorkflow() != null && authorizedWorkflows.contains(userShare.getWorkflow())) {
+                    workflows.add(userShare.getWorkflow());
+                }
             }
         }
         workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
@@ -164,31 +171,35 @@ public class WorkflowService {
                 if (fsFiles.size() > 0) {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
-
-                        SignBook signBook = signBookService.createSignBook("Import automatique" , workflow.getName() + "_" + nbImportedFiles, user, false);
+                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
+                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                        String documentName = fsFile.getName();
+                        if(metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
+                            documentName = metadatas.get("Title");
+                        }
+                        SignBook signBook = signBookService.createSignBook(workflow.getTitle() , documentName  + "_" + nbImportedFiles, user, false);
                         signBook.setTargetType(workflow.getTargetType());
                         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                        SignRequest signRequest = signRequestService.createSignRequest(fsFile.getName(), user);
+                        SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
                         if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                             user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                             user.setIp("127.0.0.1");
                         }
-
                         List<String> workflowRecipientsEmails = new ArrayList<>();
                         workflowRecipientsEmails.add(user.getEmail());
-                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
                         signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
                         signRequest.setParentSignBook(signBook);
                         signBook.getSignRequests().add(signRequest);
 
                         if(workflow.getScanPdfMetadatas()) {
-                            Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
                             if(creator != null) {
                                 signRequest.setCreateBy(creator);
+                                signBook.setCreateBy(creator);
                             } else {
                                 signRequest.setCreateBy(userService.getSystemUser());
+                                signBook.setCreateBy(userService.getSystemUser());
                             }
                             for (String metadataKey : metadatas.keySet()) {
                                 String[] keySplit = metadataKey.split("_");
@@ -296,7 +307,7 @@ public class WorkflowService {
         }
         workflowStep.setSignType(signType);
         workflowStepRepository.save(workflowStep);
-        if(recipientEmails != null) {
+        if(recipientEmails != null && recipientEmails.length > 0) {
             addRecipientsToWorkflowStep(workflowStep, recipientEmails);
         }
         return workflowStep;
@@ -319,6 +330,10 @@ public class WorkflowService {
         return workflowRepository.findAll();
     }
 
+    public List<Workflow> getAuthorizedToShareWorkflows() {
+        return workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
+    }
+
     public List<Workflow> getAllWorkflows() {
         List<Workflow> allWorkflows = new ArrayList<>();
         allWorkflows.addAll(this.getClassesWorkflows());
@@ -337,7 +352,7 @@ public class WorkflowService {
 
     public Workflow getWorkflowByName(String name) {
         for(Workflow workflow : this.workflows ) {
-            if(workflow.getClass().getSimpleName().equals(name)) {
+            if(workflow.getName().equals(name)) {
                 return workflow;
             }
         }

@@ -62,7 +62,7 @@ public class WsExportController {
     @ResponseBody
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, String>> getFormDatasJson(@PathVariable String name) {
-        List<Form> forms = formRepository.findFormByName(name);
+        List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
         if (forms.size() > 0) {
             try {
                 return dataExportService.getDatasToExport(forms);

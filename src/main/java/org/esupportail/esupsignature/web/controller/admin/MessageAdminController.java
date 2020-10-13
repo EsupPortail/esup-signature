@@ -17,11 +17,12 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
+import ch.rasc.sse.eventbus.SseEvent;
 import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.MessageRepository;
-import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -47,29 +48,11 @@ public class MessageAdminController {
 		return "messages";
 	}
 
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
-	}
-
-	@Resource
-	private GlobalProperties globalProperties;
-
 	@Resource
 	private MessageRepository messageRepository;
 
 	@Resource
-	private UserService userService;
+	private EventService eventService;
 
 	@GetMapping
 	public String messages(Pageable pageable, Model model) {
@@ -78,19 +61,20 @@ public class MessageAdminController {
 	}
 
 	@PostMapping("/add")
-	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException {
+	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException, InterruptedException {
 		Message message = new Message();
 		Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 		message.setEndDate(date);
 		message.setText(text);
 		messageRepository.save(message);
+		eventService.publishEvent(new JsonMessage("custom", message.getText()), "global", null);
 		return "redirect:/admin/messages";
 	}
 
 	@DeleteMapping("{id}")
 	public String messages(@PathVariable Long id, RedirectAttributes redirectAttributes) {
 		messageRepository.deleteById(id);
-		redirectAttributes.addFlashAttribute("messageError", "Message supprimé");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Message supprimé"));
 		return "redirect:/admin/messages";
 	}
 

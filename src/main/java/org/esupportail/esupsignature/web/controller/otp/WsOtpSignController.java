@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.otp;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -9,6 +8,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.sms.SmsService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,14 +45,6 @@ public class WsOtpSignController {
 
     @Resource
     AuthenticationManager authenticationManager;
-
-    @Resource
-    private GlobalProperties globalProperties;
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
 
     @Resource
     private UserRepository userRepository;
@@ -96,7 +88,7 @@ public class WsOtpSignController {
                 return "redirect:/user/signrequests/" + otp.getSignRequestId();
             } else {
                 model.addAttribute("result", "KO");
-                redirectAttributes.addFlashAttribute("messageError", "Mauvais mot de passe");
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
                 return "redirect:/otp/" + urlId;
             }
         } else {

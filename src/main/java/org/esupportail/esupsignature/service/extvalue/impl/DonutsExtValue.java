@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.service.extvalue.ExtValue;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -13,6 +14,11 @@ public class DonutsExtValue implements ExtValue {
 	@Override
 	public String getValueByName(String name, User user) {
 		return initValues(user).get(name).toString();
+	}
+
+	@Override
+	public List<Map<String, Object>> search(String searchType, String searchString, String searchReturn) {
+		return null;
 	}
 
 	@Override

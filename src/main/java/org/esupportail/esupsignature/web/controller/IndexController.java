@@ -19,10 +19,13 @@ package org.esupportail.esupsignature.web.controller;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -52,7 +55,10 @@ public class IndexController {
 
 	@Resource
 	private List<SecurityService> securityServices;
-	
+
+	@Resource
+	private UserShareService userShareService;
+
 	@Resource
 	private UserService userService;
 
@@ -62,7 +68,7 @@ public class IndexController {
 	@Resource
 	private SignRequestRepository signRequestRepository;
 
-	@ModelAttribute(value = "user", binding = false)
+	@ModelAttribute
 	public User getUser() {
 		return userService.getCurrentUser();
 	}
@@ -75,11 +81,12 @@ public class IndexController {
 			return "redirect:/user/";
 		} else {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			logger.info("auth user : " + auth.getName());
 			if("anonymousUser".equals(auth.getName())) {
+				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
 				return "signin";
 			} else {
+				logger.info("auth user : " + auth.getName());
 				userService.createUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
 				return "redirect:/user/";
 			}
@@ -97,18 +104,22 @@ public class IndexController {
 		if(forwardUri !=null) {
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
-				if(signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
-					SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
-					User suUser = signRequestService.checkShare(signRequest);
-					if (suUser != null) {
-						if (userService.switchToShareUser(suUser.getEppn())) {
-							redirectAttributes.addFlashAttribute("messageWarn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName());
+				try {
+					if (signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
+						SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+						User suUser = signRequestService.checkShare(signRequest);
+						if (suUser != null) {
+							if (userShareService.switchToShareUser(suUser.getEppn())) {
+								redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
+							}
+							return "redirect:" + forwardUri;
 						}
-						return "redirect:" + forwardUri;
+					} else {
+						redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
+						return "redirect:/user/signrequests";
 					}
-				} else {
-					redirectAttributes.addFlashAttribute("messageError", "Demande non trouvée");
-					return "redirect:/user/signrequests";
+				} catch (Exception e) {
+					return "redirect:/user/";
 				}
 			}
 		}

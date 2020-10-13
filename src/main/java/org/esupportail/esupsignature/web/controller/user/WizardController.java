@@ -1,19 +1,17 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -24,7 +22,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,22 +32,6 @@ import java.util.stream.Collectors;
 public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
-
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return userService.getCurrentUser();
-    }
-
-    @ModelAttribute(value = "globalProperties")
-    public GlobalProperties getGlobalProperties() {
-        return this.globalProperties;
-    }
-
-    @Resource
-    private GlobalProperties globalProperties;
-
-    @Resource
-    private UserService userService;
 
     @Resource
     private WorkflowRepository workflowRepository;
@@ -87,13 +68,12 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(@ModelAttribute("user") User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        User authUser = userService.getUserFromAuthentication();
+    public ModelAndView wiz3(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix d'un workflow");
         List<SignBook> signBooks = signBookRepository.findByCreateBy(user);
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
-        model.addAttribute("workflows", workflowService.getWorkflowsForUser(user, authUser));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
@@ -107,19 +87,12 @@ public class WizardController {
     @GetMapping(value = "/wiz4/{id}")
     public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
-                       @RequestParam(value = "selfSign", required = false) Boolean selfSign,
                        Model model) {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
-                signBookService.importWorkflow(signBook, workflow);
-                signBookService.nextWorkFlowStep(signBook);
-                signBookService.pendingSignBook(signBook, user);
-                return "redirect:/user/wizard/wizend/" + signBook.getId();
-            } else if(selfSign != null) {
-                Workflow workflow = workflowRepository.findByName("Ma signature").get(0);
                 signBookService.importWorkflow(signBook, workflow);
                 signBookService.nextWorkFlowStep(signBook);
                 signBookService.pendingSignBook(signBook, user);
@@ -138,7 +111,7 @@ public class WizardController {
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
-                       Model model) throws EsupSignatureUserException {
+                       Model model) throws EsupSignatureUserException, InterruptedException {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
@@ -168,7 +141,7 @@ public class WizardController {
 
     @GetMapping(value = "/wiz5/{id}")
     public String saveForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
-        //User user = userService.getCurrentUser();
+
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
@@ -177,13 +150,12 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz5/{id}")
-    public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
+    public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         try {
-            signBookService.saveWorkflow(name, user, signBook);
+            signBookService.saveWorkflow(name, name, user, signBook);
         } catch (EsupSignatureException e) {
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("messageError", "Un circuit de signature porte déjà ce nom");
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
             return "redirect:/user/wizard/wiz5/" + signBook.getId();
         }
         return "redirect:/user/wizard/wizend/" + signBook.getId();
@@ -198,6 +170,17 @@ public class WizardController {
         } else {
             throw new EsupSignatureException("not authorized");
         }
+    }
+
+    @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
+    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Workflow workflow = workflowRepository.findById(id).get();
+		if (!workflow.getCreateBy().equals(user.getEppn())) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
+		} else {
+            workflowRepository.delete(workflow);
+        }
+        return "redirect:/user/";
     }
 
 }

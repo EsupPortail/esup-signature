@@ -90,7 +90,7 @@
                     <form th:action="'/admin/messages/add'" method="post">
                     <div class="form-group">
                         <label for="text">Text du message</label>
-                        <textarea class="form-control" type="text" name="text" id="text" required="required"></textarea>
+                        <textarea class="summer-note" type="text" name="text" id="text" required="required"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="endDate">Date de fin de diffusion</label>
@@ -102,23 +102,6 @@
             </div>
         </div>
     </div>
-    <script>
-        $(document).ready(function() {
-            $('#text').summernote({
-                tabsize: 2,
-                height: 250,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'underline', 'clear']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ]
-            });
-        });
-    </script>
 </main>
 </body>
 </html>

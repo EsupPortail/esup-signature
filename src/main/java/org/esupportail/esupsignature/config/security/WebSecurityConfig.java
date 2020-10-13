@@ -64,6 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf().ignoringAntMatchers("/ws/**");
 		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
+		http.csrf().ignoringAntMatchers("/log/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
@@ -91,7 +92,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@ConditionalOnProperty(value = "spring.ldap.base")
+	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnExpression("${global.enable-su}")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();

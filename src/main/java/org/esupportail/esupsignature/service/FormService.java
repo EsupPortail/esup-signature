@@ -3,18 +3,20 @@ package org.esupportail.esupsignature.service;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
+import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
@@ -27,6 +29,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,9 +43,6 @@ public class FormService {
 	
 	@Resource
 	private PdfService pdfService;
-
-	@Resource
-	private UserService userService;
 
 	@Resource
 	private UserShareRepository userShareRepository;
@@ -69,12 +70,15 @@ public class FormService {
 	}
 	
 	public List<Form> getFormsByUser(User user, User authUser){
+		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
 		List<Form> forms = new ArrayList<>();
 		if(user.equals(authUser)) {
-			forms = formRepository.findAutorizedFormByUser(user);
+			forms = authorizedForms;
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareType(user, Arrays.asList(authUser), UserShare.ShareType.create)) {
-				forms.addAll(userShare.getForms());
+			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
+				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
+					forms.add(userShare.getForm());
+				}
 			}
 		}
 		return forms;
@@ -84,6 +88,10 @@ public class FormService {
 		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(e -> list.add(e));
 		return list;
+	}
+
+	public List<Form> getAuthorizedToShareForms() {
+		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
 	}
 
 	public void updateForm(Form form) {
@@ -134,16 +142,16 @@ public class FormService {
 		form.setDocument(document);
 		form.setTargetType(targetType);
 		form.setTargetUri(targetUri);
-		form.setRole(roleName.toUpperCase());
+		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
 		form.setFields(getFields(document));
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareRepository.findByFormsContains(testForms.get(0));
+			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
 			for (UserShare userShare : userShares) {
-				userShare.getForms().add(form);
+				userShare.setForm(form);
 			}
 		}
 		return form;
@@ -167,19 +175,23 @@ public class FormService {
 			}
 			if(pdField instanceof PDTextField){
 				Field field = new Field();
-				this.resolveFieldName(field, pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
-				field.setPage(page);
 				PDTextField pdTextField = (PDTextField) pdField;
 				field.setRequired(pdTextField.isRequired());
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
+				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
+				logger.info(pdField.getFullyQualifiedName());
 				String type = "text";
-				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
-					COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-					type = cosString.toString();
+				if(pdFormFieldAdditionalActions != null) {
+					if(pdFormFieldAdditionalActions.getK() != null) {
+						type = pdFormFieldAdditionalActions.getK().getType();
+					}
+					PDAction pdAction = pdFormFieldAdditionalActions.getC();
+					String actionsString = pdAction.getCOSObject().getString(COSName.JS);
+					if(actionsString != null) {
+						computeActions(field, actionsString);
+					}
 				}
-				logger.info(type);
+
 				if(type.equals("text")) {
 					field.setType(FieldType.text);
 				} else if(type.contains("Time")) {
@@ -190,41 +202,33 @@ public class FormService {
 					field.setType(FieldType.number);
 				}
 
-				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-				fieldService.updateField(field);
+				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox){
 				Field field = new Field();
-				this.resolveFieldName(field, pdField.getPartialName());
-				field.setLabel(pdField.getAlternateFieldName());
-				field.setPage(page);
 				field.setType(FieldType.checkbox);
+				field.setLabel(pdField.getAlternateFieldName());
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-				field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-				field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-				field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-				fieldService.updateField(field);
+				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 			} else if(pdField instanceof PDRadioButton){
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
 					Field field = new Field();
-					this.resolveFieldName(field, pdField.getPartialName());
+					field.setType(FieldType.radio);
 					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
 					field.setLabel(labelCOSName.getName());
-					field.setPage(page);
-					field.setType(FieldType.radio);
-					field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
-					field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-					field.setWidth((int) pdAnnotationWidget.getRectangle().getWidth());
-					field.setHeight((int) pdAnnotationWidget.getRectangle().getHeight());
-					fieldService.updateField(field);
+					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
 				}
+			} else if(pdField instanceof PDChoice) {
+				Field field = new Field();
+				field.setType(FieldType.select);
+				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+				field.setLabel(pdField.getAlternateFieldName());
+				parseField(field, pdField, pdAnnotationWidget, page);
+				fields.add(field);
 			}
 		}
 		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).collect(Collectors.toList());
@@ -237,18 +241,35 @@ public class FormService {
 		return fields;
 	}
 
-	private void resolveFieldName(Field field, String name) {
-		String[] nameValues = name.split("(?=>|\\$|#|!)");
-		field.setName(nameValues[0]);
-		if(nameValues.length > 1) {
-			field.setStepNumbers("");
-			for (int i = 1; i < nameValues.length; i++) {
-				if (nameValues[i].contains("$")) {
-					field.setExtValue(nameValues[i].replace("$", ""));
-				} else if (nameValues[i].contains("#")) {
-					field.setStepNumbers(field.getStepNumbers() + nameValues[i]);
-				} else if (nameValues[i].contains("!")) {
-					field.setEppnEditRight(nameValues[i].replace("!", ""));
+	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
+		field.setName(pdField.getPartialName());
+		field.setPage(page);
+		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
+		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
+		fieldService.updateField(field);
+	}
+
+	private void computeActions(Field field, String actionsString) {
+		String[] actionsStrings = actionsString.split(";");
+		for(String actionString : actionsStrings) {
+			String[] nameValues = actionString.trim().split("\\.|,|\\(");
+			if (nameValues.length > 1) {
+				if(nameValues[0].equals("prefill")) {
+					field.setExtValueServiceName(nameValues[1].trim());
+					field.setExtValueType(nameValues[2].trim());
+					field.setExtValueReturn(nameValues[3].trim().replace(")", ""));
+				} else if(nameValues[0].equals("search")) {
+					field.setSearchServiceName(nameValues[1].trim());
+					field.setSearchType(nameValues[2].trim());
+					field.setSearchReturn(nameValues[3].trim().replace(")", ""));
+				}
+				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
+					for (int i = 2; i < nameValues.length; i++) {
+						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
+					}
+				}
+				if(field.getSearchType() == null) {
+					field.setStepNumbers("0");
 				}
 			}
 		}

@@ -23,7 +23,6 @@ public class AuthorizeRequestsHelper {
 		http.authorizeRequests().antMatchers("/otp/**").permitAll();
 		http.authorizeRequests()
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_MANAGER') or hasRole('ROLE_ADMIN')")
 		.antMatchers("/user/", "/user/**").authenticated()
 		.antMatchers("/webjars/**").permitAll();
 

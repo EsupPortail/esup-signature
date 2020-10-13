@@ -12,8 +12,8 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.sign.SignService;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -40,31 +40,9 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "signrequests";
-	}
-
-	@ModelAttribute(value = "user", binding = false)
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-
-	@ModelAttribute(value = "authUser", binding = false)
-	public User getAuthUser() {
-		return userService.getUserFromAuthentication();
-	}
-
-	@ModelAttribute(value = "suUsers", binding = false)
-	public List<User> getSuUsers() {
-		return userService.getSuUsers(getAuthUser());
-	}
-
-	@ModelAttribute(value = "globalProperties")
-	public GlobalProperties getGlobalProperties() {
-		return this.globalProperties;
 	}
 
 	@Resource
@@ -77,19 +55,16 @@ public class NexuProcessController {
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
-	private UserService userService;
-	
-	@Resource
 	private SignRequestService signRequestService;
 
 	private AbstractSignatureParameters parameters;
 	
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model,
-										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttrs) throws IOException, EsupSignatureException {
+	public String showSignatureParameters(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model,
+										  @RequestParam(value = "referer", required = false) String referer, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
+		if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
 			AbstractSignatureForm signatureDocumentForm;
 			List<Document> toSignFiles = new ArrayList<>();
 			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
@@ -105,14 +80,14 @@ public class NexuProcessController {
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {
-			redirectAttrs.addFlashAttribute("messageCustom", "not authorized");
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
 			return "redirect:/user/signrequests/";
 		}
 	}
 
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute("user") User user, Model model,
+	public GetDataToSignResponse getDataToSign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model,
 								@RequestBody @Valid DataToSignParams params,
 								@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm,
 								@ModelAttribute("signRequestId") Long signRequestId) throws IOException {
@@ -121,7 +96,7 @@ public class NexuProcessController {
 		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
 		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
+		if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
 			ToBeSigned dataToSign;
 			if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
 				parameters = signService.fillParameters((SignatureMultipleDocumentsForm) signatureDocumentForm);
@@ -156,11 +131,11 @@ public class NexuProcessController {
 
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute("user") User user,@RequestBody @Valid SignatureValueAsString signatureValue,
+	public SignDocumentResponse signDocument(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestBody @Valid SignatureValueAsString signatureValue,
 			@ModelAttribute("signatureDocumentForm") @Valid AbstractSignatureForm signatureDocumentForm, 
 			@ModelAttribute("signRequestId") Long signRequestId) throws EsupSignatureException {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
-		if (signRequestService.checkUserSignRights(user, signRequest)) {
+		if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
 			SignDocumentResponse signedDocumentResponse;
 			signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 			try {
@@ -170,7 +145,7 @@ public class NexuProcessController {
 
 					signRequestService.applyEndOfStepRules(signRequest, user);
 				}
-			} catch (IOException e) {
+			} catch (IOException | InterruptedException e) {
 				throw new EsupSignatureException("unable to sign" , e);
 			}
 	        signedDocumentResponse = new SignDocumentResponse();

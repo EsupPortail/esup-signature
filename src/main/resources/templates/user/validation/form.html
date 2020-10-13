@@ -1,13 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
-    import globalUi from "/js/main.js";
-    $(document).ready(function () {
-        globalUi.hideSideBar();
-        globalUi.disableSideBarButton();
-    });
-</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">

@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
+    new FormUi();
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -42,7 +46,7 @@
                             <div class="entry inline-form col-xs-12">
                                 <input class="form-control" name="fieldNames[]" type="text" placeholder="Nom"/>
                                 <input class="form-control" name="fieldTypes[]" type="text" placeholder="Type"/>
-                                <button type="button" class="btn btn-success btn-add-field">
+                                <button id="btn-add-field" type="button" class="btn btn-success">
                                     <span class="fas fa-plus" aria-hidden="true"></span>
                                 </button>
                             </div>

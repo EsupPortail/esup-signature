@@ -14,19 +14,17 @@ import java.util.List;
 @Component
 public class BasicWorkflow extends DefaultWorkflow {
 
-	private String name = "BasicWorkflow";
-	private String description = "Une signature";
-	private List<WorkflowStep> workflowSteps;
-
 	@Override
 	public String getName() {
-		return name;
+		return "BasicClassWorkflow";
 	}
 
 	@Override
 	public String getDescription() {
-		return description;
+		return "Une signature";
 	}
+
+	private List<WorkflowStep> workflowSteps;
 
 	@Override
 	public List<WorkflowStep> getWorkflowSteps() {
