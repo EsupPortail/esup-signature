@@ -252,12 +252,12 @@ public class WorkflowAdminController {
 		user.setIp(httpServletRequest.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(workflow.getCreateBy())) {
+		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
 			workflowService.addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
 		} else {
 			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
 		}
-		redirectAttributes.addFlashAttribute("messageInfo", "Participet ajouté");
+		redirectAttributes.addFlashAttribute("messageInfo", "Participant ajouté");
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 
