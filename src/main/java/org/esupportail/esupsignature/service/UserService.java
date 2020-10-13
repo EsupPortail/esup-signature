@@ -405,10 +405,10 @@ public class UserService {
 
 	public List<PersonLdap> getPersonLdaps(String searchString) {
 		List<PersonLdap> personLdaps = new ArrayList<>();
-		List<User> users = new ArrayList<>();
-		addAllUnique(users, userRepository.findByEppnStartingWith(searchString));
-		addAllUnique(users, userRepository.findByNameStartingWithIgnoreCase(searchString));
-		addAllUnique(users, userRepository.findByEmailStartingWith(searchString));
+		Set<User> users = new HashSet<>();
+		users.addAll(userRepository.findByEppnStartingWith(searchString));
+		users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
+		users.addAll(userRepository.findByEmailStartingWith(searchString));
 		for (User user : users) {
 			personLdaps.add(getPersonLdapFromUser(user));
 		}
@@ -426,14 +426,6 @@ public class UserService {
 			}
 		}
 		return personLdaps;
-	}
-
-	public void addAllUnique(List<User> users, List<User> usersToAdd) {
-		for (User user : usersToAdd) {
-			if(!users.contains(user)) {
-				users.add(user);
-			}
-		}
 	}
 
 	public PersonLdap getPersonLdapFromUser(User user) {

@@ -39,7 +39,7 @@
                             <th>Créé par</th>
                             <th>Destinataires</th>
                             <th>Gestionnaire(s) du circuit</th>
-                            <th>Modifier</th>
+                            <th>Voir</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -77,9 +77,9 @@
 <!--                                       th:href="'/admin/workflows/' + ${workflow.id}">-->
 <!--                                        <i aria-hidden="true" class="fas fa-eye"></i></a>-->
                                     <a role="button" aria-label="Voir"
-                                       class="btn btn-sm btn-warning text-white" title="Voir"
+                                       class="btn btn-sm btn-primary text-white" title="Voir"
                                        th:href="'/admin/workflows/' + ${workflow.name}">
-                                        <i aria-hidden="true" class="fas fa-pencil-alt"></i></a>
+                                        <i aria-hidden="true" class="fas fa-eye"></i></a>
                                 </td>
                             </tr>
                         </th:block>

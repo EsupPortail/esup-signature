@@ -27,10 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -143,7 +140,7 @@ public class UserController {
 	@ResponseBody
 	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdaps(searchString).stream().sorted((o1, o2) -> o1.getDisplayName().compareTo(o2.getDisplayName())).collect(Collectors.toList());
+		return userService.getPersonLdaps(searchString).stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
    }
 
 	@GetMapping("/properties")
