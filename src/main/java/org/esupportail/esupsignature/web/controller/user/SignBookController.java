@@ -91,8 +91,11 @@ public class SignBookController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
-        signBookService.delete(signBook);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        if(signBookService.delete(signBook)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
+        }
         return "redirect:/user/signrequests";
     }
 

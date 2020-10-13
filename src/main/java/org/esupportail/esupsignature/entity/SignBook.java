@@ -53,6 +53,8 @@ public class SignBook {
 
     private Long workflowId;
 
+    private String workflowName;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
@@ -177,6 +179,14 @@ public class SignBook {
 
     public void setWorkflowId(Long workflowId) {
         this.workflowId = workflowId;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
     }
 
     public List<WorkflowStep> getWorkflowSteps() {

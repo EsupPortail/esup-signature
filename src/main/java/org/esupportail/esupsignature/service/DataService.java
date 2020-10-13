@@ -99,13 +99,6 @@ public class DataService {
             recipientEmails = new ArrayList<>();
         }
         Form form = data.getForm();
-        for(Field field : form.getFields()) {
-            if("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
-                if(field.getExtValueReturn().equals("id")) {
-                    data.getDatas().put("id", data.getId().toString());
-                }
-            }
-        }
         if (form.getTargetType().equals(DocumentIOType.mail)) {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");
@@ -115,7 +108,7 @@ public class DataService {
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
         Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
-        workflow.setName(workflow.getName() + "_" + form.getName());
+        //workflow.setName(workflow.getName() + "_" + form.getName());
         SignBook signBook = signBookService.createSignBook(form.getTitle(), name, user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
