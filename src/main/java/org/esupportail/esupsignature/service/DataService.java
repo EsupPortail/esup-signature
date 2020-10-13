@@ -22,10 +22,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -152,6 +149,12 @@ public class DataService {
         for(Field field : fields) {
             if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
                 formDatas.add(field.getName(), field.getDefaultValue());
+            }
+        }
+
+        for(String savedDataKeys : data.getDatas().keySet()) {
+            if(!formDatas.containsKey(savedDataKeys)) {
+                formDatas.put(savedDataKeys, Collections.singletonList(""));
             }
         }
 
