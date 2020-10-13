@@ -304,6 +304,10 @@ input:checked + .slider:before {
 	cursor: auto;	
 }
 
+.ss-disabled {
+    cursor: pointer !important;
+}
+
 .text-left {
   text-align: left !important;
   justify-content: left !important;
