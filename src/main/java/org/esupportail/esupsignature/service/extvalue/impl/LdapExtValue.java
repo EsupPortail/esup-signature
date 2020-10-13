@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -20,6 +21,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
 @Component
 public class LdapExtValue implements ExtValue {
 
