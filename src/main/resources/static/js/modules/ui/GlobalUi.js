@@ -147,6 +147,7 @@ export class GlobalUi {
     }
 
     adjustUi() {
+
         if (window.innerWidth < 992) {
             console.info("auto adjust : hide");
             this.hideSideBar();
@@ -224,9 +225,11 @@ export class GlobalUi {
         if(this.sideBarStatus === 'on') {
             this.hideSideBar();
             localStorage.setItem('sideBarStatus', 'off');
+            this.sideBarStatus = 'off';
         } else {
             this.showSideBar()
             localStorage.setItem('sideBarStatus', 'on');
+            this.sideBarStatus = 'on';
         }
     }
 
