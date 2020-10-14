@@ -54,7 +54,6 @@ export class CreateDataUi {
         let tempName = document.getElementById('tempName');
         if (tempName.checkValidity()) {
             console.info("submit form");
-            document.getElementById('name').value = tempName.value;
             document.getElementById('newDataSubmit').click();
         } else {
             tempName.focus();
