@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="formManage" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/side"></nav>
+        <div id="content" class="content">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Nom du formulaire</th>
+                            <th>Export des données</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="form : ${formManaged}">
+                            <tr>
+                                <td th:text="${form.name}"></td>
+                                <td><a type="button" th:href="'user/manage/form/' + ${form.name} + '/datas/csv'"
+                                       class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

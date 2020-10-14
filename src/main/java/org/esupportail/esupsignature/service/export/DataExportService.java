@@ -37,9 +37,9 @@ public class DataExportService {
         return  dataDatas;
     }
 
-    public List<Map<String, String>> getDatasToExport(Form form) {
+    public List<LinkedHashMap<String, String>> getDatasToExport(Form form) {
         List<Data> datas = dataRepository.findByForm(form);
-        List<Map<String, String>> dataDatas = new ArrayList<>();
+        List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
             if(signBook != null && signBook.getSignRequests().size() > 0) {

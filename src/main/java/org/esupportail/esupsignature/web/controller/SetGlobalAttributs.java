@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.user", "org.esupportail.esupsignature.web.controller.admin"}, basePackageClasses = {IndexController.class})
@@ -23,6 +25,9 @@ public class SetGlobalAttributs {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private FormRepository formRepository;
 
     @Resource
     private UserShareService userShareService;
@@ -58,6 +63,7 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
+            model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
         }
         model.addAttribute("globalProperties", this.globalProperties);
     }
