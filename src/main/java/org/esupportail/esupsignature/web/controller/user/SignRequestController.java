@@ -239,7 +239,7 @@ public class SignRequestController {
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
-                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users'>Mes paramètres</a>"));
+                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>"));
                         signRequest.setSignable(false);
                     }
                 }

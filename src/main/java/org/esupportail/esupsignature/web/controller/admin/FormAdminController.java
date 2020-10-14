@@ -150,10 +150,13 @@ public class FormAdminController {
 	
 	@PutMapping()
 	public String updateForm(@ModelAttribute Form updateForm,
+							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
+		form.getManagers().clear();
+		form.getManagers().addAll(managers);
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.setRole(updateForm.getRole());
@@ -162,6 +165,7 @@ public class FormAdminController {
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
+		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
