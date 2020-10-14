@@ -57,12 +57,16 @@ public class DefaultPreFill implements PreFill {
 							if (returnValue.equals("schacDateOfBirth")) {
 								result.append(extLdapValue.getValueByName("schacDateOfBirth", user));
 							} else if (returnValue.equals("supannEntiteAffectationPrincipale")) {
-								result.append(extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description").get(0).get("value"));
+								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description");
+								if(ouList.size() > 0) {
+									result.append(ouList.get(0).get("value"));
+									result.append(separator);
+								}
 							} else {
 								result.append((String) ldapValues.get(returnValue.trim()));
+								result.append(separator);
 							}
 						}
-						result.append(separator);
 					}
 					field.setDefaultValue(result.substring(0, result.length() - separator.length()));
 				} else if(field.getExtValueServiceName().equals("default")) {
