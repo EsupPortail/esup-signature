@@ -91,7 +91,9 @@ public class LdapExtValue implements ExtValue {
 								Object ou = PersonLdap.class.getMethod(methodNameNext).invoke(personLdap);
 								if(ou != null) {
 									List<Map<String, Object>> resultMap = getMapsOfOU(ou.toString(), "getDescription");
-									result.append(separator).append(resultMap.get(0).get("value"));
+									if(resultMap.size() > 0) {
+										result.append(separator).append(resultMap.get(0).get("value"));
+									}
 								}
 							}
 						}
