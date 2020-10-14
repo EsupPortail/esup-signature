@@ -7,7 +7,8 @@ import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 
 @RequestMapping("user/manage")
@@ -40,19 +40,16 @@ public class ManageController {
     }
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
-    public HttpEntity<byte[]> getFormDatasCsv(@ModelAttribute("authUser") User authUser, @PathVariable String name, HttpServletResponse response) {
+    public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUser") User authUser, @PathVariable String name, HttpServletResponse response) {
         List<Form> formManaged = formRepository.findFormByManagersContains(authUser.getEmail());
         List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
         if (forms.size() > 0 && formManaged.contains(forms.get(0))) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
+                response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName().replace(" ", "-") + ".csv\"");
                 InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
-                //IOUtils.copy(csvInputStream, response.getOutputStream());
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                headers.setContentDisposition(ContentDisposition.builder("attachment").filename(forms.get(0).getName() + ".csv").build());
-//                response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
-                return new HttpEntity<>(csvInputStream.readAllBytes(), headers);
+                IOUtils.copy(csvInputStream, response.getOutputStream());
+                return new ResponseEntity<>(HttpStatus.OK);
             } catch (Exception e) {
                 logger.error("get file error", e);
             }
