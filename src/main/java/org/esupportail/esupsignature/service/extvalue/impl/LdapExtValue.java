@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,33 +72,59 @@ public class LdapExtValue implements ExtValue {
 	@Override
 	public List<Map<String, Object>> search(String searchType, String searchString, String searchReturn) {
 		List<Map<String, Object>> mapList = new ArrayList<>();
-		String name = "get" + searchReturn.substring(0, 1).toUpperCase() + searchReturn.substring(1);
-		if(searchType.equals("person")) {
+		String separator = " - ";
+		String[] returnValues = searchReturn.split(";");
+		String[] returnTypes = searchType.split(";");
+		String methodName = "get" + returnValues[0].substring(0, 1).toUpperCase() + returnValues[0].substring(1);
+		if(returnTypes[0].equals("person")) {
 			List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
 			for (PersonLdap personLdap : personLdaps) {
 				Map<String, Object> stringObjectMap = new HashMap<>();
 				try {
-					stringObjectMap.put("value", PersonLdap.class.getMethod(name, null).invoke(personLdap));
+					StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName, null).invoke(personLdap).toString());
+					if(returnTypes.length > 1) {
+						for(int i = 1; i < returnTypes.length; i++) {
+							String methodNameNext = "get" + returnValues[i].substring(0, 1).toUpperCase() + returnValues[i].substring(1);
+							if(returnTypes[i].equals("person")) {
+								result.append(separator).append(PersonLdap.class.getMethod(methodNameNext, null).invoke(personLdap).toString());
+							} else if(returnTypes[i].equals("organizationalUnit")) {
+								Object ou = PersonLdap.class.getMethod(methodNameNext).invoke(personLdap);
+								if(ou != null) {
+									List<Map<String, Object>> resultMap = getMapsOfOU(ou.toString(), "getDescription");
+									result.append(separator).append(resultMap.get(0).get("value"));
+								}
+							}
+						}
+					}
+					stringObjectMap.put("value", result.toString());
+					stringObjectMap.put("text", result.toString());
+					mapList.add(stringObjectMap);
 				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-					logger.error("error on get ldap search return attribut : " + searchReturn, e);
+					logger.error("error on get ldap search return attribut : " + returnValues[0], e);
 				}
-				stringObjectMap.put("text", personLdap.getCn() + "(" + personLdap.getMail() + ")");
-				mapList.add(stringObjectMap);
 			}
-		} else if (searchType.equals("organizationalUnit")) {
-			List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);
-			for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
-				Map<String, Object> stringObjectMap = new HashMap<>();
-				try {
-					stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name, null).invoke(organizationalUnitLdap));
-				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-					logger.error("error on get ldap search return attribut : " + searchReturn, e);
-				}
-				stringObjectMap.put("text", organizationalUnitLdap.getDescription());
-				mapList.add(stringObjectMap);
-			}
+		} else if (returnTypes[0].equals("organizationalUnit")) {
+			List<Map<String, Object>> resultMap = getMapsOfOU(searchString, methodName);
+			mapList.addAll(resultMap);
 		}
 		return mapList;
+	}
+
+	@NotNull
+	private List<Map<String, Object>> getMapsOfOU(String searchString, String name) {
+		List<Map<String, Object>> resultMap = new ArrayList<>();
+		List<OrganizationalUnitLdap> organizationalUnitLdaps = ldapOrganizationalUnitService.getOrganizationalUnitLdaps(searchString);
+		for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
+			Map<String, Object> stringObjectMap = new HashMap<>();
+			try {
+				stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name, null).invoke(organizationalUnitLdap));
+			} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+				logger.error("error on get ldap search return attribut : " + name, e);
+			}
+			stringObjectMap.put("text", organizationalUnitLdap.getDescription());
+			resultMap.add(stringObjectMap);
+		}
+		return resultMap;
 	}
 
 	@Override

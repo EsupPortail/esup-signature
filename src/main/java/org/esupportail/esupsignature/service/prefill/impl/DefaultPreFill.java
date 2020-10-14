@@ -48,13 +48,23 @@ public class DefaultPreFill implements PreFill {
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
 				if(field.getExtValueServiceName().equals("ldap")) {
-					if(ldapValues.containsKey(field.getExtValueReturn())) {
-						if(field.getExtValueReturn().equals("schacDateOfBirth")) {
-							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
-						} else {
-							field.setDefaultValue((String) ldapValues.get(field.getExtValueReturn().trim()));
+					StringBuilder result = new StringBuilder();
+					String separator = " - ";
+					String[] returnValues = field.getExtValueReturn().split(";");
+					for(String returnValue : returnValues) {
+						returnValue = returnValue.trim();
+						if (ldapValues.containsKey(returnValue)) {
+							if (returnValue.equals("schacDateOfBirth")) {
+								result.append(extLdapValue.getValueByName("schacDateOfBirth", user));
+							} else if (returnValue.equals("supannEntiteAffectationPrincipale")) {
+								result.append(extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description").get(0).get("value"));
+							} else {
+								result.append((String) ldapValues.get(returnValue.trim()));
+							}
 						}
+						result.append(separator);
 					}
+					field.setDefaultValue(result.substring(0, result.length() - separator.length()));
 				} else if(field.getExtValueServiceName().equals("default")) {
 					if(defaultValues.containsKey(field.getExtValueReturn())) {
 						field.setDefaultValue((String) defaultValues.get(field.getExtValueReturn()));

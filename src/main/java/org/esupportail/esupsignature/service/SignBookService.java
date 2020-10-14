@@ -135,7 +135,7 @@ public class SignBookService {
     }
 
     public boolean delete(SignBook signBook) {
-        //TODO critères de suppresion
+        //TODO critères de suppresion ou en conf
 //        if(signBook.getCurrentWorkflowStepNumber() > 0) {
 //            return false;
 //        }

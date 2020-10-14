@@ -57,7 +57,9 @@ td {
 
 .tableFixHead {
     overflow-y: auto;
-    height: calc(100vh - 172px); }
+    height: calc(100vh - 172px);
+}
+
 .tableFixHead thead th {
     vertical-align: middle;
     position: sticky;
