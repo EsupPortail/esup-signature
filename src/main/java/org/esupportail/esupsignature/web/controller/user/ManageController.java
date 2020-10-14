@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 @RequestMapping("user/manage")
@@ -49,7 +50,8 @@ public class ManageController {
                 //IOUtils.copy(csvInputStream, response.getOutputStream());
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
+                headers.setContentDisposition(ContentDisposition.builder("attachment").filename(forms.get(0).getName() + ".csv").build());
+//                response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
                 return new HttpEntity<>(csvInputStream.readAllBytes(), headers);
             } catch (Exception e) {
                 logger.error("get file error", e);
