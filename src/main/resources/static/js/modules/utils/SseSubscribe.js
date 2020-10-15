@@ -18,7 +18,6 @@ export class SseSubscribe extends EventFactory {
             let event = new CustomEvent("global");
             event.initCustomEvent("global", false, false, message);
             document.dispatchEvent(event);
-            //this.fireEvent("global", [message]);
         }, false);
         this.eventSource.addEventListener("user", response => {
             let message = new Message(JSON.parse(response.data));
@@ -27,17 +26,16 @@ export class SseSubscribe extends EventFactory {
             let event = new CustomEvent("user");
             event.initCustomEvent("user", false, false, message);
             document.dispatchEvent(event);
-            // this.fireEvent("user", [message]);
         }, false);
         this.eventSource.addEventListener("sign", response => {
-            console.log(response.data);
+            console.info("new sign event : ");
+            console.info(response.data);
             let message = new Message(JSON.parse(response.data));
             console.info("new sign event : ");
             console.info(message);
             let event = new CustomEvent("sign");
             event.initCustomEvent("sign", false, false, message);
             document.dispatchEvent(event);
-            // this.fireEvent("sign", [message]);
         }, false);
     }
 
