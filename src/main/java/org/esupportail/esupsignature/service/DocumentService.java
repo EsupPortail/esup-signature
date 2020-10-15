@@ -76,7 +76,7 @@ public class DocumentService {
 
 	public String getSignedName(String originalName) {
 		String name = "";
-		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
+		name += fileService.getNameOnly(originalName).replaceAll(" ", "-").replace("_signé", "");
 		name += "_signé";
 		name += "." + fileService.getExtension(originalName);
 		return name;
