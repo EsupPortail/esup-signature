@@ -76,7 +76,7 @@
 		</div>
 	</div>
 	<div id="toast-help" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
-		<div class="toast-body">
+		<div class="toast-body toast-body-news">
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
@@ -84,12 +84,10 @@
 			<h5 id="message-help"></h5>
 		</div>
 		<div class="toast-footer">
-			<div class="toast-footer">
-				<button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
-					<i class="fa fa-eye-slash"></i>
-					Marquer comme lu
-				</button>
-			</div>
+			<button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
+				<i class="fa fa-eye-slash"></i>
+				Marquer comme lu
+			</button>
 		</div>
 	</div>
 </div>
