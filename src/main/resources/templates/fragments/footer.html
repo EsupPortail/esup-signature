@@ -4,7 +4,7 @@
 <div th:fragment="footer" id="footer">
 	<div th:replace="fragments/message :: message"></div>
 	<footer  class="footer bg-secondary fixed-bottom text-center text-white">
-		<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${globalProperties.version}"></span>
+		<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:if="${globalProperties}" th:text="${globalProperties.version}"></span>
 		<a rel="noreferrer" aria-label="Guide utilisateur" target="_blank" style="background-color: #e30037;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
 	</footer>
 </div>
