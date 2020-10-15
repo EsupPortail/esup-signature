@@ -45,7 +45,7 @@ public class WsExportController {
         if (forms.size() > 0) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
-                response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
+                response.setHeader("Content-Disposition", "inline; filename=\"" + forms.get(0).getName() + ".csv\"");
                 InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
                 IOUtils.copy(csvInputStream, response.getOutputStream());
                 return new ResponseEntity<>(HttpStatus.OK);
