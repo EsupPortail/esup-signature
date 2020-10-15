@@ -402,13 +402,15 @@ public class SignRequestService {
 		InputStream filledInputStream;
 		if(signRequest.getParentSignBook() != null && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
 			Data data = dataService.getDataFromSignRequest(signRequest);
-			Form form = data.getForm();
-			for(Field field : form.getFields()) {
-				if("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
-					if(field.getExtValueReturn().equals("id")) {
-						List<SignBook> signBooks = signBookService.getSignBooksByWorkflowName(form.getWorkflowType());
-						data.getDatas().put("id", "" + (signBooks.size() + 1));
-						formDataMap.put("id", "" + (signBooks.size() + 1));
+			if(data != null) {
+				Form form = data.getForm();
+				for (Field field : form.getFields()) {
+					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
+						if (field.getExtValueReturn().equals("id")) {
+							List<SignBook> signBooks = signBookService.getSignBooksByWorkflowName(form.getWorkflowType());
+							data.getDatas().put("id", "" + (signBooks.size() + 1));
+							formDataMap.put("id", "" + (signBooks.size() + 1));
+						}
 					}
 				}
 			}
