@@ -25,9 +25,13 @@ public class Form {
 	@Size(max = 500)
 	private String description;
 
+	@Column(columnDefinition = "TEXT")
+	private String message;
+
 	private Integer version;
 
-	private String manager;
+	@ElementCollection(targetClass=String.class)
+	private List<String> managers = new ArrayList<>();
 	
 	private String workflowType;
 	
@@ -93,6 +97,14 @@ public class Form {
 		this.description = description;
 	}
 
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
 	public Integer getVersion() {
 		return version;
 	}
@@ -101,12 +113,12 @@ public class Form {
 		this.version = version;
 	}
 
-	public String getManager() {
-		return manager;
+	public List<String> getManagers() {
+		return managers;
 	}
 
-	public void setManager(String manager) {
-		this.manager = manager;
+	public void setManagers(List<String> managers) {
+		this.managers = managers;
 	}
 
 	public String getWorkflowType() {

@@ -400,6 +400,21 @@ public class SignRequestService {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		InputStream filledInputStream;
+		if(signRequest.getParentSignBook() != null && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
+			Data data = dataService.getDataFromSignRequest(signRequest);
+			if(data != null) {
+				Form form = data.getForm();
+				for (Field field : form.getFields()) {
+					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
+						if (field.getExtValueReturn().equals("id")) {
+							List<SignBook> signBooks = signBookService.getSignBooksByWorkflowName(form.getWorkflowType());
+							data.getDatas().put(field.getName(), "" + (signBooks.size() + 1));
+							formDataMap.put(field.getName(), "" + (signBooks.size() + 1));
+						}
+					}
+				}
+			}
+		}
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", user);
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
@@ -426,7 +441,7 @@ public class SignRequestService {
 			if (signRequest.getParentSignBook() == null || (signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
 				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
-			addSignedFile(signRequest, signedInputStream, toSignDocuments.get(0).getFileName(), toSignDocuments.get(0).getContentType());
+			addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				bigFileService.setBinaryFileStream(toSignDocuments.get(0).getBigFile(), filledInputStream, filledInputStream.available());
@@ -463,7 +478,7 @@ public class SignRequestService {
 
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
-		return addSignedFile(signRequest, signedDocument.openStream(), dssDocument.getName(), signedDocument.getMimeType().getMimeTypeString());
+		return addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), signedDocument.getMimeType().getMimeTypeString());
 	}
 
 //	public void serverSign(SignRequest signRequest) throws EsupSignatureException {
@@ -581,7 +596,7 @@ public class SignRequestService {
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", user);
-			addSignedFile(signRequest, signedPdfDocument.openStream(), dssDocument.getName(), signedPdfDocument.getMimeType().getMimeTypeString());
+			addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			eventService.publishEvent(new JsonMessage("security_bad_password", "Mauvais mot de passe", null), "sign", user);
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -613,23 +628,28 @@ public class SignRequestService {
 				WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
 				recipientService.validateRecipient(currentWorkflowStep.getRecipients(), user);
 			}
-			if (signBookService.isStepAllDocsDone(signRequest.getParentSignBook())) {
-				if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
-					if (!signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-						if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
-							mailService.sendCompletedMail(signRequest.getParentSignBook());
-						}
-						signBookService.completeSignBook(signRequest.getParentSignBook());
-					} else {
-						signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
-					}
+			if (isSignBookCompleted(signRequest)) {
+				if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
+					mailService.sendCompletedMail(signRequest.getParentSignBook());
 				}
+				signBookService.completeSignBook(signRequest.getParentSignBook());
+			} else {
+				signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 			}
 		} else {
 			if(isSignRequestCompleted(signRequest)) {
 				completeSignRequest(signRequest);
 			}
 		}
+	}
+
+	public boolean isSignBookCompleted(SignRequest signRequest) {
+		if (signBookService.isStepAllDocsDone(signRequest.getParentSignBook())) {
+			if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
+				return !signBookService.nextWorkFlowStep(signRequest.getParentSignBook());
+			}
+		}
+		return false;
 	}
 
 	public boolean isSignRequestCompleted(SignRequest signRequest) {
@@ -893,20 +913,22 @@ public class SignRequestService {
         return val;
     }
 
-	public void delete(SignRequest signRequest) {
+	public boolean delete(SignRequest signRequest) {
 		List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 		for (Log log : logs) {
 			logRepository.delete(log);
 		}
 		if(signRequest.getParentSignBook() != null) {
+			//TODO critères de suppression
+//			if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() > 0) {
+//				return false;
+//			}
 			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		}
-//		for (Recipient recipient : signRequest.getRecipients()) {
-//			recipientRepository.delete(recipient);
-//		}
 		signRequest.getRecipients().clear();
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
+		return true;
 	}
 
 	public SignType getCurrentSignType(SignRequest signRequest) {

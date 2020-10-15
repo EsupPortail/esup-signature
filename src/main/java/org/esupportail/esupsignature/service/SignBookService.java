@@ -78,6 +78,10 @@ public class SignBookService {
         return list;
     }
 
+    public List<SignBook> getSignBooksByWorkflowName(String workFlowName) {
+        return signBookRepository.findByWorkflowNameAndStatus(workFlowName, SignRequestStatus.completed);
+    }
+
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
         String name = generateName(prefix, suffix, user);
         if (signBookRepository.countByName(name) == 0) {
@@ -130,13 +134,18 @@ public class SignBookService {
         signRequest.setParentSignBook(signBook);
     }
 
-    public void delete(SignBook signBook) {
+    public boolean delete(SignBook signBook) {
+        //TODO critères de suppresion ou en conf
+//        if(signBook.getCurrentWorkflowStepNumber() > 0) {
+//            return false;
+//        }
         List<Data> datas = dataRepository.findBySignBook(signBook);
         for (Data data : datas) {
             data.setSignBook(null);
             dataRepository.save(data);
         }
         signBookRepository.delete(signBook);
+        return true;
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
@@ -186,6 +195,7 @@ public class SignBookService {
             signBook.getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.setWorkflowId(workflow.getId());
+        signBook.setWorkflowName(workflow.getName());
         signBook.setTargetType(workflow.getTargetType());
         signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
@@ -299,19 +309,15 @@ public class SignBookService {
 
     public boolean nextWorkFlowStep(SignBook signBook) {
         signBook.setCurrentWorkflowStepNumber(signBook.getCurrentWorkflowStepNumber() + 1);
-        if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber()) {
-            return true;
-        } else {
-            return false;
-        }
+        return isMoreWorkflowStep(signBook);
+    }
+
+    public boolean isMoreWorkflowStep(SignBook signBook) {
+        return signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber();
     }
 
     public boolean isNextWorkFlowStep(SignBook signBook) {
-        if(signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber() + 1) {
-            return true;
-        } else {
-            return false;
-        }
+        return signBook.getWorkflowSteps().size() >= signBook.getCurrentWorkflowStepNumber() + 1;
     }
 
     public boolean checkUserViewRights(User user, SignBook signBook) {

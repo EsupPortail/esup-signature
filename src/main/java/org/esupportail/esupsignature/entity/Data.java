@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Entity
@@ -34,9 +35,10 @@ public class Data {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
-    
+
+    @OrderColumn
     @ElementCollection(fetch = FetchType.EAGER)
-	private Map<String, String> datas = new HashMap<>();
+	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;

@@ -39,7 +39,7 @@
                        th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
                         <i class="fab fa-firstdraft"></i> <span
-                            class="nav-item-label d-none d-xl-inline">Mes brouillons</span>
+                            class="nav-item-label d-none d-xl-inline">Brouillons</span>
                         <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && user == authUser}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
@@ -59,6 +59,12 @@
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
+                        <a th:if="${formManaged.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
+                           title="Vue manager" href="/user/manage"
+                           class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
+                            <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Vue manager</span>
+                        </a>
+                        <div th:if="${formManaged.size() > 0}" class="dropdown-divider"></div>
                         <a th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
                            data-target="#wizardModal"
                            title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"

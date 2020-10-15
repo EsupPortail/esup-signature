@@ -36,10 +36,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/datas")
@@ -162,6 +161,14 @@ public class DataController {
 			model.addAttribute("data", new Data());
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("page", page);
+			boolean sendMessage = true;
+			if(user.getFormMessages() != null) {
+				String[] formMessages = user.getFormMessages().split(" ");
+				if(Arrays.asList(formMessages).contains(form.getId().toString())) {
+					sendMessage = false;
+				}
+			}
+			if(sendMessage && form.getMessage() != null &&!form.getMessage().isEmpty()) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
 			if (form.getDocument() != null) {
 				return "user/datas/create-pdf";
 			} else {
@@ -298,7 +305,7 @@ public class DataController {
 		try {
 			Data data = dataService.getDataById(id);
 			InputStream exportPdf = dataService.generateFile(data);
-			response.setHeader("Content-Disposition", "inline;filename=\"" + data.getName() + "\"");
+			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(data.getName(), StandardCharsets.UTF_8.toString()));
 			response.setContentType("application/pdf");
 			IOUtils.copy(exportPdf, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);

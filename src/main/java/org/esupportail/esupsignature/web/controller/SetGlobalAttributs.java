@@ -2,20 +2,19 @@ package org.esupportail.esupsignature.web.controller;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.user", "org.esupportail.esupsignature.web.controller.admin"}, basePackageClasses = {IndexController.class})
 public class SetGlobalAttributs {
@@ -27,8 +26,8 @@ public class SetGlobalAttributs {
     private UserService userService;
 
     @Resource
-    private FileService fileService;
-    
+    private FormRepository formRepository;
+
     @Resource
     private UserShareService userShareService;
 
@@ -45,46 +44,38 @@ public class SetGlobalAttributs {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException  {
-        List<Message> messages = new ArrayList<>();
+    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if(authUser != null) {
             this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-            if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
-                Message splashMessage = new Message();
-                splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
-                splashMessage.setId(0L);
-                messages.add(splashMessage);
-            } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {
-                messages.addAll(userService.getMessages(authUser));
-            }
-            model.addAttribute("messageNews", messages);
             parseRoles(user);
             model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
+            model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
     }
 
     private void parseRoles(User user) {
-        if(user.getRoles().contains("create_signrequest")) {
-            this.myGlobalProperties.setHideSendSignRequest("false");
+        if(user.getRoles().contains("create_signrequest") || (globalProperties.getHideSendSignRequest().equals("true") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideSendSignExceptRoles())))) {
+            myGlobalProperties.setHideSendSignRequest("false");
         }
-        if(user.getRoles().contains("create_wizard")) {
-            this.myGlobalProperties.setHideWizard("false");
+        if(user.getRoles().contains("create_wizard") || (globalProperties.getHideWizard().equals("true") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideWizardExceptRoles())))) {
+            myGlobalProperties.setHideWizard("false");
         }
-        if(user.getRoles().contains("create_autosign")) {
-            this.myGlobalProperties.setHideAutoSign("false");
+        if(user.getRoles().contains("create_autosign") || (globalProperties.getHideAutoSign().equals("true") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideAutoSignExceptRoles())))) {
+            myGlobalProperties.setHideAutoSign("false");
         }
-        if(user.getRoles().contains("no_create_signrequest")) {
-            this.myGlobalProperties.setHideSendSignRequest("true");
+
+        if(user.getRoles().contains("no_create_signrequest") || (globalProperties.getHideSendSignRequest().equals("false") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideSendSignExceptRoles())))) {
+            myGlobalProperties.setHideSendSignRequest("true");
         }
-        if(user.getRoles().contains("no_create_wizard")) {
-            this.myGlobalProperties.setHideWizard("true");
+        if(user.getRoles().contains("no_create_wizard") || (globalProperties.getHideWizard().equals("false") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideWizardExceptRoles())))) {
+            myGlobalProperties.setHideWizard("true");
         }
-        if(user.getRoles().contains("no_create_autosign")) {
-            this.myGlobalProperties.setHideAutoSign("true");
+        if(user.getRoles().contains("no_create_autosign") || (globalProperties.getHideAutoSign().equals("false") && !Collections.disjoint(user.getRoles(), Arrays.asList(globalProperties.getHideAutoSignExceptRoles())))) {
+            myGlobalProperties.setHideAutoSign("true");
         }
     }
 

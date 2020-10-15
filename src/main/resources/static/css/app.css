@@ -57,7 +57,9 @@ td {
 
 .tableFixHead {
     overflow-y: auto;
-    height: calc(100vh - 172px); }
+    height: calc(100vh - 172px);
+}
+
 .tableFixHead thead th {
     vertical-align: middle;
     position: sticky;
@@ -1015,7 +1017,7 @@ float:left;
 }
 
 .toast {
-
+    font-size: 1rem;
 }
 
 .toast-body-news {
@@ -1053,6 +1055,8 @@ float:left;
     position: fixed;
     top: 0;
     right: 0;
+    left: 0;
+    max-width: 100%;
 }
 
 .waves-effect {

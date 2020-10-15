@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,10 +152,15 @@ public class FormAdminController {
 	
 	@PutMapping()
 	public String updateForm(@ModelAttribute Form updateForm,
+							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
+		form.getManagers().clear();
+		if(managers != null) {
+			form.getManagers().addAll(managers);
+		}
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.setRole(updateForm.getRole());
@@ -162,6 +169,7 @@ public class FormAdminController {
 		form.setTargetUri(updateForm.getTargetUri());
 		form.setTargetType(updateForm.getTargetType());
 		form.setDescription(updateForm.getDescription());
+		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
@@ -200,7 +208,7 @@ public class FormAdminController {
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
-				response.setHeader("Content-Disposition", "attachment;filename=\"" + forms.get(0).getName() + ".csv\"");
+				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
 				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
 				IOUtils.copy(csvInputStream, response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);

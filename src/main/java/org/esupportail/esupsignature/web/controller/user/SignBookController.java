@@ -30,6 +30,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,8 +93,11 @@ public class SignBookController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
-        signBookService.delete(signBook);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        if(signBookService.delete(signBook)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
+        }
         return "redirect:/user/signrequests";
     }
 
@@ -106,7 +111,7 @@ public class SignBookController {
                 response.sendRedirect("/user/signbooks/" + id);
             } else {
                 Document document = documents.get(0);
-                response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
                 response.setContentType(document.getContentType());
                 IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
             }

@@ -16,6 +16,7 @@ export class GlobalUi {
         this.clickableTd = $(".clickable-td");
         this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
+        this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
         this.initListeners();
         this.initSideBar();
         this.checkCurrentPage();
@@ -43,6 +44,7 @@ export class GlobalUi {
         };
 
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
+        this.markHelpAsReadButtons.each((index, e) => this.listenHelpMarkAsReadButton(e));
         $('#sidebarCollapse').unbind('click').on('click', e => this.toggleSideBarAction());
 
         $("#closeUserInfo").on('click', function() {
@@ -115,6 +117,17 @@ export class GlobalUi {
         }
     }
 
+    listenHelpMarkAsReadButton(btn) {
+        console.debug("listen to" + btn);
+        $(btn).on('click', e => this.markHelpAsRead(e));
+    }
+
+    markHelpAsRead(e) {
+        let id = e.target.id.split('_')[1];
+        console.info("mark help as read message " + id);
+        $.get("/user/users/mark-help-as-read/" + id);
+    }
+
     listenMarkAsReadButton(btn) {
         console.debug("listen to" + btn);
         $(btn).on('click', e => this.markAsRead(e));
@@ -122,7 +135,7 @@ export class GlobalUi {
 
     markAsRead(e) {
         let id = e.target.id.split('_')[1];
-        console.log("mark as read message " + id);
+        console.info("mark as read message " + id);
         $.get("/user/users/mark-as-read/" + id);
     }
 

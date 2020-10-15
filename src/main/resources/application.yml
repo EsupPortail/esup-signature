@@ -8,8 +8,11 @@ global:
     hide-wizard: false
     hide-auto-sign: false
     hide-send-sign-request: false
-#    archive-uri: smb://serveur_fichier/archives
-#    delay-before-cleaning : 0
+    hide-wizard-except-roles:
+    hide-auto-sign-except-roles:
+    hide-send-sign-except-roles:
+    #   archive-uri: smb://serveur_fichier/archives
+    #   delay-before-cleaning : 0
     enable-su: false
     enable-splash: true
     version: '@project.version@'
@@ -83,6 +86,7 @@ ldap:
     ldap-filters-groups:
         student : "eduPersonAffiliation:=student"
         staff : "eduPersonAffiliation:=staff"
+        affiliate : "eduPersonAffiliation:=affiliate"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr

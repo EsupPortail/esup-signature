@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix="global")
-public class GlobalProperties {
+public class GlobalProperties implements Cloneable {
 
     private String rootUrl;
     private String groupPrefixRoleName;
@@ -16,6 +16,9 @@ public class GlobalProperties {
     private String hideWizard;
     private String hideAutoSign;
     private String hideSendSignRequest;
+    private String[] hideWizardExceptRoles;
+    private String[] hideAutoSignExceptRoles;
+    private String[] hideSendSignExceptRoles;
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
@@ -92,6 +95,30 @@ public class GlobalProperties {
 
     public void setHideSendSignRequest(String hideSendSignRequest) {
         this.hideSendSignRequest = hideSendSignRequest;
+    }
+
+    public String[] getHideWizardExceptRoles() {
+        return hideWizardExceptRoles;
+    }
+
+    public void setHideWizardExceptRoles(String[] hideWizardExceptRoles) {
+        this.hideWizardExceptRoles = hideWizardExceptRoles;
+    }
+
+    public String[] getHideAutoSignExceptRoles() {
+        return hideAutoSignExceptRoles;
+    }
+
+    public void setHideAutoSignExceptRoles(String[] hideAutoSignExceptRoles) {
+        this.hideAutoSignExceptRoles = hideAutoSignExceptRoles;
+    }
+
+    public String[] getHideSendSignExceptRoles() {
+        return hideSendSignExceptRoles;
+    }
+
+    public void setHideSendSignExceptRoles(String[] hideSendSignExceptRoles) {
+        this.hideSendSignExceptRoles = hideSendSignExceptRoles;
     }
 
     public String getArchiveUri() {

@@ -54,6 +54,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -239,7 +241,7 @@ public class SignRequestController {
                     model.addAttribute("signHeight", size[1]);
                 } else {
                     if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
-                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users'>Mes paramètres</a>"));
+                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>"));
                         signRequest.setSignable(false);
                     }
                 }
@@ -494,8 +496,11 @@ public class SignRequestController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequestService.delete(signRequest);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        if(signRequestService.delete(signRequest)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
+        }
         if (signRequest.getParentSignBook() != null) {
             return "redirect:" + request.getHeader("referer");
         } else {
@@ -585,7 +590,7 @@ public class SignRequestController {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
                 response.sendRedirect("/user/signsignrequests/" + id);
             } else {
-                response.setHeader("Content-Disposition", "inline;filename=\"" + attachement.getFileName() + "\"");
+                response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachement.getFileName(), StandardCharsets.UTF_8.toString()));
                 response.setContentType(attachement.getContentType());
                 IOUtils.copy(attachement.getInputStream(), response.getOutputStream());
             }
@@ -596,7 +601,7 @@ public class SignRequestController {
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException, EsupSignatureException {
+    public ResponseEntity<Void> getLastFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException, SQLException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         InputStream inputStream = null;
         String contentType = "";
@@ -617,12 +622,14 @@ public class SignRequestController {
             contentType = fsFile.getContentType();
         }
         try {
-            response.setHeader("Content-Disposition", "attachment;filename=\"" + fileName + "\"");
             response.setContentType(contentType);
+            response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
             IOUtils.copy(inputStream, response.getOutputStream());
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
         }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")

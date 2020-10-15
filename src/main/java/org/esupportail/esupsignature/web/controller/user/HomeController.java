@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -11,6 +12,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequestMapping("/user/")
@@ -49,6 +52,9 @@ public class HomeController {
     private UserService userService;
 
     @Resource
+    private FileService fileService;
+
+    @Resource
     private FormService formService;
 
     @Resource
@@ -63,6 +69,17 @@ public class HomeController {
     @GetMapping
     public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException {
         if(authUser != null) {
+            List<Message> messages = new ArrayList<>();
+
+            if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+                Message splashMessage = new Message();
+                splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
+                splashMessage.setId(0L);
+                messages.add(splashMessage);
+            } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {
+                messages.addAll(userService.getMessages(authUser));
+            }
+            model.addAttribute("messageNews", messages);
             List<SignRequest> signRequestsToSign = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, "tosign");
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequestsToSign, pageable));
             List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);

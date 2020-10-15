@@ -75,10 +75,13 @@ public class DocumentService {
 	}
 
 	public String getSignedName(String originalName) {
+		String suffix = "_signé";
 		String name = "";
 		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
-		name += "_signé";
-		name += "_";
+		if(name.endsWith(suffix)) {
+			name = name.replace(suffix, "");
+		}
+		name += suffix;
 		name += "." + fileService.getExtension(originalName);
 		return name;
 	}

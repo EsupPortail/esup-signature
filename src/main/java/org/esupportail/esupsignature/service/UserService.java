@@ -149,7 +149,7 @@ public class UserService {
 			user.setIp("127.0.0.1");
 			user.setFirstname("Automate");
 			user.setName("Esup-Signature");
-			user.setEmail("esup-signature@univ-ville.fr");
+			user.setEmail("esup-signature@univ-rouen.fr");
 			userRepository.save(user);
 			return user;
 		}

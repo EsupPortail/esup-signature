@@ -14,6 +14,8 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
     List<SignBook> findByWorkflowId(Long workflowId);
+    List<SignBook> findByWorkflowIdAndStatus(Long workflowId, SignRequestStatus signRequestStatus);
+    List<SignBook> findByWorkflowNameAndStatus(String workflowName, SignRequestStatus signRequestStatus);
     Long countByName(String name);
     Long countById(Long id);
     List<SignBook> findByExternal(Boolean external);

@@ -14,21 +14,13 @@
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Votre demande de signature a été refusée.</p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.name}" style="box-sizing:border-box;" ></span></b>
+                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.title}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
                 Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
                 Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
                 <br style="box-sizing:border-box;" >
             </p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Refusée par : </p>
-            <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                <th:block th:each="workflowStep : ${signBook.workflowSteps}" style="box-sizing:border-box;" >
-                    <th:block th:each="recipient : ${workflowStep.recipients}" style="box-sizing:border-box;" >
-                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
-                    </th:block>
-                </th:block>
-            </ul>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Motif du refus : </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 <span th:text="${comment}" style="box-sizing:border-box;" ></span>
