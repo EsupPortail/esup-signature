@@ -44,7 +44,7 @@ public class SetGlobalAttributs {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
+    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException  {
         List<Message> messages = new ArrayList<>();
         if(authUser != null) {
             this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
