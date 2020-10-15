@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.UserPropertie;
-import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -287,6 +284,15 @@ public class UserController {
 			userService.disableMessage(authUser, id);
 		}
 
+		String referer = httpServletRequest.getHeader("Referer");
+		return "redirect:"+ referer;
+	}
+
+	@GetMapping("/mark-help-as-read/{id}")
+	public String markHelpAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
+		logger.info(authUser.getEppn() + " mark " + id + " as read");
+		Form form = formService.getFormById(id);
+		authUser.setFormMessages(authUser.getFormMessages() + " " + form.getId());
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}

@@ -36,10 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/datas")
@@ -162,7 +159,14 @@ public class DataController {
 			model.addAttribute("data", new Data());
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("page", page);
-			model.addAttribute("message", new JsonMessage("help", form.getMessage()));
+			boolean sendMessage = true;
+			if(user.getFormMessages() != null) {
+				String[] formMessages = user.getFormMessages().split(" ");
+				if(Arrays.asList(formMessages).contains(form.getId().toString())) {
+					sendMessage = false;
+				}
+			}
+			if(sendMessage) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
 			if (form.getDocument() != null) {
 				return "user/datas/create-pdf";
 			} else {

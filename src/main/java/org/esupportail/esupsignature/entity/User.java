@@ -33,6 +33,8 @@ public class User {
 
     private Boolean splash = false;
 
+    private String formMessages = "";
+
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
@@ -127,6 +129,14 @@ public class User {
 
     public void setSplash(Boolean splash) {
         this.splash = splash;
+    }
+
+    public String getFormMessages() {
+        return formMessages;
+    }
+
+    public void setFormMessages(String formMessages) {
+        this.formMessages = formMessages;
     }
 
     public UserType getUserType() {

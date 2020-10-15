@@ -83,6 +83,14 @@
 			<h4 class="mr-auto text-dark">Aide</h4>
 			<h5 id="message-help"></h5>
 		</div>
+		<div class="toast-footer">
+			<div class="toast-footer">
+				<button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
+					<i class="fa fa-eye-slash"></i>
+					Marquer comme lu
+				</button>
+			</div>
+		</div>
 	</div>
 </div>
 </html>
