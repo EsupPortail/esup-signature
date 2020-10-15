@@ -166,7 +166,7 @@ public class DataController {
 					sendMessage = false;
 				}
 			}
-			if(sendMessage && !form.getMessage().isEmpty()) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
+			if(sendMessage && form.getMessage() != null &&!form.getMessage().isEmpty()) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
 			if (form.getDocument() != null) {
 				return "user/datas/create-pdf";
 			} else {
