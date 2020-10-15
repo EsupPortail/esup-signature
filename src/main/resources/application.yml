@@ -5,9 +5,12 @@ global:
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle.zip
-    hide-wizard: false
-    hide-auto-sign: false
-    hide-send-sign-request: false
+    hide-wizard: true
+    hide-auto-sign: true
+    hide-send-sign-request: true
+    hide-wizard-except-role: staff, affiliate
+    hide-auto-sign-except-role: staff
+    hide-send-sign-except-role: staff
     #   archive-uri: smb://serveur_fichier/archives
     #   delay-before-cleaning : 0
     enable-su: false
@@ -83,6 +86,7 @@ ldap:
     ldap-filters-groups:
         student : "eduPersonAffiliation:=student"
         staff : "eduPersonAffiliation:=staff"
+        affiliate : "eduPersonAffiliation:=affiliate"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
