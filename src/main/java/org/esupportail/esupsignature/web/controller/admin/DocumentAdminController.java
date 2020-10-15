@@ -24,6 +24,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Controller
@@ -120,10 +122,10 @@ public class DocumentAdminController {
 	}
 	
 	@GetMapping(value = "documents/getfile/{id}")
-	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
 		Document document = documentRepository.findById(id).get();
 			try {
-				response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 				response.setContentType(document.getContentType());
 				IOUtils.copy(document.getInputStream(), response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);

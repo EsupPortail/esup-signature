@@ -54,6 +54,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -588,7 +590,7 @@ public class SignRequestController {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
                 response.sendRedirect("/user/signsignrequests/" + id);
             } else {
-                response.setHeader("Content-Disposition", "inline;filename=\"" + attachement.getFileName() + "\"");
+                response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachement.getFileName(), StandardCharsets.UTF_8.toString()));
                 response.setContentType(attachement.getContentType());
                 IOUtils.copy(attachement.getInputStream(), response.getOutputStream());
             }
@@ -621,7 +623,7 @@ public class SignRequestController {
         }
         try {
             response.setContentType(contentType);
-            response.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
+            response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
             IOUtils.copy(inputStream, response.getOutputStream());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {

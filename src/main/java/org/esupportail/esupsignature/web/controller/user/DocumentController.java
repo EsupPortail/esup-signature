@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RequestMapping("/user/documents")
 @Controller
@@ -61,7 +63,7 @@ public class DocumentController {
 	}
 
 	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, Document document) throws IOException {
-		response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 		response.setContentType(document.getContentType());
 		IOUtils.copy(document.getInputStream(), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);

@@ -36,6 +36,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -303,7 +305,7 @@ public class DataController {
 		try {
 			Data data = dataService.getDataById(id);
 			InputStream exportPdf = dataService.generateFile(data);
-			response.setHeader("Content-Disposition", "inline;filename=\"" + data.getName() + "\"");
+			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(data.getName(), StandardCharsets.UTF_8.toString()));
 			response.setContentType("application/pdf");
 			IOUtils.copy(exportPdf, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);

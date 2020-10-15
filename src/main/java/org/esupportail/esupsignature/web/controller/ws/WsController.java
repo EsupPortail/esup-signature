@@ -43,6 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -261,11 +263,11 @@ public class WsController {
                 try {
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
                     if (file == null) {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
                         IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
                     } else {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(file.getContentType());
                         IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
@@ -298,7 +300,7 @@ public class WsController {
                     response.sendRedirect("/user/signrequests/" + signRequest.getId());
                 } else {
                     Document document = documents.get(0);
-                    response.setHeader("Content-Disposition", "inline;filename=\"" + document.getFileName() + "\"");
+                    response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
                     response.setContentType(document.getContentType());
                     IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
                 }
@@ -320,7 +322,7 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
                     if (file != null) {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(file.getContentType());
                         IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
@@ -347,11 +349,11 @@ public class WsController {
                     SignRequest signRequest = signBook.getSignRequests().get(0);
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
                     if (file == null) {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
                         IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
                     } else {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(file.getContentType());
                         IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
@@ -380,11 +382,11 @@ public class WsController {
                 try {
                     FsFile file = signRequestService.getLastSignedFsFile(signRequest);
                     if (file == null) {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
                         IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
                     } else {
-                        response.setHeader("Content-Disposition", "inline;filename=\"" + file.getName() + "\"");
+                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
                         response.setContentType(file.getContentType());
                         IOUtils.copy(file.getInputStream(), response.getOutputStream());
                     }
