@@ -16,9 +16,9 @@ public class GlobalProperties implements Cloneable {
     private String hideWizard;
     private String hideAutoSign;
     private String hideSendSignRequest;
-    private String[] hideWizardExceptRole;
-    private String[] hideAutoSignExceptRole;
-    private String[] hideSendSignExceptRole;
+    private String[] hideWizardExceptRoles;
+    private String[] hideAutoSignExceptRoles;
+    private String[] hideSendSignExceptRoles;
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
@@ -97,28 +97,28 @@ public class GlobalProperties implements Cloneable {
         this.hideSendSignRequest = hideSendSignRequest;
     }
 
-    public String[] getHideWizardExceptRole() {
-        return hideWizardExceptRole;
+    public String[] getHideWizardExceptRoles() {
+        return hideWizardExceptRoles;
     }
 
-    public void setHideWizardExceptRole(String[] hideWizardExceptRole) {
-        this.hideWizardExceptRole = hideWizardExceptRole;
+    public void setHideWizardExceptRoles(String[] hideWizardExceptRoles) {
+        this.hideWizardExceptRoles = hideWizardExceptRoles;
     }
 
-    public String[] getHideAutoSignExceptRole() {
-        return hideAutoSignExceptRole;
+    public String[] getHideAutoSignExceptRoles() {
+        return hideAutoSignExceptRoles;
     }
 
-    public void setHideAutoSignExceptRole(String[] hideAutoSignExceptRole) {
-        this.hideAutoSignExceptRole = hideAutoSignExceptRole;
+    public void setHideAutoSignExceptRoles(String[] hideAutoSignExceptRoles) {
+        this.hideAutoSignExceptRoles = hideAutoSignExceptRoles;
     }
 
-    public String[] getHideSendSignExceptRole() {
-        return hideSendSignExceptRole;
+    public String[] getHideSendSignExceptRoles() {
+        return hideSendSignExceptRoles;
     }
 
-    public void setHideSendSignExceptRole(String[] hideSendSignExceptRole) {
-        this.hideSendSignExceptRole = hideSendSignExceptRole;
+    public void setHideSendSignExceptRoles(String[] hideSendSignExceptRoles) {
+        this.hideSendSignExceptRoles = hideSendSignExceptRoles;
     }
 
     public String getArchiveUri() {

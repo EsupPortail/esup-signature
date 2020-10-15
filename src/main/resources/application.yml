@@ -8,9 +8,9 @@ global:
     hide-wizard: true
     hide-auto-sign: true
     hide-send-sign-request: true
-    hide-wizard-except-role: staff, affiliate
-    hide-auto-sign-except-role: staff
-    hide-send-sign-except-role: staff
+    hide-wizard-except-roles: staff, affiliate
+    hide-auto-sign-except-roles: staff
+    hide-send-sign-except-roles: staff
     #   archive-uri: smb://serveur_fichier/archives
     #   delay-before-cleaning : 0
     enable-su: false
