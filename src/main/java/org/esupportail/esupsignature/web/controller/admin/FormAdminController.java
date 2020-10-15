@@ -156,7 +156,9 @@ public class FormAdminController {
 		Form form = formService.getFormById(updateForm.getId());
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.getManagers().clear();
-		form.getManagers().addAll(managers);
+		if(managers != null) {
+			form.getManagers().addAll(managers);
+		}
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
 		form.setRole(updateForm.getRole());
