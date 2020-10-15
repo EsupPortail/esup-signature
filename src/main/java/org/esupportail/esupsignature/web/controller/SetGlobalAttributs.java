@@ -26,6 +26,9 @@ public class SetGlobalAttributs {
     private UserService userService;
 
     @Resource
+    private FileService fileService;
+    
+    @Resource
     private UserShareService userShareService;
 
     private GlobalProperties myGlobalProperties;
