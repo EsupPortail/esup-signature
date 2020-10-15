@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
@@ -27,8 +28,7 @@ public class SetGlobalAttributs {
     @Resource
     private UserShareService userShareService;
 
-    @Resource
-    private FileService fileService;
+    private GlobalProperties myGlobalProperties;
 
     @ModelAttribute(value = "user", binding = false)
     public User getUser() {
@@ -44,6 +44,7 @@ public class SetGlobalAttributs {
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) {
         List<Message> messages = new ArrayList<>();
         if(authUser != null) {
+            this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
             if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
                 Message splashMessage = new Message();
                 splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
@@ -59,27 +60,27 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
         }
-        model.addAttribute("globalProperties", this.globalProperties);
+        model.addAttribute("globalProperties", this.myGlobalProperties);
     }
 
     private void parseRoles(User user) {
         if(user.getRoles().contains("create_signrequest")) {
-            globalProperties.setHideSendSignRequest("false");
+            this.myGlobalProperties.setHideSendSignRequest("false");
         }
         if(user.getRoles().contains("create_wizard")) {
-            globalProperties.setHideWizard("false");
+            this.myGlobalProperties.setHideWizard("false");
         }
         if(user.getRoles().contains("create_autosign")) {
-            globalProperties.setHideAutoSign("false");
+            this.myGlobalProperties.setHideAutoSign("false");
         }
         if(user.getRoles().contains("no_create_signrequest")) {
-            globalProperties.setHideSendSignRequest("true");
+            this.myGlobalProperties.setHideSendSignRequest("true");
         }
         if(user.getRoles().contains("no_create_wizard")) {
-            globalProperties.setHideWizard("true");
+            this.myGlobalProperties.setHideWizard("true");
         }
         if(user.getRoles().contains("no_create_autosign")) {
-            globalProperties.setHideAutoSign("true");
+            this.myGlobalProperties.setHideAutoSign("true");
         }
     }
 
