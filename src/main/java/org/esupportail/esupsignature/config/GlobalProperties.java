@@ -3,6 +3,9 @@ package org.esupportail.esupsignature.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties implements Cloneable {
@@ -16,9 +19,9 @@ public class GlobalProperties implements Cloneable {
     private String hideWizard;
     private String hideAutoSign;
     private String hideSendSignRequest;
-    private String[] hideWizardExceptRoles;
-    private String[] hideAutoSignExceptRoles;
-    private String[] hideSendSignExceptRoles;
+    private List<String> hideWizardExceptRoles = new ArrayList<>();
+    private List<String> hideAutoSignExceptRoles = new ArrayList<>();
+    private List<String> hideSendSignExceptRoles = new ArrayList<>();
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
     private Boolean enableSu = false;
@@ -97,27 +100,27 @@ public class GlobalProperties implements Cloneable {
         this.hideSendSignRequest = hideSendSignRequest;
     }
 
-    public String[] getHideWizardExceptRoles() {
+    public List<String> getHideWizardExceptRoles() {
         return hideWizardExceptRoles;
     }
 
-    public void setHideWizardExceptRoles(String[] hideWizardExceptRoles) {
+    public void setHideWizardExceptRoles(List<String> hideWizardExceptRoles) {
         this.hideWizardExceptRoles = hideWizardExceptRoles;
     }
 
-    public String[] getHideAutoSignExceptRoles() {
+    public List<String> getHideAutoSignExceptRoles() {
         return hideAutoSignExceptRoles;
     }
 
-    public void setHideAutoSignExceptRoles(String[] hideAutoSignExceptRoles) {
+    public void setHideAutoSignExceptRoles(List<String> hideAutoSignExceptRoles) {
         this.hideAutoSignExceptRoles = hideAutoSignExceptRoles;
     }
 
-    public String[] getHideSendSignExceptRoles() {
+    public List<String> getHideSendSignExceptRoles() {
         return hideSendSignExceptRoles;
     }
 
-    public void setHideSendSignExceptRoles(String[] hideSendSignExceptRoles) {
+    public void setHideSendSignExceptRoles(List<String> hideSendSignExceptRoles) {
         this.hideSendSignExceptRoles = hideSendSignExceptRoles;
     }
 

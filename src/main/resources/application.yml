@@ -8,9 +8,9 @@ global:
     hide-wizard: true
     hide-auto-sign: true
     hide-send-sign-request: true
-    hide-wizard-except-roles: staff, affiliate
-    hide-auto-sign-except-roles: staff
-    hide-send-sign-except-roles: staff
+    hide-wizard-except-roles:
+    hide-auto-sign-except-roles:
+    hide-send-sign-except-roles:
     #   archive-uri: smb://serveur_fichier/archives
     #   delay-before-cleaning : 0
     enable-su: false
@@ -56,15 +56,15 @@ spring:
         basename: i18n/messages
         encoding: UTF-8
         fallback-to-system-locale: false
-    #    security:
-    #        oauth2:
-    #            client:
-    #                registration:
-    #                    google:
-    #                        client-id: *
-    #                        client-secret: *
-    #                        redirect-uri: https://esup-signature.univ-ville.fr/login/oauth2/code/google
-    #                        scope: profile, email
+#    security:
+#        oauth2:
+#            client:
+#                registration:
+#                    google:
+#                        client-id: *
+#                        client-secret: *
+#                        redirect-uri: https://esup-signature.univ-ville.fr/login/oauth2/code/google
+#                        scope: profile, email
     servlet:
         multipart:
             enabled: true
@@ -117,9 +117,9 @@ dss:
     trusted-certificat-url-list: https://services.renater.fr/_media/tcs/geant_personal_ca_4.pem, https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
 
 fs:
-    #    smb-login: esup-signature
-    #    smb-password: password
-    #    smb-uri: smb://smb.univ-ville.fr
+#    smb-login: esup-signature
+#    smb-password: password
+#    smb-uri: smb://smb.univ-ville.fr
     vfs-uri: /tmp
 #    cmis-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
