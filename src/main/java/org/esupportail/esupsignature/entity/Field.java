@@ -30,6 +30,8 @@ public class Field {
 
 	private Boolean required;
 
+	private Boolean readOnly;
+
 	private String stepNumbers = "0";
 
 	private String extValueServiceName;
@@ -145,6 +147,14 @@ public class Field {
 
 	public void setRequired(Boolean required) {
 		this.required = required;
+	}
+
+	public Boolean getReadOnly() {
+		return readOnly;
+	}
+
+	public void setReadOnly(Boolean disabled) {
+		this.readOnly = disabled;
 	}
 
 	public String getStepNumbers() {

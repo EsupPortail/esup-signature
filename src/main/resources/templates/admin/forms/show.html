@@ -23,6 +23,7 @@
                             <th class="align-middle">Nom</th>
                             <th class="align-middle">Type</th>
                             <th class="align-middle">Requis</th>
+                            <th class="align-middle">lecture seule</th>
                             <th class="align-middle">Pré-remplissage : Nom du service</th>
                             <th class="align-middle">Pré-remplissage : Type</th>
                             <th class="align-middle">Pré-remplissage : Attribut retourné</th>
@@ -40,6 +41,7 @@
                             <td><span th:text="${field.name}"></span></td>
                             <td><span th:text="${field.type}" /></td>
                             <td><input type="text" name="required" th:value="${field.required}" size="4"/></td>
+                            <td><input type="text" name="readOnly" th:value="${field.readOnly}" size="4"/></td>
                             <td><input type="text" name="extValueServiceName" th:value="${field.extValueServiceName}" size="7"/></td>
                             <td><input type="text" name="extValueType" th:value="${field.extValueType}"  size="7"/></td>
                             <td><input type="text" name="extValueReturn" th:value="${field.extValueReturn}" size="7"/></td>

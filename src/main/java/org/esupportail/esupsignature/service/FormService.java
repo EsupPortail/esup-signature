@@ -8,7 +8,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -29,8 +28,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -177,7 +174,8 @@ public class FormService {
 				Field field = new Field();
 				field.setLabel(pdField.getAlternateFieldName());
 				PDTextField pdTextField = (PDTextField) pdField;
-				field.setRequired(pdTextField.isRequired());
+				field.setRequired(pdField.isRequired());
+				field.setReadOnly(pdField.isReadOnly());
 				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
 				logger.info(pdField.getFullyQualifiedName());
 				String type = "text";
@@ -207,6 +205,8 @@ public class FormService {
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox){
 				Field field = new Field();
+				field.setRequired(pdField.isRequired());
+				field.setReadOnly(pdField.isReadOnly());
 				field.setType(FieldType.checkbox);
 				field.setLabel(pdField.getAlternateFieldName());
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
@@ -217,6 +217,8 @@ public class FormService {
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
 					Field field = new Field();
 					field.setType(FieldType.radio);
+					field.setRequired(pdField.isRequired());
+					field.setReadOnly(pdField.isReadOnly());
 					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
 					field.setLabel(labelCOSName.getName());
 					parseField(field, pdField, pdAnnotationWidget, page);
@@ -225,6 +227,8 @@ public class FormService {
 			} else if(pdField instanceof PDChoice) {
 				Field field = new Field();
 				field.setType(FieldType.select);
+				field.setRequired(pdField.isRequired());
+				field.setReadOnly(pdField.isReadOnly());
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				field.setLabel(pdField.getAlternateFieldName());
 				parseField(field, pdField, pdAnnotationWidget, page);
