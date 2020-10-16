@@ -16,9 +16,9 @@ public class GlobalProperties implements Cloneable {
     private String nexuUrl;
     private String nexuVersion;
     private String nexuDownloadUrl;
-    private String hideWizard;
-    private String hideAutoSign;
-    private String hideSendSignRequest;
+    private Boolean hideWizard;
+    private Boolean hideAutoSign;
+    private Boolean hideSendSignRequest;
     private List<String> hideWizardExceptRoles = new ArrayList<>();
     private List<String> hideAutoSignExceptRoles = new ArrayList<>();
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
@@ -76,27 +76,27 @@ public class GlobalProperties implements Cloneable {
         this.nexuDownloadUrl = nexuDownloadUrl;
     }
 
-    public String getHideWizard() {
+    public Boolean getHideWizard() {
         return hideWizard;
     }
 
-    public void setHideWizard(String hideWizard) {
+    public void setHideWizard(Boolean hideWizard) {
         this.hideWizard = hideWizard;
     }
 
-    public String getHideAutoSign() {
+    public Boolean getHideAutoSign() {
         return hideAutoSign;
     }
 
-    public void setHideAutoSign(String hideAutoSign) {
+    public void setHideAutoSign(Boolean hideAutoSign) {
         this.hideAutoSign = hideAutoSign;
     }
 
-    public String getHideSendSignRequest() {
+    public Boolean getHideSendSignRequest() {
         return hideSendSignRequest;
     }
 
-    public void setHideSendSignRequest(String hideSendSignRequest) {
+    public void setHideSendSignRequest(Boolean hideSendSignRequest) {
         this.hideSendSignRequest = hideSendSignRequest;
     }
 

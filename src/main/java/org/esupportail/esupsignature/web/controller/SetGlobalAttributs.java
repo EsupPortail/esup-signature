@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.user", "org.esupportail.esupsignature.web.controller.admin"}, basePackageClasses = {IndexController.class})
@@ -58,25 +57,28 @@ public class SetGlobalAttributs {
     }
 
     private void parseRoles(User user) {
-        if(user.getRoles().contains("create_signrequest") || (globalProperties.getHideSendSignRequest().equals("true") && !Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles()))) {
-            myGlobalProperties.setHideSendSignRequest("false");
+        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles())) myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
+        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles())) myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
+        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles())) myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
+
+        if(user.getRoles().contains("create_signrequest")) {
+            myGlobalProperties.setHideSendSignRequest(false);
         }
-        if(user.getRoles().contains("create_wizard") || (globalProperties.getHideWizard().equals("true") && !Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles()))) {
-            myGlobalProperties.setHideWizard("false");
+        if(user.getRoles().contains("create_wizard")) {
+            myGlobalProperties.setHideWizard(false);
         }
-        if(user.getRoles().contains("create_autosign") || (globalProperties.getHideAutoSign().equals("true") && !Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles()))) {
-            myGlobalProperties.setHideAutoSign("false");
+        if(user.getRoles().contains("create_autosign")) {
+            myGlobalProperties.setHideAutoSign(false);
         }
 
-        if(user.getRoles().contains("no_create_signrequest") || (globalProperties.getHideSendSignRequest().equals("false") && !Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles()))) {
-            myGlobalProperties.setHideSendSignRequest("true");
+        if(user.getRoles().contains("no_create_signrequest")) {
+            myGlobalProperties.setHideSendSignRequest(true);
         }
-        if(user.getRoles().contains("no_create_wizard") || (globalProperties.getHideWizard().equals("false") && !Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles()))) {
-            myGlobalProperties.setHideWizard("true");
+        if(user.getRoles().contains("no_create_wizard")) {
+            myGlobalProperties.setHideWizard(true);
         }
-        if(user.getRoles().contains("no_create_autosign") || (globalProperties.getHideAutoSign().equals("false") && !Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles()))) {
-            myGlobalProperties.setHideAutoSign("true");
+        if(user.getRoles().contains("no_create_autosign")) {
+            myGlobalProperties.setHideAutoSign(true);
         }
     }
-
 }
