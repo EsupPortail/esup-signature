@@ -31,7 +31,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -226,6 +225,7 @@ public class FormAdminController {
 	public String updateField(@PathVariable("fieldId") Long id,
 							  @PathVariable("formId") Long formId,
 							  @RequestParam(value = "required", required = false) Boolean required,
+							  @RequestParam(value = "readOnly", required = false) Boolean readOnly,
 							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
 							  @RequestParam(value = "extValueType", required = false) String extValueType,
 							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
@@ -236,6 +236,7 @@ public class FormAdminController {
 							  RedirectAttributes redirectAttributes) {
 		Field field = fieldRepository.findById(id).get();
 		field.setRequired(required);
+		field.setReadOnly(readOnly);
 		field.setExtValueServiceName(extValueServiceName);
 		field.setExtValueType(extValueType);
 		field.setExtValueReturn(extValueReturn);

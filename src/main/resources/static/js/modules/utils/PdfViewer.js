@@ -316,6 +316,10 @@ export class PdfViewer extends EventFactory {
                 console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                if(items[i].readOnly || dataField.readOnly) {
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
+                }
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
@@ -415,7 +419,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length > 0) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
-                if(items[i].readOnly) {
+                if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                 }
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
@@ -434,7 +438,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length > 0) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
-                if(items[i].readOnly) {
+                if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
                 }

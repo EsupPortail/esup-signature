@@ -12,6 +12,7 @@ export class DataField {
         this.name;
         this.page;
         this.required;
+        this.readOnly;
         this.searchServiceName;
         this.searchType;
         this.searchReturn;
