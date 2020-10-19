@@ -47,7 +47,7 @@ public class DefaultPreFill implements PreFill {
 		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
-				if(field.getExtValueServiceName().equals("ldap") && field.getSearchType() != null && !field.getSearchType().isEmpty()) {
+				if(field.getExtValueServiceName().equals("ldap") && field.getExtValueType() != null && !field.getExtValueType().isEmpty()) {
 					StringBuilder result = new StringBuilder();
 					String separator = " - ";
 					String[] returnValues = field.getExtValueReturn().split(";");
