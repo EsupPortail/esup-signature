@@ -11,8 +11,9 @@
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Mes demandes signées</a>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refused">Mes demandes refusées</a>
         <div class="hr">Historique</div>
-        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes suivies</a>
+        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
         <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
+        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes autres</a>
         <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=sharedSign">Demandes que j'ai signées lors d'une délégation</a>
     </div>
 </nav>

@@ -162,6 +162,9 @@ public class SignRequestService {
 				signRequests = getSignRequestsRefusedByUser(user);
 			} else if (statusFilter.equals("followByMe")) {
 				signRequests = signRequestRepository.findByRecipientUser(user);
+				signRequests.removeAll(getToSignRequests(user));
+				signRequests.removeAll(getSignRequestsSignedByUser(user));
+				signRequests.removeAll(getSignRequestsRefusedByUser(user));
 			} else if (statusFilter.equals("sharedSign")) {
 				signRequests = getSharedSignedSignRequests(user);
 			} else {
