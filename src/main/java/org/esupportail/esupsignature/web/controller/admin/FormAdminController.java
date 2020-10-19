@@ -221,11 +221,11 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	@PutMapping("/{formId}/field/{fieldId}/update")
+	@PostMapping("/{formId}/field/{fieldId}/update")
 	public String updateField(@PathVariable("fieldId") Long id,
 							  @PathVariable("formId") Long formId,
-							  @RequestParam(value = "required", required = false) Boolean required,
-							  @RequestParam(value = "readOnly", required = false) Boolean readOnly,
+							  @RequestParam(value = "required", required = false) String required,
+							  @RequestParam(value = "readOnly", required = false) String readOnly,
 							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
 							  @RequestParam(value = "extValueType", required = false) String extValueType,
 							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
@@ -235,8 +235,8 @@ public class FormAdminController {
 							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers,
 							  RedirectAttributes redirectAttributes) {
 		Field field = fieldRepository.findById(id).get();
-		field.setRequired(required);
-		field.setReadOnly(readOnly);
+		field.setRequired(Boolean.valueOf(required));
+		field.setReadOnly(Boolean.valueOf(readOnly));
 		field.setExtValueServiceName(extValueServiceName);
 		field.setExtValueType(extValueType);
 		field.setExtValueReturn(extValueReturn);

@@ -3,6 +3,10 @@
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
+    new FormUi([[${form.id}]]);
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -15,7 +19,22 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card col-lg-12">
+            <div class="fixed-action-btns active" >
+                <ul class="list-unstyled">
+                    <li>
+                        <a id="btn-save-fields" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
+                            <i class="fas fa-save"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a title="Modifier les paramètres du formulaire" type="button" th:href="'/admin/forms/update/' + ${form.id}"
+                           class="btn-floating btn-lg bg-warning">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                 <table class="table table-borderless table-hover">
                     <thead class="thead-dark">
@@ -31,17 +50,16 @@
                             <th class="align-middle">Auto-completion : Type</th>
                             <th class="align-middle">Auto-completion : Attribut retourné</th>
                             <th class="align-middle">Etapes autorisées</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:action="'/admin/forms/' + ${form.id} + '/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/field/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><span th:text="${field.type}" /></td>
-                            <td><input type="text" name="required" th:value="${field.required}" size="4"/></td>
-                            <td><input type="text" name="readOnly" th:value="${field.readOnly}" size="4"/></td>
+                            <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
+                            <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
                             <td><input type="text" name="extValueServiceName" th:value="${field.extValueServiceName}" size="7"/></td>
                             <td><input type="text" name="extValueType" th:value="${field.extValueType}"  size="7"/></td>
                             <td><input type="text" name="extValueReturn" th:value="${field.extValueReturn}" size="7"/></td>
@@ -49,7 +67,6 @@
                             <td><input type="text" name="searchType" th:value="${field.searchType}"  size="7"/></td>
                             <td><input type="text" name="searchReturn" th:value="${field.searchReturn}"  size="7"/></td>
                             <td><input type="text" name="stepNumbers" th:value="${field.stepNumbers}"  size="7"/></td>
-                            <td><button type="submit" class="btn btn-sm btn-success"><i class="fas fa-save"></i></button></td>
                             </form>
                         </tr>
                     </th:block>

@@ -3,11 +3,13 @@ package org.esupportail.esupsignature.service;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -173,7 +175,6 @@ public class FormService {
 			if(pdField instanceof PDTextField){
 				Field field = new Field();
 				field.setLabel(pdField.getAlternateFieldName());
-				PDTextField pdTextField = (PDTextField) pdField;
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
 				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
@@ -184,12 +185,22 @@ public class FormService {
 						type = pdFormFieldAdditionalActions.getK().getType();
 					}
 					PDAction pdAction = pdFormFieldAdditionalActions.getC();
-					String actionsString = pdAction.getCOSObject().getString(COSName.JS);
-					if(actionsString != null) {
-						computeActions(field, actionsString);
+					if(pdAction != null) {
+						String actionsString = pdAction.getCOSObject().getString(COSName.JS);
+						if (actionsString != null) {
+							computeActions(field, actionsString);
+						}
 					}
 				}
 
+				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
+				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
+					if(pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
+						COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
+						type = cosString.toString();
+					}
+				}
 				if(type.equals("text")) {
 					field.setType(FieldType.text);
 				} else if(type.contains("Time")) {
@@ -199,11 +210,9 @@ public class FormService {
 				} else if(type.contains("Number")) {
 					field.setType(FieldType.number);
 				}
-
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
-	        } else if(pdField instanceof PDCheckBox){
+	        } else if(pdField instanceof PDCheckBox) {
 				Field field = new Field();
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
