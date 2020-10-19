@@ -59,7 +59,7 @@ public class Form {
     private Document document = new Document();
 
 	@OrderColumn
-	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL}, orphanRemoval = true)
+	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
 	private List<Field> fields = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")

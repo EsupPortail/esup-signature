@@ -135,8 +135,10 @@ public class FormService {
 			testForms.get(0).setActiveVersion(false);
 			formRepository.save(testForms.get(0));
 			form.setVersion(testForms.get(0).getVersion() + 1);
+			form.getFields().addAll(testForms.get(0).getFields());
 		} else {
 			form.setVersion(1);
+			form.setFields(getFields(document));
 		}
 		form.setDocument(document);
 		form.setTargetType(targetType);
@@ -144,7 +146,6 @@ public class FormService {
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
-		form.setFields(getFields(document));
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
