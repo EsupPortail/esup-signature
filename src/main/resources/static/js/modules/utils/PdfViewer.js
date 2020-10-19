@@ -47,22 +47,24 @@ export class PdfViewer extends EventFactory {
             let searchReturn = $(this).attr("search-completion-return");
             $(this).autocomplete({
                 source: function( request, response ) {
-                    $.ajax({
-                        url: "/user/user-ws/search-extvalue/?searchType="+ searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
-                        dataType: "json",
-                        data: {
-                            q: request.term
-                        },
-                        success: function( data ) {
-                            console.debug("search user " + request.term);
-                            response($.map(data, function (item) {
-                                return {
-                                    label: item.text,
-                                    value: item.value
-                                };
-                            }));
-                        }
-                    });
+                    if(request.term.length > 2) {
+                        $.ajax({
+                            url: "/user/user-ws/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            dataType: "json",
+                            data: {
+                                q: request.term
+                            },
+                            success: function (data) {
+                                console.debug("search user " + request.term);
+                                response($.map(data, function (item) {
+                                    return {
+                                        label: item.text,
+                                        value: item.value
+                                    };
+                                }));
+                            }
+                        });
+                    }
                 }
             });
         });

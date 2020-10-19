@@ -1,3 +1,6 @@
+import {SseDispatcher} from "../../utils/SseDispatcher.js";
+import {Message} from "../../../prototypes/Message.js";
+
 export default class FormUi {
 
     constructor(formId) {
@@ -6,6 +9,7 @@ export default class FormUi {
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
         this.btnSaveFields = $('#btn-save-fields');
+        this.sseDispatcher = new SseDispatcher();
         this.initListeners();
     }
 
@@ -49,5 +53,11 @@ export default class FormUi {
                 },
             });
         });
+        //location.reload();
+        let message = new Message();
+        message.type = "success";
+        message.text = "Modifications enregistrées";
+        message.object = null;
+        this.sseDispatcher.dispatchEvent("user", message);
     }
 }

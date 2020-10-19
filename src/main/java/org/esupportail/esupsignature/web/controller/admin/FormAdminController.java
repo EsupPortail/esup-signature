@@ -221,8 +221,9 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@ResponseBody
 	@PostMapping("/{formId}/field/{fieldId}/update")
-	public String updateField(@PathVariable("fieldId") Long id,
+	public ResponseEntity<String> updateField(@PathVariable("fieldId") Long id,
 							  @PathVariable("formId") Long formId,
 							  @RequestParam(value = "required", required = false) String required,
 							  @RequestParam(value = "readOnly", required = false) String readOnly,
@@ -232,8 +233,7 @@ public class FormAdminController {
 							  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
 							  @RequestParam(value = "searchType", required = false) String searchType,
 							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
-							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers,
-							  RedirectAttributes redirectAttributes) {
+							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
 		Field field = fieldRepository.findById(id).get();
 		field.setRequired(Boolean.valueOf(required));
 		field.setReadOnly(Boolean.valueOf(readOnly));
@@ -244,8 +244,7 @@ public class FormAdminController {
 		field.setSearchType(searchType);
 		field.setSearchReturn(searchReturn);
 		field.setStepNumbers(stepNumbers);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le champ à été mis à jour"));
-		return "redirect:/admin/forms/" + formId;
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }
