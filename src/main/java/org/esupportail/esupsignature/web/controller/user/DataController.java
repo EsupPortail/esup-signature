@@ -271,7 +271,7 @@ public class DataController {
 	public String sendDataById(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		Data data = dataService.getDataById(id);
-			if(data.getStatus().equals(SignRequestStatus.draft)) {
+		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			try {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
