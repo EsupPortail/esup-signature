@@ -203,7 +203,7 @@ public class FormAdminController {
 
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-		List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+		List<Form> forms = formRepository.findFormByName(name);
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");

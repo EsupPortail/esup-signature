@@ -44,7 +44,7 @@ public class ManageController {
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUser") User authUser, @PathVariable String name, HttpServletResponse response) {
         List<Form> formManaged = formRepository.findFormByManagersContains(authUser.getEmail());
-        List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+        List<Form> forms = formRepository.findFormByName(name);
         if (forms.size() > 0 && formManaged.contains(forms.get(0))) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
