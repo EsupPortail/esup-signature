@@ -206,21 +206,26 @@ public class SignRequestController {
             model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
             model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
         }
-        if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
-            Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
-            if(data != null && data.getForm() != null) {
-                List<Field> fields = data.getForm().getFields();
-                List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
-                for (Field field : prefilledFields) {
-                    if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
-                        field.setDefaultValue("");
+        if(signRequest.getParentSignBook() != null) {
+            if(dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
+                Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+                if(data != null && data.getForm() != null) {
+                    List<Field> fields = data.getForm().getFields();
+                    List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+                    for (Field field : prefilledFields) {
+                        if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
+                            field.setDefaultValue("");
+                        }
+                        if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+                            field.setDefaultValue(data.getDatas().get(field.getName()));
+                        }
                     }
-                    if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
-                        field.setDefaultValue(data.getDatas().get(field.getName()));
-                    }
+                    model.addAttribute("fields", prefilledFields);
                 }
-                model.addAttribute("fields", prefilledFields);
             }
+            Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getWorkflowName());
+            model.addAttribute("workflow", workflow);
+            model.addAttribute("steps", workflow.getWorkflowSteps());
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
@@ -677,12 +682,12 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("user") User user, User authUser, @PathVariable("id") Long id,
+                          @RequestParam(required = false) List<String> recipientEmails,
                           @RequestParam(value = "comment", required = false) String comment,
-                          @RequestParam(value = "emails", required = false) String emails[],
-                          @RequestParam(value = "names", required = false) String names[],
-                          @RequestParam(value = "firstnames", required = false) String firstnames[],
-                          @RequestParam(value = "phones", required = false) String phones[],
-                          RedirectAttributes redirectAttributes) throws MessagingException, InterruptedException {
+                          @RequestParam(value = "names", required = false) String[] names,
+                          @RequestParam(value = "firstnames", required = false) String[] firstnames,
+                          @RequestParam(value = "phones", required = false) String[] phones,
+                          RedirectAttributes redirectAttributes) throws MessagingException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<User> tempUsers = signRequestService.getTempUsers(signRequest);
         int countExternalUsers = 0;

@@ -95,7 +95,7 @@ public class WizardController {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
                 signBookService.importWorkflow(signBook, workflow);
                 signBookService.nextWorkFlowStep(signBook);
-                signBookService.pendingSignBook(signBook, user);
+//                signBookService.pendingSignBook(signBook, user);
                 return "redirect:/user/wizard/wizend/" + signBook.getId();
             }
             model.addAttribute("workflowStepForm", true);

@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,9 @@ public class SignBookController {
 
     @Resource
     private SignBookService signBookService;
+
+    @Resource
+    private FileService fileService;
 
     @Resource
     private LogRepository logRepository;
@@ -264,11 +268,12 @@ public class SignBookController {
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("user") User user,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.createSignBook(workflowName, name, user, false);
+        Workflow workflow = workflowRepository.findByName(workflowName).get(0);
+        SignBook signBook = signBookService.createSignBook(workflow.getTitle() + "_" + name, "", user, false);
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
         }
