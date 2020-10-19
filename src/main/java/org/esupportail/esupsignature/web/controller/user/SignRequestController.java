@@ -224,8 +224,12 @@ public class SignRequestController {
                 }
             }
             Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getWorkflowName());
-            model.addAttribute("workflow", workflow);
-            model.addAttribute("steps", workflow.getWorkflowSteps());
+            if(workflow != null) {
+                model.addAttribute("workflow", workflow);
+                if(workflow.getWorkflowSteps() != null) {
+                    model.addAttribute("steps", workflow.getWorkflowSteps());
+                }
+            }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);

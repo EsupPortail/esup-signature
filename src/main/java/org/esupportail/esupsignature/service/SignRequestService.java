@@ -160,6 +160,8 @@ public class SignRequestService {
 				signRequests = getSignRequestsSignedByUser(user);
 			} else if (statusFilter.equals("refusedByMe")) {
 				signRequests = getSignRequestsRefusedByUser(user);
+			} else if (statusFilter.equals("followByMe")) {
+				signRequests = signRequestRepository.findByRecipientUser(user);
 			} else if (statusFilter.equals("sharedSign")) {
 				signRequests = getSharedSignedSignRequests(user);
 			} else {
@@ -191,7 +193,7 @@ public class SignRequestService {
 	}
 
 	public List<SignRequest> getToSignRequests(User user) {
-		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUser(user);
+		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(user);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
@@ -205,7 +207,6 @@ public class SignRequestService {
 	}
 
 	public List<SignRequest> getSignRequestsRefusedByUser(User user) {
-
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logRepository.findByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
 		return getSignRequestsFromLogs(logs);
