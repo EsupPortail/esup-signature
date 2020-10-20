@@ -21,7 +21,7 @@ public class SseController {
 
     @GetMapping
     public SseEmitter globalSseEmitter(@ModelAttribute("user") User user) {
-        return this.eventBus.createSseEmitter(user.getEppn(), 30_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign");
+        return this.eventBus.createSseEmitter(user.getEppn(), 5_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign");
     }
 
 }
