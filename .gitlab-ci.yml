@@ -1,0 +1,4 @@
+build:
+  script: mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
+  only:
+    - master
