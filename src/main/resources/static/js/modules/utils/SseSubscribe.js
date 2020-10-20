@@ -6,7 +6,10 @@ export class SseSubscribe extends EventFactory {
 
     constructor() {
         super();
-        this.eventSource = new EventSource('/user/sse');
+        console.log(window.EventSource);
+        // if (!!window.EventSource) {
+            this.eventSource = new EventSource('/user/sse');
+        // }
         this.listenToEvent();
         this.sseDispatcher = new SseDispatcher();
     }

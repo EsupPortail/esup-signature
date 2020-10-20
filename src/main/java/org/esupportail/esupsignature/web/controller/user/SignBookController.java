@@ -270,8 +270,12 @@ public class SignBookController {
                                                     @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        Workflow workflow = workflowRepository.findByName(workflowName).get(0);
-        SignBook signBook = signBookService.createSignBook(workflow.getTitle() + "_" + name, "", user, false);
+
+        List<Workflow> workflows = workflowRepository.findByName(workflowName);
+        if(workflows.size() > 0) {
+            name = workflows.get(0).getTitle() + "_" + name;
+        }
+        SignBook signBook = signBookService.createSignBook(name, "", user, false);
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
