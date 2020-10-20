@@ -108,7 +108,7 @@ dss:
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
     tsp-server: http://tsa.belgium.be/connect
-    ks-filename: oj_keystore.p12
+    ks-filename: /path/toyour/keystore/oj_keystore.p12
     ks-password: dss-password
     ks-type: PKCS12
     lotl-country-code: EU
