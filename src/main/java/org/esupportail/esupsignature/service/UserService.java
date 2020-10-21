@@ -220,7 +220,9 @@ public class UserService {
 			}
 			return user;
 		}
-		logger.error("unable to find user : " + eppn);
+//		if(!eppn.startsWith("anonymousUser")) {
+			logger.error("unable to find user : " + eppn);
+//		}
 		return null;
 	}
 
