@@ -86,8 +86,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
 		registrationBean.setFilter(filter);
 		registrationBean.setOrder(5);
-		registrationBean.addUrlPatterns("/user/", "/user/**",
-										"/admin/", "/admin/**"
+		registrationBean.addUrlPatterns("/user/", "/user/*",
+										"/admin/", "/admin/*"
 		);
 
 		return registrationBean;
