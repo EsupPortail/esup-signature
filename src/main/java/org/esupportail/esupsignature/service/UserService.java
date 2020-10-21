@@ -46,16 +46,9 @@ public class UserService {
 	@Resource
 	private GlobalProperties globalProperties;
 
-	private LdapProperties ldapProperties;
-
 	@Autowired(required = false)
 	public void setLdapPersonService(LdapPersonService ldapPersonService) {
 		this.ldapPersonService = ldapPersonService;
-	}
-
-	@Autowired(required = false)
-	public void setLdapProperties(LdapProperties ldapProperties) {
-		this.ldapProperties = ldapProperties;
 	}
 
 	@Resource
