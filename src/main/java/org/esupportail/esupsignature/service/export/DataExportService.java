@@ -63,7 +63,7 @@ public class DataExportService {
                     }
                 }
                 for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
-                    toExportDatas.put(entry.getKey().toUpperCase(), entry.getValue());
+                    toExportDatas.put("form_data_" + entry.getKey(), entry.getValue());
                 }
                 List<Log> logs = logRepository.findBySignRequestId(signBook.getSignRequests().get(0).getId()).stream().sorted(Comparator.comparing(Log::getLogDate)).collect(Collectors.toList());
                 int step = 1;
