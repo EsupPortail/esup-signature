@@ -126,8 +126,8 @@ public class DataService {
             }
         }
         signBookRepository.save(signBook);
-        signBookService.pendingSignBook(signBook, user);
         data.setSignBook(signBook);
+        signBookService.pendingSignBook(signBook, user);
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }

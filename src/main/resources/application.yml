@@ -45,6 +45,7 @@ spring:
                     lob:
                         non_contextual_creation: true
         show-sql: false
+        open-in-view: false
     ldap:
         base: dc=univ-ville,dc=fr
         password: ldap-password

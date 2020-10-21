@@ -371,7 +371,7 @@ public class SignRequestController {
             signRequestService.sign(signRequest, user, password, visual, formDataMap);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
-                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", user);
+                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);
                 }
             });
             return new ResponseEntity<>(HttpStatus.OK);
