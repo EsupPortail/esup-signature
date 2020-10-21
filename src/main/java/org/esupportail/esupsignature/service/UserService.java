@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -58,7 +57,7 @@ public class UserService {
     List<SecurityService> securityServices;
 
     @Resource
-    private SignRequestService signRequestService;
+    SignRequestService signRequestService;
 
     @Resource
     private PersonLdapRepository personLdapRepository;
@@ -71,15 +70,6 @@ public class UserService {
 
     @Resource
     private UserShareRepository userShareRepository;
-
-    @Resource
-    private DataRepository dataRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
-    private MailService mailService;
 
     @Resource
     private FileService fileService;
@@ -351,47 +341,10 @@ public class UserService {
         return false;
     }
 
-    public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
-        Date date = new Date();
-        List<String> toEmails = new ArrayList<>();
-        toEmails.add(recipientUser.getEmail());
-        if (signRequest.getParentSignBook() != null) {
-            SignBook signBook = signRequest.getParentSignBook();
-            List<Data> datas = dataRepository.findBySignBook(signBook);
-            List<Workflow> workflows = workflowRepository.findByName(signBook.getWorkflowName());
-            recipientUser.setLastSendAlertDate(date);
-            for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-                if (userShare.getShareTypes().contains(ShareType.sign)) {
-                    if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
-                    || (workflows.size() > 0 && workflows.get(0).equals(userShare.getWorkflow()))) {
-                        for (User toUser : userShare.getToUsers()) {
-                            toEmails.add(toUser.getEmail());
-                        }
-                    }
-                }
-            }
-        }
-        mailService.sendSignRequestAlert(toEmails, signRequest);
-        userRepository.save(recipientUser);
-    }
-
-
-    public void sendEmailAlertSummary(User recipientUser) {
-        Date date = new Date();
-        List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser);
-        toSignSignRequests.addAll(signRequestService.getSharedToSignSignRequests(recipientUser));
-        if (toSignSignRequests.size() > 0) {
-            recipientUser.setLastSendAlertDate(date);
-            mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
-            userRepository.save(recipientUser);
-        }
-    }
-
     public Boolean getSignShare(User user, User authUser) {
         if (userShareRepository.countByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.sign) > 0) {
             return true;
         }
-        ;
         return false;
     }
 

@@ -665,7 +665,7 @@ public class SignRequestService {
 		for (Recipient recipient : signRequest.getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (!recipientUser.equals(user) && (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser))) {
-				userService.sendSignRequestEmailAlert(recipientUser, signRequest);
+				userService.signRequestService.sendSignRequestEmailAlert(recipientUser, signRequest, userService);
 			}
 		}
 	}
@@ -1024,4 +1024,39 @@ public class SignRequestService {
 		return null;
 	}
 
+    public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest, UserService userService) {
+        Date date = new Date();
+        Set<String> toEmails = new HashSet<>();
+        toEmails.add(recipientUser.getEmail());
+        if (signRequest.getParentSignBook() != null) {
+            SignBook signBook = signRequest.getParentSignBook();
+            List<Data> datas = dataRepository.findBySignBook(signBook);
+            List<Workflow> workflows = workflowRepository.findByName(signBook.getWorkflowName());
+            recipientUser.setLastSendAlertDate(date);
+            for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
+                if (userShare.getShareTypes().contains(ShareType.sign)) {
+                    if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
+                    || (workflows.size() > 0 && workflows.get(0).equals(userShare.getWorkflow()))) {
+                        for (User toUser : userShare.getToUsers()) {
+                            toEmails.add(toUser.getEmail());
+                        }
+                    }
+                }
+            }
+        }
+        mailService.sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
+        userRepository.save(recipientUser);
+    }
+
+
+	public void sendEmailAlertSummary(User recipientUser) {
+		Date date = new Date();
+		List<SignRequest> toSignSignRequests = getToSignRequests(recipientUser);
+		toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser));
+		if (toSignSignRequests.size() > 0) {
+			recipientUser.setLastSendAlertDate(date);
+			mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
+			userRepository.save(recipientUser);
+		}
+	}
 }
