@@ -362,11 +362,11 @@ public class SignRequestController {
         }
 
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", this), "sign", user);
+            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
             return new ResponseEntity<>(HttpStatus.OK);
         }
+        eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
         try {
-            eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", this), "sign", user);
             signRequest.setComment(comment);
             signRequestService.sign(signRequest, user, password, visual, formDataMap);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
