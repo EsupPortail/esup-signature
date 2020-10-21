@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller;
+package org.esupportail.esupsignature.web.sse;
 
 import ch.rasc.sse.eventbus.SseEvent;
 import ch.rasc.sse.eventbus.SseEventBus;
