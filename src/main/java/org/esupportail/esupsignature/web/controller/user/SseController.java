@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-@RequestMapping("user/sse")
+@RequestMapping("sse")
 @Controller
 public class SseController {
 
