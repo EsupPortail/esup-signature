@@ -211,12 +211,10 @@ public class UserService {
 		}
 		if(userRepository.countByEppn(eppn) > 0) {
 			User user = userRepository.findByEppn(eppn).get(0);
-			if(user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
-				try {
-					user.setIp(httpServletRequest.getRemoteAddr());
-				} catch (Exception e) {
-					logger.warn("unable to get ip");
-				}
+			try {
+				user.setIp(httpServletRequest.getRemoteAddr());
+			} catch (Exception e) {
+				logger.warn("unable to get ip");
 			}
 			return user;
 		}

@@ -32,7 +32,6 @@ export class GlobalUi {
                 columnNumber: columnNo,
                 error: error
             };
-
             $.ajax({
                 type: 'POST',
                 contentType : 'application/json; charset=utf-8',
