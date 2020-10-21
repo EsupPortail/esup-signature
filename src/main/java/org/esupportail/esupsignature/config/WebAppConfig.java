@@ -46,16 +46,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 						"classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
-//
-//		VersionResourceResolver versionResourceResolver = new VersionResourceResolver()
-//				.addVersionStrategy(new ContentVersionStrategy(), "/**");
-//
     }
 
-//	@Override
-//	public void addCorsMappings(CorsRegistry registry) {
-//		registry.addMapping("/**");
-//	}
 
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
@@ -92,33 +84,4 @@ public class WebAppConfig implements WebMvcConfigurer {
 
 		return registrationBean;
 	}
-
-//	@Bean
-//	public WebMvcConfigurer corsConfigurer() {
-//		return new WebMvcConfigurerAdapter() {
-//			@Override
-//			public void addCorsMappings(CorsRegistry registry) {
-//				registry.addMapping("/**");
-//			}
-//		};
-//	}
-
-//	@Bean
-//	public CorsFilter corsFilter() {
-//	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//	    final CorsConfiguration config = new CorsConfiguration();
-//	    config.setAllowCredentials(true);
-//	    config.setAllowedOrigins(Collections.singletonList("*"));
-//	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
-//	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-//	    source.registerCorsConfiguration("/**", config);
-//	    return new CorsFilter(source);
-//	}
-
-//	@Bean
-//	public LocaleResolver localeResolver() {
-//		SessionLocaleResolver slr = new SessionLocaleResolver();
-//		slr.setDefaultLocale(Locale.FRENCH);
-//		return slr;
-//	}
 }
