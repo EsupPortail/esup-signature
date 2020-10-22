@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.event;
 import ch.rasc.sse.eventbus.SseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.checkerframework.checker.units.qual.A;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.springframework.context.ApplicationEventPublisher;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 
 @Service
-@Async
 public class EventService {
 
     public final ApplicationEventPublisher applicationEventPublisher;
@@ -35,7 +35,8 @@ public class EventService {
         String isoEncodedString = new String(bytes, StandardCharsets.ISO_8859_1);
 
         if(user != null) {
-            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(user.getEppn()).data(isoEncodedString).build());
+            String clientId = user.getEppn().split("@")[0];
+            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(clientId).data(isoEncodedString).build());
         } else {
             applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).data(isoEncodedString).build());
         }
