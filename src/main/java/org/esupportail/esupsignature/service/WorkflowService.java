@@ -330,6 +330,13 @@ public class WorkflowService {
         return workflowRepository.findAll();
     }
 
+    public List<Workflow> getSystemWorkflows() {
+        List<Workflow> workflowTypes = new ArrayList<>();
+        workflowTypes.addAll(getClassesWorkflows());
+        workflowTypes.addAll(getDatabaseWorkflows());
+        return workflowTypes;
+    }
+
     public List<Workflow> getAuthorizedToShareWorkflows() {
         return workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
     }

@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Field;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -123,9 +120,9 @@ public class FormAdminController {
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());
-		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
-		List<PreFill> aaa = preFillService.getPreFillValues();
-		model.addAttribute("preFillTypes", aaa);
+		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+		List<PreFill> preFillTypes = preFillService.getPreFillValues();
+		model.addAttribute("preFillTypes", preFillTypes);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
@@ -144,7 +141,7 @@ public class FormAdminController {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
 	}

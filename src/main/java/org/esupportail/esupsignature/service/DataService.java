@@ -106,7 +106,7 @@ public class DataService {
             String targetUrl = String.join(",", targetEmails);
             userPropertieService.createTargetPropertie(user, targetUrl, form);
         }
-        String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-");
+        String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
