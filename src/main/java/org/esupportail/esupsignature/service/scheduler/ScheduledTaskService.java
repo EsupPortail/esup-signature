@@ -52,7 +52,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	//@Scheduled(fixedRate = 600000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
@@ -61,7 +61,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -78,7 +78,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
 		logger.trace("scan all signRequest to export");
@@ -92,9 +92,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-
-
-	@Scheduled(fixedRate = 30000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
