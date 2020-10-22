@@ -97,7 +97,7 @@ public class DocumentService {
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureException {
 		String documentUri;
 		try {
-			logger.info("send to " + documentIOType.name() + " in " + targetUrl);
+			logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + signedFile.getFileName());
 			FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
 			fsAccessService.createURITree(targetUrl);
 			InputStream inputStream = signedFile.getInputStream();
