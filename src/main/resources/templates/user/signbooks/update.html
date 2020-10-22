@@ -164,6 +164,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group" id="_signType_div_id">
+                        <label for="stepNumber">Ajouter cette étape :</label>
+                        <div class="form-group">
+                            <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
+                                <option th:value="0" th:text="${'Au début'}"></option>
+                                <!--/*@thymesVar id="allSteps" type="List<WorkflowStep>"*/-->
+                                <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
+                                <option th:value="-1" th:text="${'A la fin'}"></option>
+                            </select>
+                        </div>
                         <label for="recipientsEmails2">Choisir les participants</label>
                         <div class="form-group">
                             <select name="recipientsEmails" id="recipientsEmails2" size="5" multiple="multiple" required="required"></select>

@@ -87,6 +87,9 @@ public class SignBookController {
             logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
         }
         model.addAttribute("logs", logs);
+        List<WorkflowStep> allSteps = new ArrayList<>(signBook.getWorkflowSteps());
+        allSteps.remove(0);
+        model.addAttribute("allSteps", allSteps);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
@@ -158,6 +161,7 @@ public class SignBookController {
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
+                          @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -168,7 +172,12 @@ public class SignBookController {
             logger.error("error on add step", e);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
         }
-        signBook.getWorkflowSteps().add(workflowStep);
+        if (stepNumber == - 1) {
+            signBook.getWorkflowSteps().add(workflowStep);
+        } else {
+            signBook.getWorkflowSteps().add(stepNumber, workflowStep);
+        }
+        signBookService.pendingSignBook(signBook, user);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
