@@ -35,8 +35,7 @@ public class EventService {
         String isoEncodedString = new String(bytes, StandardCharsets.ISO_8859_1);
 
         if(user != null) {
-            String clientId = user.getEppn().split("@")[0];
-            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(clientId).data(isoEncodedString).build());
+            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(user.getEppn()).data(isoEncodedString).build());
         } else {
             applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).data(isoEncodedString).build());
         }
