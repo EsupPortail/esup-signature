@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.config.security;
 
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.service.security.AuthorizeRequestsHelper;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
@@ -16,12 +15,15 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -45,7 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		AuthorizeRequestsHelper.setAuthorizeRequests(http, webSecurityProperties.getWsAccessAuthorizeIps());
+		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
@@ -64,9 +66,36 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf().ignoringAntMatchers("/ws/**");
 		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
+		http.csrf().ignoringAntMatchers("/otp/**");
 		http.csrf().ignoringAntMatchers("/log/**");
+		http.csrf().ignoringAntMatchers("/actuator/**").disable();
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
+	}
+
+	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
+		http.logout().logoutSuccessUrl("/").permitAll();
+		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
+		accessDeniedHandlerImpl.setErrorPage("/denied");
+		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
+		String hasIpAddresses = "";
+		int nbIps = 0;
+		for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
+			nbIps++;
+			hasIpAddresses += "hasIpAddress('"+ ip +"')";
+			if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
+				hasIpAddresses += " or ";
+			}
+		}
+		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
+		http.authorizeRequests().antMatchers("/actuator/", "/actuator/**").access(hasIpAddresses);
+		http.authorizeRequests().antMatchers("/otp/**").permitAll();
+		http.authorizeRequests()
+				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
+				.antMatchers("/user/", "/user/**").authenticated()
+				.antMatchers("/sse/", "/sse/**").authenticated()
+				.antMatchers("/webjars/**").permitAll();
+
 	}
 
 	@Bean
@@ -118,7 +147,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public UserDetailsService userDetailsService() {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 		return manager;
-
 	}
 
 }
