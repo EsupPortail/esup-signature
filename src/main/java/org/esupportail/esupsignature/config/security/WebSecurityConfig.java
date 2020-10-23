@@ -86,8 +86,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		}
 		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
-		http.authorizeRequests().antMatchers("/actuator/", "/actuator/**").access(hasIpAddresses);
+		http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
 		http.authorizeRequests().antMatchers("/otp/**").permitAll();
+		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").authenticated()
