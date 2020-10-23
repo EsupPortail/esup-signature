@@ -43,29 +43,22 @@ public class DataExportService {
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
             if(signBook != null && signBook.getSignRequests().size() > 0) {
+                List<Log> logs = logRepository.findBySignRequestId(signBook.getSignRequests().get(0).getId()).stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
                 LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
                 toExportDatas.put("form_name", form.getName());
                 toExportDatas.put("form_create_date", data.getCreateDate().toString());
                 toExportDatas.put("form_create_by", data.getCreateBy());
                 toExportDatas.put("form_current_status", signBook.getStatus().name());
-                List<Log> lastLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.completed.name());
-                if(lastLogs.size() > 0) {
-                    toExportDatas.put("form_completed_date", lastLogs.get(0).getLogDate().toString());
-                    toExportDatas.put("form_completed_by", lastLogs.get(0).getEppnFor());
+                if(logs.size() > 0) {
+                    toExportDatas.put("form_completed_date", logs.get(0).getLogDate().toString());
+                    toExportDatas.put("form_completed_by", logs.get(0).getEppnFor());
                 } else {
-                    List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signBook.getSignRequests().get(0).getId(), SignRequestStatus.refused.name());
-                    if(refuseLogs.size() > 0) {
-                        toExportDatas.put("form_completed_date", refuseLogs.get(0).getLogDate().toString());
-                        toExportDatas.put("form_completed_by", refuseLogs.get(0).getEppnFor());
-                    } else {
-                        toExportDatas.put("form_completed_date", "");
-                        toExportDatas.put("form_completed_by", "");
-                    }
+                    toExportDatas.put("form_completed_date", "");
+                    toExportDatas.put("form_completed_by", "");
                 }
                 for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
                     toExportDatas.put("form_data_" + entry.getKey(), entry.getValue());
                 }
-                List<Log> logs = logRepository.findBySignRequestId(signBook.getSignRequests().get(0).getId()).stream().sorted(Comparator.comparing(Log::getLogDate)).collect(Collectors.toList());
                 int step = 1;
                 //for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
                 for (Log log : logs) {
