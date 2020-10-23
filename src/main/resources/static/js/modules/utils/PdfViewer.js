@@ -385,7 +385,7 @@ export class PdfViewer extends EventFactory {
                         keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
-                            vertical: 'top'
+                            vertical: 'bottom'
                         },
                     });
                 }
@@ -411,7 +411,7 @@ export class PdfViewer extends EventFactory {
                         keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
-                            vertical: 'top'
+                            vertical: 'bottom'
                         },
                     });
                 }
