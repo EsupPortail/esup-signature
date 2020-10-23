@@ -290,7 +290,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
-        let datePicherIndex = 1050;
+        let datePicherIndex = 1040;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
