@@ -290,6 +290,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
+        let datePicherIndex = 9999999;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
@@ -365,6 +366,8 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === "date") {
+                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
+                    datePicherIndex--;
                     inputField.datetimepicker({
                         format: 'DD/MM/YYYY',
                         locale: 'fr',
@@ -387,10 +390,11 @@ export class PdfViewer extends EventFactory {
                             horizontal: 'right',
                             vertical: 'bottom'
                         },
-                        widgetParent: $('section[data-annotation-id=' + items[i].id + ']'),
                     });
                 }
                 if (dataField.type === "time") {
+                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
+                    datePicherIndex--;
                     inputField.datetimepicker({
                         format: 'LT',
                         locale: 'fr',
@@ -412,7 +416,7 @@ export class PdfViewer extends EventFactory {
                         keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
-                            vertical: 'top'
+                            vertical: 'bottom'
                         },
                     });
                 }
