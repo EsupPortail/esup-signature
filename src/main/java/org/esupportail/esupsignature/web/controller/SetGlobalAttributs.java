@@ -52,6 +52,7 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
+            model.addAttribute("version", globalProperties.getVersion());
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
     }
