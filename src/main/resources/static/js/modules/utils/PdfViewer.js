@@ -385,8 +385,9 @@ export class PdfViewer extends EventFactory {
                         keepOpen: false,
                         widgetPositioning: {
                             horizontal: 'right',
-                            vertical: 'top'
+                            vertical: 'bottom'
                         },
+                        widgetParent: $('section[data-annotation-id=' + items[i].id + ']'),
                     });
                 }
                 if (dataField.type === "time") {

@@ -15,7 +15,6 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -23,7 +22,6 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -68,7 +66,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
 		http.csrf().ignoringAntMatchers("/otp/**");
 		http.csrf().ignoringAntMatchers("/log/**");
-		http.csrf().ignoringAntMatchers("/actuator/**").disable();
+		http.csrf().ignoringAntMatchers("/actuator/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}

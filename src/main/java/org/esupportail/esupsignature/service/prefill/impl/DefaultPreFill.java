@@ -12,9 +12,7 @@ import org.esupportail.esupsignature.service.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DefaultPreFill implements PreFill {
@@ -44,7 +42,10 @@ public class DefaultPreFill implements PreFill {
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
 		Map<String, Object> defaultValues = extDefaultValue.initValues(user);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
-		Map<String, Object> ldapValues = extLdapValue.initValues(user);
+		Map<String, Object> ldapValues = new HashMap<>();
+		if(extLdapValue != null) {
+			 ldapValues = extLdapValue.initValues(user);
+		}
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
 				if(field.getExtValueServiceName().equals("ldap") && field.getExtValueType() != null && !field.getExtValueType().isEmpty()) {
