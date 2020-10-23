@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.user", "org.esupportail.esupsignature.web.controller.admin"}, basePackageClasses = {IndexController.class})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
 
     @Resource

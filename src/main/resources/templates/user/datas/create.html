@@ -80,17 +80,20 @@
                         La procédure "<span th:text="${form.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
                     </p>
                     <th:block th:each="step,iterator : ${steps}">
-                        <div th:if="${step.changeable == true}" class="form-group">
+                        <div class="form-group">
                             <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
                         </div>
-                        <div th:unless="${step.changeable == true}" class="form-group d-inline">
-                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
-                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">
-                                <span th:if="${iterator.index > 0}"> ou </span>
-                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
-                            </th:block>
-                            <span>)</span>
-                        </div>
+<!--                        <div th:if="${step.changeable == true}" class="form-group">-->
+<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+<!--                        </div>-->
+<!--                        <div th:unless="${step.changeable == true}" class="form-group d-inline">-->
+<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>-->
+<!--                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">-->
+<!--                                <span th:if="${iterator.index > 0}"> ou </span>-->
+<!--                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>-->
+<!--                            </th:block>-->
+<!--                            <span>)</span>-->
+<!--                        </div>-->
                         <br/>
                     </th:block>
                     <hr>

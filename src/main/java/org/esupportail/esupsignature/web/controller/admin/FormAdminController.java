@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Field;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -123,9 +120,9 @@ public class FormAdminController {
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());
-		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
-		List<PreFill> aaa = preFillService.getPreFillValues();
-		model.addAttribute("preFillTypes", aaa);
+		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+		List<PreFill> preFillTypes = preFillService.getPreFillValues();
+		model.addAttribute("preFillTypes", preFillTypes);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
@@ -144,7 +141,7 @@ public class FormAdminController {
 		List<Form> forms = formService.getAllForms();
 		model.addAttribute("forms", forms);
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getAllWorkflows());
+		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
 		return "admin/forms/list";
 	}
@@ -203,7 +200,7 @@ public class FormAdminController {
 
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-		List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+		List<Form> forms = formRepository.findFormByName(name);
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
@@ -221,22 +218,22 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	@PutMapping("/{formId}/field/{fieldId}/update")
-	public String updateField(@PathVariable("fieldId") Long id,
+	@ResponseBody
+	@PostMapping("/{formId}/field/{fieldId}/update")
+	public ResponseEntity<String> updateField(@PathVariable("fieldId") Long id,
 							  @PathVariable("formId") Long formId,
-							  @RequestParam(value = "required", required = false) Boolean required,
-							  @RequestParam(value = "readOnly", required = false) Boolean readOnly,
+							  @RequestParam(value = "required", required = false) String required,
+							  @RequestParam(value = "readOnly", required = false) String readOnly,
 							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
 							  @RequestParam(value = "extValueType", required = false) String extValueType,
 							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
 							  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
 							  @RequestParam(value = "searchType", required = false) String searchType,
 							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
-							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers,
-							  RedirectAttributes redirectAttributes) {
+							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
 		Field field = fieldRepository.findById(id).get();
-		field.setRequired(required);
-		field.setReadOnly(readOnly);
+		field.setRequired(Boolean.valueOf(required));
+		field.setReadOnly(Boolean.valueOf(readOnly));
 		field.setExtValueServiceName(extValueServiceName);
 		field.setExtValueType(extValueType);
 		field.setExtValueReturn(extValueReturn);
@@ -244,8 +241,7 @@ public class FormAdminController {
 		field.setSearchType(searchType);
 		field.setSearchReturn(searchReturn);
 		field.setStepNumbers(stepNumbers);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le champ à été mis à jour"));
-		return "redirect:/admin/forms/" + formId;
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }

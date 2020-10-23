@@ -47,7 +47,7 @@ public class DefaultPreFill implements PreFill {
 		Map<String, Object> ldapValues = extLdapValue.initValues(user);
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
-				if(field.getExtValueServiceName().equals("ldap")) {
+				if(field.getExtValueServiceName().equals("ldap") && field.getExtValueType() != null && !field.getExtValueType().isEmpty()) {
 					StringBuilder result = new StringBuilder();
 					String separator = " - ";
 					String[] returnValues = field.getExtValueReturn().split(";");
@@ -60,15 +60,20 @@ public class DefaultPreFill implements PreFill {
 								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description");
 								if(ouList.size() > 0) {
 									result.append(ouList.get(0).get("value"));
-									result.append(separator);
 								}
 							} else {
 								result.append((String) ldapValues.get(returnValue.trim()));
+							}
+							if(returnValues.length > 1) {
 								result.append(separator);
 							}
 						}
 					}
-					field.setDefaultValue(result.substring(0, result.length() - separator.length()));
+					if(returnValues.length > 1) {
+						field.setDefaultValue(result.substring(0, result.length() - separator.length()));
+					} else {
+						field.setDefaultValue(result.toString());
+					}
 				} else if(field.getExtValueServiceName().equals("default")) {
 					if(defaultValues.containsKey(field.getExtValueReturn())) {
 						field.setDefaultValue((String) defaultValues.get(field.getExtValueReturn()));

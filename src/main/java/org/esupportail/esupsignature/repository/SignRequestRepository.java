@@ -18,6 +18,8 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByToken(String token);
     Long countByToken(String token);
     @Query("select s from SignRequest s join s.recipients r where r.user = :recipientUser and r.signed is false")
+    List<SignRequest> findByRecipientUserToSign(@Param("recipientUser") User recipientUser);
+    @Query("select s from SignRequest s join s.recipients r where r.user = :recipientUser")
     List<SignRequest> findByRecipientUser(@Param("recipientUser") User recipientUser);
     List<SignRequest> findByCreateBy(User createBy);
     List<SignRequest> findByCreateByAndStatus(User createBy, SignRequestStatus status);

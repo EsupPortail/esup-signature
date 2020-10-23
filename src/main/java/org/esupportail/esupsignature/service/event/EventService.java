@@ -6,13 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 
 @Service
-@Async
 public class EventService {
 
     public final ApplicationEventPublisher applicationEventPublisher;

@@ -57,7 +57,7 @@ public class LdapExtValue implements ExtValue {
 					DateFormat targetFormat = new SimpleDateFormat("dd/MM/yyyy");
 					try {
 						Date date = originalFormat.parse(schacDateOfBirth);
-						return targetFormat.format(date);
+						value = targetFormat.format(date);
 					} catch (ParseException e) {
 						logger.warn("unable to parse date " + name);
 					}
@@ -75,39 +75,41 @@ public class LdapExtValue implements ExtValue {
 		String separator = " - ";
 		String[] returnValues = searchReturn.split(";");
 		String[] returnTypes = searchType.split(";");
-		String methodName = "get" + returnValues[0].substring(0, 1).toUpperCase() + returnValues[0].substring(1);
-		if(returnTypes[0].equals("person")) {
-			List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
-			for (PersonLdap personLdap : personLdaps) {
-				Map<String, Object> stringObjectMap = new HashMap<>();
-				try {
-					StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName, null).invoke(personLdap).toString());
-					if(returnTypes.length > 1) {
-						for(int i = 1; i < returnTypes.length; i++) {
-							String methodNameNext = "get" + returnValues[i].substring(0, 1).toUpperCase() + returnValues[i].substring(1);
-							if(returnTypes[i].equals("person")) {
-								result.append(separator).append(PersonLdap.class.getMethod(methodNameNext, null).invoke(personLdap).toString());
-							} else if(returnTypes[i].equals("organizationalUnit")) {
-								Object ou = PersonLdap.class.getMethod(methodNameNext).invoke(personLdap);
-								if(ou != null) {
-									List<Map<String, Object>> resultMap = getMapsOfOU(ou.toString(), "getDescription");
-									if(resultMap.size() > 0) {
-										result.append(separator).append(resultMap.get(0).get("value"));
+		if(!returnValues[0].isEmpty()) {
+			String methodName = "get" + returnValues[0].substring(0, 1).toUpperCase() + returnValues[0].substring(1);
+			if (returnTypes[0].equals("person")) {
+				List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
+				for (PersonLdap personLdap : personLdaps) {
+					Map<String, Object> stringObjectMap = new HashMap<>();
+					try {
+						StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName, null).invoke(personLdap).toString());
+						if (returnTypes.length > 1) {
+							for (int i = 1; i < returnTypes.length; i++) {
+								String methodNameNext = "get" + returnValues[i].substring(0, 1).toUpperCase() + returnValues[i].substring(1);
+								if (returnTypes[i].equals("person")) {
+									result.append(separator).append(PersonLdap.class.getMethod(methodNameNext, null).invoke(personLdap).toString());
+								} else if (returnTypes[i].equals("organizationalUnit")) {
+									Object ou = PersonLdap.class.getMethod(methodNameNext).invoke(personLdap);
+									if (ou != null) {
+										List<Map<String, Object>> resultMap = getMapsOfOU(ou.toString(), "getDescription");
+										if (resultMap.size() > 0) {
+											result.append(separator).append(resultMap.get(0).get("value"));
+										}
 									}
 								}
 							}
 						}
+						stringObjectMap.put("value", result.toString());
+						stringObjectMap.put("text", result.toString());
+						mapList.add(stringObjectMap);
+					} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+						logger.error("error on get ldap search return attribut : " + returnValues[0], e);
 					}
-					stringObjectMap.put("value", result.toString());
-					stringObjectMap.put("text", result.toString());
-					mapList.add(stringObjectMap);
-				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-					logger.error("error on get ldap search return attribut : " + returnValues[0], e);
 				}
+			} else if (returnTypes[0].equals("organizationalUnit")) {
+				List<Map<String, Object>> resultMap = getMapsOfOU(searchString, methodName);
+				mapList.addAll(resultMap);
 			}
-		} else if (returnTypes[0].equals("organizationalUnit")) {
-			List<Map<String, Object>> resultMap = getMapsOfOU(searchString, methodName);
-			mapList.addAll(resultMap);
 		}
 		return mapList;
 	}

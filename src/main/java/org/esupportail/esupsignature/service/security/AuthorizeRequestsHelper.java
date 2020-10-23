@@ -24,6 +24,7 @@ public class AuthorizeRequestsHelper {
 		http.authorizeRequests()
 		.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 		.antMatchers("/user/", "/user/**").authenticated()
+		.antMatchers("/sse/", "/sse/**").authenticated()
 		.antMatchers("/webjars/**").permitAll();
 
 	}

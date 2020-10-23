@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class ScheduledTaskService {
 	private SignBookService signBookService;
 
 	@Resource
+	private SignRequestService signRequestService;
+
+	@Resource
 	private WorkflowService workflowService;
 
 	@Resource
@@ -48,7 +52,7 @@ public class ScheduledTaskService {
 	@Resource
 	private OJService oJService;
 
-	//@Scheduled(fixedRate = 600000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
@@ -57,7 +61,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -74,7 +78,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 3600000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
 		logger.trace("scan all signRequest to export");
@@ -88,16 +92,14 @@ public class ScheduledTaskService {
 		}
 	}
 
-
-
-	@Scheduled(fixedRate = 30000)
+	@Scheduled(fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				userService.sendEmailAlertSummary(user);
+				signRequestService.sendEmailAlertSummary(user);
 			}
 		}
 	}

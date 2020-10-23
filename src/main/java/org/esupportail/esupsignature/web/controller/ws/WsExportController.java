@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/ws/export/")
+@Transactional
 public class WsExportController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsExportController.class);
@@ -43,7 +45,7 @@ public class WsExportController {
             })
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-        List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+        List<Form> forms = formRepository.findFormByName(name);
         if (forms.size() > 0) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
@@ -64,7 +66,7 @@ public class WsExportController {
     @ResponseBody
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, String>> getFormDatasJson(@PathVariable String name) {
-        List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+        List<Form> forms = formRepository.findFormByName(name);
         if (forms.size() > 0) {
             try {
                 return dataExportService.getDatasToExport(forms);

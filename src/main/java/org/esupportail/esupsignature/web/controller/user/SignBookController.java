@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,9 @@ public class SignBookController {
     private SignBookService signBookService;
 
     @Resource
+    private FileService fileService;
+
+    @Resource
     private LogRepository logRepository;
 
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
@@ -83,6 +87,9 @@ public class SignBookController {
             logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
         }
         model.addAttribute("logs", logs);
+        List<WorkflowStep> allSteps = new ArrayList<>(signBook.getWorkflowSteps());
+        allSteps.remove(0);
+        model.addAttribute("allSteps", allSteps);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
@@ -154,6 +161,7 @@ public class SignBookController {
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
+                          @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -164,7 +172,12 @@ public class SignBookController {
             logger.error("error on add step", e);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
         }
-        signBook.getWorkflowSteps().add(workflowStep);
+        if (stepNumber == - 1) {
+            signBook.getWorkflowSteps().add(workflowStep);
+        } else {
+            signBook.getWorkflowSteps().add(stepNumber, workflowStep);
+        }
+        signBookService.pendingSignBook(signBook, user);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
@@ -264,11 +277,16 @@ public class SignBookController {
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("user") User user,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        SignBook signBook = signBookService.createSignBook(workflowName, name, user, false);
+
+        List<Workflow> workflows = workflowRepository.findByName(workflowName);
+        if(workflows.size() > 0) {
+            name = workflows.get(0).getTitle() + "_" + name;
+        }
+        SignBook signBook = signBookService.createSignBook(name, "", user, false);
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
         }

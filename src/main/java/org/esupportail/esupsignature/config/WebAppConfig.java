@@ -2,9 +2,11 @@ package org.esupportail.esupsignature.config;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
@@ -44,16 +46,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 						"classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")
 				.addResourceLocations("classpath:/META-INF/resources/");
-//
-//		VersionResourceResolver versionResourceResolver = new VersionResourceResolver()
-//				.addVersionStrategy(new ContentVersionStrategy(), "/**");
-//
     }
 
-//	@Override
-//	public void addCorsMappings(CorsRegistry registry) {
-//		registry.addMapping("/**");
-//	}
 
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
@@ -78,32 +72,15 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return commonsMultipartResolver;
 	}
 
-//	@Bean
-//	public WebMvcConfigurer corsConfigurer() {
-//		return new WebMvcConfigurerAdapter() {
-//			@Override
-//			public void addCorsMappings(CorsRegistry registry) {
-//				registry.addMapping("/**");
-//			}
-//		};
-//	}
-
-//	@Bean
-//	public CorsFilter corsFilter() {
-//	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//	    final CorsConfiguration config = new CorsConfiguration();
-//	    config.setAllowCredentials(true);
-//	    config.setAllowedOrigins(Collections.singletonList("*"));
-//	    config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept"));
-//	    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "OPTIONS", "DELETE", "PATCH"));
-//	    source.registerCorsConfiguration("/**", config);
-//	    return new CorsFilter(source);
-//	}
-
-//	@Bean
-//	public LocaleResolver localeResolver() {
-//		SessionLocaleResolver slr = new SessionLocaleResolver();
-//		slr.setDefaultLocale(Locale.FRENCH);
-//		return slr;
-//	}
+	@Bean
+	public FilterRegistrationBean registerOpenEntityManagerInViewFilterBean() {
+		FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
+		registrationBean.setFilter(filter);
+		registrationBean.setOrder(5);
+		registrationBean.addUrlPatterns("/user/", "/user/*",
+										"/admin/", "/admin/*"
+		);
+		return registrationBean;
+	}
 }
