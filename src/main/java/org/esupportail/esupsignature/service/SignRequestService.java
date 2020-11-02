@@ -152,47 +152,35 @@ public class SignRequestService {
 	}
 
 	public List<SignRequest> getSignRequestsByStatus(User user, String statusFilter) {
-		List<SignRequest> signRequests;
+		Set<SignRequest> signRequests = new HashSet<>();
 		if (statusFilter != null) {
 			if (statusFilter.equals("tosign")) {
-				signRequests = getToSignRequests(user);
+				signRequests.addAll(getToSignRequests(user));
 			} else if (statusFilter.equals("signedByMe")) {
-				signRequests = getSignRequestsSignedByUser(user);
+				signRequests.addAll(getSignRequestsSignedByUser(user));
 			} else if (statusFilter.equals("refusedByMe")) {
-				signRequests = getSignRequestsRefusedByUser(user);
+				signRequests.addAll(getSignRequestsRefusedByUser(user));
 			} else if (statusFilter.equals("followByMe")) {
-				signRequests = signRequestRepository.findByRecipientUser(user);
+				signRequests.addAll(signRequestRepository.findByRecipientUser(user));
 				signRequests.removeAll(getToSignRequests(user));
 				signRequests.removeAll(getSignRequestsSignedByUser(user));
 				signRequests.removeAll(getSignRequestsRefusedByUser(user));
 			} else if (statusFilter.equals("sharedSign")) {
-				signRequests = getSharedSignedSignRequests(user);
+				signRequests.addAll(getSharedSignedSignRequests(user));
 			} else {
-				signRequests = signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.valueOf(statusFilter));
+				signRequests.addAll(signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.valueOf(statusFilter)));
 			}
 		} else {
-			signRequests = signRequestRepository.findByCreateBy(user);
-			for(SignRequest signRequest : getToSignRequests(user)) {
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
-			}
-			for(SignRequest signRequest : getSignRequestsSignedByUser(user)) {
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
-			}
-			for(SignRequest signRequest : getSignRequestsRefusedByUser(user)) {
-				if(!signRequests.contains(signRequest)) {
-					signRequests.add(signRequest);
-				}
-			}
+			signRequests.addAll(signRequestRepository.findByCreateBy(user));
+			signRequests.addAll(getToSignRequests(user));
+			signRequests.addAll(getSignRequestsSignedByUser(user));
+			signRequests.addAll(getSignRequestsRefusedByUser(user));
 		}
-		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-			signRequest.setViewTitle(signRequest.getTitle());
-			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
-		}
-		return signRequests;
+//		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+//			signRequest.setViewTitle(signRequest.getTitle());
+//			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
+//		}
+		return new ArrayList<>(signRequests);
 	}
 
 	public List<SignRequest> getToSignRequests(User user) {
@@ -954,9 +942,9 @@ public class SignRequestService {
 		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
 			int last = signBookListEntry.getValue().size() - 1;
 			signBookListEntry.getValue().get(last).setViewTitle("");
-			for(SignRequest signRequest : signBookListEntry.getValue()) {
-				signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
-			}
+//			for(SignRequest signRequest : signBookListEntry.getValue()) {
+//				signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
+//			}
 			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
 		}
 		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
