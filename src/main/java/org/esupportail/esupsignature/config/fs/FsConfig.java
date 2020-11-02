@@ -31,6 +31,7 @@ public class FsConfig {
 		smbAccessImpl.setJcifsConfigProperties(smbProperties());
 		smbAccessImpl.setLogin(fsProperties.getSmbLogin());
 		smbAccessImpl.setPassword(fsProperties.getSmbPassword());
+		smbAccessImpl.setDomain(fsProperties.getSmbDomain());
 		return smbAccessImpl;
 	}
 

@@ -107,7 +107,7 @@ public class UserController {
     	authUser.setEmailAlertFrequency(emailAlertFrequency);
     	authUser.setEmailAlertHour(emailAlertHour);
     	authUser.setEmailAlertDay(emailAlertDay);
-    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres on été enregistrés"));
+    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
 		return "redirect:/user/users";
     }
 
