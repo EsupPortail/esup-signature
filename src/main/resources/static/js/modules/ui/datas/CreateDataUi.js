@@ -29,8 +29,10 @@ export class CreateDataUi {
         console.info("init change control")
         let inputs = $("#newData :input");
         $.each(inputs, (index, e) => this.listenForChange(e));
-        let saveButton = $('#saveButton');
-        saveButton.addClass('disabled');
+        if($("#sendModalButton").length) {
+            let saveButton = $('#saveButton');
+            saveButton.addClass('disabled');
+        }
         if(this.action) {
             this.initFormAction();
         }
