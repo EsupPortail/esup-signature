@@ -18,6 +18,7 @@ public final class PersonLdap {
 	private @Attribute(name = "givenName") String givenName;
 	private @Attribute(name = "displayName") String displayName;
 	private @Attribute(name = "schacDateOfBirth") String schacDateOfBirth;
+	private @Attribute(name = "schacPlaceOfBirth") String schacPlaceOfBirth;
 	private @Attribute(name = "mail") String mail;
 	private @Attribute(name = "md5UserPassword") String md5UserPassword;
 	private @Attribute(name = "cryptUserPassword") String cryptUserPassword;
