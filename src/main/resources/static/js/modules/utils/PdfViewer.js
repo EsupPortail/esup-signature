@@ -343,10 +343,10 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if(dataField.searchServiceName) {
-                    $(inputField).addClass("search-completion");
-                    $(inputField).attr("search-completion-service-name", dataField.searchServiceName);
-                    $(inputField).attr("search-completion-return", dataField.searchReturn);
-                    $(inputField).attr("search-completion-type", dataField.searchType);
+                    inputField.addClass("search-completion");
+                    inputField.attr("search-completion-service-name", dataField.searchServiceName);
+                    inputField.attr("search-completion-return", dataField.searchReturn);
+                    inputField.attr("search-completion-type", dataField.searchType);
                 }
 
                 if (dataField.type === "number") {
@@ -391,6 +391,8 @@ export class PdfViewer extends EventFactory {
                             vertical: 'bottom'
                         },
                     });
+                    inputField.off('dp.change');
+                    inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
                     $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
@@ -419,6 +421,8 @@ export class PdfViewer extends EventFactory {
                             vertical: 'bottom'
                         },
                     });
+                    inputField.off('dp.change');
+                    inputField.on('dp.change', e => this.fireEvent('change', ['time']));
                 }
             }
 

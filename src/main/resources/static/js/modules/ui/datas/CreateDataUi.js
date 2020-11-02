@@ -19,6 +19,7 @@ export class CreateDataUi {
         if(this.pdfViewer) {
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
+            this.pdfViewer.addEventListener('change', e => this.enableSave());
         }
         document.getElementById('saveButton').addEventListener('click', e => this.saveData(e));
         document.getElementById('saveForm').addEventListener('submit', e => this.saveData(e));
@@ -27,16 +28,24 @@ export class CreateDataUi {
     initChangeControl() {
         console.info("init change control")
         let inputs = $("#newData :input");
-        $.each(inputs, function() {
-            $(this).change(function () {
-                let sendModalButton = $('#sendModalButton');
-                sendModalButton.addClass('disabled');
-                sendModalButton.removeAttr('data-target');
-            });
-        });
+        $.each(inputs, (index, e) => this.listenForChange(e));
+        let saveButton = $('#saveButton');
+        saveButton.addClass('disabled');
         if(this.action) {
             this.initFormAction();
         }
+    }
+
+    listenForChange(input) {
+        $(input).change(e => this.enableSave());
+    }
+
+    enableSave() {
+        let sendModalButton = $('#sendModalButton');
+        sendModalButton.addClass('disabled');
+        sendModalButton.removeAttr('data-target');
+        let saveButton = $('#saveButton');
+        saveButton.removeClass('disabled');
     }
 
     initFormAction() {
