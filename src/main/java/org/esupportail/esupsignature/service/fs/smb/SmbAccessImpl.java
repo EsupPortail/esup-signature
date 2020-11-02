@@ -52,15 +52,16 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	@Resource
 	FileService fileService;
 
-	private NtlmPasswordAuthentication userAuthenticator;
+	private NtlmPasswordAuthenticator userAuthenticator;
 
 	protected SmbFile root;
+
+	private String domain;
 
 	private String login;
 	
 	private String password;
-	
-	
+
 	protected boolean jcifsSynchronizeRootListing = false;
 
 	/** CIFS properties */
@@ -86,7 +87,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			}
 
 			try {
-				userAuthenticator = new NtlmPasswordAuthentication(cifsContext, "UR", login, password);
+				userAuthenticator = new NtlmPasswordAuthenticator(domain, login, password);
 				cifsContext = cifsContext.withCredentials(userAuthenticator);
 				SmbFile smbFile = new SmbFile(this.getUri(), cifsContext);
 				if (smbFile.exists()) {
@@ -393,6 +394,10 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		this.close();
 	}
 
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
 	public void setLogin(String login) {
 		this.login = login;
 	}
@@ -400,5 +405,5 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+
 }
