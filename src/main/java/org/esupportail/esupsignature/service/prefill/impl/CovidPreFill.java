@@ -49,12 +49,19 @@ public class CovidPreFill implements PreFill {
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
 				if(field.getExtValueServiceName().equals("ldap")) {
-					String extValueName = field.getExtValueReturn();
-					if(ldapValues.containsKey(extValueName)) {
-						if(extValueName.equals("schacDateOfBirth")) {
-							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
-						} else {
-							field.setDefaultValue((String) ldapValues.get(extValueName));
+					if(field.getExtValueType().equals("person")) {
+						String extValueName = field.getExtValueReturn();
+						if (ldapValues.containsKey(extValueName)) {
+							if (extValueName.equals("schacDateOfBirth")) {
+								field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
+							} else {
+								field.setDefaultValue((String) ldapValues.get(extValueName));
+							}
+						}
+					} else if(field.getExtValueType().equals("organizationalUnit")) {
+						String extValueName = field.getExtValueReturn();
+						if (ldapValues.containsKey("supannEntiteAffectationPrincipale")) {
+							field.setDefaultValue(extLdapValue.search("organizationalUnit", ldapValues.get("supannEntiteAffectationPrincipale").toString(), extValueName).get(0).get("value").toString());
 						}
 					}
 				} else if(field.getExtValueServiceName().equals("default")) {
