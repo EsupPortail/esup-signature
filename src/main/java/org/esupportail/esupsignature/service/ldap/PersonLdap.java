@@ -18,6 +18,7 @@ public final class PersonLdap {
 	private @Attribute(name = "givenName") String givenName;
 	private @Attribute(name = "displayName") String displayName;
 	private @Attribute(name = "schacDateOfBirth") String schacDateOfBirth;
+	private @Attribute(name = "schacPlaceOfBirth") String schacPlaceOfBirth;
 	private @Attribute(name = "mail") String mail;
 	private @Attribute(name = "md5UserPassword") String md5UserPassword;
 	private @Attribute(name = "cryptUserPassword") String cryptUserPassword;
@@ -110,6 +111,14 @@ public final class PersonLdap {
 
 	public void setSchacDateOfBirth(String schacDateOfBirth) {
 		this.schacDateOfBirth = schacDateOfBirth;
+	}
+
+	public String getSchacPlaceOfBirth() {
+		return schacPlaceOfBirth;
+	}
+
+	public void setSchacPlaceOfBirth(String schacPlaceOfBirth) {
+		this.schacPlaceOfBirth = schacPlaceOfBirth;
 	}
 
 	public String getMail() {
