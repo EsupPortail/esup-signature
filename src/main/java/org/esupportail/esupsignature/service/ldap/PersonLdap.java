@@ -113,6 +113,14 @@ public final class PersonLdap {
 		this.schacDateOfBirth = schacDateOfBirth;
 	}
 
+	public String getSchacPlaceOfBirth() {
+		return schacPlaceOfBirth;
+	}
+
+	public void setSchacPlaceOfBirth(String schacPlaceOfBirth) {
+		this.schacPlaceOfBirth = schacPlaceOfBirth;
+	}
+
 	public String getMail() {
 		return mail;
 	}
