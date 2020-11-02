@@ -7,6 +7,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
+
     new CreateDataUi([[${form.action}]], [[${form.document.id}]], [[${fields}]]);
 </script>
 <body>
@@ -17,80 +18,103 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/datas">Mes brouillons</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Formulaire&nbsp;<span th:text="${form.title}"></span>&nbsp;<span th:if="${data.name}" th:text="' : ' + ${data.name}"></span>
+                <li class="breadcrumb-item active" aria-current="page">Formulaire&nbsp;<span
+                        th:text="${form.title}"></span>&nbsp;<span th:if="${data.name}"
+                                                                   th:text="' : ' + ${data.name}"></span>
                 </li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}" class="fixed-action-btn" >
-                <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
+            <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}"
+                 class="fixed-action-btn">
+                <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button"
+                   class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
                     <i class="fas fa-save"></i><br/>
                 </a>
-                <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
+                <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#"
+                   title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
             <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btns active">
                 <ul class="">
                     <li>
-                        <a id="sendModalButton" href="#" role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-lg btn-floating bg-primary wave-effect">
+                        <a id="sendModalButton" href="#" role="button" title="Démarrer la procédure"
+                           th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button"
+                           data-toggle="modal" data-target="#sendModal"
+                           class="btn-lg btn-floating bg-primary wave-effect">
                             <i class="fas fa-play"></i></a>
                     </li>
                     <li>
-                        <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button" class="btn-lg btn-floating bg-success wave-effect" data-toggle="modal" data-target="#saveModal">
+                        <a th:if="${form.needName}" role="button" title="Enregistrer les modifications" type="button"
+                           class="btn-lg btn-floating bg-success wave-effect" data-toggle="modal"
+                           data-target="#saveModal">
                             <i class="fas fa-save"></i>
                         </a>
-                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
+                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#"
+                           title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                             <i class="fas fa-save"></i>
                         </a>
                     </li>
                     <li>
-                        <a class="btn-floating btn-lg bg-danger wave-effect" href="#deleteModal" role="button" title="Supprimer" data-toggle="modal" data-target="#deleteModal">
+                        <a class="btn-floating btn-lg bg-danger wave-effect" href="#deleteModal" role="button"
+                           title="Supprimer" data-toggle="modal" data-target="#deleteModal">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                     </li>
                 </ul>
             </div>
 
-<!--            <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">-->
-<!--                <a role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#signButtons">-->
-<!--                    <i class="fas fa-ellipsis-v"></i>-->
-<!--                </a>-->
-<!--                <ul class="list-unstyled">-->
-<!--                    <li>-->
-<!--                        <a id="sendModalButton" role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary wave-effect">-->
-<!--                            <i class="fas fa-play"></i></a>-->
-<!--                    </li>-->
-<!--                    <li>-->
-<!--                        <a target="_blank" title="Exporter en PDF" th:if="${data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"-->
-<!--                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
-<!--                           class="btn-floating bg-danger wave-effect">-->
-<!--                            <i class="fas fa-file-pdf"></i>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                    <li>-->
-<!--                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating bg-success wave-effect">-->
-<!--                            <i class="fas fa-save"></i><br/>-->
-<!--                        </a>-->
-<!--                    </li>-->
-<!--                </ul>-->
-<!--            </div>-->
+            <!--            <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">-->
+            <!--                <a role="button" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#signButtons">-->
+            <!--                    <i class="fas fa-ellipsis-v"></i>-->
+            <!--                </a>-->
+            <!--                <ul class="list-unstyled">-->
+            <!--                    <li>-->
+            <!--                        <a id="sendModalButton" role="button" title="Démarrer la procédure" th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button" data-toggle="modal" data-target="#sendModal" class="btn-floating bg-primary wave-effect">-->
+            <!--                            <i class="fas fa-play"></i></a>-->
+            <!--                    </li>-->
+            <!--                    <li>-->
+            <!--                        <a target="_blank" title="Exporter en PDF" th:if="${data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"-->
+            <!--                           th:href="'/user/datas/' + ${data.id} + '/export-pdf'"-->
+            <!--                           class="btn-floating bg-danger wave-effect">-->
+            <!--                            <i class="fas fa-file-pdf"></i>-->
+            <!--                        </a>-->
+            <!--                    </li>-->
+            <!--                    <li>-->
+            <!--                        <a th:unless="${form.needName}" onclick="return false;" id="saveButton" href="#" title="Enregistrer les modifications" class="btn-floating bg-success wave-effect">-->
+            <!--                            <i class="fas fa-save"></i><br/>-->
+            <!--                        </a>-->
+            <!--                    </li>-->
+            <!--                </ul>-->
+            <!--            </div>-->
             <div class="tools">
                 <div class="d-flex mb-1">
-                    <div class="bg-light ml-1 p-1 pt-2 d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span id="page_count"></span></span></div>
-                    <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
+                    <div class="bg-light ml-1 p-1 pt-2 d-none d-lg-inline"><span>Page <span
+                            id="page_num"></span> / <span id="page_count"></span></span></div>
+                    <button title="Page précédente" id="prev" class="btn btn-light btn-outline-dark ml-1"
+                            aria-label="Précédent">
                         <i class="fas fa-arrow-up"></i>
                     </button>
-                    <button title="Page suivante" id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
+                    <button title="Page suivante" id="next" class="btn btn-light btn-outline-dark ml-1"
+                            aria-label="Prochain">
                         <i class="fas fa-arrow-down"></i>
                     </button>
-                    <button id="zoomout" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i></button>
-                    <button id="zoomin" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i></button>
-                    <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-expand"></i></button>
-                    <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-compress"></i></button>
+                    <button id="zoomout" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-minus"></i>
+                    </button>
+                    <button id="zoomin" class="btn btn-light btn-outline-dark ml-1"><i class="fas fa-search-plus"></i>
+                    </button>
+                    <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark ml-1"><i
+                            class="fas fa-expand"></i></button>
+                    <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ml-1"><i
+                            class="fas fa-compress"></i></button>
                     <div class="bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
-                    <button title="Rotation à droite" id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i></button>
-                    <button title="Rotation à gauche" id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i></button>
+                    <button title="Rotation à droite" id="rotateleft"
+                            class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-undo"></i>
+                    </button>
+                    <button title="Rotation à gauche" id="rotateright"
+                            class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i class="fas fa-redo"></i>
+                    </button>
                 </div>
             </div>
             <div id="workspace" class="workspace alert alert-secondary fadein justify-content-center">
@@ -104,75 +128,87 @@
     </div>
 </main>
 
-<div th:if="${data.status != null && data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div th:if="${data.status != null && data.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+     class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content modal-lg">
             <div class="modal-header">
-                <h3 class="modal-title">Démarrer le circuit</h3>
+                <h3 th:if="${steps.size() > 0}" class="modal-title">Démarrer le circuit</h3>
+                <h3 th:unless="${steps.size() > 0}" class="modal-title">Valider le document</h3>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <form th:action="'/user/datas/' + ${data.id} + '/send'" method="post" id="send">
-            <div class="modal-body">
-                    <p>
-                        La procédure "<span th:text="${form.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
-                    </p>
-                    <th:block th:each="step,iterator : ${steps}">
-                        <div class="form-group">
-                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
-                        </div>
-<!--                        <div th:if="${step.changeable == true}" class="form-group">-->
-<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
-<!--                        </div>-->
-<!--                        <div th:unless="${step.changeable == true}" class="form-group d-inline">-->
-<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>-->
-<!--                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">-->
-<!--                                <span th:if="${iterator.index > 0}"> ou </span>-->
-<!--                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>-->
-<!--                            </th:block>-->
-<!--                            <span>)</span>-->
-<!--                        </div>-->
-                        <br/>
-                    </th:block>
-                    <hr>
-                    <th:block th:each="step,iterator : ${steps}">
-                        <div th:if="${step.changeable == true}" class="form-group">
-                            <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
-                            <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >
-                                <th:block th:each="recipient : ${step.recipients}">
-                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
+                <div class="modal-body">
+                    <p th:unless="${steps.size() > 0}">Après la validation, vous pourrez télécharger le document</p>
+                    <div th:if="${steps.size() > 0}">
+                        <p>
+                            La procédure "<span th:text="${form.title}"></span>" comporte <span
+                                th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
+                        </p>
+                        <th:block th:each="step,iterator : ${steps}">
+                            <div class="form-group">
+                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
+                            </div>
+                            <!--                        <div th:if="${step.changeable == true}" class="form-group">-->
+                            <!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+                            <!--                        </div>-->
+                            <!--                        <div th:unless="${step.changeable == true}" class="form-group d-inline">-->
+                            <!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>-->
+                            <!--                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">-->
+                            <!--                                <span th:if="${iterator.index > 0}"> ou </span>-->
+                            <!--                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>-->
+                            <!--                            </th:block>-->
+                            <!--                            <span>)</span>-->
+                            <!--                        </div>-->
+                            <br/>
+                        </th:block>
+                        <hr>
+                        <th:block th:each="step,iterator : ${steps}">
+                            <div th:if="${step.changeable == true}" class="form-group">
+                                <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
+                                        th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
+                                <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}"
+                                        multiple="multiple" name="recipientEmails" required="required">
+                                    <th:block th:each="recipient : ${step.recipients}">
+                                        <option th:if="${recipient.user.email != null}" selected="selected"
+                                                th:text="${recipient.user.email}"
+                                                th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
+                                    </th:block>
+                                </select>
+                                <p class="small">
+                                    Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
+                                </p>
+                            </div>
+                        </th:block>
+                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
+                            <label>Etape finale : Envoi par mail à </label>
+                            <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
+                                <th:block th:each="targetEmail : ${targetEmails}">
+                                    <option selected="selected" th:text="${targetEmail}"
+                                            th:value="${targetEmail}"></option>
                                 </th:block>
                             </select>
-                            <p class="small">
-                                Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
-                            </p>
+                            <script th:inline="javascript" type="module">
+                                import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
+
+                                new SelectUser("targetEmailsSelect");
+                            </script>
                         </div>
-                    </th:block>
-                    <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
-                        <label>Etape finale : Envoi par mail à </label>
-                        <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
-                            <th:block th:each="targetEmail : ${targetEmails}">
-                                <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
-                            </th:block>
-                        </select>
-                        <script th:inline="javascript" type="module">
-                            import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
-                            new SelectUser("targetEmailsSelect");
-                        </script>
                     </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
-                <button type="submit" class="btn btn-success">Valider</button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Valider</button>
+                </div>
             </form>
             <script type="javascript">
-                $("#send").on('submit', function(e){
+                $("#send").on('submit', function (e) {
                     e.preventDefault();
                     alert("Merci de saisir les participants");
-                    if( $(e.target).is(':invalid') ){
+                    if ($(e.target).is(':invalid')) {
                         alert("Merci de saisir les participants");
                     }
                 });
@@ -187,17 +223,18 @@
                 <h5>Enregistrement du document</h5>
             </div>
             <form id="saveForm">
-            <div class="modal-body text-center">
-                <div class="form-group">
-                    <input id="tempName" autocomplete="no" class="form-control" type="text" name="name" placeholder="Saisir un nom pour ce document" th:value="${data.name}" />
+                <div class="modal-body text-center">
+                    <div class="form-group">
+                        <input id="tempName" autocomplete="no" class="form-control" type="text" name="name"
+                               placeholder="Saisir un nom pour ce document" th:value="${data.name}"/>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
-                    Fermer
-                </button>
-                <button type="submit" class="btn btn-success">Enregistrer</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                        Fermer
+                    </button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
+                </div>
             </form>
         </div>
     </div>

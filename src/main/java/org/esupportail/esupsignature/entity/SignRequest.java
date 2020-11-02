@@ -37,12 +37,12 @@ public class SignRequest {
     private String exportedDocumentURI;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 

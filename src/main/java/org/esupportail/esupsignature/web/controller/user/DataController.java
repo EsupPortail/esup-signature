@@ -274,7 +274,11 @@ public class DataController {
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			try {
 				SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user);
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
+				if(signBook.getStatus().equals(SignRequestStatus.pending)) {
+					redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "La procédure est démarrée"));
+				} else {
+					redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le document est prêt"));
+				}
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 			} catch (EsupSignatureException | InterruptedException e) {
 				logger.error(e.getMessage(), e);
