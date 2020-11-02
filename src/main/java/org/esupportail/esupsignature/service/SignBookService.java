@@ -349,7 +349,7 @@ public class SignBookService {
                 logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
             } else {
                 completeSignBook(signBook);
-                logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étapes");
+                logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
                 break;
             }
         }
