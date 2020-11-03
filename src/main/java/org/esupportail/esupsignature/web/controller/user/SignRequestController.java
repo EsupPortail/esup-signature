@@ -140,7 +140,7 @@ public class SignRequestController {
     @GetMapping
     public String list(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+                       @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, Model model) {
         model.addAttribute("statusFilter", statusFilter);
         List<SignRequest> signRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, statusFilter);
         model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));

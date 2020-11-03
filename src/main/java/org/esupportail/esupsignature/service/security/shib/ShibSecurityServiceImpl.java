@@ -107,7 +107,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		if(shibProperties.getGroupMappingRoleAdmin() != null) {
 			groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
 		}
-		groupService.setGroups4eppnSpel(groups4eppnSpel);
+//		groupService.setGroups4eppnSpel(groups4eppnSpel);
 		
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setMappingGroupesRoles(mappingGroupesRoles);
