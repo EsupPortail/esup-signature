@@ -14,7 +14,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom {
-	Long countById(Long id);
+    Long countById(Long id);
+    List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);
     Long countByToken(String token);
     @Query("select s from SignRequest s join s.recipients r where r.user = :recipientUser and r.signed is false")
