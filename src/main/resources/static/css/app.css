@@ -767,8 +767,8 @@ float:left;
 }
 
 .disabled-field {
-    background-color: #b3b7bb !important;
-    border-color: black !important;
+    background-color: #eeeeee !important;
+    border-color: #eeeeee !important;
 }
 
 .crop {
