@@ -172,14 +172,12 @@ public class SignRequestService {
 			}
 		} else {
 			signRequests.addAll(signRequestRepository.findByCreateBy(user));
-			signRequests.addAll(getToSignRequests(user));
-			signRequests.addAll(getSignRequestsSignedByUser(user));
-			signRequests.addAll(getSignRequestsRefusedByUser(user));
+
 		}
-//		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-//			signRequest.setViewTitle(signRequest.getTitle());
-//			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
-//		}
+		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+			signRequest.setViewTitle(signRequest.getTitle());
+			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
+		}
 		return new ArrayList<>(signRequests);
 	}
 
