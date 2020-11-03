@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -112,7 +113,18 @@ public class DataService {
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
-        signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(generateFile(data), name + ".pdf", "application/pdf"));
+        InputStream inputStream = generateFile(data);
+        if(signBook.getWorkflowSteps().size() == 0) {
+            try {
+                inputStream = pdfService.convertGS(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
+
+        signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
         signBookService.importWorkflow(signBook, workflow);
