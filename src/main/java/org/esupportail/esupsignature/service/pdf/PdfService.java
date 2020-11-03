@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -553,7 +554,12 @@ public class PdfService {
                             }
                         } else {
                             if (!(pdField instanceof PDSignatureField)) {
+                                PDAnnotationWidget ww = pdField.getWidgets().get(0);
                                 pdField.setValue(datas.get(filedName));
+                                pdField.getCOSObject().setNeedToBeUpdated(true);
+                                pdField.getCOSObject().removeItem(COSName.AA);
+                                pdField.getCOSObject().removeItem(COSName.AP);
+                                pdField.getCOSObject().setString(COSName.DA, "/Helv 11 Tf 0 g");
                             }
                         }
                     }

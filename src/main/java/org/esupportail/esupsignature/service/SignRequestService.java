@@ -174,10 +174,10 @@ public class SignRequestService {
 			signRequests.addAll(signRequestRepository.findByCreateBy(user));
 
 		}
-		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-			signRequest.setViewTitle(signRequest.getTitle());
-			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
-		}
+//		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
+//			signRequest.setViewTitle(signRequest.getTitle());
+//			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
+//		}
 		return new ArrayList<>(signRequests);
 	}
 
@@ -202,17 +202,11 @@ public class SignRequestService {
 	}
 
 	private List<SignRequest> getSignRequestsFromLogs(List<Log> logs) {
-		Set<SignRequest> signRequests = new HashSet<>();
+		List<Long> ids = new ArrayList<>();
 		for (Log log : logs) {
-			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
-			try {
-				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
-				signRequests.add(signRequest);
-			} catch (Exception e) {
-				logger.debug(e.getMessage());
-			}
+			ids.add(log.getSignRequestId());
 		}
-		return new ArrayList<>(signRequests);
+		return signRequestRepository.findByIdIn(ids);
 	}
 
 
