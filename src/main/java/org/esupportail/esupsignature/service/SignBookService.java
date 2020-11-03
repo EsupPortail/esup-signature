@@ -412,6 +412,7 @@ public class SignBookService {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
         }
+        signBookName += "_" + user.getEppn();
         return signBookName;
     }
 }
