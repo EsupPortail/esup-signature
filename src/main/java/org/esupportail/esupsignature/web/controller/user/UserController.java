@@ -95,6 +95,7 @@ public class UserController {
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+
             if(authUser.getKeystore() != null) {
             	bigFileRepository.delete(authUser.getKeystore().getBigFile());
             	documentRepository.delete(authUser.getKeystore());
