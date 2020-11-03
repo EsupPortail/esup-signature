@@ -88,7 +88,9 @@ public class SignBookController {
         }
         model.addAttribute("logs", logs);
         List<WorkflowStep> allSteps = new ArrayList<>(signBook.getWorkflowSteps());
-        allSteps.remove(0);
+        if(allSteps.size() > 0) {
+            allSteps.remove(0);
+        }
         model.addAttribute("allSteps", allSteps);
         model.addAttribute("signBook", signBook);
         model.addAttribute("signTypes", SignType.values());
