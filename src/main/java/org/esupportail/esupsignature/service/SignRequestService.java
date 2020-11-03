@@ -204,19 +204,19 @@ public class SignRequestService {
 	}
 
 	private List<SignRequest> getSignRequestsFromLogs(List<Log> logs) {
-		List<SignRequest> allSignRequests = new ArrayList<>();
-		signRequestRepository.findAll().forEach(allSignRequests::add);
 		Set<SignRequest> signRequests = new HashSet<>();
 		for (Log log : logs) {
 			logger.debug("find log : " + log.getSignRequestId() + ", " + log.getFinalStatus());
 			try {
-				signRequests.add(allSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(log.getSignRequestId())).findFirst().get());
+				SignRequest signRequest = signRequestRepository.findById(log.getSignRequestId()).get();
+				signRequests.add(signRequest);
 			} catch (Exception e) {
 				logger.debug(e.getMessage());
 			}
 		}
 		return new ArrayList<>(signRequests);
 	}
+
 
 	public List<SignRequest> getSharedToSignSignRequests(User user) {
 		List<SignRequest> sharedSignRequests = new ArrayList<>();
