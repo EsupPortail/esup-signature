@@ -62,7 +62,7 @@
                                     <td>
                                         <table class="table table-sm">
                                             <tbody>
-                                            <th:block th:each="recipient : ${signRequest.recipients}">
+                                            <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                                                 <tr>
                                                     <td width="100%"
                                                         th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>

@@ -1,14 +1,12 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.service.LiveWorkflowService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
@@ -44,6 +42,9 @@ public class WizardController {
 
     @Resource
     private SignBookService signBookService;
+
+    @Resource
+    private LiveWorkflowService liveWorkflowService;
 
     @GetMapping(value = "/wiz1")
     public String wiz1(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
@@ -116,8 +117,8 @@ public class WizardController {
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-                WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
-                signBook.getWorkflowSteps().add(workflowStep);
+                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());
@@ -126,7 +127,7 @@ public class WizardController {
                 end = true;
             }
             if(end != null) {
-                if(signBook.getWorkflowSteps().size() >  0) {
+                if(signBook.getLiveWorkflow().getWorkflowSteps().size() >  0) {
                     signBookService.nextWorkFlowStep(signBook);
                     signBookService.pendingSignBook(signBook, user);
                     return "redirect:/user/wizard/wiz5/" + signBook.getId();

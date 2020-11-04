@@ -7,7 +7,6 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-
     new CreateDataUi([[${form.action}]], [[${form.document.id}]], [[${fields}]]);
 </script>
 <body>
@@ -170,12 +169,12 @@
                             <div th:if="${step.changeable == true}" class="form-group">
                                 <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
                                         th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
-                                <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}"
+                                <select class="select-users" th:id="'recipientEmailsSelect_' + ${steps.getCurrentStepNumber()}"
                                         multiple="multiple" name="recipientEmails" required="required">
                                     <th:block th:each="recipient : ${step.recipients}">
                                         <option th:if="${recipient.user.email != null}" selected="selected"
                                                 th:text="${recipient.user.email}"
-                                                th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>
+                                                th:value="${steps.getCurrentStepNumber()} + '*' + ${recipient.user.email}"></option>
                                     </th:block>
                                 </select>
                                 <p class="small">

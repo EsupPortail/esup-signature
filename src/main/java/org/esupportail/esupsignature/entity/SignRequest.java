@@ -37,12 +37,12 @@ public class SignRequest {
     private String exportedDocumentURI;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
@@ -61,18 +61,8 @@ public class SignRequest {
     @ManyToOne
     private SignBook parentSignBook;
 
-    private Integer currentStepNumber = 0;
-
-    @Enumerated(EnumType.STRING)
-    private SignType signType;
-
-    private Boolean allSignToComplete = false;
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Recipient> recipients = new ArrayList<>();
 
     @JsonIgnore
     @Transient
@@ -206,44 +196,12 @@ public class SignRequest {
         this.parentSignBook = parentSignBook;
     }
 
-    public Integer getCurrentStepNumber() {
-        return currentStepNumber;
-    }
-
-    public void setCurrentStepNumber(Integer currentStepNumber) {
-        this.currentStepNumber = currentStepNumber;
-    }
-
-    public SignType getSignType() {
-        return signType;
-    }
-
-    public void setSignType(SignType signType) {
-        this.signType = signType;
-    }
-
-    public Boolean getAllSignToComplete() {
-        return allSignToComplete;
-    }
-
-    public void setAllSignToComplete(Boolean allSignToComplete) {
-        this.allSignToComplete = allSignToComplete;
-    }
-
     public List<SignRequestParams> getSignRequestParams() {
         return signRequestParams;
     }
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
-    }
-
-    public List<Recipient> getRecipients() {
-        return recipients;
-    }
-
-    public void setRecipients(List<Recipient> recipients) {
-        this.recipients = recipients;
     }
 
     public String getViewTitle() {
@@ -287,9 +245,9 @@ public class SignRequest {
     }
 
     public SignRequestParams getCurrentSignRequestParams() {
-        if(currentStepNumber > 0 && getSignRequestParams().size() > currentStepNumber - 1) {
-            if(parentSignBook == null || (signedDocuments.size() < 1 || !allSignToComplete)) {
-                return getSignRequestParams().get(currentStepNumber - 1);
+        if(parentSignBook.getLiveWorkflow().getCurrentStepNumber() > 0 && getSignRequestParams().size() > parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1) {
+            if(parentSignBook == null || (signedDocuments.size() < 1 || !parentSignBook.getLiveWorkflow().getCurrentStep().getAllSignToComplete())) {
+                return getSignRequestParams().get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
             }
         }
         SignRequestParams signRequestParams = new SignRequestParams();

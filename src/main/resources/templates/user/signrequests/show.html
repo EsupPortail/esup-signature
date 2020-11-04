@@ -25,7 +25,7 @@
         signable,
         [[${postits}]],
         [[${documentType == 'pdf'}]],
-        [[${signRequest.currentStepNumber}]],
+        [[${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${_csrf}]]
@@ -302,7 +302,7 @@
                 <div class="modal-body">
                     <div class="form-group" th:if="${isTempUsers}">
                         <label>Des destinataires ne sont pas connus dans le système, merci de saisir les informations complémentaires si besoin</label>
-                        <th:block th:each="workflow : ${signRequest.parentSignBook.workflowSteps}">
+                        <th:block th:each="workflow : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
                             <th:block th:each="recipient : ${workflow.recipients}">
                                 <div th:if="${recipient.user.name == recipient.user.email && recipient.user.userType.name() == 'external'}">
                                     <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>

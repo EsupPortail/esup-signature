@@ -133,6 +133,9 @@ public class SignRequestController {
     @Resource
     private EventService eventService;
 
+    @Resource
+    private LiveWorkflowService liveWorkflowService;
+
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -213,7 +216,7 @@ public class SignRequestController {
                     List<Field> fields = data.getForm().getFields();
                     List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
                     for (Field field : prefilledFields) {
-                        if(!field.getStepNumbers().contains(signRequest.getCurrentStepNumber().toString())) {
+                        if(!field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
                             field.setDefaultValue("");
                         }
                         if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
@@ -223,7 +226,7 @@ public class SignRequestController {
                     model.addAttribute("fields", prefilledFields);
                 }
             }
-            Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getWorkflowName());
+            Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getName());
             if(workflow != null) {
                 model.addAttribute("workflow", workflow);
                 if(workflow.getWorkflowSteps() != null) {
@@ -236,7 +239,7 @@ public class SignRequestController {
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
                 if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-                    if(signRequestService.checkUserSignRights(user, authUser, signRequest) && user.getKeystore() == null && signRequest.getSignType().equals(SignType.certSign)) {
+                    if(signRequestService.checkUserSignRights(user, authUser, signRequest) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
                         signRequest.setSignable(false);
                         model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d’ajouter un certificat à votre profil"));
                     }
@@ -249,14 +252,14 @@ public class SignRequestController {
                     model.addAttribute("signWidth", size[0]);
                     model.addAttribute("signHeight", size[1]);
                 } else {
-                    if(signRequest.getSignable() && signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.pdfImageStamp) || signRequest.getSignType().equals(SignType.certSign))) {
+                    if(signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
                         model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>"));
                         signRequest.setSignable(false);
                     }
                 }
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             } else {
-                if(signRequest.getSignType() != null && (signRequest.getSignType().equals(SignType.certSign) || signRequest.getSignType().equals(SignType.nexuSign))) {
+                if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign))) {
                     signRequest.setSignable(true);
                 }
                 model.addAttribute("documentType", "other");
@@ -338,7 +341,7 @@ public class SignRequestController {
                         if(formfields.size() > 0) {
                             if(!formfields.get(0).getExtValueType().equals("system")) {
                                 List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
-                                if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getCurrentStepNumber().toString())) {
+                                if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
                                     data.getDatas().put(entry.getKey(), entry.getValue());
                                 }
                             } else {
@@ -423,21 +426,23 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
-                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
+                                    HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureException, EsupSignatureIOException {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
+
             if (signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
-                SignRequest signRequest = signRequestService.createSignRequest(multipartFiles[0].getOriginalFilename(), user);
+                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Fast sign", multipartFiles);
                 try {
-                    signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-                } catch (EsupSignatureIOException e) {
+                    signBookRepository.save(signBook);
+                    signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), false, signType, user.getEmail()));
+                    signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
+                } catch (EsupSignatureUserException e) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de charger le document : documents corrompu"));
                     return "redirect:" + request.getHeader("Referer");
                 }
-                signRequestService.addRecipients(signRequest, user);
+                signBookService.pendingSignBook(signBook, user);
 
-                signRequestService.pendingSignRequest(signRequest, signType, false);
-                return "redirect:/user/signrequests/" + signRequest.getId();
+                return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType()));
                 return "redirect:" + request.getHeader("Referer");
@@ -463,10 +468,10 @@ public class SignRequestController {
             }
 
             SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
-            signBook.setCurrentWorkflowStepNumber(1);
             try {
                 signBookRepository.save(signBook);
-                signBook.getWorkflowSteps().add(workflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
+                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
             } catch (EsupSignatureUserException e) {
                 logger.error("error with users on create signbook " + signBook.getId());
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème lors de l’envoi"));
@@ -667,7 +672,7 @@ public class SignRequestController {
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequest.setSignType(signType);
+        signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
@@ -745,11 +750,11 @@ public class SignRequestController {
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         signRequestService.addRecipients(signRequest, recipientsEmails);
-        signRequest.setSignType(signType);
+        signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
         if (allSignToComplete != null && allSignToComplete) {
-            signRequest.setAllSignToComplete(true);
+            signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(true);
         } else {
-            signRequest.setAllSignToComplete(false);
+            signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(false);
         }
         return "redirect:/user/signrequests/" + id + "/?form";
     }

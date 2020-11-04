@@ -26,8 +26,8 @@ public class UserPropertieService {
             int nbUpdated = 0;
             for(UserPropertie userPropertie : userProperties) {
                 List<String> recipientEmails = new ArrayList<>();
-                for(Recipient recipient : workflowStep.getRecipients()) {
-                    recipientEmails.add(recipient.getUser().getEmail());
+                for(User oneUser : workflowStep.getUsers()) {
+                    recipientEmails.add(oneUser.getEmail());
 //                    recipientRepository.save(recipient);
                 }
                 if(userPropertie.getRecipients().containsAll(recipientEmails)) {
@@ -51,8 +51,8 @@ public class UserPropertieService {
         userPropertie.setStep(step);
         userPropertie.setForm(form);
         userPropertie.setScore(1);
-        for(Recipient recipient : workflowStep.getRecipients()) {
-            userPropertie.getRecipients().add(recipient.getUser().getEmail());
+        for(User oneUser : workflowStep.getUsers()) {
+            userPropertie.getRecipients().add(oneUser.getEmail());
         }
         userPropertie.setUser(user);
         userPropertieRepository.save(userPropertie);

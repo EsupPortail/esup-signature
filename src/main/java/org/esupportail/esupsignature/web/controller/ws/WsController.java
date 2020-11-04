@@ -15,10 +15,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.barcode.DdDocService;
 import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.fs.FsFile;
@@ -80,6 +77,9 @@ public class WsController {
 
     @Resource
     private DdDocService ddDocService;
+
+    @Resource
+    private LiveWorkflowService liveWorkflowService;
 
     @ResponseBody
     @PostMapping(value = "/create-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -162,8 +162,8 @@ public class WsController {
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         signType = signRequestService.getSignTypeByLevel(level);
-        WorkflowStep workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
-        signBook.getWorkflowSteps().add(workflowStep);
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -412,7 +412,7 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignRequestStatus jsonSignRequestStatus = new JsonSignRequestStatus();
                 jsonSignRequestStatus.setStatus(signRequest.getStatus().toString());
-                for (Recipient recipient : signRequest.getRecipients()) {
+                for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                     User user = recipient.getUser();
                     jsonSignRequestStatus.getNextRecipientNames().add(user.getName());
                     jsonSignRequestStatus.getNextRecipientEppns().add(user.getEppn());
@@ -433,8 +433,8 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignRequestStatus jsonSignRequestStatus = new JsonSignRequestStatus();
                 jsonSignRequestStatus.setStatus(signRequest.getStatus().toString());
-                if(signRequest.getParentSignBook().getWorkflowSteps().size() > 0 ) {
-                    for (Recipient recipient : signRequest.getRecipients()) {
+                if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0 ) {
+                    for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                         User user = recipient.getUser();
                         jsonSignRequestStatus.getNextRecipientNames().add(user.getName());
                         jsonSignRequestStatus.getNextRecipientEppns().add(user.getEppn());

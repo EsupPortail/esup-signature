@@ -10,10 +10,7 @@ import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -70,6 +67,9 @@ public class SignBookController {
     @Resource
     private LogRepository logRepository;
 
+    @Resource
+    private LiveWorkflowService liveWorkflowService;
+
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
@@ -87,8 +87,8 @@ public class SignBookController {
             logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
         }
         model.addAttribute("logs", logs);
-        List<WorkflowStep> allSteps = new ArrayList<>(signBook.getWorkflowSteps());
-        if(allSteps.size() > 0) {
+        List<LiveWorkflowStep> allSteps = new ArrayList<>(signBook.getLiveWorkflow().getWorkflowSteps());
+        if (allSteps.size() > 0) {
             allSteps.remove(0);
         }
         model.addAttribute("allSteps", allSteps);
@@ -148,7 +148,7 @@ public class SignBookController {
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if(user.equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
+        if(user.equals(signBook.getCreateBy()) && signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
             if(allSignToComplete == null) {
                 allSignToComplete = false;
             }
@@ -167,17 +167,17 @@ public class SignBookController {
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
-        WorkflowStep workflowStep = null;
+        LiveWorkflowStep liveWorkflowStep = null;
         try {
-            workflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         } catch (EsupSignatureUserException e) {
             logger.error("error on add step", e);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
         }
         if (stepNumber == - 1) {
-            signBook.getWorkflowSteps().add(workflowStep);
+            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
         } else {
-            signBook.getWorkflowSteps().add(stepNumber, workflowStep);
+            signBook.getLiveWorkflow().getWorkflowSteps().add(stepNumber, liveWorkflowStep);
         }
         signBookService.pendingSignBook(signBook, user);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
@@ -188,7 +188,7 @@ public class SignBookController {
     @DeleteMapping(value = "/remove-step/{id}/{step}")
     public String removeStep(@ModelAttribute("user") User user, @PathVariable("id") Long id, @PathVariable("step") Integer step) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getCurrentWorkflowStepNumber() <= step + 1) {
+        if(signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
             signBookService.removeStep(signBook, step);
         }
         return "redirect:/user/signbooks/" + id + "/?form";
@@ -218,8 +218,8 @@ public class SignBookController {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
-            WorkflowStep workflowStep = signBookService.getCurrentWorkflowStep(signBook);
-            signRequestService.pendingSignRequest(signRequest, workflowStep.getSignType(), workflowStep.getAllSignToComplete());
+            LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
+            signRequestService.pendingSignRequest(signRequest, liveWorkflowStep.getSignType(), liveWorkflowStep.getAllSignToComplete());
         }
         return "redirect:/user/signbooks/" + id + "/?form";
     }

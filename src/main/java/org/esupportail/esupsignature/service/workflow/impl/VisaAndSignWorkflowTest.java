@@ -49,15 +49,14 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
         workflowStep1.setName("Directeur de composante du lieu d’accueil");
-        workflowStep1.setStepNumber(1);
         workflowStep1.setDescription("Visa du directeur de composante du lieu d’accueil");
         workflowStep1.setSignType(SignType.visa);
         if(data != null) {
             workflowStep1.setParentType("data");
             workflowStep1.setParentId(data.getId());
-            workflowStep1.setRecipients(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipientEmailsStep, user));
+            workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipientEmailsStep, user));
         } else {
-            workflowStep1.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+            workflowStep1.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
         }
         workflowStep1.setChangeable(true);
         workflowStep1.setMaxRecipients(1);
@@ -66,18 +65,17 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         String step2Recipient = "paul.tavernier1@univ-rouen.fr";
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setName("Président de l’université");
-        workflowStep2.setStepNumber(2);
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
-        List<Recipient> recipientsStep2 = new ArrayList<>();
+        List<User> recipientsStep2 = new ArrayList<>();
         if(data != null) {
             workflowStep2.setParentType("data");
             workflowStep2.setParentId(data.getId());
-            recipientsStep2.add(recipientService.createRecipient(data.getId(), userService.checkUserByEmail(step2Recipient)));
+            recipientsStep2.add(userService.checkUserByEmail(step2Recipient));
         } else {
-            recipientsStep2.add(recipientService.createRecipient(null, userService.getGenericUser(step2Recipient, "")));
+            recipientsStep2.add(userService.getGenericUser(step2Recipient, ""));
         }
-        workflowStep2.setRecipients(recipientsStep2);
+        workflowStep2.setUsers(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
         workflowSteps.add(workflowStep2);
         return workflowSteps;

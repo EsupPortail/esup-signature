@@ -20,12 +20,10 @@ public class WorkflowStep {
 
     private String description;
 
-    private Integer stepNumber;
-
     private Integer maxRecipients = 99;
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<Recipient> recipients = new ArrayList<>();
+    private List<User> users = new ArrayList<>();
 
     private Boolean changeable = false;
 
@@ -62,12 +60,12 @@ public class WorkflowStep {
         this.name = name;
     }
 
-    public List<Recipient> getRecipients() {
-        return recipients;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setRecipients(List<Recipient> recipients) {
-        this.recipients = recipients;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public Boolean getAllSignToComplete() {
@@ -92,14 +90,6 @@ public class WorkflowStep {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Integer getStepNumber() {
-        return stepNumber;
-    }
-
-    public void setStepNumber(Integer stepNumber) {
-        this.stepNumber = stepNumber;
     }
 
     public Boolean getChangeable() {

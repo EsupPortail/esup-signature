@@ -80,6 +80,11 @@ public class WorkflowService {
     @Resource
     private PdfService pdfService;
 
+    @Resource
+    private LiveWorkflowService liveWorkflowService;
+
+    @Resource LiveWorkflowStepRepository liveWorkflowStepRepository;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator;
@@ -100,9 +105,7 @@ public class WorkflowService {
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
             workflowStep.setParentType("system");
-            Recipient recipient = recipientService.createRecipient(workflowStep.getId(), creator);
-            recipientRepository.save(recipient);
-            workflowStep.getRecipients().add(recipient);
+            workflowStep.getUsers().add(creator);
             workflowStepRepository.save(workflowStep);
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
@@ -178,8 +181,8 @@ public class WorkflowService {
                             documentName = metadatas.get("Title");
                         }
                         SignBook signBook = signBookService.createSignBook(workflow.getTitle() , documentName  + "_" + nbImportedFiles, user, false);
-                        signBook.setTargetType(workflow.getTargetType());
-                        signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+                        signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
+                        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                         SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
                         if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                             user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
@@ -207,17 +210,17 @@ public class WorkflowService {
                                     String[] stepSplit = keySplit[1].split("#");
                                     ObjectMapper mapper = new ObjectMapper();
                                     List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                    WorkflowStep workflowStep = createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
-                                    signBook.getWorkflowSteps().add(workflowStep);
+                                    LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                    signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                                 }
                                 if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                     String target = metadatas.get(metadataKey);
                                     if(target.contains("://")) {
-                                        signBook.setDocumentsTargetUri(target.replace("\\", "/"));
+                                        signBook.getLiveWorkflow().setDocumentsTargetUri(target.replace("\\", "/"));
                                     } else {
-                                        signBook.setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
+                                        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
                                     }
-                                    logger.info("target set to : " + signBook.getDocumentsTargetUri());
+                                    logger.info("target set to : " + signBook.getLiveWorkflow().getDocumentsTargetUri());
                                 }
                             }
                         } else {
@@ -279,17 +282,13 @@ public class WorkflowService {
                 recipientUser = userRepository.findByEmail(recipientEmail).get(0);
             }
             if(workflowStep.getId() != null) {
-                for (Recipient recipient : workflowStep.getRecipients()) {
-                    if (recipient.getUser().equals(recipientUser)) {
+                for (User user : workflowStep.getUsers()) {
+                    if (user.equals(recipientUser)) {
                         return;
                     }
                 }
             }
-            Recipient recipient = recipientService.createRecipient(workflowStep.getId(), recipientUser);
-            recipient.setParentId(workflowStep.getId());
-            recipient.setParentType("workflow");
-            recipientRepository.save(recipient);
-            workflowStep.getRecipients().add(recipient);
+            workflowStep.getUsers().add(recipientUser);
         }
     }
 
@@ -313,8 +312,8 @@ public class WorkflowService {
         return workflowStep;
     }
 
-    public boolean isWorkflowStepFullSigned(WorkflowStep workflowStep) {
-        for(Recipient recipient : workflowStep.getRecipients()) {
+    public boolean isWorkflowStepFullSigned(LiveWorkflowStep liveWorkflowStep) {
+        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
             if(!recipient.getSigned()) {
                 return false;
             }
@@ -370,21 +369,21 @@ public class WorkflowService {
         return null;
     }
 
-    public List<Recipient> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
-        List<Recipient> recipients = new ArrayList<>();
+    public List<User> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
+        List<User> users = new ArrayList<>();
         if(recipientEmails != null && recipientEmails.size() > 0) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
             for(String recipientEmail : recipientEmails) {
-                recipients.add(recipientService.getRecipientByEmail(form.getId(), recipientEmail.substring(recipientEmail.indexOf("*") + 1)));
+                users.add(userService.checkUserByEmail(recipientEmail));
             }
         } else {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
             for(String email : favoritesEmail) {
                 User recipientUser = userService.checkUserByEmail(email);
-                recipients.add(recipientService.createRecipient(null, recipientUser));
+                users.add(recipientUser);
             }
         }
-        return recipients;
+        return users;
     }
 
     public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) throws EsupSignatureException {
@@ -406,11 +405,11 @@ public class WorkflowService {
                     replaceStepCreatorByUser(user, workflowStep);
                     entityManager.detach(workflowStep);
                     if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                        workflowStep.getRecipients().clear();
-                        List<Recipient> recipients = getFavoriteRecipientEmail(workflowStep.getStepNumber(), data.getForm(), recipientEmails, user);
-                        for (Recipient recipient : recipients) {
-                            workflowStep.getRecipients().add(recipient);
-                            entityManager.detach(recipient);
+                        workflowStep.getUsers().clear();
+                        List<User> recipients = getFavoriteRecipientEmail(step, data.getForm(), recipientEmails, user);
+                        for (User oneUser : recipients) {
+                            workflowStep.getUsers().add(user);
+                            entityManager.detach(user);
                         }
                         if(recipientEmails != null) {
                             userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
@@ -430,12 +429,16 @@ public class WorkflowService {
     }
 
     private void replaceStepCreatorByUser(User user, WorkflowStep workflowStep) {
-        for(Recipient recipient : workflowStep.getRecipients()) {
-            entityManager.detach(recipient);
-            if (recipient.getUser().getEppn().equals("creator")) {
-                recipient.setUser(user);
+        List<User> users = new ArrayList<>();
+        for(User oneUser : workflowStep.getUsers()) {
+            if (oneUser.getEppn().equals("creator")) {
+                users.add(user);
+            } else {
+                users.add(oneUser);
             }
         }
+        workflowStep.getUsers().clear();
+        workflowStep.getUsers().addAll(users);
     }
 
 }
