@@ -26,6 +26,8 @@ export default class SelectUser {
     }
 
     createUserSelect(selectName, valuePrefix) {
+        var controller = new AbortController()
+        var signal = controller.signal
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             placeholder: 'Choisir un ou plusieurs participants',
@@ -40,10 +42,17 @@ export default class SelectUser {
                 return true;
             },
             ajax: function (search, callback) {
-                if (search.length < 3) {
-                    callback('Merci de saisir au moins 3 caractères')
+                callback('Recherche en cours');
+                controller.abort();
+                controller = new AbortController()
+                signal = controller.signal
+                if (search.length < 4) {
+                    callback('Merci de saisir au moins 4 caractères');
                 } else {
-                    fetch('/user/users/search-user?searchString=' + search)
+                    fetch('/user/users/search-user?searchString=' + search, {
+                        method: 'get',
+                        signal: signal,
+                    })
                         .then(function (response) {
                             return response.json()
                         })
@@ -52,10 +61,10 @@ export default class SelectUser {
                             for (let i = 0; i < json.length; i++) {
                                 data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
                             }
-                            callback(data)
+                            callback(data);
                         })
                         .catch(function () {
-                            callback(false)
+                            callback("Recherche en cours");
                         })
                 }
             }
