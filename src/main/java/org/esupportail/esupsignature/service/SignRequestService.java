@@ -608,6 +608,8 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook() != null) {
 			if(!isSignRequestCompleted(signRequest)) {
 				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
+			} else {
+				updateStatus(signRequest, SignRequestStatus.completed, "Demande complète", "SUCCESS");
 			}
 			if(signBookService.isUserSignAllDocs(signRequest.getParentSignBook(), user)) {
 				WorkflowStep currentWorkflowStep = signBookService.getCurrentWorkflowStep(signRequest.getParentSignBook());
@@ -619,8 +621,9 @@ public class SignRequestService {
 				}
 				signBookService.completeSignBook(signRequest.getParentSignBook());
 			} else {
-				signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
-				recipientService.validateRecipient(signRequest.getRecipients(), user);
+				if(!signRequest.getAllSignToComplete()) {
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+				}
 			}
 		} else {
 			if(isSignRequestCompleted(signRequest)) {
