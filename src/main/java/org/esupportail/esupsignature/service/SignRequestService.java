@@ -620,6 +620,7 @@ public class SignRequestService {
 				signBookService.completeSignBook(signRequest.getParentSignBook());
 			} else {
 				signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+				recipientService.validateRecipient(signRequest.getRecipients(), user);
 			}
 		} else {
 			if(isSignRequestCompleted(signRequest)) {
