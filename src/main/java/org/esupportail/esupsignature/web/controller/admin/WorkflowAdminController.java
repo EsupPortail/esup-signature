@@ -70,10 +70,9 @@ public class WorkflowAdminController {
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
-		User systemUser = userService.getSystemUser();
 		if("system".equals(displayWorkflowType) || displayWorkflowType == null) {
 			displayWorkflowType = "system";
-			workflows.addAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
+			workflows.addAll(workflowService.getWorkflowsBySystemUser());
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else if("all".equals(displayWorkflowType)) {
@@ -81,7 +80,7 @@ public class WorkflowAdminController {
 		} else if("users".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getAllWorkflows());
 			workflows.removeAll(workflowService.getClassesWorkflows());
-			workflows.removeAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
+			workflows.removeAll(workflowService.getWorkflowsBySystemUser());
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflows);
