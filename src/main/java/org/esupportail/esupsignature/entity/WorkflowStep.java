@@ -22,7 +22,7 @@ public class WorkflowStep {
 
     private Integer maxRecipients = 99;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @ManyToMany(cascade = CascadeType.REMOVE)
     private List<User> users = new ArrayList<>();
 
     private Boolean changeable = false;

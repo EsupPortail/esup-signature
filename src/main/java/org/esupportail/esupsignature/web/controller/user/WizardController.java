@@ -128,7 +128,7 @@ public class WizardController {
             }
             if(end != null) {
                 if(signBook.getLiveWorkflow().getWorkflowSteps().size() >  0) {
-                    signBookService.nextWorkFlowStep(signBook);
+                    signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
                     signBookService.pendingSignBook(signBook, user);
                     return "redirect:/user/wizard/wiz5/" + signBook.getId();
                 }else {

@@ -9,8 +9,8 @@
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
-                            <div class="step border border-dark bg-white rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber} ? 'div-disable'">
-                                    <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber}">
+                            <div class="step border border-dark bg-white rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()} ? 'div-disable'">
+                                    <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
                                     <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
                                         <!--<i class="fas fa-spinner fa-pulse"></i>-->
                                         <i class="fas fa-hourglass-half"></i>
@@ -19,10 +19,10 @@
                                         <i class="fas fa-times"></i>
                                     </span>
                                     </th:block>
-                                    <span title="Étape à venir" th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber}" class="bs-stepper-circle">
+                                    <span title="Étape à venir" th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}" class="bs-stepper-circle">
                                         <i class="fas fa-clock"></i>
                                     </span>
-                                    <th:block th:unless="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber}">
+                                    <th:block th:unless="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
                                         <span title="Document visé" th:if="${workflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
                                             <i class="fas fa-check"></i>
                                         </span>
@@ -39,7 +39,7 @@
                                         <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                                <td th:if="${(iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentWorkflowStepNumber) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
+                                                <td th:if="${(iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
                                                     <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
                                                     <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
                                                 </td>

@@ -185,8 +185,8 @@ public class SignBookService {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
-            for(User user : workflowStep.getUsers()) {
-                if(user.equals(userService.getCreatorUser())) {
+            for (User user : workflowStep.getUsers()) {
+                if (user.equals(userService.getCreatorUser())) {
                     recipientEmails.add(signBook.getCreateBy().getEmail());
                 } else {
                     recipientEmails.add(user.getEmail());
@@ -200,8 +200,8 @@ public class SignBookService {
             }
             signBook.getLiveWorkflow().getWorkflowSteps().add(newWorkflowStep);
         }
-        signBook.getLiveWorkflow().setId(workflow.getId());
-        signBook.getLiveWorkflow().setName(workflow.getName());
+        signBook.getLiveWorkflow().setWorkflow(workflow);
+        signBook.getLiveWorkflow().setName("Workflow_" + signBook.getName());
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
@@ -310,7 +310,11 @@ public class SignBookService {
     }
 
     public boolean nextWorkFlowStep(SignBook signBook) {
-        return isMoreWorkflowStep(signBook);
+        boolean isMoreWorkStep = isMoreWorkflowStep(signBook);
+        if (isMoreWorkStep) {
+            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber()));
+        }
+        return isMoreWorkStep;
     }
 
     public boolean isMoreWorkflowStep(SignBook signBook) {
