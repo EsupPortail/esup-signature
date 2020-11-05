@@ -45,7 +45,7 @@ public class RecipientService {
     }
 
     public long checkFalseRecipients(List<Recipient> recipients) {
-        return recipients.stream().filter(recipient -> !recipient.getSigned()).count();
+        return recipients.stream().filter(recipient -> !recipient.getSigned() && !recipient.getUser().getEppn().equals(null)).count();
     }
 
     public long recipientsContainsUser(List<Recipient> recipients, User user) {
