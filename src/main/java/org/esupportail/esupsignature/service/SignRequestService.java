@@ -851,8 +851,9 @@ public class SignRequestService {
 
 	public boolean checkUserSignRights(User user, User authUser, SignRequest signRequest) {
 		if(user.equals(authUser) || userShareService.checkShare(user, authUser, signRequest, ShareType.sign)) {
-			if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-					&& recipientService.recipientsContainsUser(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user) > 0) {
+			Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().equals(user)).findFirst();
+			if (recipient.isPresent() && (signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
+					&& !signRequest.getRecipientHasSigned().isEmpty() && !signRequest.getRecipientHasSigned().get(recipient.get())) {
 				return true;
 			}
 		}

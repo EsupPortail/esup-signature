@@ -57,7 +57,7 @@ BEGIN
             insert into live_workflow values (lw, null, sr.create_date, null, null, null, false, null, null, null, false, null, null, null, null, null, 1, lws);
             insert into live_workflow_workflow_steps values (lw, lws, 0);
             sb = nextval('hibernate_sequence');
-            insert into sign_book values (sb, null, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, null, 1, sr.create_by_id, null, null, lw);
+            insert into sign_book values (sb, null, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, 1, null, sr.create_by_id, lw, sr.title, null, lw);
             insert into sign_book_sign_requests values (sb, sr.id, 0);
             update sign_request set parent_sign_book_id = sb where id = sr.id;
         END LOOP;

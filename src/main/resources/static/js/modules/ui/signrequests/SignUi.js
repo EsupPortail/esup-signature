@@ -116,17 +116,12 @@ export class SignUi {
         let message = e.detail
         console.info(message);
         this.percent = this.percent + 5;
-        if (message.type === "security_bad_password") {
-            console.error("sign error : bad password");
-            this.passwordError.style.display = "block";
-            document.getElementById("closeModal").style.display = "block";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-        } else if(message.type === "sign_system_error" || message.type === "not_authorized") {
+        if(message.type === "sign_system_error" || message.type === "not_authorized") {
             console.error("sign error : system error");
             document.getElementById("signError").style.display = "block";
+            document.getElementById("signError").innerHTML =" Erreur du système de signature : <br>" + message.text;
             document.getElementById("closeModal").style.display = "block";
             document.getElementById("bar").classList.remove("progress-bar-animated");
-            this.reset();
         } else if(message.type === "initNexu") {
             console.info("redirect to NexU sign proccess");
             document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;

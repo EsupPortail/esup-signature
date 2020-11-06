@@ -7,10 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 public class SignRequest {
@@ -87,7 +84,7 @@ public class SignRequest {
     transient Data data;
     
     @ElementCollection
-    private Map<Recipient, Boolean> recipientHasSigned = new HashedMap();
+    private Map<Recipient, Boolean> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
         return id;
