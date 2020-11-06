@@ -75,13 +75,13 @@
                                     </th>
                                 </tr>
                                 </thead>
-                                <th:block th:each="recipient : ${workflowStep.recipients}">
+                                <th:block th:each="user : ${workflowStep.users}">
                                     <tr>
                                         <form th:action="'/admin/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}"
                                               th:method="'delete'">
-                                            <input type="hidden" name="recipientId" th:value="${recipient.id}"/>
+                                            <input type="hidden" name="userId" th:value="${user.id}"/>
                                             <td class="text-left">
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
                                             </td>
                                             <td>
                                                 <button title="Supprimer le destinataire"

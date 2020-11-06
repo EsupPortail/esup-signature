@@ -72,8 +72,8 @@
                                 <td class="clickable-td d-none d-lg-table-cell">
                                     <table th:if="${signRequest.parentSignBook != null}"
                                            class="table table-sm">
-                                        <tbody th:if="${signRequest.parentSignBook.workflowSteps.size() > 0 && signRequest.currentStepNumber > 0}">
-                                        <th:block th:each="recipient : ${signRequest.parentSignBook.workflowSteps.get(signRequest.currentStepNumber - 1).recipients}">
+                                        <tbody th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0 && signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() > 0}">
+                                        <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                                             <tr>
                                                 <td class="w-100" th:title="${recipient.user.email}"
                                                     th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
@@ -95,7 +95,7 @@
                                     </table>
                                     <table class="table table-sm" th:if="${signRequest.parentSignBook == null}">
                                         <tbody>
-                                        <th:block th:each="recipient : ${signRequest.recipients}">
+                                        <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                                             <tr>
                                                 <td class="w-100" th:title="${recipient.user.email}"
                                                     th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>

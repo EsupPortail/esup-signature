@@ -114,7 +114,7 @@ public class DataService {
         docName += user.getName().substring(0, 1).toUpperCase();
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
         InputStream inputStream = generateFile(data);
-        if(signBook.getWorkflowSteps().size() == 0) {
+        if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
@@ -130,11 +130,11 @@ public class DataService {
         signBookService.importWorkflow(signBook, workflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
-            signBook.setTargetType(form.getTargetType());
+            signBook.getLiveWorkflow().setTargetType(form.getTargetType());
             if(form.getTargetType().equals(DocumentIOType.mail)) {
-                signBook.setDocumentsTargetUri(targetEmails.get(0));
+                signBook.getLiveWorkflow().setDocumentsTargetUri(targetEmails.get(0));
             } else {
-                signBook.setDocumentsTargetUri(form.getTargetUri());
+                signBook.getLiveWorkflow().setDocumentsTargetUri(form.getTargetUri());
             }
         }
         signBookRepository.save(signBook);
