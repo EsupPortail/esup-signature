@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class WorkflowStep {
+public class LiveWorkflowStep {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,8 +22,8 @@ public class WorkflowStep {
 
     private Integer maxRecipients = 99;
 
-    @ManyToMany()
-    private List<User> users = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean changeable = false;
 
@@ -60,12 +60,12 @@ public class WorkflowStep {
         this.name = name;
     }
 
-    public List<User> getUsers() {
-        return users;
+    public List<Recipient> getRecipients() {
+        return recipients;
     }
 
-    public void setUsers(List<User> users) {
-        this.users = users;
+    public void setRecipients(List<Recipient> recipients) {
+        this.recipients = recipients;
     }
 
     public Boolean getAllSignToComplete() {

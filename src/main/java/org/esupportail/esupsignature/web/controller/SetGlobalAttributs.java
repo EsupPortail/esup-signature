@@ -42,7 +42,7 @@ public class SetGlobalAttributs {
         return userService.getUserFromAuthentication();
     }
 
-    @ModelAttribute(binding = false)
+    @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if(authUser != null) {
             this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
