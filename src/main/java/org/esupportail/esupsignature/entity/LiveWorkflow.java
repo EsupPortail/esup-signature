@@ -251,6 +251,9 @@ public class LiveWorkflow {
     }
 
     public Integer getCurrentStepNumber() {
+        if (this.getWorkflowSteps().isEmpty()) {
+            return -1;
+        }
         if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getAllSignToComplete()) {
             if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
                 return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;

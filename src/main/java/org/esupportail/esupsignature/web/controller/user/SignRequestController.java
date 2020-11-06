@@ -216,7 +216,7 @@ public class SignRequestController {
                     List<Field> fields = data.getForm().getFields();
                     List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
                     for (Field field : prefilledFields) {
-                        if(!field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
+                        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null || !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
                             field.setDefaultValue("");
                         }
                         if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
