@@ -153,8 +153,6 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
-
-
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
