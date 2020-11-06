@@ -583,7 +583,7 @@ public class SignRequestService {
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", user);
 			addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
-			eventService.publishEvent(new JsonMessage("security_bad_password", "Mauvais mot de passe", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), "sign", user);
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", user);
