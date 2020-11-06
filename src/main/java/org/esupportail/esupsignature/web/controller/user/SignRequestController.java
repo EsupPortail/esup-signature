@@ -39,6 +39,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.ui.Model;
@@ -375,7 +376,8 @@ public class SignRequestController {
                 }
             });
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureException | IOException | InterruptedException e) {
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             logger.error(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
