@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Recipient;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.RecipientRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,10 +40,9 @@ public class RecipientService {
         return false;
     }
 
-    public void validateRecipient(List<Recipient> recipients, User user) {
-        Recipient validateRecipient = recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
-        validateRecipient.setSigned(true);
-        recipientRepository.save(validateRecipient);
+    public void validateRecipient(SignRequest signRequest, User user) {
+        Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().equals(user)).findFirst().get();
+        signRequest.getRecipientHasSigned().put(validateRecipient, true);
     }
 
     public long checkFalseRecipients(List<Recipient> recipients) {

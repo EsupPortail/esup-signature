@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.collections.map.HashedMap;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,6 +10,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 public class SignRequest {
@@ -83,6 +85,9 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient Data data;
+    
+    @ElementCollection
+    private Map<Recipient, Boolean> recipientHasSigned = new HashedMap();
 
     public Long getId() {
         return id;
@@ -242,6 +247,14 @@ public class SignRequest {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    public Map<Recipient, Boolean> getRecipientHasSigned() {
+        return recipientHasSigned;
+    }
+
+    public void setRecipientHasSigned(Map<Recipient, Boolean> recipientHasSigned) {
+        this.recipientHasSigned = recipientHasSigned;
     }
 
     public SignRequestParams getCurrentSignRequestParams() {

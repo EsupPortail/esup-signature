@@ -71,7 +71,7 @@ public class LiveWorkflow {
 
     private String documentsTargetUri;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne()
     private Workflow workflow;
 
     public Long getId() {

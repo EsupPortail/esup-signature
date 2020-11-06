@@ -371,6 +371,9 @@ public class SignRequestService {
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete) {
 		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+			for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+				signRequest.getRecipientHasSigned().put(recipient, false);
+			}
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(allSignToComplete);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
@@ -445,7 +448,7 @@ public class SignRequestService {
 			}
 		}
 		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", user);
-		applyEndOfStepRules(signRequest, user);
+		applyEndOfSignRules(signRequest, user);
 
 	}
 
@@ -599,44 +602,38 @@ public class SignRequestService {
 		return document;
 	}
 
-	public void applyEndOfStepRules(SignRequest signRequest, User user) throws InterruptedException {
-		if(!user.getEppn().equals("system")) {
-			recipientService.validateRecipient(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user);
-		}
-		if(signRequest.getParentSignBook() != null) {
-			if(!isSignRequestCompleted(signRequest)) {
-				updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
-			}
-			if(signBookService.isUserSignAllDocs(signRequest.getParentSignBook(), user)) {
-				recipientService.validateRecipient(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user);
-			}
-			if (isSignBookCompleted(signRequest)) {
-				if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
-					mailService.sendCompletedMail(signRequest.getParentSignBook());
+	public void applyEndOfSignRules(SignRequest signRequest, User user) {
+		recipientService.validateRecipient(signRequest, user);
+		if (isSignRequestCompleted(signRequest)) {
+			completeSignRequest(signRequest);
+			if (isCurrentStepCompleted(signRequest)) {
+				for (Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
+					recipient.setSigned(signRequest.getRecipientHasSigned().get(recipient));
 				}
-				signBookService.completeSignBook(signRequest.getParentSignBook());
-			} else {
-				signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+				} else {
+					if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
+						mailService.sendCompletedMail(signRequest.getParentSignBook());
+					}
+					signBookService.completeSignBook(signRequest.getParentSignBook());
+				}
 			}
 		} else {
-			if(isSignRequestCompleted(signRequest)) {
-				completeSignRequest(signRequest);
-			}
+			updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
 		}
 	}
 
-	public boolean isSignBookCompleted(SignRequest signRequest) {
-		if (signBookService.isStepAllDocsDone(signRequest.getParentSignBook())) {
-			if (signBookService.isStepAllSignDone(signRequest.getParentSignBook())) {
-				return !signBookService.nextWorkFlowStep(signRequest.getParentSignBook());
-			}
-		}
-		return false;
+	public boolean isCurrentStepCompleted(SignRequest signRequest) {
+		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed));
 	}
 
 	public boolean isSignRequestCompleted(SignRequest signRequest) {
-		long checkRecipients = recipientService.checkFalseRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients());
-		return checkRecipients == 0 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete();
+		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete()) {
+			return signRequest.getRecipientHasSigned().keySet().stream().filter(r -> signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().contains(r)).allMatch(recipient -> signRequest.getRecipientHasSigned().get(recipient));
+		} else {
+			return signRequest.getRecipientHasSigned().keySet().stream().filter(r -> signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().contains(r)).anyMatch(recipient -> signRequest.getRecipientHasSigned().get(recipient));
+		}
 	}
 
 	public void sendEmailAlerts(SignRequest signRequest, User user) {
