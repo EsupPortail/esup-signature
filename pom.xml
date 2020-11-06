@@ -578,7 +578,7 @@
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>2.0.5</version>
+			<version>2.1.5</version>
 		</dependency>
 
 		<dependency>
@@ -614,8 +614,15 @@
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.1.53</version>
+			<version>0.1.55</version>
 		</dependency>
+
+		<dependency>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-client</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>fop</artifactId>

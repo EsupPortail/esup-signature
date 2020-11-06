@@ -41,7 +41,7 @@ public class RecipientService {
     public void validateRecipient(List<Recipient> recipients, User user) {
         Recipient validateRecipient = recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
         validateRecipient.setSigned(true);
-        recipientRepository.save(validateRecipient);
+//        recipientRepository.save(validateRecipient);
     }
 
     public long checkFalseRecipients(List<Recipient> recipients) {

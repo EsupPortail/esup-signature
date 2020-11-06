@@ -46,7 +46,11 @@ public class UserKeystoreService {
 			Pkcs12SignatureToken token = new Pkcs12SignatureToken(keyStoreFile, new PasswordProtection(password.toCharArray()));
 			return token;
 		} catch (Exception e) {
-			logger.error("open keystore fail", e);
+			if(e.getCause().getMessage().equals("keystore password was incorrect")) {
+				logger.warn("keystore password was incorrect");
+			} else {
+				logger.error("open keystore fail", e);
+			}
 			throw new EsupSignatureKeystoreException("open keystore fail", e);
 		}
 	}

@@ -60,7 +60,6 @@ public class DataExportService {
                     toExportDatas.put("form_data_" + entry.getKey(), entry.getValue());
                 }
                 int step = 1;
-                //for(WorkflowStep workflowStep : signBook.getWorkflowSteps()) {
                 for (Log log : logs) {
                     if (log.getFinalStatus().equals(SignRequestStatus.checked.name()) || log.getFinalStatus().equals(SignRequestStatus.signed.name()) || log.getFinalStatus().equals(SignRequestStatus.refused.name())) {
                         toExportDatas.put("sign_step_" + step + "_user_eppn", log.getEppnFor());

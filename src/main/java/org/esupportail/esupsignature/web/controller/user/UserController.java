@@ -95,6 +95,7 @@ public class UserController {
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+
             if(authUser.getKeystore() != null) {
             	bigFileRepository.delete(authUser.getKeystore().getBigFile());
             	documentRepository.delete(authUser.getKeystore());
@@ -107,7 +108,7 @@ public class UserController {
     	authUser.setEmailAlertFrequency(emailAlertFrequency);
     	authUser.setEmailAlertHour(emailAlertHour);
     	authUser.setEmailAlertDay(emailAlertDay);
-    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres on été enregistrés"));
+    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
 		return "redirect:/user/users";
     }
 

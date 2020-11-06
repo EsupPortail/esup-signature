@@ -321,7 +321,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
+                    // inputField.prop('disabled', true);
                 }
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
@@ -343,10 +343,10 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if(dataField.searchServiceName) {
-                    $(inputField).addClass("search-completion");
-                    $(inputField).attr("search-completion-service-name", dataField.searchServiceName);
-                    $(inputField).attr("search-completion-return", dataField.searchReturn);
-                    $(inputField).attr("search-completion-type", dataField.searchType);
+                    inputField.addClass("search-completion");
+                    inputField.attr("search-completion-service-name", dataField.searchServiceName);
+                    inputField.attr("search-completion-return", dataField.searchReturn);
+                    inputField.attr("search-completion-type", dataField.searchType);
                 }
 
                 if (dataField.type === "number") {
@@ -391,6 +391,8 @@ export class PdfViewer extends EventFactory {
                             vertical: 'bottom'
                         },
                     });
+                    inputField.off('dp.change');
+                    inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
                     $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
@@ -419,6 +421,8 @@ export class PdfViewer extends EventFactory {
                             vertical: 'bottom'
                         },
                     });
+                    inputField.off('dp.change');
+                    inputField.on('dp.change', e => this.fireEvent('change', ['time']));
                 }
             }
 
@@ -447,7 +451,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
+                    // inputField.prop('disabled', true);
                 }
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.prop('required', false);

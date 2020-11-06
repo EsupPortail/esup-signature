@@ -50,4 +50,21 @@
 
 		<title th:text="#{application.title}"></title>
 	</head>
+	<script>
+		var ua = window.navigator.userAgent;
+		var msie = ua.indexOf("MSIE ");
+		if (isIE || msie > 0) // If Internet Explorer, return version number
+		{
+			document.body.innerHTML = "";
+			alert("Votre navigateur n'est pas compatible");
+			window.location.href="https://www.google.com/intl/fr_fr/chrome/";
+		} else {
+			var isIE = /*@cc_on!@*/false || !!document.documentMode;
+			if (isIE) {
+				document.body.innerHTML = "";
+				alert("Votre navigateur n'est pas compatible");
+				window.location.href="https://www.google.com/intl/fr_fr/chrome/";
+			}
+		}
+	</script>
 </html>

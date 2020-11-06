@@ -322,6 +322,12 @@ public class WorkflowService {
         return true;
     }
 
+    public Set<Workflow> getWorkflowsBySystemUser() {
+        User systemUser = userService.getSystemUser();
+        return getWorkflowsByUser(systemUser, systemUser);
+
+    }
+
     public List<Workflow> getClassesWorkflows() {
         return this.workflows;
     }
@@ -333,13 +339,15 @@ public class WorkflowService {
     public List<Workflow> getSystemWorkflows() {
         List<Workflow> workflowTypes = new ArrayList<>();
         workflowTypes.addAll(getClassesWorkflows());
-        workflowTypes.addAll(getDatabaseWorkflows());
+        workflowTypes.addAll(getWorkflowsBySystemUser());
         return workflowTypes;
     }
 
     public List<Workflow> getAuthorizedToShareWorkflows() {
         return workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
     }
+
+
 
     public List<Workflow> getAllWorkflows() {
         List<Workflow> allWorkflows = new ArrayList<>();

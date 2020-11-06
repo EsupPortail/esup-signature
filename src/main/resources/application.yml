@@ -20,6 +20,22 @@ global:
 #tomcat:
 #    ajp:
 #        port: 6009
+info:
+    app:
+        name: esup-signature
+        version: 1.2
+        description: Instance de dev
+management:
+    endpoints:
+        jmx:
+            exposure:
+                include: '*'
+        web:
+            exposure:
+                include: '*'
+    endpoint:
+        health:
+            show-details: always
 
 spring:
 
@@ -45,6 +61,7 @@ spring:
                     lob:
                         non_contextual_creation: true
         show-sql: false
+        open-in-view: false
     ldap:
         base: dc=univ-ville,dc=fr
         password: ldap-password
@@ -156,6 +173,9 @@ server:
     error:
         include-stacktrace: always
     port: 8080
+    tomcat:
+        mbeanregistry:
+            enabled: true
 
 sign:
     cades-digest-algorithm: SHA256
@@ -168,3 +188,7 @@ sign:
     signature-packaging: ENVELOPED
     xades-digest-algorithm: SHA256
     xades-signature-level: XAdES_BASELINE_T
+
+logging:
+    file:
+        name: logs/esup-signature.log

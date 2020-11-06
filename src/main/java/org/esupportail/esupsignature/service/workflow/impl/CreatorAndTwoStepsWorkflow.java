@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.workflow.impl;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.springframework.stereotype.Component;
@@ -48,6 +49,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		WorkflowStep workflowStep1 = new WorkflowStep();
 		workflowStep1.setStepNumber(1);
 		workflowStep1.getRecipients().add(recipientService.createRecipient(null, user));
+		workflowStep1.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
@@ -58,6 +60,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 			workflowStep2.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}
 		workflowStep2.setChangeable(true);
+		workflowStep2.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep2);
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
@@ -68,6 +71,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 			workflowStep3.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
 		}
 		workflowStep3.setChangeable(true);
+		workflowStep3.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep3);
 		return workflowSteps;
 	}

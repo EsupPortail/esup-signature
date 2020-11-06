@@ -143,6 +143,7 @@ public class DSSBeanConfig {
 		File keystoreFile = new File(dssProperties.getKsFilename());
 		KeyStoreCertificateSource keyStoreCertificateSource = null;
 		if(!keystoreFile.exists()) {
+			log.info("creating oj file in " + keystoreFile.getAbsolutePath());
 			if(keystoreFile.createNewFile()) {
 				keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 			}

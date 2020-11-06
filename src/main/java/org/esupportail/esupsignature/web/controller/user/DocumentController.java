@@ -50,12 +50,12 @@ public class DocumentController {
 		if(document.equals(user.getKeystore())) {
 			return getDocumentResponseEntity(response, document);
 		}
-		Long nbSignRequest = signRequestRepository.countById(document.getParentId());
-		if(nbSignRequest > 0 && signRequestService.checkUserViewRights(user, authUser, signRequestRepository.findById(document.getParentId()).get())) {
-			return getDocumentResponseEntity(response, document);
-		}
 		Long nbForm = formRepository.countById(document.getParentId());
 		if(nbForm > 0) {
+			return getDocumentResponseEntity(response, document);
+		}
+		Long nbSignRequest = signRequestRepository.countById(document.getParentId());
+		if(nbSignRequest > 0 && signRequestService.checkUserViewRights(user, authUser, signRequestRepository.findById(document.getParentId()).get())) {
 			return getDocumentResponseEntity(response, document);
 		}
 		logger.warn(user.getEppn() + " try to access " + id + " without view rights");

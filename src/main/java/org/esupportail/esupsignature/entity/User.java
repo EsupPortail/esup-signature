@@ -39,7 +39,7 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.EAGER, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
@@ -50,7 +50,7 @@ public class User {
     private String signImageBase64;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.EAGER, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)

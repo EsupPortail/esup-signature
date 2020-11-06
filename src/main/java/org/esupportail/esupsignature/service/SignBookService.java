@@ -336,17 +336,23 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber(), "SUCCESS", signBook.getComment());
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
-            signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
-            if(!emailSended) {
-                signRequestService.sendEmailAlerts(signRequest, user);
-                emailSended = true;
-            }
-            for(Recipient recipient : signRequest.getRecipients()) {
-                eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", recipient.getUser());
+            if(currentWorkflowStep != null) {
+                signRequestService.addRecipients(signRequest, currentWorkflowStep.getRecipients());
+                signRequestService.pendingSignRequest(signRequest, currentWorkflowStep.getSignType(), currentWorkflowStep.getAllSignToComplete());
+                if (!emailSended) {
+                    signRequestService.sendEmailAlerts(signRequest, user);
+                    emailSended = true;
+                }
+                for (Recipient recipient : signRequest.getRecipients()) {
+                    eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", recipient.getUser());
+                }
+                logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
+            } else {
+                completeSignBook(signBook);
+                logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
+                break;
             }
         }
-        logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getCurrentWorkflowStepNumber());
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment) {
@@ -406,6 +412,7 @@ public class SignBookService {
             signBookName += "_";
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
         }
+        signBookName += "_" + user.getEppn();
         return signBookName;
     }
 }
