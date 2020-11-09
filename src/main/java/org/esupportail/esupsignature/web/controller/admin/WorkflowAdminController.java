@@ -70,9 +70,10 @@ public class WorkflowAdminController {
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowType, Model model) {
 		List<Workflow> workflows = new ArrayList<>();
+		User systemUser = userService.getSystemUser();
 		if("system".equals(displayWorkflowType) || displayWorkflowType == null) {
 			displayWorkflowType = "system";
-			workflows.addAll(workflowService.getWorkflowsBySystemUser());
+			workflows.addAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		} else if("classes".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getClassesWorkflows());
 		} else if("all".equals(displayWorkflowType)) {
@@ -80,7 +81,7 @@ public class WorkflowAdminController {
 		} else if("users".equals(displayWorkflowType)) {
 			workflows.addAll(workflowService.getAllWorkflows());
 			workflows.removeAll(workflowService.getClassesWorkflows());
-			workflows.removeAll(workflowService.getWorkflowsBySystemUser());
+			workflows.removeAll(workflowService.getWorkflowsByUser(systemUser, systemUser));
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflows);
@@ -199,7 +200,6 @@ public class WorkflowAdminController {
 		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setDescription(description);
 		workflowStep.setChangeable(changeable);
-		workflowStep.setStepNumber(workflow.getWorkflowSteps().size() + 1);
 		workflow.getWorkflowSteps().add(workflowStep);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
@@ -217,7 +217,6 @@ public class WorkflowAdminController {
 			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 			workflowService.changeSignType(workflowStep, null, signType);
 			workflowStep.setDescription(description);
-			workflowStep.setStepNumber(workflow.getWorkflowSteps().indexOf(workflowStep) + 1);
 			workflowStep.setChangeable(changeable);
 			workflowStep.setAllSignToComplete(allSignToComplete);
 			return "redirect:/admin/workflows/" + workflow.getName();
@@ -232,8 +231,8 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.getEppn().equals(workflow.getCreateBy()) || "system".equals(workflow.getCreateBy())) {
-			Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
-			workflowStep.getRecipients().remove(recipientToRemove);
+			User recipientToRemove = userRepository.findById(recipientId).get();
+			workflowStep.getUsers().remove(recipientToRemove);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
@@ -264,9 +263,6 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
 		workflow.getWorkflowSteps().remove(workflowStep);
-		for(int i = 0; i < workflow.getWorkflowSteps().size(); i++) {
-			workflow.getWorkflowSteps().get(i).setStepNumber(i + 1);
-		}
 		workflowRepository.save(workflow);
 		workflowStepRepository.delete(workflowStep);
 		return "redirect:/admin/workflows/" + workflow.getName();

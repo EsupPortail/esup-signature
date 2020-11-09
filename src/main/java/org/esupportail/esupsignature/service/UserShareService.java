@@ -91,25 +91,21 @@ public class UserShareService {
     }
 
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
-        if(signRequest.getParentSignBook() != null) {
-            if (signRequest.getParentSignBook().getWorkflowId() != null) {
-                Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
-                List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
-                for (UserShare userShare : userShares) {
-                    if (checkUserShareDate(userShare)) {
-                        return true;
-                    }
+        if (signRequest.getParentSignBook().getWorkflowId() != null) {
+            Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
+            List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
+            for (UserShare userShare : userShares) {
+                if (checkUserShareDate(userShare)) {
+                    return true;
                 }
             }
-            if (signRequest.getParentSignBook() != null) {
-                Data data = dataService.getDataFromSignRequest(signRequest);
-                if(data != null) {
-                    List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndFormAndShareTypesContains(fromUser, Arrays.asList(toUser), data.getForm(), shareType);
-                    for (UserShare userShare : userShares) {
-                        if (checkUserShareDate(userShare)) {
-                            return true;
-                        }
-                    }
+        }
+        Data data = dataService.getDataFromSignRequest(signRequest);
+        if(data != null) {
+            List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndFormAndShareTypesContains(fromUser, Arrays.asList(toUser), data.getForm(), shareType);
+            for (UserShare userShare : userShares) {
+                if (checkUserShareDate(userShare)) {
+                    return true;
                 }
             }
         }

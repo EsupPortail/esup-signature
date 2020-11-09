@@ -144,7 +144,6 @@ export class SignUi {
         this.percent = 0;
         this.passwordError.style.display = "none";
         document.getElementById("signError").style.display = "none";
-        document.getElementById("passwordError").style.display = "none";
         document.getElementById("closeModal").style.display = "none";
         document.getElementById("validModal").style.display = "none";
         document.getElementById("bar").style.display = "none";

@@ -53,18 +53,8 @@ public class SignBook {
 
     private Long workflowId;
 
-    private String workflowName;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
-
-    private Integer currentWorkflowStepNumber = 0;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-
-    private String documentsTargetUri;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private LiveWorkflow liveWorkflow = new LiveWorkflow();
 
     private String exportedDocumentURI;
 
@@ -181,44 +171,12 @@ public class SignBook {
         this.workflowId = workflowId;
     }
 
-    public String getWorkflowName() {
-        return workflowName;
+    public LiveWorkflow getLiveWorkflow() {
+        return liveWorkflow;
     }
 
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
-    }
-
-    public List<WorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
-    }
-
-    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
-    }
-
-    public Integer getCurrentWorkflowStepNumber() {
-        return currentWorkflowStepNumber;
-    }
-
-    public void setCurrentWorkflowStepNumber(Integer currentWorkflowStepNumber) {
-        this.currentWorkflowStepNumber = currentWorkflowStepNumber;
-    }
-
-    public DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
+    public void setLiveWorkflow(LiveWorkflow liveWorkflow) {
+        this.liveWorkflow = liveWorkflow;
     }
 
     public String getExportedDocumentURI() {
