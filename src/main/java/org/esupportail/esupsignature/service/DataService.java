@@ -206,10 +206,7 @@ public class DataService {
     }
 
     public Data getDataFromSignRequest(SignRequest signRequest) {
-        if (signRequest.getParentSignBook() != null) {
-            return getDataFromSignBook(signRequest.getParentSignBook());
-        }
-        return null;
+        return getDataFromSignBook(signRequest.getParentSignBook());
     }
 
     public Data getDataFromSignBook(SignBook signBook) {
