@@ -83,8 +83,8 @@ public class SignRequest {
     @Transient
     transient Data data;
     
-    @ElementCollection
-    private Map<Recipient, Boolean> recipientHasSigned = new HashMap<>();
+    @OneToMany
+    private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
         return id;
@@ -246,11 +246,11 @@ public class SignRequest {
         this.endDate = endDate;
     }
 
-    public Map<Recipient, Boolean> getRecipientHasSigned() {
+    public Map<Recipient, Action> getRecipientHasSigned() {
         return recipientHasSigned;
     }
 
-    public void setRecipientHasSigned(Map<Recipient, Boolean> recipientHasSigned) {
+    public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
     }
 

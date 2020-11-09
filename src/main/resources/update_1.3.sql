@@ -7,10 +7,13 @@ DECLARE
     sbws sign_book_workflow_steps%rowtype;
     rec recipient%rowtype;
     w workflow%rowtype;
+    lo log%rowtype;
     r bigint;
     lw bigint;
     lws bigint;
     sb bigint;
+    a bigint;
+    sd date;
 BEGIN
     alter table sign_book drop constraint fkdbg7t5ofub4l25xsrv7sevrtf;
 
@@ -92,7 +95,15 @@ BEGIN
                                          inner join sign_book s on lw2.id = s.live_workflow_id
                                          inner join sign_request sr2 on s.id = sr2.parent_sign_book_id and sr2.id = sr.id
                 Loop
-                    insert into sign_request_recipient_has_signed(sign_request_id, recipient_has_signed, recipient_has_signed_key) values (sr.id, rec.signed, rec.id);
+                    a = nextval('hibernate_sequence');
+                    insert into action(id, action_type, date, version) values (a, 'none', null, 1);
+                    IF rec.signed = true THEN
+                        for lo in select * from log where sign_request_id = sr.id and final_status = 'completed'
+                            loop
+                                update action SET action_type = 'signed', date = lo.log_date where id = a;
+                            end loop;
+                    END IF;
+                    insert into sign_request_recipient_has_signed(sign_request_id, recipient_has_signed_id, recipient_has_signed_key) values (sr.id, a, rec.id);
                 end loop;
         end loop;
     RETURN;

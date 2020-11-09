@@ -38,13 +38,13 @@
                                         <th:block th:each="recipient : ${workflowStep.recipients}">
                                             <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${signRequest.recipientHasSigned.get(recipient)}">
-                                                    <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-                                                    <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${signRequest.recipientHasSigned.get(recipient).actionType.name()}">
+                                                    <i title="A signé le document" th:case="signed" class="fas fa-check-circle text-success"></i>
+                                                    <i title="En attente de signature" th:case="none" class="fas fa-clock text-warning"></i>
                                                 </td>
-                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" th:switch="${signRequest.recipientHasSigned.get(recipient)}">
-                                                    <i title="A signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
-                                                    <i title="N'a pas signé le document" th:case="false" class="fas fa-minus-circle text-secondary"></i>
+                                                <td th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" th:switch="${signRequest.recipientHasSigned.get(recipient).actionType.name()}">
+                                                    <i title="A signé le document" th:case="signed" class="fas fa-check-circle text-success"></i>
+                                                    <i title="N'a pas signé le document" th:case="none" class="fas fa-minus-circle text-secondary"></i>
                                                 </td>
                                             </tr>
                                             <div th:if="${recipient.user.userType.name() == 'external'}" class="card position-absolute collapse mini-menu" th:id="'menu-' + ${recipient.id}" style="    width: 200px">
