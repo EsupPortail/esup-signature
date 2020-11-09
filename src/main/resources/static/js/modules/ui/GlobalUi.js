@@ -101,6 +101,7 @@ export class GlobalUi {
 
     submitSendPending() {
         $("#pending").val(true);
+        $("#comment").val($("#submitComment").val());
         $("#sendSignRequestForm").submit();
     }
 

@@ -292,7 +292,7 @@ public class SignRequestController {
         model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
-        if (user.getSignImages().get(0) != null) {
+        if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
         }
         if (user.getKeystore() != null) {
