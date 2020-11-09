@@ -120,13 +120,11 @@ public class SignBookService {
             } else if(userShare.getForm() != null) {
                 List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser());
                 for (SignRequest signRequest : signRequests) {
-                    if (signRequest.getParentSignBook() != null) {
-                        List<Data> datas = dataRepository.findBySignBook(signRequest.getParentSignBook());
-                        for (Data data : datas) {
-                            if(data.getForm().equals(userShare.getForm())) {
-                                sharedSignBook.add(signRequest.getParentSignBook());
-                                break;
-                            }
+                    List<Data> datas = dataRepository.findBySignBook(signRequest.getParentSignBook());
+                    for (Data data : datas) {
+                        if(data.getForm().equals(userShare.getForm())) {
+                            sharedSignBook.add(signRequest.getParentSignBook());
+                            break;
                         }
                     }
                 }

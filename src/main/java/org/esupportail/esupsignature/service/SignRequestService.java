@@ -174,10 +174,6 @@ public class SignRequestService {
 			signRequests.addAll(signRequestRepository.findByCreateBy(user));
 
 		}
-//		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-//			signRequest.setViewTitle(signRequest.getTitle());
-//			signRequest.setData(dataService.getDataFromSignRequest(signRequest));
-//		}
 		return new ArrayList<>(signRequests);
 	}
 
@@ -386,7 +382,7 @@ public class SignRequestService {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		InputStream filledInputStream;
-		if(signRequest.getParentSignBook() != null && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
+		if(!signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
 			Data data = dataService.getDataFromSignRequest(signRequest);
 			if(data != null) {
 				Form form = data.getForm();
@@ -424,7 +420,7 @@ public class SignRequestService {
 					}
 				}
 			}
-			if (signRequest.getParentSignBook() == null || (signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
+			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
 				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
 			addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
@@ -647,12 +643,10 @@ public class SignRequestService {
 
 	public List<User> getTempUsers(SignRequest signRequest) {
 		List<User> users = new ArrayList<>();
-		if(signRequest.getParentSignBook() != null) {
-			for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
-				for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-					if (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
-						users.add(recipient.getUser());
-					}
+		for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+			for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+				if (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
+					users.add(recipient.getUser());
 				}
 			}
 		}
@@ -693,11 +687,7 @@ public class SignRequestService {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = getLastSignedDocument(signRequest);
 				String subPath = "";
-				if(signRequest.getParentSignBook() != null) {
-					subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
-				} else {
-					subPath = "/simple/" + signRequest.getCreateBy().getEppn() + "/";
-				}
+				subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
 					signRequest.setExportedDocumentURI(documentUri);
@@ -812,16 +802,7 @@ public class SignRequestService {
 	}
 
 	public void refuse(SignRequest signRequest, User user) {
-		if(signRequest.getParentSignBook() != null) {
-			signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
-		} else {
-			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
-			for(Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-				if(recipient.getUser().equals(user)) {
-					recipient.setSigned(true);
-				}
-			}
-		}
+		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
 	}
 
 	public boolean needToSign(SignRequest signRequest, User user) {
@@ -898,13 +879,7 @@ public class SignRequestService {
 		for (Log log : logs) {
 			logRepository.delete(log);
 		}
-		if(signRequest.getParentSignBook() != null) {
-			//TODO critères de suppression
-//			if(signRequest.getParentSignBook().getCurrentWorkflowStepNumber() > 0) {
-//				return false;
-//			}
-			signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		}
+		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
@@ -912,20 +887,16 @@ public class SignRequestService {
 	}
 
 	public SignType getCurrentSignType(SignRequest signRequest) {
-		if(signRequest.getParentSignBook() != null) {
-			if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps() != null) {
-				return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
-			} else {
-				return null;
-			}
-		} else {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps() != null) {
 			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
+		} else {
+			return null;
 		}
 	}
 
 	public Page<SignRequest> getSignRequestsPageGrouped(List<SignRequest> signRequests, Pageable pageable) {
 		List<SignRequest> signRequestsGrouped = new ArrayList<>();
-		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() != null).collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
+		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
 		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
 			int last = signBookListEntry.getValue().size() - 1;
 			signBookListEntry.getValue().get(last).setViewTitle("");
@@ -933,9 +904,6 @@ public class SignRequestService {
 //				signBookListEntry.getValue().get(last).setViewTitle(signBookListEntry.getValue().get(last).getViewTitle() + signRequest.getTitle() + "\n\r");
 //			}
 			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
-		}
-		for(SignRequest signRequest : signRequests.stream().filter(signRequest -> signRequest.getParentSignBook() == null).collect(Collectors.toList())) {
-			signRequestsGrouped.add(signRequest);
 		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
@@ -1003,22 +971,20 @@ public class SignRequestService {
         Date date = new Date();
         Set<String> toEmails = new HashSet<>();
         toEmails.add(recipientUser.getEmail());
-        if (signRequest.getParentSignBook() != null) {
-            SignBook signBook = signRequest.getParentSignBook();
-            List<Data> datas = dataRepository.findBySignBook(signBook);
-            List<Workflow> workflows = workflowRepository.findByName(signBook.getLiveWorkflow().getName());
-            recipientUser.setLastSendAlertDate(date);
-            for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
-                if (userShare.getShareTypes().contains(ShareType.sign)) {
-                    if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
-                    || (workflows.size() > 0 && workflows.get(0).equals(userShare.getWorkflow()))) {
-                        for (User toUser : userShare.getToUsers()) {
-                            toEmails.add(toUser.getEmail());
-                        }
-                    }
-                }
-            }
-        }
+		SignBook signBook = signRequest.getParentSignBook();
+		List<Data> datas = dataRepository.findBySignBook(signBook);
+		List<Workflow> workflows = workflowRepository.findByName(signBook.getLiveWorkflow().getName());
+		recipientUser.setLastSendAlertDate(date);
+		for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
+			if (userShare.getShareTypes().contains(ShareType.sign)) {
+				if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
+				|| (workflows.size() > 0 && workflows.get(0).equals(userShare.getWorkflow()))) {
+					for (User toUser : userShare.getToUsers()) {
+						toEmails.add(toUser.getEmail());
+					}
+				}
+			}
+		}
         mailService.sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
         userRepository.save(recipientUser);
     }

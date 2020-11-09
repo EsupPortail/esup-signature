@@ -207,23 +207,22 @@ public class SignRequestController {
             model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
             model.addAttribute("baseUrl", globalProperties.getNexuDownloadUrl());
         }
-        if(signRequest.getParentSignBook() != null) {
-            if(dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
-                Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
-                if(data != null && data.getForm() != null) {
-                    List<Field> fields = data.getForm().getFields();
-                    List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
-                    for (Field field : prefilledFields) {
-                        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null || !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
-                            field.setDefaultValue("");
-                        }
-                        if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
-                            field.setDefaultValue(data.getDatas().get(field.getName()));
-                        }
+        if(dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
+            Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
+            if(data != null && data.getForm() != null) {
+                List<Field> fields = data.getForm().getFields();
+                List<Field> prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+                for (Field field : prefilledFields) {
+                    if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null || !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
+                        field.setDefaultValue("");
                     }
-                    model.addAttribute("fields", prefilledFields);
+                    if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+                        field.setDefaultValue(data.getDatas().get(field.getName()));
+                    }
                 }
+                model.addAttribute("fields", prefilledFields);
             }
+
             Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getName());
             if(workflow != null) {
                 model.addAttribute("workflow", workflow);
@@ -331,7 +330,7 @@ public class SignRequestController {
             try {
                 formDataMap = objectMapper.readValue(formData, Map.class);
                 formDataMap.remove("_csrf");
-                if(signRequest.getParentSignBook() != null && dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
+                if(dataRepository.countBySignBook(signRequest.getParentSignBook()) > 0) {
                     Data data = dataRepository.findBySignBook(signRequest.getParentSignBook()).get(0);
                     List<Field> fields = data.getForm().getFields();
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
@@ -513,11 +512,7 @@ public class SignRequestController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
         }
-        if (signRequest.getParentSignBook() != null) {
-            return "redirect:" + request.getHeader("referer");
-        } else {
-            return "redirect:/user/signrequests/";
-        }
+        return "redirect:" + request.getHeader("referer");
     }
 
     @PostMapping(value = "delete-multiple", consumes = {"application/json"})
@@ -722,15 +717,8 @@ public class SignRequestController {
                 return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
-        if(signRequest.getParentSignBook() != null) {
-            if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
-                signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
-            }
-        } else {
-            if (signRequest.getStatus().equals(SignRequestStatus.draft)) {
-                signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
-
-            }
+        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
+            signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
         }
         if(!comment.isEmpty()) {
             signRequest.setComment(comment);
