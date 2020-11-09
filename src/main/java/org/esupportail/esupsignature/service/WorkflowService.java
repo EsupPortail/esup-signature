@@ -329,10 +329,17 @@ public class WorkflowService {
         return workflowRepository.findAll();
     }
 
+    public Set<Workflow> getWorkflowsBySystemUser() {
+        User systemUser = userService.getSystemUser();
+        return getWorkflowsByUser(systemUser, systemUser);
+
+    }
+
     public List<Workflow> getSystemWorkflows() {
         List<Workflow> workflowTypes = new ArrayList<>();
         workflowTypes.addAll(getClassesWorkflows());
         workflowTypes.addAll(getDatabaseWorkflows());
+        workflowTypes.addAll(getWorkflowsBySystemUser());
         return workflowTypes;
     }
 
