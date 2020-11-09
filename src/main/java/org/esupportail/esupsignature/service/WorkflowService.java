@@ -45,13 +45,7 @@ public class WorkflowService {
     private WorkflowRepository workflowRepository;
 
     @Resource
-    private RecipientService recipientService;
-
-    @Resource
     private WorkflowStepRepository workflowStepRepository;
-
-    @Resource
-    private RecipientRepository recipientRepository;
 
     @Resource
     private UserRepository userRepository;
@@ -82,8 +76,6 @@ public class WorkflowService {
 
     @Resource
     private LiveWorkflowService liveWorkflowService;
-
-    @Resource LiveWorkflowStepRepository liveWorkflowStepRepository;
 
     @PostConstruct
     public void initCreatorWorkflow() {
