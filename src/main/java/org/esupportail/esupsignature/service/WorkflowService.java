@@ -338,7 +338,6 @@ public class WorkflowService {
     public List<Workflow> getSystemWorkflows() {
         List<Workflow> workflowTypes = new ArrayList<>();
         workflowTypes.addAll(getClassesWorkflows());
-        workflowTypes.addAll(getDatabaseWorkflows());
         workflowTypes.addAll(getWorkflowsBySystemUser());
         return workflowTypes;
     }
