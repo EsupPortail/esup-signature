@@ -68,7 +68,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
 		authenticationFilter.setPrincipalRequestHeader(shibProperties.getPrincipalRequestHeader());
-		authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
+		if(shibProperties.getCredentialsRequestHeader() != null) {
+			authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
+		}
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
 		authenticationFilter.setExceptionIfHeaderMissing(true);
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);
@@ -104,10 +106,13 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 		SpelGroupService groupService = new SpelGroupService();
 		Map<String, String> groups4eppnSpel = new HashMap<>();
-		if(shibProperties.getGroupMappingRoleAdmin() != null) {
-			groups4eppnSpel.put(shibProperties.getGroupMappingRoleAdmin(), "true");
+		if(shibProperties.getGroupMappingSpel() != null) {
+			for(String groupName: shibProperties.getGroupMappingSpel().keySet()) {
+				String spelRule = shibProperties.getGroupMappingSpel().get(groupName);
+				groups4eppnSpel.put(groupName, spelRule);
+			}
 		}
-//		groupService.setGroups4eppnSpel(groups4eppnSpel);
+		groupService.setGroups4eppnSpel(groups4eppnSpel);
 		
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setMappingGroupesRoles(mappingGroupesRoles);
