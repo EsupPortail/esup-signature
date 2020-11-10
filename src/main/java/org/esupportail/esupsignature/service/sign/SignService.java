@@ -38,6 +38,7 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,19 +63,19 @@ public class SignService {
 	@Resource
 	private SignConfig signConfig;
 
-	@Resource
+	@Autowired(required = false)
 	private CAdESService cadesService;
 
-	@Resource
+	@Autowired(required = false)
 	private PAdESService padesService;
 
-	@Resource
+	@Autowired(required = false)
 	private XAdESService xadesService;
 
-	@Resource
+	@Autowired(required = false)
 	private ASiCWithCAdESService asicWithCAdESService;
 
-	@Resource
+	@Autowired(required = false)
 	private ASiCWithXAdESService asicWithXAdESService;
 	
 	@Resource
