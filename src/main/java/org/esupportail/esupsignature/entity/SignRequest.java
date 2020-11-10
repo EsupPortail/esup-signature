@@ -31,8 +31,6 @@ public class SignRequest {
     @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
-    private String createByEppn;
-
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -83,8 +81,8 @@ public class SignRequest {
     @Transient
     transient Data data;
     
-    @ElementCollection
-    private Map<Recipient, Boolean> recipientHasSigned = new HashMap<>();
+    @OneToMany
+    private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
         return id;
@@ -132,14 +130,6 @@ public class SignRequest {
 
     public void setCreateBy(User createBy) {
         this.createBy = createBy;
-    }
-
-    public String getCreateByEppn() {
-        return createByEppn;
-    }
-
-    public void setCreateByEppn(String createByEppn) {
-        this.createByEppn = createByEppn;
     }
 
     public String getExportedDocumentURI() {
@@ -246,11 +236,11 @@ public class SignRequest {
         this.endDate = endDate;
     }
 
-    public Map<Recipient, Boolean> getRecipientHasSigned() {
+    public Map<Recipient, Action> getRecipientHasSigned() {
         return recipientHasSigned;
     }
 
-    public void setRecipientHasSigned(Map<Recipient, Boolean> recipientHasSigned) {
+    public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
     }
 

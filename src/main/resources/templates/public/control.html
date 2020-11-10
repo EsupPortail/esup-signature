@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav-empty"></nav>
+<main role="main">
+    <div class="card col-lg-10 mx-auto" style="top: 60px;">
+        <div class="card-body text-center">
+            <th:block th:if="${signRequest}">
+                <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
+                    <h5>Contrôle de document : <span th:text="${signRequest.token}"></span></h5>
+                    <hr>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Nom de document</dt>
+                        <dd th:text="${signedDocument.fileName}"></dd>
+                    </dl>
+                    <dl class="row border-bottom m-0">
+                        <dt class="col-lg-5">Statut du document</dt>
+                        <dd>Signé</dd>
+                    </dl>
+                    <h5>Actions réalisées sur le document</h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Identifiant</th>
+                            <th>Action</th>
+                            <th>Signé sur la page</th>
+                            <th>Coordonée X</th>
+                            <th>Coordonée Y</th>
+                            <th>Statut initial</th>
+                            <th>Statut final</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="log : ${logs}">
+                            <tr>
+                                <td class="text-left"><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                <td class="text-left"><span th:text="${log.eppn}"></span></td>
+                                <td class="text-left"><span th:text="${log.action}"></span></td>
+                                <td class="text-left"><span th:text="${log.pageNumber}"></span></td>
+                                <td class="text-left"><span th:text="${log.posX}"></span></td>
+                                <td class="text-left"><span th:text="${log.posY}"></span></td>
+                                <td class="text-left"><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
+                                <td class="text-left"><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </th:block>
+                <th:block
+                        th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
+                    <h6>Le document n'est pas signé</h6>
+                </th:block>
+            </th:block>
+            <th:block th:unless="${signRequest}">
+                <h6>Document introuvable</h6>
+            </th:block>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

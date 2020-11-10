@@ -46,7 +46,7 @@
                         <th:block th:each="workflow : ${workflows}">
                             <tr>
                                 <td th:text="${workflow.description}"></td>
-                                <td th:text="${workflow.createBy}"></td>
+                                <td th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">

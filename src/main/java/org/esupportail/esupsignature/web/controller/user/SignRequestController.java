@@ -39,6 +39,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.ui.Model;
@@ -222,14 +223,6 @@ public class SignRequestController {
                 }
                 model.addAttribute("fields", prefilledFields);
             }
-
-            Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getName());
-            if(workflow != null) {
-                model.addAttribute("workflow", workflow);
-                if(workflow.getWorkflowSteps() != null) {
-                    model.addAttribute("steps", workflow.getWorkflowSteps());
-                }
-            }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
@@ -292,7 +285,7 @@ public class SignRequestController {
         model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
-        if (user.getSignImages().get(0) != null) {
+        if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
         }
         if (user.getKeystore() != null) {
@@ -375,7 +368,8 @@ public class SignRequestController {
                 }
             });
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureException | IOException | InterruptedException e) {
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             logger.error(e.getMessage());
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -428,7 +422,7 @@ public class SignRequestController {
         if (multipartFiles != null) {
 
             if (signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
-                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Fast sign", multipartFiles);
+                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
                 try {
                     signBookRepository.save(signBook);
                     signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), false, signType, user.getEmail()));

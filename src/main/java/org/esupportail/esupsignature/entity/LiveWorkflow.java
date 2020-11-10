@@ -21,18 +21,9 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
-    @Column(unique=true)
-    private String name;
-
-    private String title;
-
-    private String description;
-
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
-
-    private String createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -40,21 +31,8 @@ public class LiveWorkflow {
 
     private String updateBy;
 
-    private String role;
-
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
-
-    private Boolean external = false;
-
-    private Boolean publicUsage = false;
-
-    private Boolean scanPdfMetadatas = false;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType sourceType;
-
-    private String documentsSourceUri;
 
     @ElementCollection(targetClass=String.class)
     private List<String> managers = new ArrayList<>();
@@ -90,44 +68,12 @@ public class LiveWorkflow {
         this.version = version;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Date getCreateDate() {
         return createDate;
     }
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
-    }
-
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
     }
 
     public Date getUpdateDate() {
@@ -144,38 +90,6 @@ public class LiveWorkflow {
 
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-
-    public Boolean getExternal() {
-        return external;
-    }
-
-    public void setExternal(Boolean external) {
-        this.external = external;
-    }
-
-    public Boolean getPublicUsage() {
-        return publicUsage;
-    }
-
-    public void setPublicUsage(Boolean publicUsage) {
-        this.publicUsage = publicUsage;
-    }
-
-    public DocumentIOType getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
-    }
-
-    public String getDocumentsSourceUri() {
-        return documentsSourceUri;
-    }
-
-    public void setDocumentsSourceUri(String documentsSourceUri) {
-        this.documentsSourceUri = documentsSourceUri;
     }
 
     public List<String> getManagers() {
@@ -218,14 +132,6 @@ public class LiveWorkflow {
         this.documentsTargetUri = documentsTargetUri;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public List<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
@@ -234,20 +140,12 @@ public class LiveWorkflow {
         this.authorizedShareTypes = authorizedShareTypes;
     }
 
-    public Boolean getScanPdfMetadatas() {
-        return scanPdfMetadatas;
-    }
-
     public Workflow getWorkflow() {
         return workflow;
     }
 
     public void setWorkflow(Workflow workflow) {
         this.workflow = workflow;
-    }
-
-    public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
-        this.scanPdfMetadatas = scanPdfMetadatas;
     }
 
     public Integer getCurrentStepNumber() {

@@ -1,6 +1,84 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<div th:fragment="recipientscard" th:if="${signRequest.parentSignBook == null}">
+    <div class="card mb-1 col-lg-10 mx-auto">
+        <div id="collapseLogs" class="show" aria-labelledby="headingOne" data-parent="#accordion">
+            <div class="card-body">
+                <h5>Paramètres de signature</h5>
+                <div class="alert alert-dark">
+                    <span th:text="#{'signbook.signtype.' + ${signRequest.parentSignBook.liveWorkflow.currentStep.signType}}"></span>
+                    <br>
+                    <span th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.allSignToComplete}">Tous les participants doivent signer</span>
+                    <span th:unless="${signRequest.parentSignBook.liveWorkflow.currentStep.allSignToComplete}">La signature d'un des participants est suffisante</span>
+                </div>
+                <table class="table table-sm table-bordered table-hover">
+                    <thead>
+                    <tr>
+                        <th>Nom</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
+                        <tr>
+                            <td><span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span></td>
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="signRequestParams" tabindex="-1" role="dialog"
+         aria-labelledby="signRequestParamsModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Paramètres de signature</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
+                    <div class="modal-body">
+                        <div class="form-group" id="_signType_div_id">
+                            <label for="recipientsEmails">Choisir les participants</label>
+                            <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
+                                    required="required">
+                                <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
+                                    <option selected="selected" th:value="${recipient.user.email}"
+                                            th:text="${recipient.user.email}"></option>
+                                </th:block>
+                            </select>
+                            <br/><br/>
+                            <label>
+                                Tous les participants doivent-ils signer ?
+                            </label>
+                            <label class="switch">
+                                <input type="checkbox" name="allSignToComplete"
+                                       th:checked="${signRequest.parentSignBook.liveWorkflow.currentStep.allSignToComplete}"/>
+                                <span class="slider round"></span>
+                            </label>
+                            <br/>
+                            <label>Type de signature :</label>
+                            <select name="signType" class="form-control">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"
+                                            th:selected="${signRequest.parentSignBook.liveWorkflow.currentStep.signType == signType}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Valider</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="module">
     import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
 

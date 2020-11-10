@@ -34,11 +34,6 @@ public class LiveWorkflowService {
 
     public LiveWorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
-        if(name != null) {
-            liveWorkflowStep.setName(name);
-        }
-        liveWorkflowStep.setParentType(parentType);
-        liveWorkflowStep.setParentId(parentId);
         if(allSignToComplete ==null) {
             liveWorkflowStep.setAllSignToComplete(false);
         } else {
@@ -69,8 +64,6 @@ public class LiveWorkflowService {
                 }
             }
             Recipient recipient = recipientService.createRecipient(liveWorkflowStep.getId(), recipientUser);
-            recipient.setParentId(liveWorkflowStep.getId());
-            recipient.setParentType("workflow");
             recipientRepository.save(recipient);
             liveWorkflowStep.getRecipients().add(recipient);
         }

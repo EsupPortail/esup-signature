@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,8 +199,9 @@ public class SignBookService {
             }
             signBook.getLiveWorkflow().getWorkflowSteps().add(newWorkflowStep);
         }
-        signBook.getLiveWorkflow().setWorkflow(workflow);
-        signBook.getLiveWorkflow().setName("Workflow_" + signBook.getName());
+        if(!(workflow instanceof DefaultWorkflow)) {
+            signBook.getLiveWorkflow().setWorkflow(workflow);
+        }
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }

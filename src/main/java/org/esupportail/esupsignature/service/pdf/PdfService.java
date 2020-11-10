@@ -28,6 +28,7 @@ import org.apache.xmpbox.type.Attribute;
 import org.apache.xmpbox.type.BadFieldValueException;
 import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -70,6 +71,9 @@ public class PdfService {
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user) {
         PdfParameters pdfParameters;
@@ -277,6 +281,8 @@ public class PdfService {
             xmpBasicSchema.setCreatorTool(info.getCreator());
             xmpBasicSchema.setCreateDate(info.getCreationDate());
             xmpBasicSchema.setModifyDate(info.getModificationDate());
+            xmpBasicSchema.addIdentifier(signRequest.getToken());
+            xmpBasicSchema.addIdentifier(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
 
             PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
             pdfaid.setConformance("B");

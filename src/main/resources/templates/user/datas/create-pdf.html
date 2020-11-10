@@ -148,33 +148,33 @@
                                 th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>
                         </p>
                         <th:block th:each="step,iterator : ${steps}">
-                            <div class="form-group">
+<!--                            <div class="form-group">-->
+<!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+<!--                            </div>-->
+                            <div th:if="${step.changeable == true}" class="form-group">
                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
                             </div>
-                            <!--                        <div th:if="${step.changeable == true}" class="form-group">-->
-                            <!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
-                            <!--                        </div>-->
-                            <!--                        <div th:unless="${step.changeable == true}" class="form-group d-inline">-->
-                            <!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>-->
-                            <!--                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">-->
-                            <!--                                <span th:if="${iterator.index > 0}"> ou </span>-->
-                            <!--                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>-->
-                            <!--                            </th:block>-->
-                            <!--                            <span>)</span>-->
-                            <!--                        </div>-->
+                            <div th:unless="${step.changeable == true}" class="form-group d-inline">
+                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
+                                <th:block th:if="${step.users.size() > 0}" th:each="user, iterator : ${step.users}">
+                                    <span th:if="${iterator.index > 0}"> ou </span>
+                                    <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                </th:block>
+                                <span>)</span>
+                            </div>
                             <br/>
                         </th:block>
                         <hr>
-                        <th:block th:each="step,iterator : ${steps}">
+                        <th:block th:each="step, iterator : ${steps}">
                             <div th:if="${step.changeable == true}" class="form-group">
                                 <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
                                         th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
-                                <select class="select-users" th:id="'recipientEmailsSelect_' + ${steps.getCurrentStepNumber()}"
+                                <select class="select-users" th:id="'recipientEmailsSelect_' + ${iterator.index}"
                                         multiple="multiple" name="recipientEmails" required="required">
-                                    <th:block th:each="recipient : ${step.recipients}">
-                                        <option th:if="${recipient.user.email != null}" selected="selected"
-                                                th:text="${recipient.user.email}"
-                                                th:value="${steps.getCurrentStepNumber()} + '*' + ${recipient.user.email}"></option>
+                                    <th:block th:each="user : ${step.users}">
+                                        <option th:if="${user.email != null}" selected="selected"
+                                                th:text="${user.email}"
+                                                th:value="${iterator.index} + '*' + ${user.email}"></option>
                                     </th:block>
                                 </select>
                                 <p class="small">

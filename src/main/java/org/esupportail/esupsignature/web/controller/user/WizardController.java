@@ -176,7 +176,7 @@ public class WizardController {
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
     public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
+		if (!workflow.getCreateBy().equals(user)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
             workflowRepository.delete(workflow);
