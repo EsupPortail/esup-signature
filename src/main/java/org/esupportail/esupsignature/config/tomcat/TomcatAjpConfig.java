@@ -25,10 +25,13 @@ public class TomcatAjpConfig {
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         Connector ajpConnector = new Connector("AJP/1.3");
         ajpConnector.setPort(tomcatAjpProperties.getPort());
-        ajpConnector.setSecure(false);
+        ajpConnector.setSecure(true);
         ajpConnector.setAllowTrace(false);
-        ajpConnector.setScheme("http");
+        ajpConnector.setScheme("https");
+        ajpConnector.setAsyncTimeout(1200000);
         ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setSecretRequired(false);
+        // TODO : Only If Shib ?
+        ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
         // Avoid java.lang.IllegalStateException: More than the maximum allowed number of headers, [100], were detected.
         // (exception occures with shib)
         ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
