@@ -32,7 +32,8 @@ public class Workflow {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    private String createBy;
+    @OneToOne(fetch = FetchType.LAZY)
+    private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -44,8 +45,6 @@ public class Workflow {
 
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
-
-    private Boolean external = false;
 
     private Boolean publicUsage = false;
 
@@ -116,11 +115,11 @@ public class Workflow {
         this.createDate = createDate;
     }
 
-    public String getCreateBy() {
+    public User getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(String createBy) {
+    public void setCreateBy(User createBy) {
         this.createBy = createBy;
     }
 
@@ -138,14 +137,6 @@ public class Workflow {
 
     public void setUpdateBy(String updateBy) {
         this.updateBy = updateBy;
-    }
-
-    public Boolean getExternal() {
-        return external;
-    }
-
-    public void setExternal(Boolean external) {
-        this.external = external;
     }
 
     public Boolean getPublicUsage() {

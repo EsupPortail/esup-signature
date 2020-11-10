@@ -21,15 +21,15 @@ BEGIN
     FOR sbr IN SELECT * FROM sign_book
         LOOP
             lw = nextval('hibernate_sequence');
-            insert into live_workflow(id, create_by, create_date, description, documents_source_uri, documents_target_uri, external, name, public_usage, role, scan_pdf_metadatas, source_type, target_type, title, update_by, update_date, version, current_step_id, workflow_id)
-                values (lw, null, sbr.create_date, null, null, null, false, null, null, null, false, null, null, null, null, null, 1, null, sbr.workflow_id);
+            insert into live_workflow(id, create_date, documents_target_uri, target_type, update_by, update_date, version, current_step_id, workflow_id)
+                values (lw, sbr.create_date, sbr.documents_target_uri, sbr.target_type, null, null, 1, null, sbr.workflow_id);
             FOR ws IN select * from workflow_step inner join sign_book_workflow_steps sbws2 on workflow_step.id = sbws2.workflow_steps_id and sbws2.sign_book_id = sbr.id
                 LOOP
                     For sbws in select * from sign_book_workflow_steps where sign_book_workflow_steps.workflow_steps_id = ws.id
                         LOOP
                             lws = nextval('hibernate_sequence');
-                            insert into live_workflow_step(id, all_sign_to_complete, changeable, description, max_recipients, name, parent_id, parent_type, sign_type, version)
-                            values (lws, ws.all_sign_to_complete, ws.changeable, ws.description, ws.max_recipients, ws.name, ws.parent_id, ws.parent_type, ws.sign_type, ws.version);
+                            insert into live_workflow_step(id, all_sign_to_complete, sign_type, version)
+                            values (lws, ws.all_sign_to_complete, ws.sign_type, ws.version);
                             for rec in select * from recipient inner join workflow_step_recipients on recipient.id = workflow_step_recipients.recipients_id and workflow_step_id = ws.id
                                 Loop
                                     insert into live_workflow_step_recipients(live_workflow_step_id, recipients_id) values (lws, rec.id);
@@ -59,11 +59,11 @@ BEGIN
                 insert into recipient(id, parent_id, parent_type, signed, version, user_id) values (r, null, null, true, 1, sr.create_by_id);
             END IF;
             lws = nextval('hibernate_sequence');
-            insert into live_workflow_step(id, all_sign_to_complete, changeable, description, max_recipients, name, parent_id, parent_type, sign_type, version) values (lws, false, false, null, 99, null, null, null, sr.sign_type, 1);
+            insert into live_workflow_step(id, all_sign_to_complete, sign_type, version) values (lws, false, sr.sign_type, 1);
             insert into live_workflow_step_recipients(live_workflow_step_id, recipients_id) values (lws, r);
             lw = nextval('hibernate_sequence');
-            insert into live_workflow(id, create_by, create_date, description, documents_source_uri, documents_target_uri, external, name, public_usage, role, scan_pdf_metadatas, source_type, target_type, title, update_by, update_date, version, current_step_id, workflow_id)
-                values (lw, null, sr.create_date, null, null, null, false, null, null, null, false, null, null, null, null, null, 1, lws, null);
+            insert into live_workflow(id, create_date, documents_target_uri, target_type, update_by, update_date, version, current_step_id, workflow_id)
+                values (lw, sr.create_date, null, null, null, null, 1, lws, null);
             insert into live_workflow_workflow_steps(live_workflow_id, workflow_steps_id, workflow_steps_order) values (lw, lws, 0);
             sb = nextval('hibernate_sequence');
             insert into sign_book(id, create_by, create_date, current_workflow_step_number, description, documents_target_uri, exported_documenturi, external, name, status, target_type, update_by, update_date, version, create_by_eppn, create_by_id, workflow_id, title, workflow_name, live_workflow_id)

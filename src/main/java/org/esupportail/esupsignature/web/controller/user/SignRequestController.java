@@ -223,14 +223,6 @@ public class SignRequestController {
                 }
                 model.addAttribute("fields", prefilledFields);
             }
-
-            Workflow workflow = workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getName());
-            if(workflow != null) {
-                model.addAttribute("workflow", workflow);
-                if(workflow.getWorkflowSteps() != null) {
-                    model.addAttribute("steps", workflow.getWorkflowSteps());
-                }
-            }
         }
         if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);

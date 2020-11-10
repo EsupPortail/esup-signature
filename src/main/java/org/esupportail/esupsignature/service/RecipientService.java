@@ -26,7 +26,6 @@ public class RecipientService {
 
     public Recipient createRecipient(Long parentId, User user) {
         Recipient recipient = new Recipient();
-        recipient.setParentId(parentId);
         recipient.setUser(user);
         return recipient;
     }
@@ -60,7 +59,6 @@ public class RecipientService {
     public Recipient getRecipientByEmail(Long parentId, String email) throws EsupSignatureUserException {
         User user = userService.checkUserByEmail(email);
         Recipient recipient = new Recipient();
-        recipient.setParentId(parentId);
         recipient.setUser(user);
         return recipient;
     }

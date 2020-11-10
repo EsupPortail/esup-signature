@@ -91,8 +91,8 @@ public class UserShareService {
     }
 
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
-        if (signRequest.getParentSignBook().getWorkflowId() != null) {
-            Workflow workflow = workflowRepository.findById(signRequest.getParentSignBook().getWorkflowId()).get();
+        if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+            Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
             List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndWorkflowAndShareTypesContains(fromUser, Arrays.asList(toUser), workflow, shareType);
             for (UserShare userShare : userShares) {
                 if (checkUserShareDate(userShare)) {

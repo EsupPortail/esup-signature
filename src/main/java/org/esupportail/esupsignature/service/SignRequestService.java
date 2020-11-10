@@ -328,7 +328,7 @@ public class SignRequestService {
 			} else {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
-			if(recipientRepository.findByParentIdAndUser(signRequest.getId(), recipientUser).size() == 0) {
+			if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(r -> r.getUser().equals(recipientUser))) {
 				Recipient recipient = recipientService.createRecipient(signRequest.getId(), recipientUser);
 				recipientRepository.save(recipient);
 				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(recipient);
@@ -343,7 +343,6 @@ public class SignRequestService {
 			Recipient newRecipient = null;
 			try {
 				newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
-				newRecipient.setParentType("signrequest");
 				recipientRepository.save(newRecipient);
 				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(newRecipient);
 			} catch (EsupSignatureUserException e) {
@@ -954,7 +953,7 @@ public class SignRequestService {
 			User toUser = userService.getUserFromAuthentication();
 			List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
 			for (UserShare userShare : userShares) {
-				Workflow workflow = workflowRepository.findById(signBook.getWorkflowId()).get();
+				Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
 				if(userShare.getWorkflow().equals(workflow) && checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
 					return userShare.getUser();
 				}
@@ -977,12 +976,12 @@ public class SignRequestService {
         toEmails.add(recipientUser.getEmail());
 		SignBook signBook = signRequest.getParentSignBook();
 		List<Data> datas = dataRepository.findBySignBook(signBook);
-		List<Workflow> workflows = workflowRepository.findByName(signBook.getLiveWorkflow().getName());
+		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
 		for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
-				|| (workflows.size() > 0 && workflows.get(0).equals(userShare.getWorkflow()))) {
+				|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
 					for (User toUser : userShare.getToUsers()) {
 						toEmails.add(toUser.getEmail());
 					}

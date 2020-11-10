@@ -52,8 +52,6 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep1.setDescription("Visa du directeur de composante du lieu d’accueil");
         workflowStep1.setSignType(SignType.visa);
         if(data != null) {
-            workflowStep1.setParentType("data");
-            workflowStep1.setParentId(data.getId());
             workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipientEmailsStep, user));
         } else {
             workflowStep1.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
@@ -69,8 +67,6 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep2.setDescription("Signature du Président de l’université");
         List<User> recipientsStep2 = new ArrayList<>();
         if(data != null) {
-            workflowStep2.setParentType("data");
-            workflowStep2.setParentId(data.getId());
             recipientsStep2.add(userService.checkUserByEmail(step2Recipient));
         } else {
             recipientsStep2.add(userService.getGenericUser(step2Recipient, ""));

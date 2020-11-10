@@ -212,7 +212,7 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowRepository.findById(id).get();
-		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
+		if(user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser())) {
 			WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
 			workflowService.changeSignType(workflowStep, null, signType);
 			workflowStep.setDescription(description);
@@ -229,7 +229,7 @@ public class WorkflowAdminController {
 									  @RequestParam(value = "recipientId") Long recipientId) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(workflow.getCreateBy()) || "system".equals(workflow.getCreateBy())) {
+		if(user.equals(workflow.getCreateBy()) || userService.getSystemUser().equals(workflow.getCreateBy())) {
 			User recipientToRemove = userRepository.findById(recipientId).get();
 			workflowStep.getUsers().remove(recipientToRemove);
 		} else {
@@ -246,7 +246,7 @@ public class WorkflowAdminController {
 		user.setIp(httpServletRequest.getRemoteAddr());
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-		if(user.getEppn().equals(workflow.getCreateBy()) || workflow.getCreateBy().equals("system")) {
+		if(user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser())) {
 			workflowService.addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
 		} else {
 			logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
@@ -272,7 +272,7 @@ public class WorkflowAdminController {
 							@PathVariable("id") Long id,
 			RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
-		if (!workflow.getCreateBy().equals(user.getEppn())) {
+		if (!workflow.getCreateBy().equals(user)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
 			return "redirect:/admin/workflows/" + workflow.getName();
 		}

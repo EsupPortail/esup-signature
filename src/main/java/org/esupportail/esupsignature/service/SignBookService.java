@@ -3,7 +3,10 @@ package org.esupportail.esupsignature.service;
 import ch.rasc.sse.eventbus.SseEvent;
 import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.*;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
@@ -199,7 +202,6 @@ public class SignBookService {
         if(!(workflow instanceof DefaultWorkflow)) {
             signBook.getLiveWorkflow().setWorkflow(workflow);
         }
-        signBook.getLiveWorkflow().setName("Workflow_" + signBook.getName());
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
@@ -387,7 +389,6 @@ public class SignBookService {
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().equals(user)) {
-                    signRequest.getRecipientHasSigned().get(recipient).setActionType(ActionType.refused);
                     recipient.setSigned(true);
                 }
             }

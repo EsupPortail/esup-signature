@@ -35,8 +35,6 @@ public class SignBook {
     @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
-    private String createByEppn;
-
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
@@ -44,19 +42,12 @@ public class SignBook {
     private String updateBy;
     
     private Boolean external = false;
-    
-    @Size(max = 500)
-    private String description;
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    private Long workflowId;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private LiveWorkflow liveWorkflow = new LiveWorkflow();
-
-    private String exportedDocumentURI;
 
     @JsonIgnore
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -115,14 +106,6 @@ public class SignBook {
         this.createBy = createBy;
     }
 
-    public String getCreateByEppn() {
-        return createByEppn;
-    }
-
-    public void setCreateByEppn(String createByEppn) {
-        this.createByEppn = createByEppn;
-    }
-
     public Date getUpdateDate() {
         return updateDate;
     }
@@ -147,14 +130,6 @@ public class SignBook {
         this.external = external;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public SignRequestStatus getStatus() {
         return status;
     }
@@ -163,28 +138,12 @@ public class SignBook {
         this.status = status;
     }
 
-    public Long getWorkflowId() {
-        return workflowId;
-    }
-
-    public void setWorkflowId(Long workflowId) {
-        this.workflowId = workflowId;
-    }
-
     public LiveWorkflow getLiveWorkflow() {
         return liveWorkflow;
     }
 
     public void setLiveWorkflow(LiveWorkflow liveWorkflow) {
         this.liveWorkflow = liveWorkflow;
-    }
-
-    public String getExportedDocumentURI() {
-        return exportedDocumentURI;
-    }
-
-    public void setExportedDocumentURI(String exportedDocumentURI) {
-        this.exportedDocumentURI = exportedDocumentURI;
     }
 
     public List<SignRequest> getSignRequests() {
