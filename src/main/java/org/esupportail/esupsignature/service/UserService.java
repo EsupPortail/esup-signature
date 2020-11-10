@@ -59,7 +59,7 @@ public class UserService {
     @Resource
     SignRequestService signRequestService;
 
-    @Resource
+    @Autowired(required = false)
     private PersonLdapRepository personLdapRepository;
 
     @Resource

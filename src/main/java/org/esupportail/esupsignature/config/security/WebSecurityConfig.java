@@ -1,10 +1,19 @@
 package org.esupportail.esupsignature.config.security;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.Filter;
+
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
+import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,10 +34,6 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties(WebSecurityProperties.class)
@@ -42,11 +47,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Resource
 	List<SecurityService> securityServices;
-
+	
+	@Autowired(required = false)
+	List<DevSecurityFilter> devSecurityFilters;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
+		if(devSecurityFilters != null) {
+			for(DevSecurityFilter devSecurityFilter : devSecurityFilters) {
+				http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class);
+			}
+		}
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
