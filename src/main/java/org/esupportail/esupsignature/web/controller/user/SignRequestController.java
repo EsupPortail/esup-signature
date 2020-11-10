@@ -430,7 +430,7 @@ public class SignRequestController {
         if (multipartFiles != null) {
 
             if (signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
-                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Fast sign", multipartFiles);
+                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
                 try {
                     signBookRepository.save(signBook);
                     signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), false, signType, user.getEmail()));

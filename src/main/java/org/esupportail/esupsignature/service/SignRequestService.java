@@ -418,6 +418,7 @@ public class SignRequestService {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
 						signedInputStream = pdfService.stampImage(signedInputStream, getCurrentSignType(signRequest), signRequestParams, user);
+						updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
 					}
 				}
 			}
@@ -774,6 +775,7 @@ public class SignRequestService {
 		User user = userService.getUserFromAuthentication();
 		Log log = new Log();
 		log.setSignRequestId(signRequest.getId());
+		log.setSignRequestToken(signRequest.getToken());
 		if(user != null) {
 			log.setEppn(user.getEppn());
 			log.setEppnFor(userService.getCurrentUser().getEppn());

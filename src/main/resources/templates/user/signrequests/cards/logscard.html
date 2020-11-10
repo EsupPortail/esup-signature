@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="logscard">
     <div class="card mb-1 col-lg-10 mx-auto">
         <div class="card-body">
@@ -15,7 +16,6 @@
                 </tr>
                 </thead>
                 <tbody>
-                <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
                 <th:block th:each="log : ${logs}">
                     <tr>
                         <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
