@@ -98,13 +98,12 @@ public class WorkflowService {
             workflow.setName("Ma signature");
             workflow.setDescription("Signature du créateur de la demande");
             workflow.setCreateDate(new Date());
-            workflow.setCreateBy("system");
+            workflow.setCreateBy(userService.getSystemUser());
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = new WorkflowStep();
             workflowStep.setName("Ma signature");
             workflowStep.setSignType(SignType.certSign);
-            workflowStep.setParentType("system");
             workflowStep.getUsers().add(creator);
             workflowStepRepository.save(workflowStep);
             workflow.getWorkflowSteps().add(workflowStep);
@@ -120,9 +119,8 @@ public class WorkflowService {
             workflow.setName(name);
             workflow.setDescription(description);
             workflow.setTitle(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
-            workflow.setCreateBy(user.getEppn());
+            workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
-            workflow.setExternal(external);
             workflow.getManagers().removeAll(Collections.singleton(""));
             Document model = null;
             workflow.setSourceType(DocumentIOType.none);
@@ -141,7 +139,7 @@ public class WorkflowService {
         List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByUser(user);
         Set<Workflow> workflows = new HashSet<>();
         if(user.equals(authUser)) {
-            workflows.addAll(workflowRepository.findByCreateBy(user.getEppn()));
+            workflows.addAll(workflowRepository.findByCreateBy(user));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
@@ -244,7 +242,7 @@ public class WorkflowService {
     }
 
     public boolean checkUserManageRights(User user, Workflow workflow) {
-        if ((workflow.getCreateBy().equals(user.getEppn()) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals("system")) {
+        if ((workflow.getCreateBy().equals(user) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals(userService.getSystemUser())) {
             return true;
         } else {
             return false;
@@ -297,8 +295,6 @@ public class WorkflowService {
         if(name != null) {
             workflowStep.setName(name);
         }
-        workflowStep.setParentType(parentType);
-        workflowStep.setParentId(parentId);
         if(allSignToComplete ==null) {
             workflowStep.setAllSignToComplete(false);
         } else {

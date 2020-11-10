@@ -199,7 +199,6 @@ public class SignBookService {
             signBook.getLiveWorkflow().getWorkflowSteps().add(newWorkflowStep);
         }
         signBook.getLiveWorkflow().setWorkflow(workflow);
-        signBook.getLiveWorkflow().setName("Workflow_" + signBook.getName());
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }

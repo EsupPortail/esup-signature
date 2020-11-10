@@ -12,10 +12,6 @@ public class Recipient {
     @Version
     private Integer version;
 
-    private Long parentId;
-
-    private String parentType;
-
     @ManyToOne
     private User user;
 
@@ -35,22 +31,6 @@ public class Recipient {
 
     public void setVersion(Integer version) {
         this.version = version;
-    }
-
-    public Long getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(Long parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getParentType() {
-        return parentType;
-    }
-
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
     }
 
     public User getUser() {

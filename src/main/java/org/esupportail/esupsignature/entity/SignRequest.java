@@ -31,8 +31,6 @@ public class SignRequest {
     @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
-    private String createByEppn;
-
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -132,14 +130,6 @@ public class SignRequest {
 
     public void setCreateBy(User createBy) {
         this.createBy = createBy;
-    }
-
-    public String getCreateByEppn() {
-        return createByEppn;
-    }
-
-    public void setCreateByEppn(String createByEppn) {
-        this.createByEppn = createByEppn;
     }
 
     public String getExportedDocumentURI() {
