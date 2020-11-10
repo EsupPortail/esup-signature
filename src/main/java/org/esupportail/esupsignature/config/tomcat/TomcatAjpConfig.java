@@ -29,6 +29,7 @@ public class TomcatAjpConfig {
         ajpConnector.setAllowTrace(false);
         ajpConnector.setScheme("https");
         ajpConnector.setAsyncTimeout(1200000);
+        ajpConnector.setURIEncoding("UTF-8");
         ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setSecretRequired(false);
         // TODO : Only If Shib ?
         ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
