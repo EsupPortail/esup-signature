@@ -44,7 +44,7 @@ Un jeu de test est exécuté au moment de la compilation, tous les prérequis et
 # Démarrage
 
 ```
-mvn springboot:run
+mvn spring-boot:run
 ```
 
 # Démonstration
