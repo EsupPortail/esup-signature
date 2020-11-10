@@ -29,13 +29,10 @@ public class TomcatAjpConfig {
         ajpConnector.setAllowTrace(false);
         ajpConnector.setScheme("http");
         ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setSecretRequired(false);
+        // Avoid java.lang.IllegalStateException: More than the maximum allowed number of headers, [100], were detected.
+        // (exception occures with shib)
+        ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
         tomcat.addAdditionalTomcatConnectors(ajpConnector);
-        tomcat.addConnectorCustomizers(connector -> {
-            Http11NioProtocol handler = (Http11NioProtocol) connector.getProtocolHandler();
-            // Avoid java.lang.IllegalStateException: More than the maximum allowed number of headers, [100], were detected.
-            // (exception occures with shib)
-            handler.setMaxHeaderCount(400); 
-          });
         return tomcat;
     }
 
