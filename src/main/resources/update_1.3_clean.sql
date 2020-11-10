@@ -70,7 +70,11 @@ BEGIN
                               drop column parent_type;
     for w in select * from workflow
         Loop
-            update workflow set create_by_id = (select id from user_account where eppn = w.create_by) where id = w.id;
+            if (w.create_by is null) then
+                update workflow set create_by_id = (select id from user_account where eppn = 'system') where id = w.id;
+            else
+                update workflow set create_by_id = (select id from user_account where eppn = w.create_by) where id = w.id;
+            end if;
         end loop;
         alter table workflow drop column create_by,
                              drop column external;
