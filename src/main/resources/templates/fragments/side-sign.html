@@ -23,7 +23,7 @@
 
         <button data-toggle="modal" data-target="#signAllModal"
                 class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"
-                th:classappend="${signable != 'ok' || signRequest.parentSignBook == null || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
+                th:classappend="${signable != 'ok' || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
             <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
         </button>
         <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
@@ -36,12 +36,8 @@
 
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
 
-        <th:block th:if="${signRequest.parentSignBook == null}">
-            <div th:replace="user/signrequests/includes/statusdetails"></div>
-        </th:block>
-        <th:block th:if="${signRequest.parentSignBook != null}">
-            <div th:replace="user/signrequests/cards/stepscard"></div>
-        </th:block>
+
+        <div th:replace="user/signrequests/cards/stepscard"></div>
     </div>
 </nav>
 </html>

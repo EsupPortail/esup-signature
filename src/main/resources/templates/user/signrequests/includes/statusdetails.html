@@ -4,7 +4,7 @@
 <div th:fragment="statusdetails">
 	<div th:if="${user == signRequest.createBy}">
 		<div th:if="${(signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
-			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.recipients.size() == 0}">
+			<div th:if="${#lists.size(signRequest.originalDocuments) == 0 || signRequest.parentSignBook.liveWorkflow.currentStep.recipients.size() == 0}">
 				<div class="alert alert-secondary mb-1" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
 					<h5 class="alert-heading">
 						La demande en cours de création
@@ -15,7 +15,7 @@
 	</div>
 	<div th:if="${user == signRequest.createBy}">
 		<div th:if="${(signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
-			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.recipients.size() == 0}">
+			<div th:unless="${signRequest.originalDocuments.size() == 0 || signRequest.parentSignBook.liveWorkflow.currentStep.recipients.size() == 0}">
 				<div class="alert alert-dark mb-1">
 					<h5 class="alert-heading">
 						Demande prête pour la mise en signature
@@ -34,7 +34,7 @@
 				Le document est en cours de signature par :
 			</span>
 			<table class="table table-sm table-borderless table-striped table-hover">
-			<th:block th:each="recipient : ${signRequest.recipients}">
+			<th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
 				<tr>
 					<td width="100%" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
 					<td align="center">

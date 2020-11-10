@@ -46,14 +46,13 @@ public class BasicWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
-		workflowStep.setStepNumber(1);
 		workflowStep.setSignType(SignType.pdfImageStamp);
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
 		if(data != null) {
-			workflowStep.setRecipients(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
+			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
 		} else {
-			workflowStep.getRecipients().add(recipientService.createRecipient(null, userService.getGenericUser("Utilisateur issue des favoris", "")));
+			workflowStep.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}
 		workflowSteps.add(workflowStep);
 		return workflowSteps;

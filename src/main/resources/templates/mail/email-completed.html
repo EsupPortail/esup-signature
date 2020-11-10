@@ -24,7 +24,7 @@
 
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                <th:block th:each="workflowStep : ${signBook.workflowSteps}" style="box-sizing:border-box;" >
+                <th:block th:each="workflowStep : ${signBook.liveWorkflow.workflowSteps}" style="box-sizing:border-box;" >
                     <th:block th:each="recipient : ${workflowStep.recipients}" style="box-sizing:border-box;" >
                         <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
                             <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
@@ -33,9 +33,13 @@
                     </th:block>
                 </th:block>
             </ul>
-            <p th:if="${signBook.exportedDocumentURI != null}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                Le document a été transmit à cette adresse : <span th:text="${signBook.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
-            </p>
+            <ul>
+                <li th:each="signRequest : ${signBook.signRequests}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                    <th:block th:if="${signRequest.exportedDocumentURI}">
+                        Le document a été transmit à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
+                    </th:block>
+                </li>
+            </ul>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
                 <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:1rem;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
             </p>
