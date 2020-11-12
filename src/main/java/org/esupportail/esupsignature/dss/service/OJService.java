@@ -40,26 +40,34 @@ public class OJService {
 	@Resource
 	private CommonTrustedCertificateSource myTrustedCertificateSource;
 
-	public void getCertificats() throws IOException {
-		log.info("start offline refreshing oj keystore");
-		dssBeanConfig.job().offlineRefresh();
-		refresh();
-		ojContentKeyStore.addAllCertificatesToKeyStore(trustedListsCertificateSource.getCertificates());
-		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
-		OutputStream fos = new FileOutputStream(dssBeanConfig.getDssProperties().getKsFilename());
-		ojContentKeyStore.store(fos);
-		Utils.closeQuietly(fos);
-		log.info("init trusted lists OK");
-	}
-	
-	public void refresh() throws IOException {
-		if(checkOjFreshness()) {
-			log.info("start online refreshing oj keystore");
-			dssBeanConfig.job().onlineRefresh();
-		} else {
-			log.info("no online refresh needed for trusted lists");
+	public void getCertificats() {
+		try {
+			log.info("start offline refreshing oj keystore");
+			dssBeanConfig.job().offlineRefresh();
+			refresh();
+			ojContentKeyStore.addAllCertificatesToKeyStore(trustedListsCertificateSource.getCertificates());
+			ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
+			OutputStream fos = new FileOutputStream(dssBeanConfig.getDssProperties().getKsFilename());
+			ojContentKeyStore.store(fos);
+			Utils.closeQuietly(fos);
+			log.info("init trusted lists OK");
+		} catch(IOException e) {
+			log.error("Error getting certificats", e);
 		}
 	}
+	
+	public void refresh() {
+		try {
+			if(checkOjFreshness()) {
+				log.info("start online refreshing oj keystore");
+				dssBeanConfig.job().onlineRefresh();
+			} else {
+				log.info("no online refresh needed for trusted lists");
+			}
+		} catch(IOException e) {
+			log.error("Error refreshing dss", e);
+		}
+	}	
 
 	public boolean checkOjFreshness() {
 		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();

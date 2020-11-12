@@ -1,5 +1,10 @@
 package org.esupportail.esupsignature.service.scheduler;
 
+import java.io.IOException;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -14,16 +19,12 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.io.IOException;
-import java.util.List;
 
 @ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
@@ -50,8 +51,8 @@ public class ScheduledTaskService {
 	@Resource
 	private UserService userService;
 
-	@Autowired(required = false)
-	private OJService oJService;
+	@Resource
+	private ObjectProvider<OJService> oJService;
 
 	@Scheduled(fixedRate = 300000)
 	@Transactional
@@ -106,17 +107,13 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 1000, fixedDelay=Long.MAX_VALUE)
-	public void getOJKeystore() throws IOException {
-		if(oJService != null) {
-			oJService.getCertificats();
-		}
+	public void getOJKeystore() {
+		oJService.ifAvailable(oJ -> oJ.getCertificats());
 	}
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
-	public void refreshOJKeystore() throws IOException {
-		if(oJService != null) {
-			oJService.refresh();
-		}
+	public void refreshOJKeystore() {
+		oJService.ifAvailable(oJ -> oJ.refresh());
 	}
 	
 	
