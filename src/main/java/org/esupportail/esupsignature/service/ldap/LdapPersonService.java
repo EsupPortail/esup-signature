@@ -40,4 +40,8 @@ public class LdapPersonService {
         return filteredPersons;
     }
 
+	public PersonLdapRepository getPersonLdapRepository() {
+		return personLdapRepository;
+	}
+
 }
