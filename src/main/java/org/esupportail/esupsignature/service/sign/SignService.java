@@ -38,6 +38,8 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -63,19 +65,19 @@ public class SignService {
 	private SignConfig signConfig;
 
 	@Resource
-	private CAdESService cadesService;
+	private ObjectProvider<CAdESService> cadesService;
 
 	@Resource
-	private PAdESService padesService;
+	private ObjectProvider<PAdESService> padesService;
 
 	@Resource
-	private XAdESService xadesService;
+	private ObjectProvider<XAdESService> xadesService;
 
 	@Resource
-	private ASiCWithCAdESService asicWithCAdESService;
+	private ObjectProvider<ASiCWithCAdESService> asicWithCAdESService;
 
 	@Resource
-	private ASiCWithXAdESService asicWithXAdESService;
+	private ObjectProvider<ASiCWithXAdESService> asicWithXAdESService;
 	
 	@Resource
 	private FileService fileService;
@@ -411,13 +413,13 @@ public class SignService {
 		} else {
 			switch (signatureForm) {
 			case CAdES:
-				service = cadesService;
+				service = cadesService.getIfAvailable();
 				break;
 			case PAdES:
-				service = padesService;
+				service = padesService.getIfAvailable();
 				break;
 			case XAdES:
-				service = xadesService;
+				service = xadesService.getIfAvailable();
 				break;
 			default:
 				logger.error("Unknow signature form : " + signatureForm);
@@ -455,10 +457,10 @@ public class SignService {
 		MultipleDocumentsSignatureService service = null;
 		switch (signatureForm) {
 		case CAdES:
-			service = asicWithCAdESService;
+			service = asicWithCAdESService.getIfAvailable();
 			break;
 		case XAdES:
-			service = asicWithXAdESService;
+			service = asicWithXAdESService.getIfAvailable();
 			break;
 		default:
 			logger.error("Unknow signature form : " + signatureForm);
