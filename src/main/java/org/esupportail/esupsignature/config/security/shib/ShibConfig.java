@@ -18,7 +18,7 @@ public class ShibConfig {
 	}
 	
 	@Bean
-	@ConditionalOnProperty(prefix = "security.shib", name = "dev", havingValue = "true")
+	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
 	public DevSecurityFilter devClientRequestFilter() {
 		return new DevClientRequestFilter();
 	}
