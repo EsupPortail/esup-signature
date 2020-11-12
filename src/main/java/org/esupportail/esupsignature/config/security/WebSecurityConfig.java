@@ -1,11 +1,9 @@
 package org.esupportail.esupsignature.config.security;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Resource;
-import javax.servlet.Filter;
 
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.service.security.DevSecurityFilter;
@@ -13,6 +11,7 @@ import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,27 +38,20 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private WebSecurityProperties webSecurityProperties;
-
-	public WebSecurityConfig(WebSecurityProperties webSecurityProperties) {
-		this.webSecurityProperties = webSecurityProperties;
-	}
+	@Autowired
+	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
 
 	@Resource
-	List<SecurityService> securityServices;
+	private List<SecurityService> securityServices;
 	
-	@Autowired(required = false)
-	List<DevSecurityFilter> devSecurityFilters;
+	@Autowired
+	private ObjectProvider<DevSecurityFilter> devSecurityFilters;
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
-		if(devSecurityFilters != null) {
-			for(DevSecurityFilter devSecurityFilter : devSecurityFilters) {
-				http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class);
-			}
-		}
+		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
@@ -91,13 +83,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
+		if(webSecurityProperties.getIfAvailable() == null || webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps() == null) {
 			hasIpAddresses = "denyAll";
 		} else {
-			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
+			for (String ip : webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses += "hasIpAddress('"+ ip +"')";
-				if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
+				if(nbIps < webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps().length) {
 					hasIpAddresses += " or ";
 				}
 			}

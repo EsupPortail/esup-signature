@@ -1,5 +1,14 @@
 package org.esupportail.esupsignature.service.security.shib;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -7,6 +16,7 @@ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -15,17 +25,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
-import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class ShibSecurityServiceImpl implements SecurityService {
 
-	private LdapGroupService ldapGroupService;
+	@Autowired
+	private ObjectProvider<LdapGroupService> ldapGroupService;
 
 	@Resource
 	private GlobalProperties globalProperties;
@@ -52,11 +55,6 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	@Override
 	public String getLogoutUrl() {
 		return shibProperties.getIdpUrl() + "/idp/profile/Logout";
-	}
-
-	@Autowired(required = false)
-	public void setLdapGroupService(LdapGroupService ldapGroupService) {
-		this.ldapGroupService = ldapGroupService;
 	}
 
 	@Override
@@ -120,7 +118,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		group2UserRoleService.setGroupService(groupService);
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
-		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService);
+		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService.getIfAvailable());
 		return shibAuthenticatedUserDetailsService;
 	}
 
