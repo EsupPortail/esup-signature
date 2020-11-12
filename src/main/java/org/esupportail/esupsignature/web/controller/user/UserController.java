@@ -100,7 +100,7 @@ public class UserController {
             	bigFileRepository.delete(authUser.getKeystore().getBigFile());
             	documentRepository.delete(authUser.getKeystore());
             }
-            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_cert.p12", multipartKeystore.getContentType()));
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
         	authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
@@ -122,17 +122,23 @@ public class UserController {
 
 
 	@GetMapping(value = "/view-cert")
-    public String viewCert(@RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserFromAuthentication();
+    public String viewCert(@ModelAttribute("authUser") User authUser, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
-			logger.info(user.getKeystore().getInputStream().read() + "");
-        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(user.getKeystore().getInputStream(), password)));
+			logger.info(authUser.getKeystore().getInputStream().read() + "");
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUser.getKeystore().getInputStream(), password)));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users/?form";
     }
+
+	@GetMapping(value = "/remove-keystore")
+	public String removeKeystore(@ModelAttribute("authUser") User authUser, RedirectAttributes redirectAttributes) {
+		authUser.setKeystore(null);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
+		return "redirect:/user/users/?form";
+	}
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
