@@ -151,84 +151,88 @@ public class WorkflowService {
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {
             logger.debug("retrieve from " + workflow.getSourceType() + " in " + workflow.getDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getSourceType());
-            fsAccessService.open();
-            if(fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
-                logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
-                fsAccessService.createFile("/", workflow.getDocumentsSourceUri(), "folder");
-                if(fsAccessService.getFile("/" + workflow.getDocumentsSourceUri() + "/signed") == null) {
-                    fsAccessService.createFile("/" + workflow.getDocumentsSourceUri() + "/", "signed", "folder");
-                }
-            }
-            try {
-                fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
-                if (fsFiles.size() > 0) {
-                    for (FsFile fsFile : fsFiles) {
-                        logger.info("adding file : " + fsFile.getName());
-                        ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
-                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
-                        String documentName = fsFile.getName();
-                        if(metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
-                            documentName = metadatas.get("Title");
-                        }
-                        SignBook signBook = signBookService.createSignBook(workflow.getTitle() , documentName  + "_" + nbImportedFiles, user, false);
-                        signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
-                        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                        SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
-                        if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
-                            user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
-                            user.setIp("127.0.0.1");
-                        }
-                        List<String> workflowRecipientsEmails = new ArrayList<>();
-                        workflowRecipientsEmails.add(user.getEmail());
-                        signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-                        signRequest.setParentSignBook(signBook);
-                        signBook.getSignRequests().add(signRequest);
-
-                        if(workflow.getScanPdfMetadatas()) {
-                            String signType = metadatas.get("sign_type_default_val");
-                            User creator = userService.createUserWithEppn(metadatas.get("Creator"));
-                            if(creator != null) {
-                                signRequest.setCreateBy(creator);
-                                signBook.setCreateBy(creator);
-                            } else {
-                                signRequest.setCreateBy(userService.getSystemUser());
-                                signBook.setCreateBy(userService.getSystemUser());
-                            }
-                            for (String metadataKey : metadatas.keySet()) {
-                                String[] keySplit = metadataKey.split("_");
-                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
-                                    String[] stepSplit = keySplit[1].split("#");
-                                    ObjectMapper mapper = new ObjectMapper();
-                                    List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                    LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
-                                    signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
-                                }
-                                if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                    String target = metadatas.get(metadataKey);
-                                    if(target.contains("://")) {
-                                        signBook.getLiveWorkflow().setDocumentsTargetUri(target.replace("\\", "/"));
-                                    } else {
-                                        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
-                                    }
-                                    logger.info("target set to : " + signBook.getLiveWorkflow().getDocumentsTargetUri());
-                                }
-                            }
-                        } else {
-                            signBookService.importWorkflow(signBook, workflow);
-                        }
-
-                        signBookService.nextWorkFlowStep(signBook);
-                        signBookService.pendingSignBook(signBook, user);
-                        fsAccessService.remove(fsFile);
-                        nbImportedFiles++;
+            if(fsAccessService != null) {
+                fsAccessService.open();
+                if (fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
+                    logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
+                    fsAccessService.createFile("/", workflow.getDocumentsSourceUri(), "folder");
+                    if (fsAccessService.getFile("/" + workflow.getDocumentsSourceUri() + "/signed") == null) {
+                        fsAccessService.createFile("/" + workflow.getDocumentsSourceUri() + "/", "signed", "folder");
                     }
-                } else {
-                    logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
                 }
-            } catch (Exception e) {
-                throw new EsupSignatureRuntimeException("error on import from " + workflow.getDocumentsSourceUri(), e);
+                try {
+                    fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
+                    if (fsFiles.size() > 0) {
+                        for (FsFile fsFile : fsFiles) {
+                            logger.info("adding file : " + fsFile.getName());
+                            ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
+                            Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                            String documentName = fsFile.getName();
+                            if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
+                                documentName = metadatas.get("Title");
+                            }
+                            SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
+                            signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
+                            signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+                            SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
+                            if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
+                                user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
+                                user.setIp("127.0.0.1");
+                            }
+                            List<String> workflowRecipientsEmails = new ArrayList<>();
+                            workflowRecipientsEmails.add(user.getEmail());
+                            signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            signRequest.setParentSignBook(signBook);
+                            signBook.getSignRequests().add(signRequest);
+
+                            if (workflow.getScanPdfMetadatas()) {
+                                String signType = metadatas.get("sign_type_default_val");
+                                User creator = userService.createUserWithEppn(metadatas.get("Creator"));
+                                if (creator != null) {
+                                    signRequest.setCreateBy(creator);
+                                    signBook.setCreateBy(creator);
+                                } else {
+                                    signRequest.setCreateBy(userService.getSystemUser());
+                                    signBook.setCreateBy(userService.getSystemUser());
+                                }
+                                for (String metadataKey : metadatas.keySet()) {
+                                    String[] keySplit = metadataKey.split("_");
+                                    if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
+                                        String[] stepSplit = keySplit[1].split("#");
+                                        ObjectMapper mapper = new ObjectMapper();
+                                        List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(workflow.getName() + " - " + stepSplit[1], "signbook", signBook.getId(), false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+                                    }
+                                    if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
+                                        String target = metadatas.get(metadataKey);
+                                        if (target.contains("://")) {
+                                            signBook.getLiveWorkflow().setDocumentsTargetUri(target.replace("\\", "/"));
+                                        } else {
+                                            signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
+                                        }
+                                        logger.info("target set to : " + signBook.getLiveWorkflow().getDocumentsTargetUri());
+                                    }
+                                }
+                            } else {
+                                signBookService.importWorkflow(signBook, workflow);
+                            }
+
+                            signBookService.nextWorkFlowStep(signBook);
+                            signBookService.pendingSignBook(signBook, user);
+                            fsAccessService.remove(fsFile);
+                            nbImportedFiles++;
+                        }
+                    } else {
+                        logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
+                    }
+                } catch (Exception e) {
+                    throw new EsupSignatureRuntimeException("error on import from " + workflow.getDocumentsSourceUri(), e);
+                }
+                fsAccessService.close();
+            } else {
+                logger.warn("aucun service de fichier n'est disponible");
             }
-            fsAccessService.close();
         }
         return nbImportedFiles;
     }
