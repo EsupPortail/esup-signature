@@ -4,6 +4,7 @@ import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
@@ -16,6 +17,7 @@ import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 @Controller
 @SessionAttributes({ "simpleReportXml", "detailedReportXml" })
 @RequestMapping("/user/validation")
+@ConditionalOnBean(ValidationService.class)
 public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);

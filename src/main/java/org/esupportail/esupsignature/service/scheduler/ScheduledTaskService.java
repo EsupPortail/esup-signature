@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +50,7 @@ public class ScheduledTaskService {
 	@Resource
 	private UserService userService;
 
-	@Resource
+	@Autowired(required = false)
 	private OJService oJService;
 
 	@Scheduled(fixedRate = 300000)
@@ -106,12 +107,16 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 1000, fixedDelay=Long.MAX_VALUE)
 	public void getOJKeystore() throws IOException {
-		oJService.getCertificats();
+		if(oJService != null) {
+			oJService.getCertificats();
+		}
 	}
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() throws IOException {
-		oJService.refresh();
+		if(oJService != null) {
+			oJService.refresh();
+		}
 	}
 	
 	

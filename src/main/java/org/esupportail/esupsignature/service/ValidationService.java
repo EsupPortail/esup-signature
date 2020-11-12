@@ -1,22 +1,26 @@
 package org.esupportail.esupsignature.service;
 
-import eu.europa.esig.dss.model.DSSException;
-import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.SignedDocumentValidator;
-import eu.europa.esig.dss.validation.executor.ValidationLevel;
-import eu.europa.esig.dss.validation.reports.Reports;
-import org.esupportail.esupsignature.dss.DssUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.annotation.Resource;
+
+import org.esupportail.esupsignature.dss.DssUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Service;
+
+import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.validation.CertificateVerifier;
+import eu.europa.esig.dss.validation.SignedDocumentValidator;
+import eu.europa.esig.dss.validation.executor.ValidationLevel;
+import eu.europa.esig.dss.validation.reports.Reports;
+
 @Service
+@ConditionalOnBean(CertificateVerifier.class)
 public class ValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);
