@@ -29,6 +29,7 @@ import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -48,10 +49,10 @@ public class MailService {
     @Resource
     private GlobalProperties globalProperties;
 
-    @Resource
+    @Autowired
     private ObjectProvider<MailConfig> mailConfig;
 
-    @Resource
+    @Autowired
     private ObjectProvider<JavaMailSenderImpl> mailSender;
 
     @Resource

@@ -38,13 +38,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Resource
+	@Autowired
 	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
 
 	@Resource
 	private List<SecurityService> securityServices;
 	
-	@Resource
+	@Autowired
 	private ObjectProvider<DevSecurityFilter> devSecurityFilters;
 	
 	@Override

@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +20,7 @@ public class CasConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(CasConfig.class);
 
-	@Resource
+	@Autowired
 	private ObjectProvider<LdapContextSource> ldapContextSource;
 
 	@Bean

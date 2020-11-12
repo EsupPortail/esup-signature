@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
@@ -26,7 +27,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 public class ShibSecurityServiceImpl implements SecurityService {
 
-	@Resource
+	@Autowired
 	private ObjectProvider<LdapGroupService> ldapGroupService;
 
 	@Resource

@@ -13,18 +13,19 @@ import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FsAccessFactory {
 
-	@Resource
+	@Autowired
 	private ObjectProvider<SmbAccessImpl> smbAccessImpl;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<VfsAccessImpl> vfsAccessImpl;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<CmisAccessImpl> cmisAccessImpl;
 
 	public FsAccessService getFsAccessService(String path) throws EsupSignatureException {

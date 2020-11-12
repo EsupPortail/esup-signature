@@ -64,19 +64,19 @@ public class SignService {
 	@Resource
 	private SignConfig signConfig;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<CAdESService> cadesService;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<PAdESService> padesService;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<XAdESService> xadesService;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<ASiCWithCAdESService> asicWithCAdESService;
 
-	@Resource
+	@Autowired
 	private ObjectProvider<ASiCWithXAdESService> asicWithXAdESService;
 	
 	@Resource
