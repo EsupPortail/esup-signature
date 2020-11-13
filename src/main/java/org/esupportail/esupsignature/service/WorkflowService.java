@@ -372,7 +372,7 @@ public class WorkflowService {
         if(recipientEmails != null && recipientEmails.size() > 0) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
             for(String recipientEmail : recipientEmails) {
-                users.add(userService.checkUserByEmail(recipientEmail));
+                users.add(userService.checkUserByEmail(recipientEmail.split("\\*")[1]));
             }
         } else {
             List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
@@ -406,8 +406,8 @@ public class WorkflowService {
                         workflowStep.getUsers().clear();
                         List<User> recipients = getFavoriteRecipientEmail(step, data.getForm(), recipientEmails, user);
                         for (User oneUser : recipients) {
-                            workflowStep.getUsers().add(user);
-                            entityManager.detach(user);
+                            workflowStep.getUsers().add(oneUser);
+//                            entityManager.detach(oneUser);
                         }
                         if(recipientEmails != null) {
                             userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());

@@ -15,9 +15,6 @@ public class UserPropertieService {
     @Resource
     private UserPropertieRepository userPropertieRepository;
 
-    @Resource
-    private RecipientRepository recipientRepository;
-
     public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
         List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
         if (userProperties.size() == 0) {
