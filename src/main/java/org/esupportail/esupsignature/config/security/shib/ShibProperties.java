@@ -14,6 +14,7 @@ public class ShibProperties {
     private String groupMappingRoleAdmin;
     private String domainsWhiteListUrl;
     private Map<String, String> groupMappingSpel;
+    private DevShibProperties dev;
 
     public String getTitle() {
         return title;
@@ -69,6 +70,14 @@ public class ShibProperties {
 
 	public void setGroupMappingSpel(Map<String, String> groupMappingSpel) {
 		this.groupMappingSpel = groupMappingSpel;
+	}
+
+	public DevShibProperties getDev() {
+		return dev;
+	}
+
+	public void setDev(DevShibProperties dev) {
+		this.dev = dev;
 	}
   
 }
