@@ -407,7 +407,6 @@ public class WorkflowService {
                         List<User> recipients = getFavoriteRecipientEmail(step, data.getForm(), recipientEmails, user);
                         for (User oneUser : recipients) {
                             workflowStep.getUsers().add(oneUser);
-//                            entityManager.detach(oneUser);
                         }
                         if(recipientEmails != null) {
                             userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());

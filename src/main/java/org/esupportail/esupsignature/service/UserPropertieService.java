@@ -25,7 +25,6 @@ public class UserPropertieService {
                 List<String> recipientEmails = new ArrayList<>();
                 for(User oneUser : workflowStep.getUsers()) {
                     recipientEmails.add(oneUser.getEmail());
-//                    recipientRepository.save(recipient);
                 }
                 if(userPropertie.getRecipients().containsAll(recipientEmails)) {
                     List<String> favoritesEmails = getFavoritesEmails(user, step, form);
