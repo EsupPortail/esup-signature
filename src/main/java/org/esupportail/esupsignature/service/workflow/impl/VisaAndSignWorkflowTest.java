@@ -31,7 +31,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
     public List<WorkflowStep> getWorkflowSteps() {
         if(this.workflowSteps == null) {
             try {
-                this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+                this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, false);
             } catch (EsupSignatureUserException e) {
                 return null;
             }
@@ -44,15 +44,15 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
     }
 
     @Override
-    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipientEmailsStep) throws EsupSignatureUserException {
+    public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipientEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
         workflowStep1.setName("Directeur de composante du lieu d’accueil");
         workflowStep1.setDescription("Visa du directeur de composante du lieu d’accueil");
         workflowStep1.setSignType(SignType.visa);
-        if(data != null) {
-            workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipientEmailsStep, user));
+        if(computeFavorite) {
+            workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, this, recipientEmailsStep, user));
         } else {
             workflowStep1.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
         }
@@ -66,7 +66,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
         List<User> recipientsStep2 = new ArrayList<>();
-        if(data != null) {
+        if(computeFavorite) {
             recipientsStep2.add(userService.checkUserByEmail(step2Recipient));
         } else {
             recipientsStep2.add(userService.getGenericUser(step2Recipient, ""));

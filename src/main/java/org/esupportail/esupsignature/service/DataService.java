@@ -105,10 +105,10 @@ public class DataService {
                 throw new EsupSignatureException("Target email empty");
             }
             String targetUrl = String.join(",", targetEmails);
-            userPropertieService.createTargetPropertie(user, targetUrl, form);
+            userPropertieService.createTargetPropertie(user, targetUrl, workflowService.getWorkflowByName(form.getWorkflowType()));
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
+        Workflow workflow = workflowService.getWorkflowByDataAndUser(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), recipientEmails, user);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();

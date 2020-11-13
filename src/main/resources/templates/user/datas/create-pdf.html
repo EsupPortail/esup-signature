@@ -174,7 +174,7 @@
                                     <th:block th:each="user : ${step.users}">
                                         <option th:if="${user.email != null}" selected="selected"
                                                 th:text="${user.email}"
-                                                th:value="${iterator.index} + '*' + ${user.email}"></option>
+                                                th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
                                     </th:block>
                                 </select>
                                 <p class="small">

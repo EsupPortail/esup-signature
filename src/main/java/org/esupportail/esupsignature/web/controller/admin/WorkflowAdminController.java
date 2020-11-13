@@ -90,12 +90,12 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/{name}", produces = "text/html")
 	public String show(@PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
 		model.addAttribute("signTypes", SignType.values());
-		List<Workflow> workflows = workflowRepository.findByName(name);
-		if(workflows.size() > 0) {
-			model.addAttribute("workflow", workflows.get(0));
+		Workflow workflow = workflowRepository.findByName(name);
+		if(workflow != null) {
+			model.addAttribute("workflow", workflow);
 			return "admin/workflows/show";
 		} else {
-			Workflow workflow = workflowService.getWorkflowByClassName(name);
+			workflow = workflowService.getWorkflowByClassName(name);
 			if (workflow != null) {
 				model.addAttribute("workflow", workflow);
 				return "admin/workflows/show-class";

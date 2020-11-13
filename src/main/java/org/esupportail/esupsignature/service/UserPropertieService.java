@@ -15,19 +15,15 @@ public class UserPropertieService {
     @Resource
     private UserPropertieRepository userPropertieRepository;
 
-    public void createUserPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
+    public void createUserPropertie(User user, int step, String userEmail,  Workflow workflow) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndWorkflowName(user, step, workflow.getName());
         if (userProperties.size() == 0) {
-            addPropertie(user, step, workflowStep, form);
+            addPropertie(user, step, userEmail, workflow);
         } else {
             int nbUpdated = 0;
             for(UserPropertie userPropertie : userProperties) {
-                List<String> recipientEmails = new ArrayList<>();
-                for(User oneUser : workflowStep.getUsers()) {
-                    recipientEmails.add(oneUser.getEmail());
-                }
-                if(userPropertie.getRecipients().containsAll(recipientEmails)) {
-                    List<String> favoritesEmails = getFavoritesEmails(user, step, form);
+                if(userPropertie.getRecipients().contains(userEmail)) {
+                    List<String> favoritesEmails = getFavoritesEmails(user, step, workflow);
                     favoritesEmails.removeAll(userPropertie.getRecipients());
                     if(favoritesEmails.size() > 0) {
                         userPropertie.setScore(userPropertie.getScore() + 1);
@@ -37,29 +33,27 @@ public class UserPropertieService {
                 userPropertieRepository.save(userPropertie);
             }
             if(nbUpdated == 0) {
-                addPropertie(user, step, workflowStep, form);
+                addPropertie(user, step, userEmail, workflow);
             }
         }
     }
 
-    private void addPropertie(User user, int step, WorkflowStep workflowStep, Form form) {
+    private void addPropertie(User user, int step, String userEmail, Workflow workflow) {
         UserPropertie userPropertie = new UserPropertie();
         userPropertie.setStep(step);
-        userPropertie.setForm(form);
+        userPropertie.setWorkflowName(workflow.getName());
         userPropertie.setScore(1);
-        for(User oneUser : workflowStep.getUsers()) {
-            userPropertie.getRecipients().add(oneUser.getEmail());
-        }
+        userPropertie.getRecipients().add(userEmail);
         userPropertie.setUser(user);
         userPropertieRepository.save(userPropertie);
     }
 
-    public void createTargetPropertie(User user, String targetEmail, Form form) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndTargetEmailAndForm(user, targetEmail, form);
+    public void createTargetPropertie(User user, String targetEmail, Workflow workflow) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndTargetEmailAndWorkflowName(user, targetEmail, workflow.getName());
         if (userProperties.size() == 0) {
             UserPropertie userPropertie = new UserPropertie();
             userPropertie.setStep(0);
-            userPropertie.setForm(form);
+            userPropertie.setWorkflowName(workflow.getName());
             userPropertie.setTargetEmail(targetEmail);
             userPropertie.setUser(user);
             userPropertieRepository.save(userPropertie);
@@ -70,8 +64,8 @@ public class UserPropertieService {
         }
     }
 
-    public List<String> getFavoritesEmails(User user, int step, Form form) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, step, form);
+    public List<String> getFavoritesEmails(User user, int step, Workflow workflow) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndWorkflowName(user, step, workflow.getName());
         List<String> favoriteRecipients = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {

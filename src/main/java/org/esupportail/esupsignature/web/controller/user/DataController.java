@@ -195,12 +195,12 @@ public class DataController {
 			for (Field field : fields) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
-			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, 0, form);
+			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndWorkflowName(user, 0, form.getWorkflowType());
 			userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			Workflow workflow = workflowService.getWorkflowByDataAndUser(data, null, user);
+			Workflow workflow = workflowService.getWorkflowByDataAndUser(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, user);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);

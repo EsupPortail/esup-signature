@@ -30,7 +30,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, false);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -43,7 +43,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
@@ -52,8 +52,8 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
-		if(data != null) {
-			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
+		if(computeFavorite) {
+			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, this, recipentEmailsStep, user));
 		} else {
 			workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}
@@ -62,8 +62,8 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		workflowSteps.add(workflowStep2);
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
-		if(data != null) {
-			workflowStep3.setUsers(workflowService.getFavoriteRecipientEmail(3, data.getForm(), recipentEmailsStep, user));
+		if(computeFavorite) {
+			workflowStep3.setUsers(workflowService.getFavoriteRecipientEmail(3, this, recipentEmailsStep, user));
 		} else {
 			workflowStep3.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}

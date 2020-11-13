@@ -30,7 +30,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, null);
+				this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, false);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -43,14 +43,14 @@ public class BasicWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
 		workflowStep.setSignType(SignType.pdfImageStamp);
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
-		if(data != null) {
-			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, data.getForm(), recipentEmailsStep, user));
+		if(computeFavorite) {
+			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, this, recipentEmailsStep, user));
 		} else {
 			workflowStep.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}

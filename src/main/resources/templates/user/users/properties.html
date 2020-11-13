@@ -26,22 +26,22 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="userProperties : ${userProperties}">
+                        <th:block th:each="userPropertie : ${userProperties}">
                             <tr>
                                 <td>
-                                    <span th:text="${userProperties.form.name}"></span>
+                                    <span th:text="${userPropertie.workflowName}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.step}"></span>
+                                    <span th:text="${userPropertie.step}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.score}"></span>
+                                    <span th:text="${userPropertie.score}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.recipients}"></span>
+                                    <span th:text="${userPropertie.recipients}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.targetEmail}"></span>
+                                    <span th:text="${userPropertie.targetEmail}"></span>
                                 </td>
                             </tr>
                         </th:block>

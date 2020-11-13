@@ -360,22 +360,20 @@ public class WorkflowService {
                 return workflow;
             }
         }
-        List<Workflow> dataBaseWorkflows =  workflowRepository.findByName(name);
-        if(dataBaseWorkflows.size() > 0) {
-            return dataBaseWorkflows.get(0);
-        }
-        return null;
+        return workflowRepository.findByName(name);
     }
 
-    public List<User> getFavoriteRecipientEmail(int step, Form form, List<String> recipientEmails, User user) throws EsupSignatureUserException {
+    public List<User> getFavoriteRecipientEmail(int step, Workflow workflow, List<String> recipientEmails, User user) {
         List<User> users = new ArrayList<>();
         if(recipientEmails != null && recipientEmails.size() > 0) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
             for(String recipientEmail : recipientEmails) {
-                users.add(userService.checkUserByEmail(recipientEmail.split("\\*")[1]));
+                String userEmail = recipientEmail.split("\\*")[1];
+                users.add(userService.checkUserByEmail(userEmail));
+                userPropertieService.createUserPropertie(user, step, userEmail, workflow);
             }
         } else {
-            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, form);
+            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, workflow);
             for(String email : favoritesEmail) {
                 User recipientUser = userService.checkUserByEmail(email);
                 users.add(recipientUser);
@@ -384,14 +382,13 @@ public class WorkflowService {
         return users;
     }
 
-    public Workflow getWorkflowByDataAndUser(Data data, List<String> recipientEmails, User user) throws EsupSignatureException {
-        Workflow workflow;
+    public Workflow getWorkflowByDataAndUser(Workflow workflow, List<String> recipientEmails, User user) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
-        Workflow modelWorkflow = getWorkflowByName(data.getForm().getWorkflowType());
+        Workflow modelWorkflow = getWorkflowByName(workflow.getName());
         try {
             if (modelWorkflow instanceof DefaultWorkflow) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, data, recipientEmails));
+                workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, recipientEmails, true));
                 defaultWorkflow.initWorkflowSteps();
                 defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
                 workflow = defaultWorkflow;
@@ -404,16 +401,13 @@ public class WorkflowService {
                     entityManager.detach(workflowStep);
                     if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                         workflowStep.getUsers().clear();
-                        List<User> recipients = getFavoriteRecipientEmail(step, data.getForm(), recipientEmails, user);
+                        List<User> recipients = getFavoriteRecipientEmail(step, workflow, recipientEmails, user);
                         for (User oneUser : recipients) {
                             workflowStep.getUsers().add(oneUser);
-                        }
-                        if(recipientEmails != null) {
-                            userPropertieService.createUserPropertie(user, step, workflowStep, data.getForm());
+                            userPropertieService.createUserPropertie(user, step, oneUser.getEmail() , workflow);
                         }
                     }
                     step++;
-
                 }
                 workflowSteps.addAll(workflow.getWorkflowSteps());
                 entityManager.detach(workflow);

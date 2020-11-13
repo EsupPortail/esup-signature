@@ -9,8 +9,7 @@ import java.util.List;
 
 public interface UserPropertieRepository extends CrudRepository<UserPropertie, Long>  {
 	List<UserPropertie> findByUser(User user);
-	List<UserPropertie> findByUserAndStepAndForm(User user, int step, Form form);
-	List<UserPropertie> findByForm(Form form);
-	List<UserPropertie> findByUserAndStepAndRecipientsInAndForm(User user, int step, List<String> recipients, Form form);
-	List<UserPropertie> findByUserAndTargetEmailAndForm(User user, String targetEmail, Form form);
+	List<UserPropertie> findByWorkflowName(String workflowName);
+	List<UserPropertie> findByUserAndStepAndWorkflowName(User user, int step, String workflowName);
+	List<UserPropertie> findByUserAndTargetEmailAndWorkflowName(User user, String targetEmail, String workflowName);
 }

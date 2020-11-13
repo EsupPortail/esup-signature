@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface WorkflowRepository extends CrudRepository<Workflow, Long>, WorkflowRepositoryCustom {
     List<Workflow> findAll();
-    List<Workflow> findByName(String name);
+    Workflow findByName(String name);
     List<Workflow> findByCreateBy(User user);
     @Query("select w from Workflow w join w.managers m where m = :email")
     List<Workflow> findByManagersContains(@Param("email") String email);

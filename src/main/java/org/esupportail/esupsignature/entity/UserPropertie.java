@@ -19,8 +19,7 @@ public class UserPropertie {
     @ManyToOne
     private User user;
 
-    @ManyToOne
-    private Form form;
+    private String workflowName;
 
     private Integer step;
 
@@ -53,12 +52,12 @@ public class UserPropertie {
         this.user = user;
     }
 
-    public Form getForm() {
-        return form;
+    public String getWorkflowName() {
+        return workflowName;
     }
 
-    public void setForm(Form form) {
-        this.form = form;
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
     }
 
     public Integer getStep() {

@@ -104,7 +104,7 @@ public class FormService {
 			data.setForm(null);
 			dataRepository.save(data);
 		}
-		List<UserPropertie> userProperties = userPropertiesRepository.findByForm(form);
+		List<UserPropertie> userProperties = userPropertiesRepository.findByWorkflowName(form.getWorkflowType());
 		for(UserPropertie userPropertie : userProperties) {
 			userPropertiesRepository.delete(userPropertie);
 		}

@@ -51,7 +51,7 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
     public List<WorkflowStep> getWorkflowSteps() {
         if(this.workflowSteps == null) {
             try {
-                this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, null);
+                this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, false);
             } catch (EsupSignatureUserException e) {
                 return null;
             }
@@ -59,7 +59,7 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         return this.workflowSteps;
     }
 
-    public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+    public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
         return new ArrayList<>();
     }
 
