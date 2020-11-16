@@ -23,8 +23,8 @@ public class UserPropertie {
 
     private Integer step;
 
-    @ElementCollection
-    private List<String> recipients = new ArrayList<>();
+    @OneToMany
+    private List<User> users = new ArrayList<>();
 
     private String targetEmail;
 
@@ -68,12 +68,12 @@ public class UserPropertie {
         this.step = step;
     }
 
-    public List<String> getRecipients() {
-        return recipients;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setRecipients(List<String> recipients) {
-        this.recipients = recipients;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public String getTargetEmail() {
