@@ -15,16 +15,16 @@ public class UserPropertieService {
     @Resource
     private UserPropertieRepository userPropertieRepository;
 
-    public void createUserPropertie(User user, int step, String userEmail,  Workflow workflow) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndWorkflowName(user, step, workflow.getName());
+    public void createUserPropertie(User user, WorkflowStep workflowStep, List<User> users) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
         if (userProperties.size() == 0) {
-            addPropertie(user, step, userEmail, workflow);
+            addPropertie(user, users, workflowStep);
         } else {
             int nbUpdated = 0;
             for(UserPropertie userPropertie : userProperties) {
-                if(userPropertie.getRecipients().contains(userEmail)) {
-                    List<String> favoritesEmails = getFavoritesEmails(user, step, workflow);
-                    favoritesEmails.removeAll(userPropertie.getRecipients());
+                if(userPropertie.getUsers().containsAll(users)) {
+                    List<User> favoritesEmails = getFavoritesEmails(user, workflowStep);
+                    favoritesEmails.removeAll(userPropertie.getUsers());
                     if(favoritesEmails.size() > 0) {
                         userPropertie.setScore(userPropertie.getScore() + 1);
                     }
@@ -33,27 +33,25 @@ public class UserPropertieService {
                 userPropertieRepository.save(userPropertie);
             }
             if(nbUpdated == 0) {
-                addPropertie(user, step, userEmail, workflow);
+                addPropertie(user, users, workflowStep);
             }
         }
     }
 
-    private void addPropertie(User user, int step, String userEmail, Workflow workflow) {
+    private void addPropertie(User user, List<User> users, WorkflowStep workflowStep) {
         UserPropertie userPropertie = new UserPropertie();
-        userPropertie.setStep(step);
-        userPropertie.setWorkflowName(workflow.getName());
+        userPropertie.setWorkflowStep(workflowStep);
         userPropertie.setScore(1);
-        userPropertie.getRecipients().add(userEmail);
+        userPropertie.getUsers().addAll(users);
         userPropertie.setUser(user);
         userPropertieRepository.save(userPropertie);
     }
 
-    public void createTargetPropertie(User user, String targetEmail, Workflow workflow) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndTargetEmailAndWorkflowName(user, targetEmail, workflow.getName());
+    public void createTargetPropertie(User user, WorkflowStep workflowStep, String targetEmail) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndTargetEmailAndWorkflowStep(user, targetEmail, workflowStep);
         if (userProperties.size() == 0) {
             UserPropertie userPropertie = new UserPropertie();
-            userPropertie.setStep(0);
-            userPropertie.setWorkflowName(workflow.getName());
+            userPropertie.setWorkflowStep(workflowStep);
             userPropertie.setTargetEmail(targetEmail);
             userPropertie.setUser(user);
             userPropertieRepository.save(userPropertie);
@@ -64,18 +62,18 @@ public class UserPropertieService {
         }
     }
 
-    public List<String> getFavoritesEmails(User user, int step, Workflow workflow) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndWorkflowName(user, step, workflow.getName());
-        List<String> favoriteRecipients = new ArrayList<>();
+    public List<User> getFavoritesEmails(User user, WorkflowStep workflowStep) {
+        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
+        List<User> favoriteUsers = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
             if(userPropertie.getScore() > bestScore) {
-                favoriteRecipients.clear();
-                favoriteRecipients.addAll(userPropertie.getRecipients());
+                favoriteUsers.clear();
+                favoriteUsers.addAll(userPropertie.getUsers());
                 bestScore = userPropertie.getScore();
             }
         }
-        return favoriteRecipients;
+        return favoriteUsers;
     }
 
 }

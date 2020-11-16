@@ -64,6 +64,11 @@ public class ScheduledTaskService {
 		}
 	}
 
+	@Scheduled(initialDelay = 500, fixedDelay = Long.MAX_VALUE)
+	public void initWorkflowService() {
+		workflowService.init();
+	}
+
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {

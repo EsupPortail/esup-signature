@@ -57,7 +57,7 @@ public class CreatorAndManagerWorkflow extends DefaultWorkflow {
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
         if(computeFavorite) {
-            workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, this, recipentEmailsStep, user));
+            workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, workflowStep2, recipentEmailsStep, user));
         } else {
             workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
         }

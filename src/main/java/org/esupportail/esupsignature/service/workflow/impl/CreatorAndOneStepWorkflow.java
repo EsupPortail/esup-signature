@@ -57,13 +57,22 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 		workflowStep2.setSignType(SignType.pdfImageStamp);
 		workflowStep2.setDescription("Signataire présélectionné en fonction de vos précédentes saisies");
 		if(computeFavorite) {
-			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, this, recipentEmailsStep, user));
+			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, workflowService.getWorkflowByName(this.getClass().getSimpleName()).getWorkflowSteps().get(1), recipentEmailsStep, user));
 		} else {
 			workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}
 		workflowStep2.setChangeable(true);
 		workflowSteps.add(workflowStep2);
 		return workflowSteps;
+	}
+
+	@Override
+	public void fillWorkflowSteps(Workflow workflow, User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+		int i = 0;
+		workflow.getWorkflowSteps().get(0).getUsers().clear();
+		workflow.getWorkflowSteps().get(0).getUsers().add(user);
+		workflow.getWorkflowSteps().get(1).getUsers().clear();
+		workflow.getWorkflowSteps().get(1).getUsers().addAll(workflowService.getFavoriteRecipientEmail(2, workflow.getWorkflowSteps().get(1), recipentEmailsStep, user));
 	}
 }
 

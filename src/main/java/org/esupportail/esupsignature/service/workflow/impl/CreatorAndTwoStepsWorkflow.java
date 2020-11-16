@@ -53,7 +53,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
 		if(computeFavorite) {
-			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, this, recipentEmailsStep, user));
+			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, workflowStep2, recipentEmailsStep, user));
 		} else {
 			workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}
@@ -63,7 +63,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
 		if(computeFavorite) {
-			workflowStep3.setUsers(workflowService.getFavoriteRecipientEmail(3, this, recipentEmailsStep, user));
+			workflowStep3.setUsers(workflowService.getFavoriteRecipientEmail(3, workflowStep3, recipentEmailsStep, user));
 		} else {
 			workflowStep3.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}

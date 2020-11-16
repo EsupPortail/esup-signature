@@ -19,12 +19,11 @@ public class UserPropertie {
     @ManyToOne
     private User user;
 
-    private String workflowName;
+    @ManyToOne
+    private WorkflowStep workflowStep;
 
-    private Integer step;
-
-    @ElementCollection
-    private List<String> recipients = new ArrayList<>();
+    @OneToMany
+    private List<User> users = new ArrayList<>();
 
     private String targetEmail;
 
@@ -52,28 +51,20 @@ public class UserPropertie {
         this.user = user;
     }
 
-    public String getWorkflowName() {
-        return workflowName;
+    public WorkflowStep getWorkflowStep() {
+        return workflowStep;
     }
 
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
+    public void setWorkflowStep(WorkflowStep workflowStep) {
+        this.workflowStep = workflowStep;
     }
 
-    public Integer getStep() {
-        return step;
+    public List<User> getUsers() {
+        return users;
     }
 
-    public void setStep(Integer step) {
-        this.step = step;
-    }
-
-    public List<String> getRecipients() {
-        return recipients;
-    }
-
-    public void setRecipients(List<String> recipients) {
-        this.recipients = recipients;
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     public String getTargetEmail() {
