@@ -105,7 +105,7 @@ public class DataService {
                 throw new EsupSignatureException("Target email empty");
             }
             String targetUrl = String.join(",", targetEmails);
-            userPropertieService.createTargetPropertie(user, targetUrl, workflowService.getWorkflowByName(form.getWorkflowType()));
+            userPropertieService.createTargetPropertie(user, workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0), targetUrl);
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow workflow = workflowService.getWorkflowByDataAndUser(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), recipientEmails, user);

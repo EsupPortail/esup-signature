@@ -50,7 +50,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
 		if(computeFavorite) {
-			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, this, recipentEmailsStep, user));
+			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, workflowStep, recipentEmailsStep, user));
 		} else {
 			workflowStep.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
 		}

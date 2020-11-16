@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -103,9 +104,45 @@ public class WorkflowService {
         }
     }
 
+    @Transactional
+    public void init() {
+        for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
+            workflow.getWorkflowSteps().clear();
+            workflowRepository.save(workflow);
+        }
+        for (Workflow workflow : getClassesWorkflows()) {
+            try {
+                Workflow workflow1 = createWorkflow(workflow.getClass().getSimpleName(), workflow.getDescription(), userService.getSystemUser(), false);
+                workflow1.setFromCode(true);
+            } catch (EsupSignatureException e) {
+                logger.warn("already exist");
+            }
+        }
+        for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
+            List<WorkflowStep> workflowSteps = null;
+            try {
+                workflowSteps = ((DefaultWorkflow) getWorkflowByClassName(workflow.getName())).generateWorkflowSteps(userService.getSystemUser(), null, false);
+                for (WorkflowStep workflowStep : workflowSteps) {
+                    WorkflowStep workflowStep1 = createWorkflowStep(workflowStep.getName(), workflowStep.getAllSignToComplete(), workflowStep.getSignType());
+                    workflowStep1.setDescription(workflowStep.getDescription());
+                    workflowStep1.setChangeable(workflowStep.getChangeable());
+                    workflow.getWorkflowSteps().add(workflowStep1);
+                    workflowRepository.save(workflow);
+                }
+            } catch (EsupSignatureUserException e) {
+                logger.warn("already exist");
+            }
+        }
+    }
+
     public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
-        String name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
-        name = name.replaceAll("[^a-zA-Z0-9]", "") + "BaseWorkflow";
+        String name;
+        if (userService.getSystemUser().equals(user)) {
+            name = title;
+        } else {
+            name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
+            name = name.replaceAll("[^a-zA-Z0-9]", "");
+        }
         if (workflowRepository.countByName(name) == 0) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
@@ -286,7 +323,7 @@ public class WorkflowService {
         }
     }
 
-    public WorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
+    public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         WorkflowStep workflowStep = new WorkflowStep();
         if(name != null) {
             workflowStep.setName(name);
@@ -329,7 +366,6 @@ public class WorkflowService {
 
     public List<Workflow> getSystemWorkflows() {
         List<Workflow> workflowTypes = new ArrayList<>();
-        workflowTypes.addAll(getClassesWorkflows());
         workflowTypes.addAll(getWorkflowsBySystemUser());
         return workflowTypes;
     }
@@ -355,29 +391,21 @@ public class WorkflowService {
     }
 
     public Workflow getWorkflowByName(String name) {
-        for(Workflow workflow : this.workflows ) {
-            if(workflow.getName().equals(name)) {
-                return workflow;
-            }
-        }
         return workflowRepository.findByName(name);
     }
 
-    public List<User> getFavoriteRecipientEmail(int step, Workflow workflow, List<String> recipientEmails, User user) {
+    public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user) {
         List<User> users = new ArrayList<>();
         if(recipientEmails != null && recipientEmails.size() > 0) {
-            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(step))).collect(Collectors.toList());
+            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for(String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
                 users.add(userService.checkUserByEmail(userEmail));
-                userPropertieService.createUserPropertie(user, step, userEmail, workflow);
             }
+            userPropertieService.createUserPropertie(user, workflowStep, users);
         } else {
-            List<String> favoritesEmail = userPropertieService.getFavoritesEmails(user, step, workflow);
-            for(String email : favoritesEmail) {
-                User recipientUser = userService.checkUserByEmail(email);
-                users.add(recipientUser);
-            }
+            List<User> favoritesEmail = userPropertieService.getFavoritesEmails(user, workflowStep);
+            users.addAll(favoritesEmail);
         }
         return users;
     }
@@ -386,31 +414,25 @@ public class WorkflowService {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         Workflow modelWorkflow = getWorkflowByName(workflow.getName());
         try {
-            if (modelWorkflow instanceof DefaultWorkflow) {
-                DefaultWorkflow defaultWorkflow = (DefaultWorkflow) BeanUtils.cloneBean(modelWorkflow);
-                workflowSteps.addAll(((DefaultWorkflow) modelWorkflow).generateWorkflowSteps(user, recipientEmails, true));
-                defaultWorkflow.initWorkflowSteps();
-                defaultWorkflow.getWorkflowSteps().addAll(workflowSteps);
-                workflow = defaultWorkflow;
-                workflowSteps.addAll(workflow.getWorkflowSteps());
+            if (modelWorkflow.getFromCode()) {
+                DefaultWorkflow defaultWorkflow = (DefaultWorkflow) getWorkflowByClassName(modelWorkflow.getName());
+                defaultWorkflow.fillWorkflowSteps(modelWorkflow, user, recipientEmails);
             } else {
                 workflow = (Workflow) BeanUtils.cloneBean(modelWorkflow);
                 int step = 1;
                 for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
                     replaceStepCreatorByUser(user, workflowStep);
-                    entityManager.detach(workflowStep);
                     if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                         workflowStep.getUsers().clear();
-                        List<User> recipients = getFavoriteRecipientEmail(step, workflow, recipientEmails, user);
+                        List<User> recipients = getFavoriteRecipientEmail(step, workflowStep, recipientEmails, user);
                         for (User oneUser : recipients) {
                             workflowStep.getUsers().add(oneUser);
-                            userPropertieService.createUserPropertie(user, step, oneUser.getEmail() , workflow);
                         }
+                        userPropertieService.createUserPropertie(user, workflowStep, recipients);
                     }
                     step++;
                 }
                 workflowSteps.addAll(workflow.getWorkflowSteps());
-                entityManager.detach(workflow);
             }
             return workflow;
         } catch (Exception e) {

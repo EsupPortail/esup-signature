@@ -71,4 +71,6 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         return userService.getSystemUser();
     }
 
+    public void fillWorkflowSteps(Workflow workflow, User user, List<String> recipentEmailsStep) throws EsupSignatureUserException { }
+
 }

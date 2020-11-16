@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.service.workflow.impl;
 
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
@@ -52,7 +49,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep1.setDescription("Visa du directeur de composante du lieu d’accueil");
         workflowStep1.setSignType(SignType.visa);
         if(computeFavorite) {
-            workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, this, recipientEmailsStep, user));
+            workflowStep1.setUsers(workflowService.getFavoriteRecipientEmail(1, workflowStep1, recipientEmailsStep, user));
         } else {
             workflowStep1.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
         }
@@ -76,6 +73,9 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowSteps.add(workflowStep2);
         return workflowSteps;
     }
+
+    @Override
+    public void fillWorkflowSteps(Workflow workflow, User user, List<String> recipentEmailsStep) throws EsupSignatureUserException { }
 
 }
 

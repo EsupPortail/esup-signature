@@ -95,7 +95,7 @@ public class WorkflowAdminController {
 			model.addAttribute("workflow", workflow);
 			return "admin/workflows/show";
 		} else {
-			workflow = workflowService.getWorkflowByClassName(name);
+			workflow = workflowService.getWorkflowByName(name);
 			if (workflow != null) {
 				model.addAttribute("workflow", workflow);
 				return "admin/workflows/show-class";
@@ -196,7 +196,7 @@ public class WorkflowAdminController {
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
 		Workflow workflow = workflowRepository.findById(id).get();
-		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+		WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setDescription(description);
 		workflowStep.setChangeable(changeable);
 		workflow.getWorkflowSteps().add(workflowStep);

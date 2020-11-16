@@ -19,9 +19,8 @@ public class UserPropertie {
     @ManyToOne
     private User user;
 
-    private String workflowName;
-
-    private Integer step;
+    @ManyToOne
+    private WorkflowStep workflowStep;
 
     @OneToMany
     private List<User> users = new ArrayList<>();
@@ -52,20 +51,12 @@ public class UserPropertie {
         this.user = user;
     }
 
-    public String getWorkflowName() {
-        return workflowName;
+    public WorkflowStep getWorkflowStep() {
+        return workflowStep;
     }
 
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
-    }
-
-    public Integer getStep() {
-        return step;
-    }
-
-    public void setStep(Integer step) {
-        this.step = step;
+    public void setWorkflowStep(WorkflowStep workflowStep) {
+        this.workflowStep = workflowStep;
     }
 
     public List<User> getUsers() {

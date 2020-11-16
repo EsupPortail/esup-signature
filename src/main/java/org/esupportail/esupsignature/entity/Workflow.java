@@ -67,6 +67,8 @@ public class Workflow {
     
     private String documentsTargetUri;
 
+    private Boolean fromCode;
+
     public Long getId() {
         return id;
     }
@@ -217,5 +219,13 @@ public class Workflow {
 
     public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
         this.scanPdfMetadatas = scanPdfMetadatas;
+    }
+
+    public Boolean getFromCode() {
+        return fromCode;
+    }
+
+    public void setFromCode(Boolean fromCode) {
+        this.fromCode = fromCode;
     }
 }
