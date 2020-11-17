@@ -222,7 +222,7 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
         String name = mapper.readValue(workflowString, Workflow.class).getName();
-        Workflow workflow = workflowService.createWorkflow(name, name, user, true);
+        Workflow workflow = workflowService.createWorkflow(name, name, user, true, false);
         return workflow.getName();
     }
 

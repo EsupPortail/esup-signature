@@ -207,7 +207,7 @@ public class SignBookService {
     }
 
     public void saveWorkflow(String title, String description, User user, SignBook signBook) throws EsupSignatureException {
-        Workflow workflow = workflowService.createWorkflow(title, description, user, false);
+        Workflow workflow = workflowService.createWorkflow(title, description, user, false, false);
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {

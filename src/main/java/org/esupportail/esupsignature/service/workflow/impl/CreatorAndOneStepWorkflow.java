@@ -30,6 +30,11 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 		return "Signature du créateur puis d'un signataire";
 	}
 
+	@Override
+	public Boolean getPublicUsage() {
+		return true;
+	}
+
 	private List<WorkflowStep> workflowSteps;
 
 	@Override
