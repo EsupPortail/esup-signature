@@ -46,21 +46,10 @@ public class WizardController {
     @Resource
     private LiveWorkflowService liveWorkflowService;
 
-    @GetMapping(value = "/wiz1")
-    public String wiz1(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        logger.info("Saisie du nom");
-        if (workflowId != null) {
-            Workflow workflow = workflowRepository.findById(workflowId).get();
-            model.addAttribute("workflow", workflow);
-        }
-        return "user/wizard/wiz1";
-    }
-
-    @PostMapping(value = "/wiz2", produces = "text/html")
-    public String wiz2(@ModelAttribute("user") User user, @RequestParam("name") String name, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        logger.info(user.getEppn() + " init new signBook : " + name);
+    @GetMapping(value = "/wiz2", produces = "text/html")
+    public String wiz2(@ModelAttribute("user") User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
+        logger.info(user.getEppn() + " init new signBook");
         logger.debug("Choix des fichiers");
-        model.addAttribute("name", name);
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
             model.addAttribute("workflow", workflow);
