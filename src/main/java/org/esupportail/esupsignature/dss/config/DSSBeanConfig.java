@@ -57,7 +57,7 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(DSSProperties.class)
-@ConditionalOnProperty({"dss.tspServer"})
+@ConditionalOnProperty({"dss.tsp-server"})
 public class DSSBeanConfig {
 
 	private static final Logger log = LoggerFactory.getLogger(DSSBeanConfig.class);

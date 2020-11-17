@@ -33,7 +33,7 @@ public class WorkflowServiceTest {
         boolean workflowTest = true;
         for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
             try {
-                ((DefaultWorkflow) defaultWorkflow).generateWorkflowSteps(new User(), null, false);
+                ((DefaultWorkflow) defaultWorkflow).generateWorkflowSteps(new User(), null);
                 logger.info("Test Workflow : " + defaultWorkflow.getName() + " OK");
             } catch (Exception e) {
                 logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO", e);

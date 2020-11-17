@@ -44,7 +44,9 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
@@ -153,6 +155,15 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
+
+            final PDActionURI action = new PDActionURI ();
+            action.setURI ("https://www.helger.com");
+            PDAnnotationLink annotationLink = new PDAnnotationLink();
+            annotationLink.setAction(action);
+            pdImage.setOptionalContent(annotationLink.getOptionalContent());
+            pdImage.getOptionalContent().getCOSObject();
+
+
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();

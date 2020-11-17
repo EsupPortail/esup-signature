@@ -16,6 +16,7 @@ global:
     enable-su: false
     enable-splash: true
     version: '@project.version@'
+    scheduler-email: esup.signature@univ-ville.fr
 
 #tomcat:
 #    ajp:

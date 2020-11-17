@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.workflow.impl;
 
-import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -30,7 +30,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, false);
+				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -43,30 +43,22 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
-		workflowStep1.getUsers().add(user);
+		workflowStep1.getUsers().add(userService.getCreatorUser());
 		workflowStep1.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
-		if(computeFavorite) {
-			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, workflowStep2, recipentEmailsStep, user));
-		} else {
-			workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
-		}
+		workflowStep2.getUsers().add(userService.getGenericUser());
 		workflowStep2.setChangeable(true);
 		workflowStep2.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep2);
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
-		if(computeFavorite) {
-			workflowStep3.setUsers(workflowService.getFavoriteRecipientEmail(3, workflowStep3, recipentEmailsStep, user));
-		} else {
-			workflowStep3.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
-		}
+		workflowStep3.getUsers().add(userService.getGenericUser());
 		workflowStep3.setChangeable(true);
 		workflowStep3.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep3);

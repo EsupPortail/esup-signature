@@ -200,7 +200,7 @@ public class DataController {
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			Workflow workflow = workflowService.getWorkflowByDataAndUser(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, user);
+			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, user, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);

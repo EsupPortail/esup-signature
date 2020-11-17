@@ -8,9 +8,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserPropertieService {
+
+    @Resource
+    private UserService  userService;
 
     @Resource
     private UserPropertieRepository userPropertieRepository;
@@ -20,20 +24,13 @@ public class UserPropertieService {
         if (userProperties.size() == 0) {
             addPropertie(user, users, workflowStep);
         } else {
-            int nbUpdated = 0;
             for(UserPropertie userPropertie : userProperties) {
                 if(userPropertie.getUsers().containsAll(users)) {
-                    List<User> favoritesEmails = getFavoritesEmails(user, workflowStep);
-                    favoritesEmails.removeAll(userPropertie.getUsers());
-                    if(favoritesEmails.size() > 0) {
-                        userPropertie.setScore(userPropertie.getScore() + 1);
-                    }
-                    nbUpdated++;
+                    userPropertie.setScore(userPropertie.getScore() + 1);
+                } else {
+                    addPropertie(user, users, workflowStep);
                 }
                 userPropertieRepository.save(userPropertie);
-            }
-            if(nbUpdated == 0) {
-                addPropertie(user, users, workflowStep);
             }
         }
     }
@@ -76,4 +73,18 @@ public class UserPropertieService {
         return favoriteUsers;
     }
 
+    public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user, WorkflowService workflowService) {
+        List<User> users = new ArrayList<>();
+        if (recipientEmails != null && recipientEmails.size() > 0) {
+            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
+            for (String recipientEmail : recipientEmails) {
+                String userEmail = recipientEmail.split("\\*")[1];
+                users.add(userService.checkUserByEmail(userEmail));
+            }
+        } else {
+            List<User> favoritesEmail = getFavoritesEmails(user, workflowStep);
+            users.addAll(favoritesEmail);
+        }
+        return users;
+    }
 }

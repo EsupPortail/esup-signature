@@ -18,8 +18,7 @@
                     <table class="table table-hover table-borderless table-striped">
                         <thead class="thead-dark">
                         <tr>
-                            <th>Service</th>
-                            <th>Etape</th>
+                            <th>Workflow</th>
                             <th>Score</th>
                             <th>Signataire</th>
                             <th>Destinataire</th>
@@ -29,16 +28,15 @@
                         <th:block th:each="userPropertie : ${userProperties}">
                             <tr>
                                 <td>
-                                    <span th:text="${userPropertie.workflowName}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${userPropertie.step}"></span>
+                                    <span th:text="${userPropertie.workflowStep.description}"></span>
                                 </td>
                                 <td>
                                     <span th:text="${userPropertie.score}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userPropertie.recipients}"></span>
+                                    <ul th:each="user : ${userPropertie.users}">
+                                       <li th:text="${user.eppn}"></li>
+                                    </ul>
                                 </td>
                                 <td>
                                     <span th:text="${userPropertie.targetEmail}"></span>

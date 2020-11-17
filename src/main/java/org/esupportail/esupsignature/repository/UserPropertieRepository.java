@@ -12,5 +12,6 @@ public interface UserPropertieRepository extends CrudRepository<UserPropertie, L
 	List<UserPropertie> findByUser(User user);
 	List<UserPropertie> findByWorkflowStep(WorkflowStep workflowStep);
 	List<UserPropertie> findByUserAndWorkflowStep(User user, WorkflowStep workflowStep);
+	List<UserPropertie> findByUserAndWorkflowStepAndUsersIn(User user, WorkflowStep workflowStep, List<User> users);
 	List<UserPropertie> findByUserAndTargetEmailAndWorkflowStep(User user, String targetEmail, WorkflowStep workflowStep);
 }

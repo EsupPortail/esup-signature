@@ -117,51 +117,25 @@ public class UserService {
     }
 
     public User getSystemUser() {
-        if (userRepository.countByEppn("system") > 0) {
-            return userRepository.findByEppn("system").get(0);
-        } else {
-            User user = new User();
-            user.setEppn("system");
-            userRepository.save(user);
-            return user;
-        }
+        return createUser("system", "", "", "system", UserType.system);
+    }
+
+    public User getCreatorUser() {
+        return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
     }
 
     public User getSchedulerUser() {
-        if (userRepository.countByEppn("scheduler") > 0) {
-            return userRepository.findByEppn("scheduler").get(0);
-        } else {
-            User user = new User();
-            user.setEppn("scheduler");
-            user.setIp("127.0.0.1");
-            user.setFirstname("Automate");
-            user.setName("Esup-Signature");
-            user.setEmail("esup-signature@univ-rouen.fr");
-            userRepository.save(user);
-            return user;
-        }
+        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getSchedulerEmail(), UserType.system);
     }
 
-    public User getGenericUser(String name, String firstname) {
-        User user = new User();
-        user.setName(name);
-        user.setFirstname(firstname);
-        user.setEppn("Generic");
-        return user;
+    public User getGenericUser() {
+        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system);
     }
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         userRepository.findAll().forEach(e -> list.add(e));
         return list;
-    }
-
-    public User getCreatorUser() {
-        if (userRepository.countByEppn("creator") > 0) {
-            return userRepository.findByEppn("creator").get(0);
-        } else {
-            return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
-        }
     }
 
     public boolean preAuthorizeNotInShare(User user, User authUser) {
@@ -291,36 +265,38 @@ public class UserService {
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
-            logger.info("mise à jour de l'utilisateur " + eppn);
             user = userRepository.findByEppn(eppn).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);
             user = new User();
             user.setKeystore(null);
-            //user.setEmailAlertFrequency(EmailAlertFrequency.never);
+
         }
         user.setName(name);
         user.setFirstname(firstName);
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-        List<String> recipientEmails = new ArrayList<>();
-        recipientEmails.add(user.getEmail());
-        try {
-            Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-            if (authorities.size() > 0) {
-                user.getRoles().clear();
-                Set<String> roles = new HashSet<>();
-                for (GrantedAuthority authority : authorities) {
-                    if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
-                        String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
-                        roles.add(role);
+        if(!user.getUserType().equals(UserType.system)) {
+            logger.info("mise à jour de l'utilisateur " + eppn);
+            List<String> recipientEmails = new ArrayList<>();
+            recipientEmails.add(user.getEmail());
+            try {
+                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+                if (authorities.size() > 0) {
+                    user.getRoles().clear();
+                    Set<String> roles = new HashSet<>();
+                    for (GrantedAuthority authority : authorities) {
+                        if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+                            String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
+                            roles.add(role);
+                        }
                     }
+                    user.getRoles().addAll(roles);
                 }
-                user.getRoles().addAll(roles);
+            } catch (Exception e) {
+                logger.warn("unable to get roles " + e);
             }
-        } catch (Exception e) {
-            logger.error("unable to get roles " + e);
         }
         userRepository.save(user);
         return user;
