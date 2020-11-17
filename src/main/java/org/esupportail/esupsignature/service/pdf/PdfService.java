@@ -161,7 +161,7 @@ public class PdfService {
             PDAnnotationLink annotationLink = new PDAnnotationLink();
             annotationLink.setAction(action);
             pdImage.setOptionalContent(annotationLink.getOptionalContent());
-            pdImage.getOptionalContent().getCOSObject()
+            pdImage.getOptionalContent().getCOSObject();
 
 
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);

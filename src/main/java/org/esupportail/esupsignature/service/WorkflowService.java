@@ -36,9 +36,6 @@ public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Resource
     private List<Workflow> workflows;
 
@@ -112,14 +109,14 @@ public class WorkflowService {
         }
         for (Workflow workflow : getClassesWorkflows()) {
             try {
-                Workflow workflow1 = createWorkflow(workflow.getClass().getSimpleName(), workflow.getDescription(), userService.getSystemUser(), false);
-                workflow1.setFromCode(true);
+                createWorkflow(workflow.getClass().getSimpleName(), workflow.getDescription(), userService.getSystemUser(), false);
             } catch (EsupSignatureException e) {
                 logger.warn("already exist");
+                workflow.setFromCode(true);
             }
         }
         for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
-            List<WorkflowStep> workflowSteps = null;
+            List<WorkflowStep> workflowSteps;
             try {
                 workflowSteps = ((DefaultWorkflow) getWorkflowByClassName(workflow.getName())).generateWorkflowSteps(userService.getSystemUser(), null, false);
                 for (WorkflowStep workflowStep : workflowSteps) {

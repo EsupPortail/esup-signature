@@ -19,7 +19,12 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	public String getName() {
 		return "CreatorAndOneStepClassWorkflow";
 	}
-	
+
+	@Override
+	public Boolean getPublicUsage() {
+		return true;
+	}
+
 	@Override
 	public String getDescription() {
 		return "Signature du créateur puis d'un signataire";
