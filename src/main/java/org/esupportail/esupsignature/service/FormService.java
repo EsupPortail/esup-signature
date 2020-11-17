@@ -55,6 +55,9 @@ public class FormService {
 	@Resource
 	private DataRepository dataRepository;
 
+	@Resource
+	private WorkflowService workflowService;
+
 	public Form getFormById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
@@ -104,9 +107,11 @@ public class FormService {
 			data.setForm(null);
 			dataRepository.save(data);
 		}
-		List<UserPropertie> userProperties = userPropertiesRepository.findByForm(form);
-		for(UserPropertie userPropertie : userProperties) {
-			userPropertiesRepository.delete(userPropertie);
+		for (WorkflowStep workflowStep : workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps()) {
+			List<UserPropertie> userProperties = userPropertiesRepository.findByWorkflowStep(workflowStep);
+			for(UserPropertie userPropertie : userProperties) {
+				userPropertiesRepository.delete(userPropertie);
+			}
 		}
 		formRepository.delete(form);
 	}

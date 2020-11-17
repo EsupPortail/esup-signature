@@ -1,7 +1,12 @@
 package org.esupportail.esupsignature.config;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,6 +20,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 
 @Configuration 
 @ComponentScan
@@ -82,5 +92,17 @@ public class WebAppConfig implements WebMvcConfigurer {
 										"/admin/", "/admin/*"
 		);
 		return registrationBean;
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	public BuildProperties buildProperties() throws IOException, XmlPullParserException {
+		MavenXpp3Reader reader = new MavenXpp3Reader();
+		Model model = reader.read(new FileReader("pom.xml"));
+		Properties properties = new Properties();
+		properties.put("group", model.getGroupId());
+		properties.put("artifact", model.getArtifactId());
+		properties.put("version", model.getVersion());
+		return new BuildProperties(properties);
 	}
 }

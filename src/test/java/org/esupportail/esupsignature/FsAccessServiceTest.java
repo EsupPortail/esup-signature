@@ -39,7 +39,7 @@ public class FsAccessServiceTest {
     @Order(1)
     public void testSmbAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
-        assumeTrue("smb not configured", fsAccessService.getUri() != null);
+        assumeTrue("smb not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -58,7 +58,7 @@ public class FsAccessServiceTest {
     @Order(2)
     public void testCmisAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.cmis);
-        assumeTrue("cmis not configured", fsAccessService.getUri() != null);
+        assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
@@ -76,7 +76,7 @@ public class FsAccessServiceTest {
     @Order(3)
     public void testVfsAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.vfs);
-        assumeTrue("vfs not configured", fsAccessService.getUri() != null);
+        assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");

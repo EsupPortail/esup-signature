@@ -159,6 +159,11 @@
                                         data-target="#testKeystore">
                                     <i class="fas fa-certificate"></i> Tester mon certificat
                                 </button>
+                                <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"
+                                        class="btn btn-sm btn-danger text-left" data-toggle="modal"
+                                        data-target="#removeKeystore">
+                                    <i class="fas fa-trash-alt"></i> Supprimer mon certificat
+                                </button>
                             </div>
                             <div class="form-group">
                                 <div class="custom-file">
@@ -253,6 +258,23 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
                     <input class="btn btn-primary" type="submit" value="Afficher le certificat"/>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="/user/users/remove-keystore" method="get">
+                <div class="modal-header">
+                    <h3 class="modal-title">Confirmer la suppression du certificat</h3>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                    <input class="btn btn-danger" type="submit" value="Confirmer"/>
 
                 </div>
             </form>

@@ -683,7 +683,7 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) String[] names,
                           @RequestParam(value = "firstnames", required = false) String[] firstnames,
                           @RequestParam(value = "phones", required = false) String[] phones,
-                          RedirectAttributes redirectAttributes) throws MessagingException {
+                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<User> tempUsers = signRequestService.getTempUsers(signRequest);
         int countExternalUsers = 0;
@@ -712,9 +712,14 @@ public class SignRequestController {
             }
         }
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
+            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+                Workflow workflow = workflowService.computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
+                signBookService.importWorkflow(signRequest.getParentSignBook(), workflow);
+                signBookService.nextWorkFlowStep(signRequest.getParentSignBook());
+            }
             signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
         }
-        if(!comment.isEmpty()) {
+        if(comment != null && !comment.isEmpty()) {
             signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
         }

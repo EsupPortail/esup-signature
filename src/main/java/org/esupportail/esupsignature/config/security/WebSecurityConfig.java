@@ -1,10 +1,18 @@
 package org.esupportail.esupsignature.config.security;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
+import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,28 +33,25 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private WebSecurityProperties webSecurityProperties;
-
-	public WebSecurityConfig(WebSecurityProperties webSecurityProperties) {
-		this.webSecurityProperties = webSecurityProperties;
-	}
+	@Autowired
+	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
 
 	@Resource
-	List<SecurityService> securityServices;
-
+	private List<SecurityService> securityServices;
+	
+	@Autowired
+	private ObjectProvider<DevSecurityFilter> devSecurityFilters;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
+		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
@@ -78,11 +83,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
-			nbIps++;
-			hasIpAddresses += "hasIpAddress('"+ ip +"')";
-			if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
-				hasIpAddresses += " or ";
+		if(webSecurityProperties.getIfAvailable() == null || webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps() == null) {
+			hasIpAddresses = "denyAll";
+		} else {
+			for (String ip : webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps()) {
+				nbIps++;
+				hasIpAddresses += "hasIpAddress('"+ ip +"')";
+				if(nbIps < webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps().length) {
+					hasIpAddresses += " or ";
+				}
 			}
 		}
 		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);

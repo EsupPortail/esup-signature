@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -26,6 +27,7 @@ public class Log {
 	private String eppn;
 
 	@Transient
+    @JsonIgnore
 	private User user;
 
     private String eppnFor;

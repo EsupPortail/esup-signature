@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.config.fs;
 import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,7 @@ public class FsConfig {
 	}
 
 	@Bean
+	@ConditionalOnProperty({"fs.smb-uri"})
 	public SmbAccessImpl smbAccessImpl(){
 		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();
 		smbAccessImpl.setDriveName("CIFS");
@@ -35,7 +37,6 @@ public class FsConfig {
 		return smbAccessImpl;
 	}
 
-	@Bean
 	public Properties smbProperties(){
 		Properties properties = new Properties();
 		properties.put("jsmb.resolveOrder", "DNS,BCAST");
@@ -47,6 +48,7 @@ public class FsConfig {
 	}
 	
 	@Bean
+	@ConditionalOnProperty("fs.vfs-uri")
 	public VfsAccessImpl vfsAccessImpl(){
 		VfsAccessImpl vfsAccessImpl = new VfsAccessImpl();
 		vfsAccessImpl.setDriveName("VFS");
@@ -57,6 +59,7 @@ public class FsConfig {
 	}
 
 	@Bean
+	@ConditionalOnProperty("fs.cmis-uri")
 	public CmisAccessImpl cmisAccessImpl(){
 		CmisAccessImpl cmisAccessImpl = new CmisAccessImpl();
 		cmisAccessImpl.setDriveName("CMIS");

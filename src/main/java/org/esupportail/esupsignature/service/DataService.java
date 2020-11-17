@@ -6,11 +6,8 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.extvalue.ExtValue;
-import org.esupportail.esupsignature.service.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.esupportail.esupsignature.service.prefill.PreFill;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -105,10 +100,11 @@ public class DataService {
                 throw new EsupSignatureException("Target email empty");
             }
             String targetUrl = String.join(",", targetEmails);
-            userPropertieService.createTargetPropertie(user, targetUrl, form);
+            userPropertieService.createTargetPropertie(user, workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0), targetUrl);
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        Workflow workflow = workflowService.getWorkflowByDataAndUser(data, recipientEmails, user);
+        Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user, false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
@@ -127,7 +123,8 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
-        signBookService.importWorkflow(signBook, workflow);
+        signBookService.importWorkflow(signBook, computedWorkflow);
+        workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
             signBook.getLiveWorkflow().setTargetType(form.getTargetType());
@@ -143,8 +140,6 @@ public class DataService {
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }
-
-
 
     public Data updateData(@RequestParam MultiValueMap<String, String> formDatas, User user, Form form, Data data) {
 

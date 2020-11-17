@@ -215,7 +215,7 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = null;
             try {
-                toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+                toSaveWorkflowStep = workflowService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
             } catch (EsupSignatureUserException e) {
                 logger.error("error on save workflow", e);
             }

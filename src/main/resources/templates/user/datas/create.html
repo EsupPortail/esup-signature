@@ -102,7 +102,7 @@
                             <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
                             <select class="select-users" th:id="'recipientEmailsSelect_' + ${steps.getCurrentStepNumber()}" multiple="multiple" name="recipientEmails" required="required" >
                                 <th:block th:each="recipient : ${step.recipients}">
-                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${steps.getCurrentStepNumber()} + '*' + ${recipient.user.email}"></option>
+                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${iterator.index + 1} + '*' + ${recipient.user.email}"></option>
                                 </th:block>
                             </select>
                             <p class="small">

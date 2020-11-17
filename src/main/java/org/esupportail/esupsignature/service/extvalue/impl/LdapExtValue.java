@@ -1,6 +1,17 @@
 package org.esupportail.esupsignature.service.extvalue.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.InvocationTargetException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.extvalue.ExtValue;
@@ -11,16 +22,12 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
 @Component
@@ -31,15 +38,11 @@ public class LdapExtValue implements ExtValue {
 	@Resource
 	private UserService userService;
 
-	@Resource
-	private LdapPersonService ldapPersonService;
+	@Autowired
+	private ObjectProvider<LdapPersonService> ldapPersonService;
 
 	@Resource
 	private LdapOrganizationalUnitService ldapOrganizationalUnitService;
-
-	public LdapExtValue(@Autowired(required = false) LdapPersonService ldapPersonService) {
-		this.ldapPersonService = ldapPersonService;
-	}
 
 	@Override
 	public String getName() {
@@ -78,7 +81,7 @@ public class LdapExtValue implements ExtValue {
 		if(!returnValues[0].isEmpty()) {
 			String methodName = "get" + returnValues[0].substring(0, 1).toUpperCase() + returnValues[0].substring(1);
 			if (returnTypes[0].equals("person")) {
-				List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
+				List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().search(searchString);
 				for (PersonLdap personLdap : personLdaps) {
 					Map<String, Object> stringObjectMap = new HashMap<>();
 					try {

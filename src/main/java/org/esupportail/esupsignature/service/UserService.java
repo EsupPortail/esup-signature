@@ -1,24 +1,45 @@
 package org.esupportail.esupsignature.service;
 
+import java.io.File;
+import java.time.DayOfWeek;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Message;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.MessageRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
-import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
-import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,28 +48,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.time.DayOfWeek;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 @Service
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private LdapPersonService ldapPersonService;
+    @Autowired
+    private ObjectProvider<LdapPersonService> ldapPersonService;
 
     @Resource
     private GlobalProperties globalProperties;
-
-    @Autowired(required = false)
-    public void setLdapPersonService(LdapPersonService ldapPersonService) {
-        this.ldapPersonService = ldapPersonService;
-    }
 
     @Resource
     private UserRepository userRepository;
@@ -58,9 +67,6 @@ public class UserService {
 
     @Resource
     SignRequestService signRequestService;
-
-    @Resource
-    private PersonLdapRepository personLdapRepository;
 
     @Resource
     private MessageRepository messageRepository;
@@ -76,11 +82,6 @@ public class UserService {
 
     @Resource
     private HttpServletRequest httpServletRequest;
-
-    public UserService(@Autowired(required = false) LdapPersonService ldapPersonService) {
-        this.ldapPersonService = ldapPersonService;
-    }
-
 
     public void setSuEppn(String eppn) {
         ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -116,51 +117,25 @@ public class UserService {
     }
 
     public User getSystemUser() {
-        if (userRepository.countByEppn("system") > 0) {
-            return userRepository.findByEppn("system").get(0);
-        } else {
-            User user = new User();
-            user.setEppn("system");
-            userRepository.save(user);
-            return user;
-        }
+        return createUser("system", "", "", "system", UserType.system);
+    }
+
+    public User getCreatorUser() {
+        return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
     }
 
     public User getSchedulerUser() {
-        if (userRepository.countByEppn("scheduler") > 0) {
-            return userRepository.findByEppn("scheduler").get(0);
-        } else {
-            User user = new User();
-            user.setEppn("scheduler");
-            user.setIp("127.0.0.1");
-            user.setFirstname("Automate");
-            user.setName("Esup-Signature");
-            user.setEmail("esup-signature@univ-rouen.fr");
-            userRepository.save(user);
-            return user;
-        }
+        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getSchedulerEmail(), UserType.system);
     }
 
-    public User getGenericUser(String name, String firstname) {
-        User user = new User();
-        user.setName(name);
-        user.setFirstname(firstname);
-        user.setEppn("Generic");
-        return user;
+    public User getGenericUser() {
+        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system);
     }
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         userRepository.findAll().forEach(e -> list.add(e));
         return list;
-    }
-
-    public User getCreatorUser() {
-        if (userRepository.countByEppn("creator") > 0) {
-            return userRepository.findByEppn("creator").get(0);
-        } else {
-            return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
-        }
     }
 
     public boolean preAuthorizeNotInShare(User user, User authUser) {
@@ -228,8 +203,8 @@ public class UserService {
         if (!user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
         }
-        if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(eppn);
+        if (ldapPersonService.getIfAvailable() != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByEduPersonPrincipalName(eppn);
             if (personLdaps.size() > 0) {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -243,8 +218,8 @@ public class UserService {
     }
 
     public User createUserWithEmail(String mail) {
-        if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = personLdapRepository.findByMail(mail);
+        if (ldapPersonService.getIfAvailable() != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByMail(mail);
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
@@ -272,8 +247,11 @@ public class UserService {
         } else {
             uid = authentication.getName();
         }
+        if(ldapPersonService.getIfAvailable() == null) {
+        	throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
+        }
         logger.info("controle de l'utilisateur " + uid);
-        List<PersonLdap> personLdaps = personLdapRepository.findByUid(uid);
+        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUid(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(personLdaps.get(0));
@@ -287,36 +265,38 @@ public class UserService {
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
-            logger.info("mise à jour de l'utilisateur " + eppn);
             user = userRepository.findByEppn(eppn).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);
             user = new User();
             user.setKeystore(null);
-            //user.setEmailAlertFrequency(EmailAlertFrequency.never);
+
         }
         user.setName(name);
         user.setFirstname(firstName);
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-        List<String> recipientEmails = new ArrayList<>();
-        recipientEmails.add(user.getEmail());
-        try {
-            Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-            if (authorities.size() > 0) {
-                user.getRoles().clear();
-                Set<String> roles = new HashSet<>();
-                for (GrantedAuthority authority : authorities) {
-                    if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
-                        String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
-                        roles.add(role);
+        if(!user.getUserType().equals(UserType.system)) {
+            logger.info("mise à jour de l'utilisateur " + eppn);
+            List<String> recipientEmails = new ArrayList<>();
+            recipientEmails.add(user.getEmail());
+            try {
+                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+                if (authorities.size() > 0) {
+                    user.getRoles().clear();
+                    Set<String> roles = new HashSet<>();
+                    for (GrantedAuthority authority : authorities) {
+                        if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+                            String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
+                            roles.add(role);
+                        }
                     }
+                    user.getRoles().addAll(roles);
                 }
-                user.getRoles().addAll(roles);
+            } catch (Exception e) {
+                logger.warn("unable to get roles " + e);
             }
-        } catch (Exception e) {
-            logger.error("unable to get roles " + e);
         }
         userRepository.save(user);
         return user;
@@ -357,8 +337,8 @@ public class UserService {
         for (User user : users) {
             personLdaps.add(getPersonLdapFromUser(user));
         }
-        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = ldapPersonService.search(searchString);
+        if (ldapPersonService.getIfAvailable() != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
+            List<PersonLdap> ldapSearchList = ldapPersonService.getIfAvailable().search(searchString);
             if (ldapSearchList.size() > 0) {
                 List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
                 for (PersonLdap personLdapList : ldapList) {
@@ -417,8 +397,8 @@ public class UserService {
 
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
-        if (ldapPersonService != null) {
-            List<PersonLdap> personLdaps = personLdapRepository.findByEduPersonPrincipalName(user.getEppn());
+        if (ldapPersonService.getIfAvailable() != null) {
+            List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             }

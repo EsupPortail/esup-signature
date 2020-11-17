@@ -90,12 +90,12 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/{name}", produces = "text/html")
 	public String show(@PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
 		model.addAttribute("signTypes", SignType.values());
-		List<Workflow> workflows = workflowRepository.findByName(name);
-		if(workflows.size() > 0) {
-			model.addAttribute("workflow", workflows.get(0));
+		Workflow workflow = workflowRepository.findByName(name);
+		if(workflow != null) {
+			model.addAttribute("workflow", workflow);
 			return "admin/workflows/show";
 		} else {
-			Workflow workflow = workflowService.getWorkflowByClassName(name);
+			workflow = workflowService.getWorkflowByName(name);
 			if (workflow != null) {
 				model.addAttribute("workflow", workflow);
 				return "admin/workflows/show-class";
@@ -196,7 +196,7 @@ public class WorkflowAdminController {
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
 		Workflow workflow = workflowRepository.findById(id).get();
-		WorkflowStep workflowStep = workflowService.createWorkflowStep("", "workflow", workflow.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+		WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
 		workflowStep.setDescription(description);
 		workflowStep.setChangeable(changeable);
 		workflow.getWorkflowSteps().add(workflowStep);
@@ -226,15 +226,16 @@ public class WorkflowAdminController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "recipientId") Long recipientId) {
+									  @RequestParam(value = "userId") Long userId, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.equals(workflow.getCreateBy()) || userService.getSystemUser().equals(workflow.getCreateBy())) {
-			User recipientToRemove = userRepository.findById(recipientId).get();
+			User recipientToRemove = userRepository.findById(userId).get();
 			workflowStep.getUsers().remove(recipientToRemove);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 

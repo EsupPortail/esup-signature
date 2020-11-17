@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.security.shib;
 
+import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,4 +17,10 @@ public class ShibConfig {
 		return new ShibSecurityServiceImpl();
 	}
 	
+	@Bean
+	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
+	public DevSecurityFilter devClientRequestFilter() {
+		return new DevClientRequestFilter();
+	}
+
 }

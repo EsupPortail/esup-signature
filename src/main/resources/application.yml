@@ -16,6 +16,7 @@ global:
     enable-su: false
     enable-splash: true
     version: '@project.version@'
+    scheduler-email: esup.signature@univ-ville.fr
 
 #tomcat:
 #    ajp:
@@ -68,7 +69,7 @@ spring:
         urls: ldap://ldap.univ-ville.fr
         username: cn=consult,dc=univ-ville,dc=fr
     mail:
-        host: smtp.univ-ville.fr
+#        host: smtp.univ-ville.fr
     messages:
         basename: i18n/messages
         encoding: UTF-8
