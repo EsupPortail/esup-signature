@@ -112,10 +112,11 @@ public class WorkflowService {
         }
         for (Workflow workflow : getClassesWorkflows()) {
             try {
-                Workflow workflow1 = createWorkflow(workflow.getClass().getSimpleName(), workflow.getDescription(), userService.getSystemUser(), false);
+                Workflow workflow1 = createWorkflow(workflow.getClass().getSimpleName(), workflow.getDescription(), userService.getSystemUser(), false, workflow.getPublicUsage());
                 workflow1.setFromCode(true);
             } catch (EsupSignatureException e) {
-                logger.warn("already exist");
+                Workflow modelWorkflow = workflowRepository.findByName(workflow.getClass().getSimpleName());
+                modelWorkflow.setPublicUsage(workflow.getPublicUsage());
             }
         }
         for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
@@ -135,7 +136,7 @@ public class WorkflowService {
         }
     }
 
-    public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
+    public Workflow createWorkflow(String title, String description, User user, boolean external, boolean publicUsage) throws EsupSignatureException {
         String name;
         if (userService.getSystemUser().equals(user)) {
             name = title;
@@ -148,6 +149,7 @@ public class WorkflowService {
             workflow.setName(name);
             workflow.setDescription(description);
             workflow.setTitle(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            workflow.setPublicUsage(publicUsage);
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));

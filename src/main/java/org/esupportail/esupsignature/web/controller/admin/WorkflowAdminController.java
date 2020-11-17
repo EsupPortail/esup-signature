@@ -109,7 +109,7 @@ public class WorkflowAdminController {
 	public String create(@ModelAttribute("user") User user, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false);
+			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false, false);
 		} catch (EsupSignatureException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
 			return "redirect:/admin/workflows/";
