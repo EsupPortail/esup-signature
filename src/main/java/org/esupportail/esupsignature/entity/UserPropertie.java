@@ -22,7 +22,7 @@ public class UserPropertie {
     @ManyToOne
     private WorkflowStep workflowStep;
 
-    @OneToMany
+    @ManyToMany
     private List<User> users = new ArrayList<>();
 
     private String targetEmail;
