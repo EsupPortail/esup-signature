@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.workflow.impl;
 
-import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -30,7 +30,7 @@ public class BasicWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null, false);
+				this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -43,17 +43,13 @@ public class BasicWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep, boolean computeFavorite) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
 		workflowStep.setSignType(SignType.pdfImageStamp);
 		workflowStep.setDescription("Choix du signataire");
 		workflowStep.setChangeable(true);
-		if(computeFavorite) {
-			workflowStep.setUsers(workflowService.getFavoriteRecipientEmail(1, workflowStep, recipentEmailsStep, user));
-		} else {
-			workflowStep.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
-		}
+		workflowStep.getUsers().add(userService.getGenericUser());
 		workflowSteps.add(workflowStep);
 		return workflowSteps;
 	}

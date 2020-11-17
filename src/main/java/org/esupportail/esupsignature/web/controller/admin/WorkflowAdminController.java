@@ -109,7 +109,7 @@ public class WorkflowAdminController {
 	public String create(@ModelAttribute("user") User user, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
 		Workflow workflow;
 		try {
-			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false, false);
+			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(),false);
 		} catch (EsupSignatureException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
 			return "redirect:/admin/workflows/";
@@ -226,15 +226,16 @@ public class WorkflowAdminController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "recipientId") Long recipientId) {
+									  @RequestParam(value = "userId") Long userId, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
 		if(user.equals(workflow.getCreateBy()) || userService.getSystemUser().equals(workflow.getCreateBy())) {
-			User recipientToRemove = userRepository.findById(recipientId).get();
+			User recipientToRemove = userRepository.findById(userId).get();
 			workflowStep.getUsers().remove(recipientToRemove);
 		} else {
 			logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
 		}
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 

@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -62,11 +64,6 @@ public class ScheduledTaskService {
 		for(Workflow workflow : workflows) {
 			workflowService.importFilesFromSource(workflow, userService.getSchedulerUser());
 		}
-	}
-
-	@Scheduled(initialDelay = 500, fixedDelay = Long.MAX_VALUE)
-	public void initWorkflowService() {
-		workflowService.init();
 	}
 
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
@@ -112,16 +109,15 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 1000, fixedDelay=Long.MAX_VALUE)
-	public void getOJKeystore() {
-		oJService.ifAvailable(oJ -> oJ.getCertificats());
-	}
-
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
 		oJService.ifAvailable(oJ -> oJ.refresh());
 	}
-	
-	
+
+	@EventListener(ApplicationReadyEvent.class)
+	public void initWorkflowService() throws EsupSignatureException {
+		workflowService.init();
+		oJService.ifAvailable(OJService::getCertificats);
+	}
 
 }
