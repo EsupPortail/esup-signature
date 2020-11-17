@@ -117,6 +117,8 @@ public class WorkflowService {
             } catch (EsupSignatureException e) {
                 Workflow modelWorkflow = workflowRepository.findByName(workflow.getClass().getSimpleName());
                 modelWorkflow.setPublicUsage(workflow.getPublicUsage());
+                workflow.setDescription(workflow.getDescription());
+                workflow.setTitle(workflow.getTitle().replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
             }
         }
         for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
