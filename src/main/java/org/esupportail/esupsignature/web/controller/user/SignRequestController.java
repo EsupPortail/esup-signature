@@ -715,6 +715,7 @@ public class SignRequestController {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
                 Workflow workflow = workflowService.computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
                 signBookService.importWorkflow(signRequest.getParentSignBook(), workflow);
+                signBookService.nextWorkFlowStep(signRequest.getParentSignBook());
             }
             signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
         }
