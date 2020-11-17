@@ -155,15 +155,6 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-
-            final PDActionURI action = new PDActionURI ();
-            action.setURI ("https://www.helger.com");
-            PDAnnotationLink annotationLink = new PDAnnotationLink();
-            annotationLink.setAction(action);
-            pdImage.setOptionalContent(annotationLink.getOptionalContent());
-            pdImage.getOptionalContent().getCOSObject();
-
-
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
