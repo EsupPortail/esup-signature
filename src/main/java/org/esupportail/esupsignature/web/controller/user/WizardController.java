@@ -20,7 +20,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.sql.Timestamp;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,6 +85,9 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
+
+                signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
+                signBook.setTitle(workflow.getDescription());
                 signBook.getLiveWorkflow().setWorkflow(workflow);
 //                signBookService.pendingSignBook(signBook, user);
                 return "redirect:/user/wizard/wizend/" + signBook.getId();

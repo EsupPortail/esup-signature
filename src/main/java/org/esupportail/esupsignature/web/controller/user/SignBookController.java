@@ -283,10 +283,9 @@ public class SignBookController {
         logger.info("start add documents in " + name);
 
         Workflow workflow = workflowService.getWorkflowByName(workflowName);
-        name = workflow.getTitle() + "_" + name;
         SignBook signBook = signBookService.createSignBook(name, "", user, false);
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
+            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
         }
