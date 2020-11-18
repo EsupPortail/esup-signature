@@ -263,6 +263,8 @@ public class SignRequestController {
         if(signRequestService.getTempUsers(signRequest).size() > 0) {
             isTempUsers = true;
         }
+        Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
+        model.addAttribute("steps", workflow.getWorkflowSteps());
         List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         model.addAttribute("isTempUsers", isTempUsers);
         model.addAttribute("refuseLogs", refuseLogs);
@@ -708,7 +710,6 @@ public class SignRequestController {
                 }
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
-                return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
@@ -724,7 +725,7 @@ public class SignRequestController {
             signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
-        return "redirect:/user/signrequests/";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
