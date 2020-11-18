@@ -115,7 +115,7 @@ public class ScheduledTaskService {
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
-	public void initWorkflowService() throws EsupSignatureException {
+	public void init() throws EsupSignatureException {
 		workflowService.init();
 		oJService.ifAvailable(OJService::getCertificats);
 	}

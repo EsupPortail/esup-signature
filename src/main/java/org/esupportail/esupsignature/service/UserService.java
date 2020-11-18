@@ -125,7 +125,7 @@ public class UserService {
     }
 
     public User getSchedulerUser() {
-        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getSchedulerEmail(), UserType.system);
+        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system);
     }
 
     public User getGenericUser() {

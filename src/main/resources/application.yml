@@ -15,8 +15,8 @@ global:
     #   delay-before-cleaning : 0
     enable-su: false
     enable-splash: true
+    application-email: esup.signature@univ-ville.fr
     version: '@project.version@'
-    scheduler-email: esup.signature@univ-ville.fr
 
 #tomcat:
 #    ajp:

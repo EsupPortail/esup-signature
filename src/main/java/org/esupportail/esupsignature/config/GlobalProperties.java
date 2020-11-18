@@ -27,7 +27,7 @@ public class GlobalProperties implements Cloneable {
     private Boolean enableSu = false;
     private Boolean enableSplash = false;
     private String version = "";
-    private String schedulerEmail = "esup.signature@univ-ville.fr";
+    private String applicationEmail = "esup.signature@univ-ville.fr";
 
     public String getRootUrl() {
         return rootUrl;
@@ -165,11 +165,11 @@ public class GlobalProperties implements Cloneable {
         this.version = version;
     }
 
-    public String getSchedulerEmail() {
-        return schedulerEmail;
+    public String getApplicationEmail() {
+        return applicationEmail;
     }
 
-    public void setSchedulerEmail(String schedulerEmail) {
-        this.schedulerEmail = schedulerEmail;
+    public void setApplicationEmail(String applicationEmail) {
+        this.applicationEmail = applicationEmail;
     }
 }

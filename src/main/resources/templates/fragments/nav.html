@@ -142,12 +142,14 @@
 <!--                </li>-->
                 <li class="nav-item text-white">
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
-                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
+                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle mr-2"
                        aria-controls="user-infos" data-toggle="collapse">
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
+                    <a rel="noreferrer" data-toggle="modal"
+                       data-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #e30037;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
@@ -331,7 +333,7 @@
                 <input type="hidden" id="pending" name="pending" value="false" />
                 <input type="hidden" id="comment" name="comment" />
                 <div class="modal-header">
-                    <h3 class="modal-title" id="exampleModalLabel">Créer une demande de signature</h3>
+                    <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
@@ -390,7 +392,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                Envoyer immédiatement
+                <h3 class="modal-title" id="exampleModalLabel">Envoyer immédiatement</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -400,6 +402,22 @@
                 <button type="button" id="submitSendPending" class="btn btn-success mt-2 pull-right">
                     Valider l'envoi
                 </button>
+            </div>
+            <div class="modal-header"></div>
+        </div>
+    </div>
+</div>
+<div id="helpModal" class="modal fade">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Aide</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div th:include="fragments/help"></div>
             </div>
             <div class="modal-header"></div>
         </div>
