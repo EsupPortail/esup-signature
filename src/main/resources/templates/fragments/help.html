@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="help" id="help">
+    <h5>Bienvenue sur l'application Esup-Signature.</h5>
+    <ul>
+        <li class="mb-2">
+            Pour effectuer des signatures calligraphiques sur un PDF il faut déposer un fichier image de votre
+            signature dans vos paramètres : <a href='user/users' target='_blank'>Mes paramètres</a>
+            <br>
+            Un tutoriel video est disponible à cette adresse : <a href="https://drive.univ-rouen.fr/f/149b761199c740c8b776/" target="_blank">Insérer sa signature</a>
+        </li>
+        <li class="mb-2">
+            Pour utiliser la signature électronique non qualifiée, vous pouvez importer un certificat au format PKCS12 dans votre profil.
+        </li>
+        <li class="mb-2">
+            Enfin il est possible d'utiliser un support cryptographique (certificat RGS**). Pour cela vous devez installer l'application
+            NexU disponible ici : <a target="_blank" href="https://github.com/nowina-solutions/nexu/releases/download/nexu-1.22/nexu-bundle-1.22.zip">NexU</a>
+            <br>
+            Cette application se lancera automatiquement lors du processus de "signature avec clé matérielle"
+
+        </li>
+    </ul>
+    <p>
+        Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.
+    </p>
+    <hr>
+    <p>
+        Un guide utilisateur est accessible sur le portail de la communauté ESUP : <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur" target="_blank">Documentation utilisateur</a>
+    </p>
+    <p>
+        Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
+    </p>
+</div>
+</html>

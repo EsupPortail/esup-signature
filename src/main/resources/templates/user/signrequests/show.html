@@ -304,7 +304,7 @@
                             La procédure comporte <span
                                 th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span> étape<span th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()} > 1">s</span>
                         </p>
-                        <th:block th:each="step,iterator : ${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps}">
+                        <th:block th:each="step,iterator : ${steps}">
                             <!--                            <div class="form-group">-->
                             <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
                             <!--                            </div>-->

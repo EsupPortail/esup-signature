@@ -20,7 +20,9 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.sql.Timestamp;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,6 +85,9 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 Workflow workflow = workflowRepository.findById(workflowId).get();
+
+                signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
+                signBook.setTitle(workflow.getDescription());
                 signBook.getLiveWorkflow().setWorkflow(workflow);
 //                signBookService.pendingSignBook(signBook, user);
                 return "redirect:/user/wizard/wizend/" + signBook.getId();
@@ -104,9 +109,9 @@ public class WizardController {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
-                logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
-                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+//                logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
+//                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
+//                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());
