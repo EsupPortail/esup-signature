@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.LiveWorkflowRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.LiveWorkflowService;
@@ -32,6 +34,9 @@ import java.util.stream.Collectors;
 public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
+
+    @Resource
+    private LiveWorkflowRepository liveWorkflowRepository;
 
     @Resource
     private WorkflowRepository workflowRepository;
@@ -249,6 +254,15 @@ public class WizardController {
 		if (!workflow.getCreateBy().equals(user)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
+		    List<LiveWorkflow> liveWorkflows = liveWorkflowRepository.findByWorkflow(workflow);
+		    List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
+            List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
+            for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
+                List<SignBook> signBooks = signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
+                signBooks.forEach(s -> signBookRepository.delete(s));
+            }
+            deleteLiveWorkflows.forEach(l -> liveWorkflowRepository.delete(l));
+            noneDeleteLiveWorkflows.forEach(l -> l.setWorkflow(null));
             workflowRepository.delete(workflow);
         }
         return "redirect:/user/";
