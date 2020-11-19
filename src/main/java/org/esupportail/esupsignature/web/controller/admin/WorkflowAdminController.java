@@ -95,10 +95,10 @@ public class WorkflowAdminController {
 			model.addAttribute("workflow", workflow);
 			return "admin/workflows/show";
 		} else {
-			workflow = workflowService.getWorkflowByName(name);
+			workflow = workflowService.getWorkflowByName(workflowService.getWorkflowClassByName(name).getClass().getSimpleName());
 			if (workflow != null) {
 				model.addAttribute("workflow", workflow);
-				return "admin/workflows/show-class";
+				return "admin/workflows/show";
 			}
 		}
 		redirectAttributes.addFlashAttribute("Workflow introuvable");
