@@ -171,7 +171,21 @@ public class SignRequestService {
 			}
 		} else {
 			signRequests.addAll(signRequestRepository.findByCreateBy(user));
-
+			for(SignRequest signRequest : getToSignRequests(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsSignedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsRefusedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
 		}
 		return new ArrayList<>(signRequests);
 	}
