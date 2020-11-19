@@ -883,7 +883,9 @@ public class SignRequestService {
 			logRepository.delete(log);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
+		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
+		}
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 		return true;
