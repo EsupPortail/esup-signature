@@ -114,6 +114,9 @@ public class DSSBeanConfig {
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
+		if(proxyConfig != null) {
+			ocspDataLoader.setProxyConfig(proxyConfig);
+		}
 		return ocspDataLoader;
 	}
 
@@ -261,6 +264,7 @@ public class DSSBeanConfig {
 	@Bean
 	public TSPSource tspSource() {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
+		tspSource.setDataLoader(dataLoader());
 		return tspSource;
 	}
 
