@@ -263,8 +263,12 @@ public class SignRequestController {
         if(signRequestService.getTempUsers(signRequest).size() > 0) {
             isTempUsers = true;
         }
-        Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
-        model.addAttribute("steps", workflow.getWorkflowSteps());
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+            Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
+            model.addAttribute("steps", workflow.getWorkflowSteps());
+        } else {
+            signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+        }
         List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         model.addAttribute("isTempUsers", isTempUsers);
         model.addAttribute("refuseLogs", refuseLogs);
