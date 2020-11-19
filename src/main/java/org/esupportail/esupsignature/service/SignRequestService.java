@@ -171,7 +171,21 @@ public class SignRequestService {
 			}
 		} else {
 			signRequests.addAll(signRequestRepository.findByCreateBy(user));
-
+			for(SignRequest signRequest : getToSignRequests(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsSignedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
+			for(SignRequest signRequest : getSignRequestsRefusedByUser(user)) {
+				if(!signRequests.contains(signRequest)) {
+					signRequests.add(signRequest);
+				}
+			}
 		}
 		return new ArrayList<>(signRequests);
 	}
@@ -883,7 +897,9 @@ public class SignRequestService {
 			logRepository.delete(log);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
+		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
+		}
 		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 		return true;

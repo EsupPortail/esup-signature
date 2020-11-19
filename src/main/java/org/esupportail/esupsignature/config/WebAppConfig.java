@@ -34,6 +34,8 @@ import java.util.Properties;
 @EnableConfigurationProperties
 public class WebAppConfig implements WebMvcConfigurer {
 
+
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
     	registry.addResourceHandler(
@@ -92,6 +94,22 @@ public class WebAppConfig implements WebMvcConfigurer {
 										"/admin/", "/admin/*"
 		);
 		return registrationBean;
+	}
+
+	@ConditionalOnMissingBean
+	@Bean
+	public BuildProperties buildProperties() {
+		MavenXpp3Reader reader = new MavenXpp3Reader();
+		Properties properties = new Properties();
+		try {
+			Model model = reader.read(new FileReader("pom.xml"));
+			properties.put("group", model.getGroupId());
+			properties.put("artifact", model.getArtifactId());
+			properties.put("version", model.getVersion());
+		} catch (IOException | XmlPullParserException e) {
+			System.err.println("No build properties found : " + e.getMessage());
+		}
+		return new BuildProperties(properties);
 	}
 
 }

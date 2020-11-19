@@ -767,7 +767,7 @@ float:left;
 }
 
 .disabled-field {
-    background-color: #eeeeee !important;
+    background-color: transparent !important;
     border-color: #eeeeee !important;
 }
 
@@ -1142,7 +1142,7 @@ float:left;
 .annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
     color: black !important;
     padding: 0 !important;
-    background-color: #ebebeb;
+    /*background-color: #ebebeb;*/
 }
 
 .sign-field {
@@ -1154,6 +1154,10 @@ float:left;
 .bg-striped {
     background-image: linear-gradient(135deg, #8a4848 25%, #474747 25%, #474747 50%, #8a4848 50%, #8a4848 75%, #474747 75%, #474747 100%);
     background-size: 28.28px 28.28px;
+}
+
+.cursor-move {
+    cursor: move;
 }
 
 .disable-div-selection {
