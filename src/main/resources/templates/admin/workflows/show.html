@@ -29,7 +29,7 @@
                             <i class="fas fa-binoculars"></i>
                         </a>
                     </li>
-                    <li>
+                    <li th:if="${!workflow.fromCode}">
                         <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-warning waves-effect">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
