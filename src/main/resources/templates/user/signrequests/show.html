@@ -309,15 +309,15 @@
                             <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
                             <!--                            </div>-->
                             <div th:if="${step.changeable == true}" class="form-group">
-                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
+                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span th:text="${step.description != null ?  step.description : ''}"></span>
                             </div>
                             <div th:unless="${step.changeable == true}" class="form-group d-inline">
-                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>
+                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span th:text="${step.description != null ?  step.description + ' (' : ''}"></span>
                                 <th:block th:if="${step.users.size() > 0}" th:each="user, iterator : ${step.users}">
                                     <span th:if="${iterator.index > 0}"> ou </span>
                                     <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                                 </th:block>
-                                <span>)</span>
+                                <span th:text="${step.description != null ?  ')' : ''}"></span>
                             </div>
                             <br/>
                         </th:block>
