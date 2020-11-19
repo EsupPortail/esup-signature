@@ -332,6 +332,7 @@ export class SignPosition extends EventFactory {
         }
         this.pointItEnable = false;
         this.pointItMove = false
+        $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
     }
 
@@ -348,7 +349,8 @@ export class SignPosition extends EventFactory {
         this.cross.css('margin-top', 0);
         this.posY = window.scrollY;
         this.pdf.css('pointerEvents', "auto");
-        document.body.style.cursor = "move";
+        $('body').addClass('disable-div-selection cursor-move');
+
         this.pointItEnable = true;
         this.hideButtons();
     }
