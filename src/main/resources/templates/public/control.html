@@ -6,12 +6,15 @@
 <body>
 <nav th:replace="fragments/nav-empty"></nav>
 <main role="main">
-    <div class="card col-lg-10 mx-auto" style="top: 60px;">
-        <div class="card-body text-center">
+        <div class="col-10 mx-auto" style="margin-top: 60px">
             <th:block th:if="${signRequest}">
                 <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
-                    <h5>Contrôle de document : <span th:text="${signRequest.token}"></span></h5>
-                    <hr>
+                    <div class="alert alert-primary mb-1">
+                        <h5>Contrôle de document : <span th:text="${signRequest.token}"></span></h5>
+                    </div>
+                    <div class="card mb-1">
+                        <div class="card-header"><h5>Informations générales sur le document</h5></div>
+                        <div class="card-body">
                     <dl class="row border-bottom m-0">
                         <dt class="col-lg-5">Nom de document</dt>
                         <dd th:text="${signedDocument.fileName}"></dd>
@@ -20,35 +23,34 @@
                         <dt class="col-lg-5">Statut du document</dt>
                         <dd>Signé</dd>
                     </dl>
-                    <h5>Actions réalisées sur le document</h5>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h5>Actions réalisées sur le document</h5></div>
+                    <div class="card-body">
                     <table class="table table-sm table-hover">
                         <thead class="thead-dark">
                         <tr>
                             <th>Date</th>
                             <th>Identifiant</th>
                             <th>Action</th>
-                            <th>Signé sur la page</th>
-                            <th>Coordonée X</th>
-                            <th>Coordonée Y</th>
-                            <th>Statut initial</th>
-                            <th>Statut final</th>
+                            <th>Caratéristiques de la signature</th>
+                            <th>Statut</th>
                         </tr>
                         </thead>
                         <tbody>
                         <th:block th:each="log : ${logs}">
                             <tr>
-                                <td class="text-left"><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                <td class="text-left"><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                 <td class="text-left"><span th:text="${log.eppn}"></span></td>
                                 <td class="text-left"><span th:text="${log.action}"></span></td>
-                                <td class="text-left"><span th:text="${log.pageNumber}"></span></td>
-                                <td class="text-left"><span th:text="${log.posX}"></span></td>
-                                <td class="text-left"><span th:text="${log.posY}"></span></td>
-                                <td class="text-left"><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
+                                <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}" th:text="'Signé en page ' + ${log.pageNumber} + ' aux coordonées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span></td>
                                 <td class="text-left"><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
                             </tr>
                         </th:block>
                         </tbody>
                     </table>
+                    </div>
                 </th:block>
                 <th:block
                         th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
@@ -59,7 +61,6 @@
                 <h6>Document introuvable</h6>
             </th:block>
         </div>
-    </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
 </body>
