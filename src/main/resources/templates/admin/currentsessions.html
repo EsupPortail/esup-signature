@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="currentSessions" type="java.util.Map<String, java.util.List<org.springframework.session.MapSession>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -12,18 +13,75 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card">
-                <div class="card-header">
+            <div class="card col-lg-10 mx-auto mb-1">
+                <div class="card-body">
                     <h5>Utilisateurs connectés</h5>
-                    <span th:text="${#lists.size(currentSessions)} + 'session(s) active(s)'"></span>
-                    <a href="/probe" class="btn btn-dark">Probe</a>
+                    <span th:text="${currentSessions.size()} + 'session(s) active(s)'"></span>
                 </div>
-                <ul class="list-group list-group-flush">
-                    <th:block th:each="currentSession :${currentSessions}">
-                        <li class="list-group-item " th:text="${currentSession}"></li>
-                    </th:block>
-                </ul>
             </div>
+            <th:block th:each="currentSession : ${currentSessions}">
+                <div class="card mb-1 col-10 mx-auto">
+                    <div class="card-body">
+                        <h5>
+                            <a data-toggle="collapse" th:href="'#' + ${currentSession.key}" role="button"
+                               aria-expanded="false"
+                               th:aria-controls="${currentSession.key}">
+                                <span th:text="${currentSession.key} + ' : ' + ${currentSession.value.size()} + ' session(s)'"></span></a>
+                        </h5>
+                        <div class="collapse" th:id="${currentSession.key}">
+                            <table class="table table-hover">
+                                <tr class="thead-dark">
+                                    <th>Session ID</th>
+                                    <th>Creation time</th>
+                                    <th>Last access time</th>
+                                    <th>Max inactive time</th>
+                                    <th>Alive</th>
+                                    <th>Attributs</th>
+                                    <th>Delete</th>
+                                </tr>
+                                <th:block th:each="userSession : ${currentSession.value}">
+                                    <tr th:if="${userSession != null}">
+                                        <!--/*@thymesVar id="userSession" type="org.springframework.session.MapSession"*/-->
+                                        <td th:text="${userSession.id}"></td>
+                                        <td th:text="${#dates.format(userSession.creationTime, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                                        <td th:text="${#dates.format(userSession.lastAccessedTime, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                                        <td th:text="${userSession.maxInactiveInterval.toMinutes()} + 'min'"></td>
+                                        <td>
+                                            <i th:class="${userSession.expired} ? 'text-danger fas fa-times-circle' : 'text-success fas fa-check-circle'"></i>
+                                        </td>
+                                        <td>
+                                            <ul>
+                                                <th:block th:each="attributeName : ${userSession.attributeNames}">
+                                                    <li>
+                                                        <a data-toggle="collapse"
+                                                           th:href="'#' + ${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"
+                                                           role="button" aria-expanded="false"
+                                                           th:aria-controls="${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"><span
+                                                                th:text="${attributeName}"></span></a>
+                                                        <br>
+                                                        <span th:text="${userSession.getAttribute(attributeName).toString().getBytes().length} + ' bytes'"></span>
+                                                        <div th:id="${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"
+                                                             class="collapse">
+                                                            <span th:text="${userSession.getAttribute(attributeName)}"></span>
+                                                        </div>
+                                                    </li>
+                                                </th:block>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <form th:action="'/admin/currentsessions'" th:method="'delete'">
+                                                <input type="hidden" name="sessionId" th:value="${userSession.id}"/>
+                                                <button type="submit" class="btn btn-sm btn-danger"><i
+                                                        class="fas fa-trash-alt"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
         </div>
     </div>
 </main>

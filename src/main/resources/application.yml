@@ -39,7 +39,8 @@ management:
             show-details: always
 
 spring:
-
+    session:
+        store-type: jdbc
     data:
         ldap:
             repositories:
@@ -51,6 +52,7 @@ spring:
         password: esup
         url: jdbc:postgresql://localhost:5432/esupsignature
         username: esupsignature
+        data: classpath:org/springframework/session/jdbc/schema-postgresql.sql
     jpa:
         hibernate:
             ddl-auto: update
