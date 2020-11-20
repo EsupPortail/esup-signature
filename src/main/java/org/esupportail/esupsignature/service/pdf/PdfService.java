@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.pdf;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -31,6 +32,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
@@ -43,11 +45,19 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.annotation.*;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
@@ -56,6 +66,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDRadioButton;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.AdobePDFSchema;
@@ -64,6 +75,7 @@ import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.type.Attribute;
 import org.apache.xmpbox.type.BadFieldValueException;
+import org.apache.xmpbox.type.TextType;
 import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -103,14 +115,18 @@ public class PdfService {
     @Resource
     private GlobalProperties globalProperties;
 
-    public InputStream stampImage(InputStream inputStream, SignType signType, SignRequestParams signRequestParams, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, User user) {
+        SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
+        SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
+            pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
+            Date newDate = new Date();
             String addText = "";
             int lineNumber = 0;
             if(signRequestParams.isAddName()) {
@@ -122,7 +138,7 @@ public class PdfService {
                 lineNumber++;
             }
             if (signRequestParams.isAddDate()) {
-                addText +="Le " + dateFormat.format(new Date());
+                addText +="Le " + dateFormat.format(newDate);
                 lineNumber++;
             }
             InputStream signImage;
@@ -135,6 +151,7 @@ public class PdfService {
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
+
             float tx = 0;
             float ty = 0;
             float xAdjusted = signRequestParams.getxPos();
@@ -152,13 +169,43 @@ public class PdfService {
             } else {
                 ty = pdfParameters.getHeight();
             }
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+
+            String signatureInfos =
+                    "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
+                    "De : " + user.getEppn() + pdfTextStripper.getLineSeparator() +
+                    "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
+                    "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+
+            PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+            PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
+            pdAnnotationLink.setRectangle(position);
+            PDActionURI action = new PDActionURI();
+            action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
+            pdAnnotationLink.setAction(action);
+            pdAnnotationLink.setPage(pdPage);
+            pdAnnotationLink.setQuadPoints(new float[0]);
+            pdAnnotationLink.setContents(signatureInfos);
+            pdPage.getAnnotations().add(pdAnnotationLink);
+
+            if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
+                PDDocumentOutline outline = new PDDocumentOutline();
+                pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+            }
+            PDOutlineItem pdOutlineItem = new PDOutlineItem();
+            pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
+            pdOutlineItem.setTitle(signatureInfos);
+            pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
+
+            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
             pdDocument.close();
@@ -283,7 +330,7 @@ public class PdfService {
             info.setTitle(fileName);
             info.setSubject(fileName);
             info.setAuthor(signRequest.getCreateBy().getEppn());
-            info.setCreator("GhostScript");
+            info.setCreator(signRequest.getCreateBy().getEppn());
             info.setProducer("esup-signature");
             info.setKeywords("pdf, signed, " + fileName);
             if (info.getCreationDate() == null) {
@@ -315,7 +362,7 @@ public class PdfService {
             PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
             pdfaid.setConformance("B");
             pdfaid.setPart(pdfConfig.getPdfProperties().getPdfALevel());
-            pdfaid.setAboutAsSimple("");
+            pdfaid.setAboutAsSimple(null);
 
             XmpSerializer serializer = new XmpSerializer();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -325,6 +372,12 @@ public class PdfService {
             metadata.importXMPMetadata(baos.toByteArray());
             cat.setMetadata(metadata);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+            for(PDPage pdPage : pdDocument.getPages()) {
+                for(PDAnnotation pdAnnotation : pdPage.getAnnotations()) {
+                    pdAnnotation.setPrinted(true);
+                }
+            }
             pdDocument.save(out);
             pdDocument.close();
             return new ByteArrayInputStream(out.toByteArray());
@@ -339,7 +392,8 @@ public class PdfService {
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();

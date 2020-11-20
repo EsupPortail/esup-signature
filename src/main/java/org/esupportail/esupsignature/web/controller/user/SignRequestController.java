@@ -373,9 +373,9 @@ public class SignRequestController {
             });
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            logger.error(e.getMessage());
-        }
+       }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -70,6 +70,12 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    annotationLinkTargetBlank() {
+        $('.linkAnnotation').each(function (){
+            $(this).children().attr('target', '_blank');
+        });
+    }
+
     fullWidth() {
         console.info("full width " + window.innerWidth);
         let newScale = (Math.round(window.innerWidth / 100) / 10);
@@ -183,10 +189,10 @@ export class PdfViewer extends EventFactory {
                 if (isField) {
                     if (this.dataFields != null) {
                         console.info("render fields");
-                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
+                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
                     }
                 } else {
-                    this.page.getAnnotations().then(items => this.renderPdfForm(items));
+                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(this.annotationLinkTargetBlank());
                 }
                 resolve("Réussite");
             }
