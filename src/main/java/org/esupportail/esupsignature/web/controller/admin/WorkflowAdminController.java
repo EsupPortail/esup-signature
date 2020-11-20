@@ -121,12 +121,10 @@ public class WorkflowAdminController {
     public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowRepository.findById(id).get();
 		model.addAttribute("workflow", workflow);
-		model.addAttribute("users", userRepository.findAll());
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
-		model.addAttribute("signrequests", signRequestRepository.findAll());
         return "admin/workflows/update";
     }
 	

@@ -23,8 +23,11 @@
         <span class="bs-stepper-label">Fin</span>
     </div>
 </div>
-<script th:inline="javascript">
+<script th:unless="${signBook == null}" th:inline="javascript">
     parent.location.href='/user/signrequests/[[${signBook.signRequests.get(0).id}]]';
+</script>
+<script th:unless="${workflow == null}" th:inline="javascript">
+    parent.location.href='/';
 </script>
 </body>
 </html>
