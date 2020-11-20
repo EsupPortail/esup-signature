@@ -162,6 +162,7 @@ public class DSSBeanConfig {
 				keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 			}
 		} else {
+			log.info("using exising oj file " + keystoreFile.getAbsolutePath());
 			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
 		return keyStoreCertificateSource;

@@ -30,12 +30,11 @@ public class PublicController {
     private SignRequestRepository signRequestRepository;
 
     @GetMapping(value = "/control/{token}")
-    public String createSignBook(@PathVariable Long token, Model model) {
-//        List<Log> logs = logRepository.findBySignRequestToken(token);
-        Optional<SignRequest> signRequestOptional = signRequestRepository.findById(token);
-        if(signRequestOptional.isPresent()) {
-            SignRequest signRequest = signRequestOptional.get();
-            List<Log> logs = logRepository.findBySignRequestId(token);
+    public String createSignBook(@PathVariable String token, Model model) {
+        List<SignRequest> signRequestOptional = signRequestRepository.findByToken(token);
+        if(signRequestOptional.size() > 0) {
+            SignRequest signRequest = signRequestOptional.get(0);
+            List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
             model.addAttribute("signRequest", signRequest);
             model.addAttribute("signedDocument", signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1));
             model.addAttribute("logs", logs);
