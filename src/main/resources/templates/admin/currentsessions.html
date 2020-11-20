@@ -16,7 +16,7 @@
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
                     <h5>Utilisateurs connectés</h5>
-                    <span th:text="${currentSessions.size()} + 'session(s) active(s)'"></span>
+                    <span th:text="${currentSessions.size()} + ' utilisateurs(s) connectés(s)'"></span>, poids totale des sessions : <span th:text="${sessionSize}"></span>
                 </div>
             </div>
             <th:block th:each="currentSession : ${currentSessions}">

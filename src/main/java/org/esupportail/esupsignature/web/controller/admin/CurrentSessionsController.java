@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -59,12 +60,16 @@ public class CurrentSessionsController {
 	public String getCurrentSessions(Model model) throws NoSuchMethodException {
 		Map<String, List<Session>> allSessions = new HashMap<>();
 		List<Object> principals = sessionRegistry.getAllPrincipals();
+		long sessionSize = 0;
 		for(Object principal: principals) {
 			List<Session> sessions = new ArrayList<>();
 			List<SessionInformation> sessionInformations =  sessionRegistry.getAllSessions(principal, true);
 			for(SessionInformation sessionInformation : sessionInformations) {
 				Session session = sessionRepository.findById(sessionInformation.getSessionId());
 				if(session != null) {
+					for(String attr : session.getAttributeNames()) {
+						sessionSize += session.getAttribute(attr).toString().getBytes().length;
+					}
 					sessions.add(session);
 				}
 			}
@@ -74,6 +79,7 @@ public class CurrentSessionsController {
 
 		}
 		model.addAttribute("currentSessions", allSessions);
+		model.addAttribute("sessionSize", FileUtils.byteCountToDisplaySize(sessionSize));
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
 	}
