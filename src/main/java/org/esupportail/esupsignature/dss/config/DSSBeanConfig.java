@@ -11,6 +11,7 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
@@ -265,7 +266,11 @@ public class DSSBeanConfig {
 	@Bean
 	public TSPSource tspSource() {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
-		tspSource.setDataLoader(dataLoader());
+		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
+		if(proxyConfig != null) {
+			timestampDataLoader.setProxyConfig(proxyConfig);
+		}
+		tspSource.setDataLoader(timestampDataLoader);
 		return tspSource;
 	}
 
