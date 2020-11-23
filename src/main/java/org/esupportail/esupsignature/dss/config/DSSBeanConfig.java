@@ -11,6 +11,7 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
@@ -162,6 +163,7 @@ public class DSSBeanConfig {
 				keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 			}
 		} else {
+			log.info("using exising oj file " + keystoreFile.getAbsolutePath());
 			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
 		return keyStoreCertificateSource;
@@ -264,7 +266,11 @@ public class DSSBeanConfig {
 	@Bean
 	public TSPSource tspSource() {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
-		tspSource.setDataLoader(dataLoader());
+		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
+		if(proxyConfig != null) {
+			timestampDataLoader.setProxyConfig(proxyConfig);
+		}
+		tspSource.setDataLoader(timestampDataLoader);
 		return tspSource;
 	}
 
