@@ -266,6 +266,8 @@ public class SignRequestController {
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
             model.addAttribute("steps", workflow.getWorkflowSteps());
+        } else if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
+            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps());
         }
         List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         model.addAttribute("isTempUsers", isTempUsers);
@@ -461,7 +463,7 @@ public class SignRequestController {
             if (allSignToComplete == null) {
                 allSignToComplete = false;
             }
-
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
             try {
                 signBookRepository.save(signBook);
@@ -470,6 +472,10 @@ public class SignRequestController {
             } catch (EsupSignatureUserException e) {
                 logger.error("error with users on create signbook " + signBook.getId());
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème lors de l’envoi"));
+            }
+            if(signRequestService.getTempUsersInRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
+                pending = false;
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
             if (pending != null && pending) {
                 signBookService.pendingSignBook(signBook, user);
@@ -480,8 +486,6 @@ public class SignRequestController {
                     }
                 }
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
-            } else {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
@@ -689,7 +693,7 @@ public class SignRequestController {
                           @RequestParam(value = "phones", required = false) String[] phones,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<User> tempUsers = signRequestService.getTempUsers(signRequest);
+        List<User> tempUsers = signRequestService.getTempUsers(signRequest, recipientEmails);
         int countExternalUsers = 0;
         if(tempUsers.size() > 0) {
             for (User tempUser : tempUsers) {

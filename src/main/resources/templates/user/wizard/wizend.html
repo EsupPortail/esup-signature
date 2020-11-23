@@ -24,7 +24,7 @@
     </div>
 </div>
 <script th:unless="${signBook == null}" th:inline="javascript">
-    parent.location.href='/user/signrequests/[[${signBook.signRequests.get(0).id}]]';
+    parent.location.href='/user/wizard/wizredirect/[[${signBook.id}]]';
 </script>
 <script th:unless="${workflow == null}" th:inline="javascript">
     parent.location.href='/';
