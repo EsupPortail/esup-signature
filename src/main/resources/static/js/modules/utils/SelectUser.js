@@ -23,15 +23,17 @@ export default class SelectUser {
     }
 
     displayTempUsers(e) {
-        let recipientEmails = this.slimSelect.selected()
-        $.ajax({
-            url: "/user/signrequests/is-temp-users/" + this.signRequestId,
-            type: 'GET',
-            dataType : 'json',
-            contentType: "application/json",
-            data: {"recipientEmails" : JSON.stringify(recipientEmails)},
-            success: data => this.displayTempUsersSuccess(data)
-        });
+        if(this.signRequestId != null) {
+            let recipientEmails = this.slimSelect.selected()
+            $.ajax({
+                url: "/user/signrequests/is-temp-users/" + this.signRequestId,
+                type: 'GET',
+                dataType: 'json',
+                contentType: "application/json",
+                data: {"recipientEmails": JSON.stringify(recipientEmails)},
+                success: data => this.displayTempUsersSuccess(data)
+            });
+        }
     }
 
     displayTempUsersSuccess(data) {
@@ -45,7 +47,7 @@ export default class SelectUser {
         let tempUsersDiv = $('#tempUsers');
         tempUsersDiv.append(" " +
             "<div>" +
-            "<b>Destinataire : <span>"+ e.email +"</span></b>" +
+            "<b>Destinataire externe : <span>"+ e.email +"</span></b>" +
             "<div class=\"form-inline\">" +
             "<label for=\"name\">Nom</label>" +
             "<input id=\"name\" class=\"form-control mr-2\" type=\"text\" name=\"names\" value=\""+ e.name +"\" required>" +
