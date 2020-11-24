@@ -1,9 +1,10 @@
 export default class SelectUser {
 
-    constructor(selectName, limit) {
+    constructor(selectName, limit, signRequestId) {
         console.debug("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
+        this.signRequestId = signRequestId;
         let valuePrefix = "";
         this.limit = 99;
         let selectNameSplit = selectName.split("_");
@@ -15,6 +16,46 @@ export default class SelectUser {
         }
         this.createUserSelect(selectName, valuePrefix);
         this.selectField.addClass("slim-select-hack");
+        this.initListeners();
+    }
+
+    initListeners() {
+    }
+
+    displayTempUsers(e) {
+        let recipientEmails = this.slimSelect.selected()
+        $.ajax({
+            url: "/user/signrequests/is-temp-users/" + this.signRequestId,
+            type: 'GET',
+            dataType : 'json',
+            contentType: "application/json",
+            data: {"recipientEmails" : JSON.stringify(recipientEmails)},
+            success: data => this.displayTempUsersSuccess(data)
+        });
+    }
+
+    displayTempUsersSuccess(data) {
+        console.log("display temp users");
+        let tempUsersDiv = $('#tempUsers');
+        tempUsersDiv.empty();
+        data.forEach(e => this.appendTempUser(e));
+    }
+
+    appendTempUser(e) {
+        let tempUsersDiv = $('#tempUsers');
+        tempUsersDiv.append(" " +
+            "<div>" +
+            "<b>Destinataire : <span>"+ e.email +"</span></b>" +
+            "<div class=\"form-inline\">" +
+            "<label for=\"name\">Nom</label>" +
+            "<input id=\"name\" class=\"form-control mr-2\" type=\"text\" name=\"names\" value=\""+ e.name +"\" required>" +
+            "<label for=\"firstname\">Prénom</label>" +
+            "<input id=\"firstname\" class=\"form-control mr-2\" type=\"text\" name=\"firstnames\" value=\""+ e.firstname +"\" required>\n" +
+            "<label for=\"phones\">Mobile</label>\n" +
+            "<input id=\"phones\" class=\"form-control  mr-2\" type=\"text\" name=\"phones\" value=\""+ e.eppn +"\" required>\n" +
+            "</div>\n" +
+            "</div>" +
+            "");
     }
 
     validateEmail(email) {
@@ -37,6 +78,7 @@ export default class SelectUser {
             hideSelectedOption: false,
             closeOnSelect: true,
             limit: this.limit,
+            onChange : e => this.displayTempUsers(e),
             addable: e => this.validateEmail(e),
             searchFilter: (option, search) => {
                 return true;

@@ -268,7 +268,7 @@ export class GlobalUi {
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId);
+            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'));
         });
     }
 

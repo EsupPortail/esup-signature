@@ -248,6 +248,17 @@ public class WizardController {
         }
     }
 
+    @GetMapping(value = "/wizredirect/{id}")
+    public String wizRedirect(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        SignBook signBook = signBookRepository.findById(id).get();
+        if(signBook.getCreateBy().equals(user)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
+            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        } else {
+            throw new EsupSignatureException("not authorized");
+        }
+    }
+
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
     public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowRepository.findById(id).get();

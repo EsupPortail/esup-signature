@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.web.controller.ws.json;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.io.Serializable;
 
-public class JsonMessage {
+public class JsonMessage implements Serializable {
 
     String type;
     String text;

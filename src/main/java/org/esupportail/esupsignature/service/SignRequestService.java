@@ -612,7 +612,7 @@ public class SignRequestService {
 		return document;
 	}
 
-	public void applyEndOfSignRules(SignRequest signRequest, User user) {
+	public void applyEndOfSignRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		recipientService.validateRecipient(signRequest, user);
 		if (isSignRequestCompleted(signRequest)) {
 			completeSignRequest(signRequest);
@@ -649,22 +649,49 @@ public class SignRequestService {
 	public void sendEmailAlerts(SignRequest signRequest, User user) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
-			if (!recipientUser.equals(user) && (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser))) {
-				userService.signRequestService.sendSignRequestEmailAlert(recipientUser, signRequest, userService);
+			if (!recipientUser.getUserType().equals(UserType.external) && !recipientUser.equals(user) && (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser))) {
+				userService.signRequestService.sendSignRequestEmailAlert(recipientUser, signRequest);
 			}
 		}
 	}
 
+	public List<User> getTempUsersInRecipientList(List<String> recipientsEmails) {
+		List<User> tempUsers = new ArrayList<>();
+		for (String recipientEmail : recipientsEmails) {
+			if(recipientEmail.contains("*")) {
+				recipientEmail = recipientEmail.split("\\*")[1];
+			}
+			User recipientUser = userRepository.findByEmail(recipientEmail).get(0);
+			if(recipientUser.getUserType().equals(UserType.external)) {
+				tempUsers.add(recipientUser);
+//				pending = false;
+//				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
+			}
+		}
+		return tempUsers;
+	}
+
+	public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
+		Set<User> users = new HashSet<>();
+		users.addAll(getTempUsers(signRequest));
+		if(recipientsEmails != null) {
+			users.addAll(getTempUsersInRecipientList(recipientsEmails));
+		}
+		return new ArrayList<>(users);
+	}
+
 	public List<User> getTempUsers(SignRequest signRequest) {
-		List<User> users = new ArrayList<>();
-		for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
-			for (Recipient recipient : liveWorkflowStep.getRecipients()) {
-				if (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName())) {
-					users.add(recipient.getUser());
+		Set<User> users = new HashSet<>();
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
+			for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+				for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+					if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+						users.add(recipient.getUser());
+					}
 				}
 			}
 		}
-		return users;
+		return new ArrayList<>(users);
 	}
 
 	public void completeSignRequest(SignRequest signRequest) {
@@ -985,7 +1012,7 @@ public class SignRequestService {
 		return null;
 	}
 
-    public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest, UserService userService) {
+    public void sendSignRequestEmailAlert(User recipientUser, SignRequest signRequest) {
         Date date = new Date();
         Set<String> toEmails = new HashSet<>();
         toEmails.add(recipientUser.getEmail());
