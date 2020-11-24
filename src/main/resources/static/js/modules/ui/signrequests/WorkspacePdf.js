@@ -61,8 +61,8 @@ export class WorkspacePdf {
         // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
         $('#pdf').mousemove(e => this.moveAction(e));
 
-        $(".postit-global").on('click', function () {
-            $(this).toggleClass("postit-small");
+        $(".postit-global-close").on('click', function () {
+            $(this).parent().toggleClass("postit-small");
         });
 
         this.postits.forEach((postit, index) => {
@@ -178,7 +178,7 @@ export class WorkspacePdf {
 
     saveComment() {
         let csrf = document.getElementsByName("_csrf")[0];
-        let commentUrlParams = "comment=" + document.getElementById("comment").value +
+        let commentUrlParams = "comment=" + document.getElementById("postitComment").value +
             "&commentPosX=" + document.getElementById("commentPosX").value +
             "&commentPosY=" + document.getElementById("commentPosY").value +
             "&commentPageNumber=" + document.getElementById("commentPageNumber").value +
@@ -253,8 +253,8 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         document.getElementById("postit").style.left = $('#commentPosX').val() + "px";
         document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
+        $("#postitComment").removeAttr("disabled");
         $("#postit").show();
-        $("#comment").removeAttr('disabled');
     }
 
     hideComment() {

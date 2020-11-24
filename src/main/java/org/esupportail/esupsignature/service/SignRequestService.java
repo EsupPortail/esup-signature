@@ -824,8 +824,9 @@ public class SignRequestService {
 		log.setLogDate(new Date());
 		log.setAction(action);
 		log.setReturnCode(returnCode);
-		log.setComment(signRequest.getComment());
-
+		if(signRequest.getComment() != null && !signRequest.getComment().isEmpty() && (signRequestStatus == null || signRequestStatus.equals(SignRequestStatus.pending) || signRequestStatus.equals(SignRequestStatus.refused) || pageNumber != null)) {
+			log.setComment(signRequest.getComment());
+		}
 		if(pageNumber != null) {
 			log.setPageNumber(pageNumber);
 			log.setPosX(posX);

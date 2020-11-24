@@ -5,9 +5,9 @@
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="step" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
+<script th:inline="javascript" type="module" th:if="${form.document != null}">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-    new CreateDataUi([[${form.action}]], [[${form.document != null}?form.document.id]], [[${fields}]]);</script>
+    new CreateDataUi([[${form.action}]], [[${form.document.id}]], [[${fields}]]);</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
