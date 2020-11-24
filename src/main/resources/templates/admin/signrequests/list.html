@@ -79,7 +79,7 @@
                                         </table>
                                     </td>
                                     <td class="status" style="width: 150px;">
-                                        <div th:replace="user/signrequests/includes/status :: status"></div>
+                                        <div th:replace="user/signrequests/includes/status :: status(signBook = ${signRequest.parentSignBook})"></div>
                                     </td>
                                     <td>
                                         <button class="btn btn-primary fas fa-eye" title="Sign Request"
