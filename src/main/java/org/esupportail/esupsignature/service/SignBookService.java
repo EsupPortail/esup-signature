@@ -386,7 +386,7 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.setComment(comment);
-            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
+            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signBook.getLiveWorkflow().getCurrentStepNumber());
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().equals(user)) {
                     recipient.setSigned(true);

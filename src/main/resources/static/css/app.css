@@ -586,6 +586,10 @@ float:left;
     top:-5px;
 }
 
+.postit-global-red {
+    background: #FF7EB9 !important;
+}
+
 .postit-global {
     overflow: auto;
     text-overflow: ellipsis;

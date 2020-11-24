@@ -288,7 +288,7 @@ public class SignRequestController {
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
-        model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
@@ -502,7 +502,7 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests/?statusFilter=tosign";
+        return "redirect:/user/signrequests";
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")

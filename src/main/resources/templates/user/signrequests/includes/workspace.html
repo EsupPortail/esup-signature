@@ -44,32 +44,20 @@
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <div id="postit" class="postit"
-                 style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
+            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
             <span id="hideComment" class="float-right" style="cursor: pointer;">
                 <i class="fas fa-times"></i>
             </span>
                 <input id="commentPosX" name="commentPosX" type="hidden"/>
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
-                <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
+                <textarea id="postitComment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
                 <button id="saveCommentButton" type="button" class="btn btn-sm float-right">
                     <i class="fas fa-save"></i>
                 </button>
             </div>
         </div>
     </form>
-    <!--    <form id="postitForm" th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">-->
-    <!--        <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;">-->
-    <!--            <span id="hideComment" class="float-right" style="cursor: pointer;">-->
-    <!--                <i class="fas fa-times"></i>-->
-    <!--            </span>-->
-    <!--            <textarea id="comment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>-->
-    <!--            <button type="submit" class="btn btn-sm float-right">-->
-    <!--                <i class="fas fa-save"></i>-->
-    <!--            </button>-->
-    <!--        </div>-->
-    <!--    </form>-->
 
     <div id="commentsTools" th:if="${documentType == 'pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
         <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
