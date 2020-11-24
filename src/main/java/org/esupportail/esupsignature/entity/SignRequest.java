@@ -61,6 +61,8 @@ public class SignRequest {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
+    private Date endDate;
+
     @JsonIgnore
     @Transient
     transient String viewTitle;
@@ -68,10 +70,6 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient String comment;
-
-    @JsonIgnore
-    @Transient
-    transient Date endDate;
 
     @JsonIgnore
     @Transient

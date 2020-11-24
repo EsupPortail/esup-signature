@@ -958,7 +958,9 @@ public class SignRequestService {
 			Collections.sort(signRequestsGrouped, new PropertyComparator(sortDefinition));
 		}
 		for(SignRequest signRequest : signRequestsGrouped) {
-			signRequest.setEndDate(getEndDate(signRequest));
+			if(signRequest.getEndDate() == null) {
+				signRequest.setEndDate(getEndDate(signRequest));
+			}
 		}
 		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
 	}
