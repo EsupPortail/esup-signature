@@ -281,8 +281,8 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
-    @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
+    @GetMapping(value = "/details/{id}")
+    public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -304,10 +304,9 @@ public class SignRequestController {
         }
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowRepository.findAll());
-        return "user/signrequests/update";
+        return "user/signrequests/details";
 
     }
-
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @ResponseBody

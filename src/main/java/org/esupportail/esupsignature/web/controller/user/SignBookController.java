@@ -41,31 +41,25 @@ public class SignBookController {
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
     @Resource
-    private UserService userService;
-
-    @Resource
-    private SignRequestRepository signRequestRepository;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
     private SignBookRepository signBookRepository;
 
     @Resource
-    private WorkflowRepository workflowRepository;
+    private WorkflowService workflowService;
 
     @Resource
-    private WorkflowService workflowService;
+    private WorkflowRepository workflowRepository;
 
     @Resource
     private SignBookService signBookService;
 
     @Resource
-    private FileService fileService;
+    private LogRepository logRepository;
 
     @Resource
-    private LogRepository logRepository;
+    private FileService fileService;
 
     @Resource
     private LiveWorkflowService liveWorkflowService;
@@ -75,27 +69,6 @@ public class SignBookController {
     public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @GetMapping(value = "/{id}", params = "form", produces = "text/html")
-    public String updateForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
-        User authUser = userService.getUserFromAuthentication();
-        SignBook signBook = signBookRepository.findById(id).get();
-        List<Log> logs = new ArrayList<>();
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
-        }
-        model.addAttribute("logs", logs);
-        List<LiveWorkflowStep> allSteps = new ArrayList<>(signBook.getLiveWorkflow().getWorkflowSteps());
-        if (allSteps.size() > 0) {
-            allSteps.remove(0);
-        }
-        model.addAttribute("allSteps", allSteps);
-        model.addAttribute("signBook", signBook);
-        model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
-        return "user/signbooks/update";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
@@ -111,56 +84,46 @@ public class SignBookController {
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @GetMapping(value = "/get-last-file/{id}")
-    public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response) {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<Document> documents = signRequestService.getToSignDocuments(signRequest);
-        try {
-            if (documents.size() > 1) {
-                response.sendRedirect("/user/signbooks/" + id);
-            } else {
-                Document document = documents.get(0);
-                response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-                response.setContentType(document.getContentType());
-                IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
-            }
-        } catch (Exception e) {
-            logger.error("get file error", e);
+    @GetMapping(value = "/{id}", params = "form")
+    public String updateForm(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) {
+        SignBook signBook = signBookRepository.findById(id).get();
+        List<Log> logs = new ArrayList<>();
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
         }
+        model.addAttribute("logs", logs);
+        List<LiveWorkflowStep> allSteps = new ArrayList<>(signBook.getLiveWorkflow().getWorkflowSteps());
+        if (allSteps.size() > 0) {
+            allSteps.remove(0);
+        }
+        model.addAttribute("allSteps", allSteps);
+        model.addAttribute("signBook", signBook);
+        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
+        return "user/signrequests/update-signbook";
     }
-//
+
+//    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
 //    @GetMapping(value = "/update-step/{id}/{step}")
-//    public String changeStepSignType(@PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name="signType") SignType signType) {
-//
+//    public String changeStepSignType(@ModelAttribute("user") User authUser, @PathVariable("id") Long id,
+//                                     @PathVariable("step") Integer step,
+//                                     @RequestParam(name="name", required = false) String name,
+//                                     @RequestParam(name="signType") SignType signType,
+//                                     @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 //        SignBook signBook = signBookRepository.findById(id).get();
-//        if(user.getEppn().equals(signBook.getCreateBy()) && signBook.getCurrentWorkflowStepNumber() <= step + 1) {
+//        if(user.equals(signBook.getCreateBy()) && signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
+//            if(allSignToComplete == null) {
+//                allSignToComplete = false;
+//            }
 //            signBookService.changeSignType(signBook, step, signType);
-//            return "redirect:/user/signbooks/" + id + "/?form";
+//            signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
+//            return "redirect:/user/signrequests/" + id + "/?form";
 //        }
 //        return "redirect:/user/signbooks/";
 //    }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @GetMapping(value = "/update-step/{id}/{step}")
-    public String changeStepSignType(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                                     @PathVariable("step") Integer step,
-                                     @RequestParam(name="name", required = false) String name,
-                                     @RequestParam(name="signType") SignType signType,
-                                     @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-        SignBook signBook = signBookRepository.findById(id).get();
-        if(user.equals(signBook.getCreateBy()) && signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
-            if(allSignToComplete == null) {
-                allSignToComplete = false;
-            }
-            signBookService.changeSignType(signBook, step, signType);
-            signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
-            return "redirect:/user/signbooks/" + id + "/?form";
-        }
-        return "redirect:/user/signbooks/";
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @PostMapping(value = "/add-step/{id}")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
+    @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
@@ -181,34 +144,32 @@ public class SignBookController {
         }
         signBookService.pendingSignBook(signBook, user);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @DeleteMapping(value = "/remove-step/{id}/{step}")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
+    @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("user") User user, @PathVariable("id") Long id, @PathVariable("step") Integer step) {
         SignBook signBook = signBookRepository.findById(id).get();
         if(signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
             signBookService.removeStep(signBook, step);
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws InterruptedException {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if (signBookService.checkUserViewRights(user, signBook)) {
-            Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
-            signBookService.importWorkflow(signBook, workflow);
-            signBookService.nextWorkFlowStep(signBook);
-            signBookService.pendingSignBook(signBook, user);
-        }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
+        signBookService.importWorkflow(signBook, workflow);
+        signBookService.nextWorkFlowStep(signBook);
+        signBookService.pendingSignBook(signBook, user);
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
@@ -221,43 +182,29 @@ public class SignBookController {
             LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
             signRequestService.pendingSignRequest(signRequest, liveWorkflowStep.getSignType(), liveWorkflowStep.getAllSignToComplete());
         }
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
-    @DeleteMapping(value = "/remove-step-recipent/{id}/{step}")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
+    @DeleteMapping(value = "/remove-live-step-recipent/{id}/{step}")
     public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                  @PathVariable("step") Integer step,
                                  @RequestParam(value = "recipientId") Long recipientId, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.removeStepRecipient(signBook, step, recipientId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le destinataire à été supprimé"));
-        return "redirect:/user/signbooks/" + id + "/?form";
+        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws InterruptedException {
+    public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBookService.pendingSignBook(signBook, user);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
-    @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
-    @PostMapping(value = "/comment/{id}")
-    public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                          @RequestParam(value = "comment", required = false) String comment,
-                          @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-                          @RequestParam(value = "posX", required = false) Integer posX,
-                          @RequestParam(value = "posY", required = false) Integer posY,
-                          HttpServletRequest request) {
-        SignRequest signRequest = signRequestRepository.findById(id).get();
-        signRequest.setComment(comment);
-        signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", pageNumber, posX, posY);
-        return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId() + "/" + signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #user)")
+    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-group/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentInSignBookGroup(@ModelAttribute("user") User user,

@@ -13,7 +13,7 @@ export default class ListSignRequestUi {
 
     initListeners() {
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
-        //$('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
+        $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
     }

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="stepscard">
+<div th:fragment="stepscard-updatable">
     <div class="card mb-1 col-lg-10 mx-auto">
         <div class="card-body">
             <h5 class="text-center"><b>Circuit de signature</b></h5>
@@ -28,7 +28,7 @@
                                         </table>
                                     </div>
                                     <div class="bs-stepper-bottom">
-                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
                                             <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-right">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
