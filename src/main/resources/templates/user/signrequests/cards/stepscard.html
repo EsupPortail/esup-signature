@@ -7,7 +7,10 @@
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
-                        <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
+                        <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0}">
+                            Le circuit n'est pas démarré
+                        </th:block>
+                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0}" th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
                             <div class="step border border-dark bg-white rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()} ? 'div-disable'">
                                     <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
                                     <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">

@@ -68,8 +68,8 @@
                  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
                  th:unless="${signRequest.signable}" class="fixed-action-btns active">
                 <ul class="list-unstyled">
-                    <li><a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Envoyer"
-                           data-toggle="modal" data-target="#sendModal"><i class="fas fa-paper-plane"></i></a></li>
+                    <li><a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
+                           data-toggle="modal" data-target="#sendModal"><i class="fas fa-play"></i></a></li>
                     <li><a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
                            data-toggle="modal" data-target="#modal-warning"
                            th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
@@ -413,6 +413,7 @@
                                             th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
                                             th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
                                     <select class="select-users"
+                                            th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
                                         <th:block th:each="user : ${step.users}">
@@ -443,7 +444,8 @@
                             </th:block>
                         </th:block>
                         <th:block th:if="${isTempUsers}">
-                            <label>Certains destinataires sont externes à l'établissement, merci de saisir/vérifier les informations complémentaires si besoin</label>
+                            <hr>
+                            <p>Certains destinataires sont externes à l'établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
                             <th:block th:each="workflow : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
                                 <th:block th:each="recipient : ${workflow.recipients}">
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
@@ -460,6 +462,9 @@
                                 </th:block>
                             </th:block>
                         </th:block>
+                        <div id="tempUsers">
+
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

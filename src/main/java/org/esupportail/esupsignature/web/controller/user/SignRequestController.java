@@ -694,12 +694,8 @@ public class SignRequestController {
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<User> tempUsers = signRequestService.getTempUsers(signRequest, recipientEmails);
-        int countExternalUsers = 0;
         if(tempUsers.size() > 0) {
-            for (User tempUser : tempUsers) {
-                if (tempUser.getUserType().equals(UserType.external)) countExternalUsers++;
-            }
-            if (countExternalUsers == names.length) {
+            if (names != null && tempUsers.size() == names.length) {
                 int userNumber = 0;
                 for (User tempUser : tempUsers) {
                     if (tempUser.getUserType().equals(UserType.shib)) {
@@ -716,6 +712,7 @@ public class SignRequestController {
                 }
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
+                return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
@@ -762,6 +759,18 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
         return "redirect:/user/signrequests/" + signRequest.getId();
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @GetMapping(value = "/is-temp-users/{id}")
+    @ResponseBody
+    public List<User> isTempUsers(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+                              @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
+        List<User> tempUsers = signRequestService.getTempUsers(signRequest, recipientList);
+        return tempUsers;
     }
 
 }
