@@ -26,10 +26,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @RequestMapping("/user/")
 @Controller
@@ -38,7 +41,6 @@ import java.util.List;
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-
 
     @Resource
     private GlobalProperties globalProperties;
@@ -52,9 +54,6 @@ public class HomeController {
     private UserService userService;
 
     @Resource
-    private FileService fileService;
-
-    @Resource
     private FormService formService;
 
     @Resource
@@ -66,14 +65,19 @@ public class HomeController {
     @Resource
     private DataRepository dataRepository;
 
+    @Resource
+    private TemplateEngine templateEngine;
+
     @GetMapping
     public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException {
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
 
             if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+                final Context ctx = new Context(Locale.FRENCH);
+                ctx.setVariable("globalProperties", globalProperties);
                 Message splashMessage = new Message();
-                splashMessage.setText(fileService.readFileToString("/templates/splash.html"));
+                splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);
                 messages.add(splashMessage);
             } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {

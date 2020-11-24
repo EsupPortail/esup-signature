@@ -67,9 +67,6 @@ public class MailService {
     private UserService userService;
 
     @Resource
-    private UserShareRepository userShareRepository;
-
-    @Resource
     private FileService fileService;
 
     public void sendCompletedMail(SignBook signBook) throws EsupSignatureException {
