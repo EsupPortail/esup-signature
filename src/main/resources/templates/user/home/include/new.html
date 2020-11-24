@@ -9,7 +9,7 @@
             <h5 class="text-center"><b>Nouveau</b></h5>
             <div id="newScroll" class="text-center text-nowrap col-12 overflow-auto text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
-                    <h5 class="newToggled d-none">Signature simple</h5>
+                    <h5 class="newToggled d-none">Outils de signature</h5>
                     <a th:if="${user == authUser}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                        title="Vous devez signer un document présent sur votre poste de travail">
@@ -62,7 +62,7 @@
                             <form th:id="${'delete' + workflow.id}" th:if="${workflow.createBy == user}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
                             </form>
                         </a>
-                        <a role="button" th:if="${workflow.createBy == user}" title="Supprimer" type="button" th:data-id="${workflow.id}" onclick="$('#delete'+this.getAttribute('data-id')).submit();" class="btn btn-sm" style="position: absolute; margin-left: -50px; margin-top: 170px">
+                        <a role="button" th:if="${workflow.createBy == user}" title="Supprimer" type="button" th:data-id="${workflow.id}" onclick="$('#delete'+this.getAttribute('data-id')).submit();" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -50px; margin-top: 170px">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                     </th:block>
@@ -164,7 +164,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <iframe id="workflowIFrame" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+                    <iframe id="workflowIFrame" frameborder="0" style="width: 100%; height: 600px;"></iframe>
                 </div>
             </div>
         </div>
