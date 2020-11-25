@@ -281,8 +281,8 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
-    @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
+    @GetMapping(value = "/details/{id}")
+    public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -304,10 +304,9 @@ public class SignRequestController {
         }
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowRepository.findAll());
-        return "user/signrequests/update";
+        return "user/signrequests/details";
 
     }
-
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @ResponseBody
@@ -354,12 +353,6 @@ public class SignRequestController {
             formDataMap.remove(toRemoveKey);
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-        signRequest.getSignRequestParams().clear();
-        for(SignRequestParams signRequestParams : signRequestParamses) {
-            signRequestParamsRepository.save(signRequestParams);
-            signRequest.getSignRequestParams().add(signRequestParams);
-        }
-
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -367,7 +360,7 @@ public class SignRequestController {
         eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, visual, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
                     eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);
@@ -502,7 +495,7 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
@@ -573,7 +566,7 @@ public class SignRequestController {
             signRequestRepository.save(signRequest);
             documentRepository.delete(attachement);
         }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à été supprimée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -585,7 +578,7 @@ public class SignRequestController {
         String toRemove = signRequest.getLinks().get(linkId);
         signRequest.getLinks().remove(toRemove);
         signRequestRepository.save(signRequest);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien à été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien a été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 

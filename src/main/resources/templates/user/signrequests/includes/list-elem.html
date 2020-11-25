@@ -33,7 +33,7 @@
     </td>
     <td class="clickable-td d-none d-md-table-cell"
         style="width: 150px;">
-        <div th:replace="user/signrequests/includes/status :: status"></div>
+        <div th:replace="user/signrequests/includes/status :: status(signBook = ${signRequest.parentSignBook})"></div>
     </td>
     <td>
         <div class="position-relative">

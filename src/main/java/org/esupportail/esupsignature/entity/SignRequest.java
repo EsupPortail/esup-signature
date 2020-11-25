@@ -59,7 +59,10 @@ public class SignRequest {
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    private Date endDate;
 
     @JsonIgnore
     @Transient
@@ -68,10 +71,6 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient String comment;
-
-    @JsonIgnore
-    @Transient
-    transient Date endDate;
 
     @JsonIgnore
     @Transient
@@ -244,12 +243,21 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
-    public SignRequestParams getCurrentSignRequestParams() {
-        if(parentSignBook.getLiveWorkflow().getCurrentStepNumber() > 0 && getSignRequestParams().size() > parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1) {
-            if(parentSignBook == null || (signedDocuments.size() < 1 || !parentSignBook.getLiveWorkflow().getCurrentStep().getAllSignToComplete())) {
-                return getSignRequestParams().get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
-            }
+    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
+        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
         }
+    }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
+        } else {
+            return getEmptySignRequestParams();
+        }
+    }
+
+    public static SignRequestParams getEmptySignRequestParams() {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setSignPageNumber(1);

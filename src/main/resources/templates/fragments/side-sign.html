@@ -3,7 +3,15 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
     <div class="ml-1 mt-3">
-        <div class="hr sidebar-label">Changer de mode</div>
+        <div class="hr sidebar-label">Statut</div>
+<!--        <div th:if="${signRequest != null}" th:include="user/signrequests/includes/status"></div>-->
+        <th:block th:if="${signRequest != null}">
+        <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+        </th:block>
+        <th:block th:unless="${signRequest != null}">
+            <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
+        </th:block>
+        <div class="hr sidebar-label" th:if="${documentType == 'pdf'}">Changer de mode</div>
         <!--
         <select id="select-innerHTML" name="changeMode" class="mb-2 select-mode"></select>
 <script language="JavaScript">
@@ -26,7 +34,7 @@
                 th:classappend="${signable != 'ok' || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
             <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
         </button>
-        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest.signable}">
+        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signRequest.signable}">
             <i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success"></i> <span class="sidebar-label">Remplir et signer</span>
         </button>
         <button th:if="${documentType == 'pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
@@ -37,7 +45,7 @@
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
 
 
-        <div th:replace="user/signrequests/cards/stepscard"></div>
+        <div th:if="${signRequest != null}" th:include="user/signrequests/cards/stepscard"></div>
     </div>
 </nav>
 </html>

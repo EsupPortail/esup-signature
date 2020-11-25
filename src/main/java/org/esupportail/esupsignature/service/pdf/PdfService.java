@@ -79,9 +79,8 @@ public class PdfService {
     @Resource
     private GlobalProperties globalProperties;
 
-    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
-        SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
         PdfParameters pdfParameters;
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
