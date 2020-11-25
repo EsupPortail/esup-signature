@@ -46,6 +46,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,6 +61,9 @@ import java.util.stream.Collectors;
 public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
+
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Resource
 	private GlobalProperties globalProperties;
@@ -86,6 +91,9 @@ public class SignRequestService {
 
 	@Resource
 	private DocumentRepository documentRepository;
+
+	@Resource
+	private BigFileRepository bigFileRepository;
 
 	@Resource
 	private ActionRepository actionRepository;
@@ -333,7 +341,7 @@ public class SignRequestService {
 		return signRequestParamses;
 	}
 
-	public void addRecipients(SignRequest signRequest, String... recipientsEmail) throws EsupSignatureUserException {
+	public void addRecipients(SignRequest signRequest, String... recipientsEmail) {
 		for (String recipientEmail : recipientsEmail) {
 			User recipientUser;
 			if (userRepository.countByEmail(recipientEmail) == 0) {
@@ -416,6 +424,7 @@ public class SignRequestService {
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
+
 		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
@@ -442,7 +451,7 @@ public class SignRequestService {
 			addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				bigFileService.setBinaryFileStream(toSignDocuments.get(0).getBigFile(), filledInputStream, filledInputStream.available());
+				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
 			certSign(signRequest, user, password, visual);
 		}
@@ -574,7 +583,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(0), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -625,10 +634,10 @@ public class SignRequestService {
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
 				} else {
+					signBookService.completeSignBook(signRequest.getParentSignBook());
 					if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
-					signBookService.completeSignBook(signRequest.getParentSignBook());
 				}
 			}
 		} else {

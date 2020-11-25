@@ -501,7 +501,7 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")

@@ -242,20 +242,6 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
-    public SignRequestParams getCurrentSignRequestParams() {
-        if(parentSignBook.getLiveWorkflow().getCurrentStepNumber() > 0 && getSignRequestParams().size() > parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1) {
-            if(parentSignBook == null || (signedDocuments.size() < 1 || !parentSignBook.getLiveWorkflow().getCurrentStep().getAllSignToComplete())) {
-                return getSignRequestParams().get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
-            }
-        }
-        SignRequestParams signRequestParams = new SignRequestParams();
-        signRequestParams.setSignImageNumber(0);
-        signRequestParams.setSignPageNumber(1);
-        signRequestParams.setxPos(0);
-        signRequestParams.setyPos(0);
-        return signRequestParams;
-    }
-
     public List<Document> getLiteOriginalDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
         for (Document document : this.originalDocuments) {

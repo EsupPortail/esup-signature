@@ -262,7 +262,7 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignButtons() {
-        console.info("update buttons");
+        console.debug("update buttons");
         let signZoomIn = $("#signZoomIn");
         let signZoomOut = $("#signZoomOut");
 
@@ -304,7 +304,7 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignSize() {
-        console.info("update sign size");
+        console.debug("update sign size");
         this.cross.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
         this.cross.css('height', this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio);
         this.borders.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);

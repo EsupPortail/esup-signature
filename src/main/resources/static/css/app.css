@@ -532,7 +532,7 @@ input:checked + .slider:before {
     max-width: 100%;
 }
 .bs-stepper-label {
-    max-width: 100%;
+    width: 100%;
 }
 .step-trigger {
     width: 100% !important;

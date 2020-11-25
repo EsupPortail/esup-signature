@@ -13,7 +13,10 @@
             </div>
             <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                 <div class="alert alert-success mb-1">
-                    <h5>Le document est signé</h5>
+                    <h5>Le document a été signé par :</h5>
+                    <ul th:each="userHasSigned : ${usersHasSigned}">
+                        <li th:text="${userHasSigned.firstname} + ' ' + ${userHasSigned.name}"></li>
+                    </ul>
                 </div>
                 <div class="card mb-1">
                     <div class="card-header"><h5>Informations générales sur le document</h5></div>
@@ -68,6 +71,9 @@
             <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                 <div class="alert alert-danger mb-1">
                     <h5>Le document a été refusé</h5>
+                    <ul th:each="userHasRefused : ${usersHasRefused}">
+                        <li th:text="${userHasSigned.firstname} + ' ' + ${userHasSigned.name}"></li>
+                    </ul>
                 </div>
             </th:block>
         </th:block>

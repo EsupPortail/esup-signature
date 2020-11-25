@@ -76,7 +76,6 @@ export class WorkspacePdf {
     }
 
     launchSignModal(e) {
-        console.info("test form");
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
         }
