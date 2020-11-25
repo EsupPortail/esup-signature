@@ -253,7 +253,7 @@ public class SignBookService {
 
     public void removeStep(SignBook signBook, int step) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getWorkflowSteps().get(step);
-        signBook.getLiveWorkflow().getWorkflowSteps().remove(step);
+        signBook.getLiveWorkflow().getWorkflowSteps().remove(liveWorkflowStep);
         liveWorkflowStepRepository.delete(liveWorkflowStep);
     }
 

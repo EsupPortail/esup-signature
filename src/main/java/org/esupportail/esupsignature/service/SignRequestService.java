@@ -377,18 +377,18 @@ public class SignRequestService {
 	}
 
 	public void pendingSignRequest(SignRequest signRequest, SignType signType, boolean allSignToComplete) {
-		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+//		if(!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 			for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 				Action action = new Action();
 				actionRepository.save(action);
 				signRequest.getRecipientHasSigned().put(recipient, action);
 			}
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(allSignToComplete);
+//			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
+//			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(allSignToComplete);
 			updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
-		} else {
-			logger.warn("already pending");
-		}
+//		} else {
+//			logger.warn("already pending");
+//		}
 	}
 
 	public void sign(SignRequest signRequest, User user, String password, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException, InterruptedException {
@@ -423,14 +423,16 @@ public class SignRequestService {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 					if (visual) {
 						eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", user);
-						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, user);
+						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, user, 0);
 					}
 				}
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
+					int i = 0;
 					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, user);
+						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, user, i);
 						updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+						i++;
 					}
 				}
 			}

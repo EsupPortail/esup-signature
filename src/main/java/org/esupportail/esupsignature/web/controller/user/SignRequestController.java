@@ -572,7 +572,7 @@ public class SignRequestController {
             signRequestRepository.save(signRequest);
             documentRepository.delete(attachement);
         }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à été supprimée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -584,7 +584,7 @@ public class SignRequestController {
         String toRemove = signRequest.getLinks().get(linkId);
         signRequest.getLinks().remove(toRemove);
         signRequestRepository.save(signRequest);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien à été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien a été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 

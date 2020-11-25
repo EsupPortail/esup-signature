@@ -183,7 +183,7 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", null, null, null);
-		redirectAttributes.addFlashAttribute("messageSuccess", "Commentaire ajouté");
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Commentaire ajouté"));
 		return "redirect:/admin/signrequests/" + id;
 	}
 
