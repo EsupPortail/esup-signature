@@ -39,12 +39,12 @@ export class SignPosition extends EventFactory {
             this.updateCrossPosition();
             this.cross.css("position", "absolute");
             this.updateSignButtons();
+            this.addSignButton.removeAttr("disabled");
         } else {
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
         }
-        this.addSignButton.attr("disabled", "disabled");
         this.removeSignButton.attr("disabled", "disabled");
         this.events = {};
     }

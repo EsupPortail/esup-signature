@@ -332,7 +332,7 @@ public class SignRequestService {
 	public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
 		List<SignRequestParams> signRequestParamses = pdfService.scanSignatureFields(inputStream);
 		if(signRequestParamses.size() == 0) {
-			SignRequestParams signRequestParams = getEmptySignRequestParams();
+			SignRequestParams signRequestParams = SignRequest.getEmptySignRequestParams();
 			signRequestParamses.add(signRequestParams);
 		}
 		for(SignRequestParams signRequestParams : signRequestParamses) {
@@ -399,7 +399,8 @@ public class SignRequestService {
 //		}
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean visual, Map<String, String> formDataMap) throws EsupSignatureException, IOException, InterruptedException {
+
+	public void sign(SignRequest signRequest, User user, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap) throws EsupSignatureException, IOException, InterruptedException {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		InputStream filledInputStream;
@@ -432,16 +433,14 @@ public class SignRequestService {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 					if (visual) {
 						eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", user);
-						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, user, 0);
+						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequest.getCurrentSignRequestParams(), user);
 					}
 				}
 			} else {
 				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-					int i = 0;
-					for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, user, i);
+					for(SignRequestParams signRequestParams : signRequestParamses) {
+						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
 						updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-						i++;
 					}
 				}
 			}
@@ -451,6 +450,7 @@ public class SignRequestService {
 			addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+				copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
 			certSign(signRequest, user, password, visual);
@@ -471,6 +471,17 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", user);
 		applyEndOfSignRules(signRequest, user);
 
+	}
+
+	private void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
+		SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
+		signRequestParams.setSignPageNumber(signRequestParamses.get(0).getSignPageNumber());
+		signRequestParams.setxPos(signRequestParamses.get(0).getxPos());
+		signRequestParams.setyPos(signRequestParamses.get(0).getyPos());
+		signRequestParams.setSignWidth(signRequestParamses.get(0).getSignWidth());
+		signRequestParams.setSignHeight(signRequestParamses.get(0).getSignHeight());
+		signRequestParams.setAddDate(signRequestParamses.get(0).isAddDate());
+		signRequestParams.setAddName(signRequestParamses.get(0).isAddName());
 	}
 
 	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws IOException {
@@ -583,7 +594,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(0), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -906,15 +917,6 @@ public class SignRequestService {
 			}
 		}
 		return false;
-	}
-
-	public SignRequestParams getEmptySignRequestParams() {
-		SignRequestParams signRequestParams = new SignRequestParams();
-		signRequestParams.setSignImageNumber(0);
-		signRequestParams.setSignPageNumber(1);
-		signRequestParams.setxPos(0);
-		signRequestParams.setyPos(0);
-		return signRequestParams;
 	}
 
 	public long generateUniqueId() {

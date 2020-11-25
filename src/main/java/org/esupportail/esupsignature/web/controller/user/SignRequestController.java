@@ -353,12 +353,6 @@ public class SignRequestController {
             formDataMap.remove(toRemoveKey);
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-        signRequest.getSignRequestParams().clear();
-        for(SignRequestParams signRequestParams : signRequestParamses) {
-            signRequestParamsRepository.save(signRequestParams);
-            signRequest.getSignRequestParams().add(signRequestParams);
-        }
-
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -366,7 +360,7 @@ public class SignRequestController {
         eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, visual, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
                     eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);

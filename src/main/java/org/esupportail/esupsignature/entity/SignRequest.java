@@ -59,6 +59,7 @@ public class SignRequest {
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     private Date endDate;
@@ -240,6 +241,29 @@ public class SignRequest {
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
+    }
+
+    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
+        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
+        }
+    }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
+        } else {
+            return getEmptySignRequestParams();
+        }
+    }
+
+    public static SignRequestParams getEmptySignRequestParams() {
+        SignRequestParams signRequestParams = new SignRequestParams();
+        signRequestParams.setSignImageNumber(0);
+        signRequestParams.setSignPageNumber(1);
+        signRequestParams.setxPos(0);
+        signRequestParams.setyPos(0);
+        return signRequestParams;
     }
 
     public List<Document> getLiteOriginalDocuments() {
