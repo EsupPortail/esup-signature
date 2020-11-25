@@ -97,20 +97,4 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return registrationBean;
 	}
 
-	@ConditionalOnMissingBean
-	@Bean
-	public BuildProperties buildProperties() {
-		MavenXpp3Reader reader = new MavenXpp3Reader();
-		Properties properties = new Properties();
-		try {
-			Model model = reader.read(new FileReader("pom.xml"));
-			properties.put("group", model.getGroupId());
-			properties.put("artifact", model.getArtifactId());
-			properties.put("version", model.getVersion());
-		} catch (IOException | XmlPullParserException e) {
-			logger.error("No build properties found", e);
-		}
-		return new BuildProperties(properties);
-	}
-
 }
