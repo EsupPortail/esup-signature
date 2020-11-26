@@ -25,7 +25,7 @@
         </div>
     </div>
 </div>
-<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape <span th:text="${signBook.liveWorkflow.workflowSteps.size() + 1}"></span></h4>
+<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape<span th:text="' ' + ${signBook.liveWorkflow.workflowSteps.size() + 1}"></span></h4>
 <form th:action="'/user/wizard/wizX/' + ${signBook.id}" method="post">
     <div class="col-lg-12">
         <label for="recipientsEmail">Choisir les participants</label>

@@ -5,8 +5,9 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
         console.info("Starting workspace UI");
+        this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
         this.postits = postits;
@@ -20,7 +21,9 @@ export class WorkspacePdf {
             this.currentSignRequestParams[0].signPageNumber,
             signImages,
             userName);
-        this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
+        if(this.isPdf) {
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
+        }
         //this.signPageNumber = document.getElementById('signPageNumber');
         this.mode = 'sign';
         this.xmlHttpMain = new XMLHttpRequest();
@@ -29,53 +32,55 @@ export class WorkspacePdf {
     }
 
     initListeners() {
-        this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
-        this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
-        this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
-        this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
-        this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
-        this.pdfViewer.addEventListener('render', e => this.initForm());
-        document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
-        if(document.getElementById('commentModeButton') != null) {
-            document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
-            if (this.signable) {
-                document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
-                let visualButton = document.getElementById('visualButton')
-                if (this.currentSignType !== "pdfImageStamp") {
-                    visualButton.classList.remove("d-none");
-                    visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
+        if(this.isPdf) {
+            document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
+            this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
+            this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
+            this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
+            this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
+            this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
+            this.pdfViewer.addEventListener('render', e => this.initForm());
+            if (document.getElementById('commentModeButton') != null) {
+                document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
+                if (this.signable) {
+                    document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
+                    let visualButton = document.getElementById('visualButton')
+                    if (this.currentSignType !== "pdfImageStamp") {
+                        visualButton.classList.remove("d-none");
+                        visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
+                    }
+                    document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
+                    document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
                 }
-                document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
-                document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
+                document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
             }
-            document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
+
+            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
+            this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
+            this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
+
+            this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
+
+            // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
+            $('#pdf').mousemove(e => this.moveAction(e));
+
+            $(".postit-global-close").on('click', function () {
+                $(this).parent().toggleClass("postit-small");
+            });
+
+            this.postits.forEach((postit, index) => {
+                let postitButton = $('#postit' + postit.id);
+                postitButton.on('click', e => this.focusComment(postit));
+            });
         }
-
-        this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
-        this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
-        this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
-        this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
-
-        this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
-
-        // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
-        $('#pdf').mousemove(e => this.moveAction(e));
-
-        $(".postit-global-close").on('click', function () {
-            $(this).parent().toggleClass("postit-small");
-        });
-
-        this.postits.forEach((postit, index) => {
-            let postitButton = $('#postit' + postit.id);
-            postitButton.on('click', e => this.focusComment(postit));
-        });
-        console.info("init listener workspace");
         $("#visaLaunchButton").on('click', e => this.launchSignModal(e));
         $("#signLaunchButton").on('click', e => this.launchSignModal(e));
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
     launchSignModal(e) {
+        console.info("launch sign modal");
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
         }

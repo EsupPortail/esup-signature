@@ -54,13 +54,13 @@
                                                 <th:block th:each="attributeName : ${userSession.attributeNames}">
                                                     <li>
                                                         <a data-toggle="collapse"
-                                                           th:href="'#' + ${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"
+                                                           th:href="'#attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"
                                                            role="button" aria-expanded="false"
-                                                           th:aria-controls="${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"><span
+                                                           th:aria-controls="'attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"><span
                                                                 th:text="${attributeName}"></span></a>
                                                         <br>
                                                         <span th:text="${userSession.getAttribute(attributeName).toString().getBytes().length} + ' bytes'"></span>
-                                                        <div th:id="${#strings.replace(currentSession.key, '.', '')} + '-' + ${#strings.replace(attributeName, '.','')}"
+                                                        <div th:id="'attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"
                                                              class="collapse">
                                                             <span th:text="${userSession.getAttribute(attributeName)}"></span>
                                                         </div>
