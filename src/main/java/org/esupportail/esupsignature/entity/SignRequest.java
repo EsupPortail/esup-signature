@@ -80,7 +80,7 @@ public class SignRequest {
     @Transient
     transient Data data;
     
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
