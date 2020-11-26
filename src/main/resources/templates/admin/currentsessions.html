@@ -23,13 +23,13 @@
                 <div class="card mb-1 col-10 mx-auto">
                     <div class="card-body">
                         <h5>
-                            <a data-toggle="collapse" th:href="'#' + ${currentSession.key}" role="button"
+                            <a data-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
                                aria-expanded="false"
-                               th:aria-controls="${currentSession.key}">
+                               th:aria-controls="'sess-' + ${currentSession.hashCode()}">
                                 <span th:text="${currentSession.key} + ' : ' + ${currentSession.value.size()} + ' session(s)'"></span></a>
                         </h5>
-                        <div class="collapse" th:id="${currentSession.key}">
-                            <table class="table table-hover">
+                        <div class="collapse" th:id="'sess-' + ${currentSession.hashCode()}">
+                            <table class="table table-hover table-responsive">
                                 <tr class="thead-dark">
                                     <th>Session ID</th>
                                     <th>Creation time</th>
