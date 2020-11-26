@@ -26,6 +26,7 @@ public class Log {
 	private String eppn;
 
 	@Transient
+    @JsonIgnore
 	private User user;
 
     private String eppnFor;
