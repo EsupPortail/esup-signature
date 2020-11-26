@@ -30,11 +30,14 @@
 
                     <a th:if="${!isUserOnSu}" th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
                        data-target="#wizardModal" style="width: 150px; height: 200px;"
-                       title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assistant" onclick="$('#wizIframeDemand').attr('src', '/user/wizard/wiz2');">
+                       title="Créer une nouvelle demande à l'aide de l'assistant" onclick="$('#wizIframeDemand').attr('src', '/user/wizard/wiz2');">
                         <div class="crop">
-                            <i class="fas fa-magic fa-4x"></i>
+                            <span class="fa-stack fa-3x">
+                                <i class="fas fa-paper-plane fa-stack-1x mr-4"></i>
+                                <i class="fas fa-cog fa-stack-1x ml-4 mt-4 text-black-50"></i>
+                            </span>
                         </div>
-                        <h6>Assistant de création de demande</h6>
+                        <h6>Créer une demande personnalisée</h6>
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>

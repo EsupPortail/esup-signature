@@ -131,20 +131,25 @@ public class SignBookController {
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
         LiveWorkflowStep liveWorkflowStep = null;
-        try {
-            liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
-        } catch (EsupSignatureUserException e) {
-            logger.error("error on add step", e);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
-        }
-        if (stepNumber == - 1) {
-            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+        int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
+        if(stepNumber + 1 >= currentSetNumber) {
+            try {
+                liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            } catch (EsupSignatureUserException e) {
+                logger.error("error on add step", e);
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
+            }
+            if (stepNumber == -1) {
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+            } else {
+                signBook.getLiveWorkflow().getWorkflowSteps().add(stepNumber, liveWorkflowStep);
+            }
+            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(currentSetNumber - 1));
+            signBookService.pendingSignBook(signBook, authUser);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } else {
-            signBook.getLiveWorkflow().getWorkflowSteps().add(stepNumber, liveWorkflowStep);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "L'étape ne peut pas être ajoutée"));
         }
-        signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(stepNumber));
-        signBookService.pendingSignBook(signBook, authUser);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
@@ -152,7 +157,8 @@ public class SignBookController {
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookRepository.findById(id).get();
-        if(signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
+        int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
+        if(currentStepNumber <= step) {
             signBookService.removeStep(signBook, step);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "L'étape a été supprimés"));
         } else {

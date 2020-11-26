@@ -72,13 +72,12 @@ public class WizardController {
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
+        ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
-            ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
             modelAndView.addObject("workflowId", workflow.getId());
-            return modelAndView;
         }
-        return new ModelAndView("user/wizard/wiz3");
+        return modelAndView;
     }
 
     @GetMapping(value = "/wiz4Workflow")
