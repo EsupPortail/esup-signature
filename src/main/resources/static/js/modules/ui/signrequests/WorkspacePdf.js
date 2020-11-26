@@ -7,6 +7,7 @@ export class WorkspacePdf {
 
     constructor(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
         console.info("Starting workspace UI");
+        this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
         this.postits = postits;
