@@ -14,8 +14,7 @@ BEGIN
                           drop column workflow_id,
                           drop column workflow_name,
                           drop column exported_documenturi;
-    alter table sign_request drop column create_by,
-                             drop column create_by_eppn,
+    alter table sign_request drop column create_by_eppn,
                              drop column all_sign_to_complete,
                              drop column current_step_number,
                              drop column sign_type;
