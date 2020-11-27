@@ -16,16 +16,18 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
-    version: '@project.version@'
 
 #tomcat:
 #    ajp:
 #        port: 6009
+
 info:
     app:
         name: esup-signature
-        version: 1.2
-        description: Instance de dev
+        description: Instance de production
+    tags:
+        environment: PROD
+
 management:
     endpoints:
         jmx:

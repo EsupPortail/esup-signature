@@ -17,7 +17,7 @@
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.66</bouncycastle.version>
-		<java.version>11</java.version>
+		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
 		<spring.version>5.2.8.RELEASE</spring.version>
