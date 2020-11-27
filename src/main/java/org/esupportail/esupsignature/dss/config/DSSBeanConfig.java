@@ -11,6 +11,8 @@ import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
 import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
 import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
+import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
@@ -38,6 +40,8 @@ import eu.europa.esig.dss.ws.validation.common.RemoteDocumentValidationService;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +49,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +61,7 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(DSSProperties.class)
+@ConditionalOnProperty({"dss.tsp-server"})
 public class DSSBeanConfig {
 
 	private static final Logger log = LoggerFactory.getLogger(DSSBeanConfig.class);
@@ -69,6 +75,9 @@ public class DSSBeanConfig {
 	public DSSProperties getDssProperties() {
 		return dssProperties;
 	}
+
+	@Autowired(required = false)
+	private ProxyConfig proxyConfig;
 
 	@PostConstruct
 	public void cachedCRLSourceInitialization() throws SQLException {
@@ -97,12 +106,18 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader dataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
+		if(proxyConfig != null) {
+			dataLoader.setProxyConfig(proxyConfig);
+		}
 		return dataLoader;
 	}
 
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
+		if(proxyConfig != null) {
+			ocspDataLoader.setProxyConfig(proxyConfig);
+		}
 		return ocspDataLoader;
 	}
 
@@ -148,6 +163,7 @@ public class DSSBeanConfig {
 				keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 			}
 		} else {
+			log.info("using exising oj file " + keystoreFile.getAbsolutePath());
 			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
 		return keyStoreCertificateSource;
@@ -250,6 +266,11 @@ public class DSSBeanConfig {
 	@Bean
 	public TSPSource tspSource() {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
+		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
+		if(proxyConfig != null) {
+			timestampDataLoader.setProxyConfig(proxyConfig);
+		}
+		tspSource.setDataLoader(timestampDataLoader);
 		return tspSource;
 	}
 
