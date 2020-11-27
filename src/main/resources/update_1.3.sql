@@ -66,8 +66,8 @@ BEGIN
                 values (lw, sr.create_date, null, null, null, null, 1, lws, null);
             insert into live_workflow_workflow_steps(live_workflow_id, workflow_steps_id, workflow_steps_order) values (lw, lws, 0);
             sb = nextval('hibernate_sequence');
-            insert into sign_book(id, create_by, create_date, current_workflow_step_number, description, documents_target_uri, exported_documenturi, external, name, status, target_type, update_by, update_date, version, create_by_eppn, create_by_id, workflow_id, title, workflow_name, live_workflow_id)
-                values (sb, null, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, 1, null, sr.create_by_id, lw, sr.title, null, lw);
+            insert into sign_book(id, create_date, current_workflow_step_number, description, documents_target_uri, exported_documenturi, external, name, status, target_type, update_by, update_date, version, create_by_eppn, create_by_id, workflow_id, title, workflow_name, live_workflow_id)
+                values (sb, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, 1, null, sr.create_by_id, lw, sr.title, null, lw);
             insert into sign_book_sign_requests(sign_book_id, sign_requests_id, sign_requests_order) values (sb, sr.id, 0);
             update sign_request set parent_sign_book_id = sb where id = sr.id;
         END LOOP;
