@@ -7,7 +7,7 @@ DECLARE
     sbws sign_book_workflow_steps%rowtype;
     rec recipient%rowtype;
     w workflow%rowtype;
-    lo log%rowtype;
+    lo public.log%rowtype;
     r bigint;
     lw bigint;
     lws bigint;
@@ -98,7 +98,7 @@ BEGIN
                     a = nextval('hibernate_sequence');
                     insert into action(id, action_type, date, version) values (a, 'none', null, 1);
                     IF rec.signed = true THEN
-                        for lo in select * from log where sign_request_id = sr.id and final_status = 'completed'
+                        for lo in select * from public.log where sign_request_id = sr.id and final_status = 'completed'
                             loop
                                 update action SET action_type = 'signed', date = lo.log_date where id = a;
                             end loop;
