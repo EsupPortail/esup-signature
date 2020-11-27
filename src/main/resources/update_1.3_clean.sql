@@ -6,8 +6,7 @@ BEGIN
     alter table data drop column description;
     alter table recipient drop column parent_type,
                           drop column parent_id;
-    alter table sign_book drop column create_by,
-                          drop column current_workflow_step_number,
+    alter table sign_book drop column current_workflow_step_number,
                           drop column description,
                           drop column create_by_eppn,
                           drop column documents_target_uri,
