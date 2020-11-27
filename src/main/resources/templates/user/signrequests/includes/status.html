@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
-<div th:fragment="status" th:with="status = ${signRequest.parentSignBook != null ? signRequest.parentSignBook.status : signRequest.status}">
+<div th:fragment="status" th:with="status = ${signRequest.parentSignBook.status}">
 	<div th:switch="${status}">
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge badge-secondary text-center" style="padding: 10px;" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${status}}"></i>

@@ -206,7 +206,7 @@ public class DataController {
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("document", form.getDocument());
-			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getSignRequests().get(0).getRecipients(), user)) {
+			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user)) {
 				model.addAttribute("toSign", true);
 			}
 			if(form.getDocument() != null) {

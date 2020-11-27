@@ -35,8 +35,6 @@ public class SignBook {
     @OneToOne(fetch = FetchType.LAZY)
     private User createBy;
 
-    private String createByEppn;
-
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
@@ -44,29 +42,12 @@ public class SignBook {
     private String updateBy;
     
     private Boolean external = false;
-    
-    @Size(max = 500)
-    private String description;
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    private Long workflowId;
-
-    private String workflowName;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderColumn
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
-
-    private Integer currentWorkflowStepNumber = 0;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-
-    private String documentsTargetUri;
-
-    private String exportedDocumentURI;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private LiveWorkflow liveWorkflow = new LiveWorkflow();
 
     @JsonIgnore
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -125,14 +106,6 @@ public class SignBook {
         this.createBy = createBy;
     }
 
-    public String getCreateByEppn() {
-        return createByEppn;
-    }
-
-    public void setCreateByEppn(String createByEppn) {
-        this.createByEppn = createByEppn;
-    }
-
     public Date getUpdateDate() {
         return updateDate;
     }
@@ -157,14 +130,6 @@ public class SignBook {
         this.external = external;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public SignRequestStatus getStatus() {
         return status;
     }
@@ -173,60 +138,12 @@ public class SignBook {
         this.status = status;
     }
 
-    public Long getWorkflowId() {
-        return workflowId;
+    public LiveWorkflow getLiveWorkflow() {
+        return liveWorkflow;
     }
 
-    public void setWorkflowId(Long workflowId) {
-        this.workflowId = workflowId;
-    }
-
-    public String getWorkflowName() {
-        return workflowName;
-    }
-
-    public void setWorkflowName(String workflowName) {
-        this.workflowName = workflowName;
-    }
-
-    public List<WorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
-    }
-
-    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
-    }
-
-    public Integer getCurrentWorkflowStepNumber() {
-        return currentWorkflowStepNumber;
-    }
-
-    public void setCurrentWorkflowStepNumber(Integer currentWorkflowStepNumber) {
-        this.currentWorkflowStepNumber = currentWorkflowStepNumber;
-    }
-
-    public DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
-    }
-
-    public String getExportedDocumentURI() {
-        return exportedDocumentURI;
-    }
-
-    public void setExportedDocumentURI(String exportedDocumentURI) {
-        this.exportedDocumentURI = exportedDocumentURI;
+    public void setLiveWorkflow(LiveWorkflow liveWorkflow) {
+        this.liveWorkflow = liveWorkflow;
     }
 
     public List<SignRequest> getSignRequests() {

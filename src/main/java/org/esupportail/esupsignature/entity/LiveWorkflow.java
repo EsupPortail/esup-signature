@@ -12,28 +12,18 @@ import java.util.List;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Workflow {
+public class LiveWorkflow {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-	@Version
+    @Version
     private Integer version;
-
-	@Column(unique=true)
-	private String name;
-
-    private String title;
-
-    private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
@@ -41,31 +31,26 @@ public class Workflow {
 
     private String updateBy;
 
-    private String role;
-
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
-    private Boolean publicUsage = false;
-
-    private Boolean scanPdfMetadatas = false;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType sourceType;
-    
-    private String documentsSourceUri;
-    
     @ElementCollection(targetClass=String.class)
     private List<String> managers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    private List<WorkflowStep> workflowSteps = new ArrayList<>();
+    private List<LiveWorkflowStep> workflowSteps = new ArrayList<LiveWorkflowStep>();
+
+    @OneToOne(cascade = CascadeType.REMOVE)
+    private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
-    
+
     private String documentsTargetUri;
+
+    @ManyToOne()
+    private Workflow workflow;
 
     public Long getId() {
         return id;
@@ -83,44 +68,12 @@ public class Workflow {
         this.version = version;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Date getCreateDate() {
         return createDate;
     }
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
-    }
-
-    public User getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(User createBy) {
-        this.createBy = createBy;
     }
 
     public Date getUpdateDate() {
@@ -139,30 +92,6 @@ public class Workflow {
         this.updateBy = updateBy;
     }
 
-    public Boolean getPublicUsage() {
-        return publicUsage;
-    }
-
-    public void setPublicUsage(Boolean publicUsage) {
-        this.publicUsage = publicUsage;
-    }
-
-    public DocumentIOType getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
-    }
-
-    public String getDocumentsSourceUri() {
-        return documentsSourceUri;
-    }
-
-    public void setDocumentsSourceUri(String documentsSourceUri) {
-        this.documentsSourceUri = documentsSourceUri;
-    }
-
     public List<String> getManagers() {
         return managers;
     }
@@ -171,12 +100,20 @@ public class Workflow {
         this.managers = managers;
     }
 
-    public List<WorkflowStep> getWorkflowSteps() {
+    public List<LiveWorkflowStep> getWorkflowSteps() {
         return workflowSteps;
     }
 
-    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+    public void setWorkflowSteps(List<LiveWorkflowStep> workflowSteps) {
         this.workflowSteps = workflowSteps;
+    }
+
+    public LiveWorkflowStep getCurrentStep() {
+        return currentStep;
+    }
+
+    public void setCurrentStep(LiveWorkflowStep currentStep) {
+        this.currentStep = currentStep;
     }
 
     public DocumentIOType getTargetType() {
@@ -195,14 +132,6 @@ public class Workflow {
         this.documentsTargetUri = documentsTargetUri;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public List<ShareType> getAuthorizedShareTypes() {
         return authorizedShareTypes;
     }
@@ -211,11 +140,27 @@ public class Workflow {
         this.authorizedShareTypes = authorizedShareTypes;
     }
 
-    public Boolean getScanPdfMetadatas() {
-        return scanPdfMetadatas;
+    public Workflow getWorkflow() {
+        return workflow;
     }
 
-    public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
-        this.scanPdfMetadatas = scanPdfMetadatas;
+    public void setWorkflow(Workflow workflow) {
+        this.workflow = workflow;
+    }
+
+    public Integer getCurrentStepNumber() {
+        if (this.getWorkflowSteps().isEmpty()) {
+            return -1;
+        }
+        if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getAllSignToComplete()) {
+            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
+                return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;
+            }
+        } else {
+            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
+                return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;
+            }
+        }
+        return this.workflowSteps.indexOf(this.getCurrentStep()) + 1;
     }
 }

@@ -78,11 +78,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
-			nbIps++;
-			hasIpAddresses += "hasIpAddress('"+ ip +"')";
-			if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
-				hasIpAddresses += " or ";
+		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
+			hasIpAddresses = "denyAll";
+		} else {
+			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
+				nbIps++;
+				hasIpAddresses += "hasIpAddress('"+ ip +"')";
+				if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
+					hasIpAddresses += " or ";
+				}
 			}
 		}
 		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
@@ -93,6 +97,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").authenticated()
 				.antMatchers("/sse/", "/sse/**").authenticated()
+				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/webjars/**").permitAll();
 
 	}

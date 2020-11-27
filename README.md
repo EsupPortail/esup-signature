@@ -19,7 +19,7 @@ https://www.esup-portail.org/wiki/display/SIGN/Change+log
 
 # Prérequis
 
- * OpenJDK 11
+ * OpenJDK 13
  * Maven 3.1
  * GhostScript
  * PostgreSQL
@@ -39,7 +39,7 @@ voir : https://www.esup-portail.org/wiki/display/SIGN/Sources+et+configuration#S
 ```
 mvn clean package
 ```
-Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile
+Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile.
 
 # Démarrage
 
@@ -55,4 +55,4 @@ https://esup-signature-demo.univ-rouen.fr
 
 # Licenses
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.

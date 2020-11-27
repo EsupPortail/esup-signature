@@ -46,15 +46,15 @@
                         <th:block th:each="workflow : ${workflows}">
                             <tr>
                                 <td th:text="${workflow.description}"></td>
-                                <td th:text="${workflow.createBy}"></td>
+                                <td th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
                                         <li class="list-group-item py-1">
                                             <span th:text="${iterator.index + 1}" class="d-inline"></span>
-                                            <th:block th:each="recipient : ${workflowStep.recipients}">
+                                            <th:block th:each="user : ${workflowStep.users}">
                                                 <i class="fas fa-user"></i>
-                                                <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
                                                 <br/>
                                             </th:block>
                                         </li>

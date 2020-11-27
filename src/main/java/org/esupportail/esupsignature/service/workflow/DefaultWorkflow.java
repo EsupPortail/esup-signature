@@ -67,4 +67,8 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
         this.workflowSteps = new ArrayList<>();
     }
 
+    public User getCreateBy() {
+        return userService.getSystemUser();
+    }
+
 }

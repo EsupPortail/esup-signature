@@ -7,6 +7,8 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -17,6 +19,9 @@ import java.util.Collections;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
+
+    @Autowired
+    private BuildProperties buildProperties;
 
     @Resource
     private GlobalProperties globalProperties;
@@ -42,7 +47,7 @@ public class SetGlobalAttributs {
         return userService.getUserFromAuthentication();
     }
 
-    @ModelAttribute(binding = false)
+    @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if(authUser != null) {
             this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
@@ -52,9 +57,9 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
-            model.addAttribute("version", globalProperties.getVersion());
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
+        model.addAttribute("version", buildProperties.getVersion());
     }
 
     private void parseRoles(User user) {

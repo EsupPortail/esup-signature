@@ -143,9 +143,9 @@ public class NexuProcessController {
 				if(signedFile != null) {
 					signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
 
-					signRequestService.applyEndOfStepRules(signRequest, user);
+					signRequestService.applyEndOfSignRules(signRequest, user);
 				}
-			} catch (IOException | InterruptedException e) {
+			} catch (IOException e) {
 				throw new EsupSignatureException("unable to sign" , e);
 			}
 	        signedDocumentResponse = new SignDocumentResponse();

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -16,7 +17,9 @@ public class Log {
 
 	@Version
     private Integer version;
-	
+
+    private String signRequestToken;
+
 	@Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy - HH:mm")
     private Date logDate;
@@ -24,6 +27,7 @@ public class Log {
 	private String eppn;
 
 	@Transient
+    @JsonIgnore
 	private User user;
 
     private String eppnFor;
@@ -51,12 +55,21 @@ public class Log {
 
 	private Long signRequestId;
 
-    public Long getSignRequestId() {
+
+	public Long getSignRequestId() {
         return this.signRequestId;
     }
 
     public void setSignRequestId(Long signRequestId) {
         this.signRequestId = signRequestId;
+    }
+
+    public String getSignRequestToken() {
+        return signRequestToken;
+    }
+
+    public void setSignRequestToken(String signRequestToken) {
+        this.signRequestToken = signRequestToken;
     }
 
     public Date getLogDate() {
@@ -155,7 +168,7 @@ public class Log {
         this.version = version;
     }
 
-    public int getPageNumber() {
+    public Integer getPageNumber() {
         return pageNumber;
     }
 
@@ -167,15 +180,15 @@ public class Log {
         return posX;
     }
 
-    public void setPosX(int posX) {
+    public void setPosX(Integer posX) {
         this.posX = posX;
     }
 
-    public int getPosY() {
+    public Integer getPosY() {
         return posY;
     }
 
-    public void setPosY(int posY) {
+    public void setPosY(Integer posY) {
         this.posY = posY;
     }
 

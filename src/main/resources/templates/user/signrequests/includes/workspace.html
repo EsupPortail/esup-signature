@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center"
-     th:classappend="${signRequest.parentSignBook != null && signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace-pdf'">
+     th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace-pdf'">
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
