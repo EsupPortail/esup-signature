@@ -148,7 +148,7 @@
             <th:block th:if="${documentType == 'pdf'}">
             <div th:replace="user/signrequests/includes/workspace"></div>
             </th:block>
-            <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}"  id="workspace" class="workspace alert alert-secondary">
+            <div th:if="${documentType != 'pdf' && signRequest.originalDocuments.size() > 0}"  id="workspace" class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
                         <h5 class="text-center">Liste des documents originaux</h5>
