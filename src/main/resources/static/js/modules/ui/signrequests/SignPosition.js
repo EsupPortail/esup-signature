@@ -39,12 +39,12 @@ export class SignPosition extends EventFactory {
             this.updateCrossPosition();
             this.cross.css("position", "absolute");
             this.updateSignButtons();
+            this.addSignButton.removeAttr("disabled");
         } else {
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
         }
-        this.addSignButton.attr("disabled", "disabled");
         this.removeSignButton.attr("disabled", "disabled");
         this.events = {};
     }
@@ -262,7 +262,7 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignButtons() {
-        console.info("update buttons");
+        console.debug("update buttons");
         let signZoomIn = $("#signZoomIn");
         let signZoomOut = $("#signZoomOut");
 
@@ -304,7 +304,7 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignSize() {
-        console.info("update sign size");
+        console.debug("update sign size");
         this.cross.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
         this.cross.css('height', this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio);
         this.borders.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);

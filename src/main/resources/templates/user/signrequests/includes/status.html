@@ -2,46 +2,46 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
-<div th:fragment="status" th:with="status = ${signRequest.parentSignBook.status}">
-	<div th:switch="${status}">
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge badge-secondary text-center" style="padding: 10px;" th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
-			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${status}}"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+<div th:fragment="status(signBook)">
+	<div th:switch="${signBook.status}" class="text-center mb-2">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge badge-secondary text-center" style="padding: 10px;" th:title="#{'signbook.status.' + ${signBook.status}}">
+			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge badge-warning text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge badge-warning text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-clock"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-file-signature"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge badge-danger text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge badge-danger text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-ban"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-check-circle"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-file-export"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-archive"></i>
-			<span th:text="#{'signbook.status.' + ${status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-archive"></i>
-			<span th:text="#{'signbook.status.' + ${status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge badge-success text-center" style="padding: 10px;"  th:id="'status_' + ${signRequest.id}" th:title="#{'signbook.status.' + ${status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge badge-success text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-flag-checkered"></i>
-				<span th:text="#{'signbook.status.' + ${status}}"></span>
+				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="*">
-			<span th:text="${status}"></span>
+			<span th:text="${signBook.status}"></span>
 		</div>
 	</div>
 </div>

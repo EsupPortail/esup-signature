@@ -17,18 +17,23 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.session.Session;
+import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
+import java.util.Map;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -48,16 +53,44 @@ public class CurrentSessionsController {
 	@Qualifier("sessionRegistry")
 	private SessionRegistry sessionRegistry;
 
+	@Resource
+	private SessionRepository<Session> sessionRepository;
+
 	@GetMapping
-	public String getCurrentSessions(Model model) {
-		List<String> sessions = new Vector<>();
+	public String getCurrentSessions(Model model) throws NoSuchMethodException {
+		Map<String, List<Session>> allSessions = new HashMap<>();
 		List<Object> principals = sessionRegistry.getAllPrincipals();
-		for(Object p: principals) {
-			sessions.add(((UserDetails) p).getUsername());
+		long sessionSize = 0;
+		for(Object principal: principals) {
+			List<Session> sessions = new ArrayList<>();
+			List<SessionInformation> sessionInformations =  sessionRegistry.getAllSessions(principal, true);
+			for(SessionInformation sessionInformation : sessionInformations) {
+				Session session = sessionRepository.findById(sessionInformation.getSessionId());
+				if(session != null) {
+					for(String attr : session.getAttributeNames()) {
+						sessionSize += session.getAttribute(attr).toString().getBytes().length;
+					}
+					sessions.add(session);
+				}
+			}
+			if(sessions.size() > 0) {
+				allSessions.put(((UserDetails) principal).getUsername(), sessions);
+			}
+
 		}
-		model.addAttribute("currentSessions", sessions);
+		model.addAttribute("currentSessions", allSessions);
+		model.addAttribute("sessionSize", FileUtils.byteCountToDisplaySize(sessionSize));
 		model.addAttribute("active", "sessions");
 		return "admin/currentsessions";
+	}
+
+	@DeleteMapping
+	public String deleteSessions(@RequestParam String sessionId, RedirectAttributes redirectAttributes) {
+		Session session = sessionRepository.findById(sessionId);
+		if(session != null) {
+			sessionRepository.deleteById(session.getId());
+		}
+		return "redirect:/admin/currentsessions";
 	}
 
 }

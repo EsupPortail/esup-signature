@@ -266,6 +266,8 @@ public class SignRequestController {
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
             model.addAttribute("steps", workflow.getWorkflowSteps());
+        } else if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
+            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps());
         }
         List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         model.addAttribute("isTempUsers", isTempUsers);
@@ -279,14 +281,14 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
-    @GetMapping(value = "/{id}", params = "form")
-    public String updateForm(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
+    @GetMapping(value = "/details/{id}")
+    public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
-        model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
+        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         List<Log> refuseLogs = logRepository.findBySignRequestIdAndFinalStatus(signRequest.getId(), SignRequestStatus.refused.name());
         model.addAttribute("refuseLogs", refuseLogs);
         if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
@@ -302,10 +304,9 @@ public class SignRequestController {
         }
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowRepository.findAll());
-        return "user/signrequests/update";
+        return "user/signrequests/details";
 
     }
-
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @ResponseBody
@@ -352,12 +353,6 @@ public class SignRequestController {
             formDataMap.remove(toRemoveKey);
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
-        signRequest.getSignRequestParams().clear();
-        for(SignRequestParams signRequestParams : signRequestParamses) {
-            signRequestParamsRepository.save(signRequestParams);
-            signRequest.getSignRequestParams().add(signRequestParams);
-        }
-
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
             eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
             return new ResponseEntity<>(HttpStatus.OK);
@@ -365,7 +360,7 @@ public class SignRequestController {
         eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, visual, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
                     eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);
@@ -461,7 +456,7 @@ public class SignRequestController {
             if (allSignToComplete == null) {
                 allSignToComplete = false;
             }
-
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
             try {
                 signBookRepository.save(signBook);
@@ -470,6 +465,10 @@ public class SignRequestController {
             } catch (EsupSignatureUserException e) {
                 logger.error("error with users on create signbook " + signBook.getId());
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème lors de l’envoi"));
+            }
+            if(signRequestService.getTempUsersInRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
+                pending = false;
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
             if (pending != null && pending) {
                 signBookService.pendingSignBook(signBook, user);
@@ -480,8 +479,6 @@ public class SignRequestController {
                     }
                 }
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
-            } else {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
@@ -498,7 +495,7 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests/?statusFilter=tosign";
+        return "redirect:/user/signrequests/" + signRequest.getId();
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
@@ -569,7 +566,7 @@ public class SignRequestController {
             signRequestRepository.save(signRequest);
             documentRepository.delete(attachement);
         }
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à été supprimée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -581,7 +578,7 @@ public class SignRequestController {
         String toRemove = signRequest.getLinks().get(linkId);
         signRequest.getLinks().remove(toRemove);
         signRequestRepository.save(signRequest);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien à été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien a été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -689,13 +686,9 @@ public class SignRequestController {
                           @RequestParam(value = "phones", required = false) String[] phones,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
         SignRequest signRequest = signRequestRepository.findById(id).get();
-        List<User> tempUsers = signRequestService.getTempUsers(signRequest);
-        int countExternalUsers = 0;
+        List<User> tempUsers = signRequestService.getTempUsers(signRequest, recipientEmails);
         if(tempUsers.size() > 0) {
-            for (User tempUser : tempUsers) {
-                if (tempUser.getUserType().equals(UserType.external)) countExternalUsers++;
-            }
-            if (countExternalUsers == names.length) {
+            if (names != null && tempUsers.size() == names.length) {
                 int userNumber = 0;
                 for (User tempUser : tempUsers) {
                     if (tempUser.getUserType().equals(UserType.shib)) {
@@ -712,6 +705,7 @@ public class SignRequestController {
                 }
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
+                return "redirect:/user/signrequests/" + signRequest.getId();
             }
         }
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
@@ -758,6 +752,18 @@ public class SignRequestController {
         signRequest.setComment(comment);
         signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
         return "redirect:/user/signrequests/" + signRequest.getId();
+    }
+
+    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @GetMapping(value = "/is-temp-users/{id}")
+    @ResponseBody
+    public List<User> isTempUsers(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+                              @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
+        SignRequest signRequest = signRequestRepository.findById(id).get();
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
+        List<User> tempUsers = signRequestService.getTempUsers(signRequest, recipientList);
+        return tempUsers;
     }
 
 }

@@ -15,16 +15,20 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.EsupSignatureApplication;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +69,9 @@ public class MailService {
     private UserService userService;
 
     @Resource
-    private UserShareRepository userShareRepository;
-
-    @Resource
     private FileService fileService;
 
-    public void sendCompletedMail(SignBook signBook) {
+    public void sendCompletedMail(SignBook signBook) throws EsupSignatureException {
         if (!checkMailSender()) {
             return;
         }
@@ -90,9 +91,12 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email completes for " + user.getEppn());
-            mailSender.getIfAvailable().send(mimeMessage);
+            if(mailSender.getIfAvailable() != null) {
+                mailSender.getIfAvailable().send(mimeMessage);
+            }
         } catch (MessagingException e) {
             logger.error("unable to send email", e);
+            throw new EsupSignatureException("unable to send email", e);
         }
     }
 
@@ -129,6 +133,10 @@ public class MailService {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+        ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
         ctx.setVariable("signRequest", signRequest);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);

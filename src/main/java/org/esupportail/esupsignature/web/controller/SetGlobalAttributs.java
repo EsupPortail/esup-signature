@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,7 +20,7 @@ import java.util.Collections;
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
 
-    @Resource
+    @Autowired
     private BuildProperties buildProperties;
 
     @Resource

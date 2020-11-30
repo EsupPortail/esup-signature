@@ -20,8 +20,9 @@
         </div>
     </div>
 </div>
-<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape <span th:text="${workflow.workflowSteps.size() + 1}"></span></h4>
-<form th:action="'/user/wizard/wizXWorkflow/' + ${workflow.id}" method="post">
+<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape<span th:text="' ' + ${workflow != null? workflow.workflowSteps.size() + 1 : 1}"></span></h4>
+<form th:action="'/user/wizard/wizXWorkflow/'" method="post">
+    <input type="hidden" name="id" th:value="${workflow.id}" th:if="${workflow != null}">
     <div class="col-lg-12">
         <label for="recipientsEmail">Choisir les participants</label>
         <select name="recipientsEmail" id="recipientsEmail" size="5" multiple="multiple" required="required">
@@ -45,11 +46,11 @@
     <button type="submit" name="addNew" value="true" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
         <i class="fas fa-save"></i> Enregistrer l'étape
     </button>
-    <button formnovalidate name="end" value="true" th:if="${workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="submit" class="btn btn-success">
+    <button formnovalidate name="end" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="submit" class="btn btn-success">
         <i class="fas fa-flag-checkered"></i> Terminer
     </button>
 </form>
-<form id="wiz4Form" th:action="'/delete-workflow/' + ${workflow.id}" method="post">
+<form id="wiz4Form" th:if="${workflow != null}" th:action="'/delete-workflow/' + ${workflow.id}" method="post">
     <input type="hidden" name="name" th:value="${name}">
     <button type="submit" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
         <i class="fas fa-angle-left"></i> Annuler

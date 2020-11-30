@@ -24,13 +24,13 @@ public class LogService {
     }
 
     public List<Log> getLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNull(id);
+        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
         return setUsers(logs);
 
     }
 
     public List<Log> getGlobalLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndStepNumberIsNotNull(id);
+        List<Log> logs = logRepository.findBySignRequestIdAndStepNumberIsNotNullAndCommentIsNotNull(id);
         return setUsers(logs);
     }
 

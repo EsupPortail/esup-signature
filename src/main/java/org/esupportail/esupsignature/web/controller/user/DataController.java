@@ -169,11 +169,7 @@ public class DataController {
 				}
 			}
 			if(sendMessage && form.getMessage() != null &&!form.getMessage().isEmpty()) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
-			if (form.getDocument() != null) {
-				return "user/datas/create-pdf";
-			} else {
-				return "user/datas/create";
-			}
+			return "user/datas/create";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
@@ -209,11 +205,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user)) {
 				model.addAttribute("toSign", true);
 			}
-			if(form.getDocument() != null) {
-				return "user/datas/create-pdf";
-			} else {
-				return "user/datas/create";
-			}
+			return "user/datas/create";
 		} else {
 			return "redirect:/user/datas/" + data.getId();
 		}

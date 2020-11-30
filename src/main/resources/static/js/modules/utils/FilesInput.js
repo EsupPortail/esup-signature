@@ -7,6 +7,9 @@ export default class FilesInput {
         console.info("enable complete file input for : " + name);
         this.input = input;
         this.name = name;
+        if(this.name == null) {
+            this.name = "Demande personnalisée"
+        }
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
         this.async = true;

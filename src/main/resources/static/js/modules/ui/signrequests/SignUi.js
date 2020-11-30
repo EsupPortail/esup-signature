@@ -13,9 +13,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        if(isPdf) {
-            this.workspace = new WorkspacePdf(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName);
-        }
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -45,12 +43,14 @@ export class SignUi {
     launchSign() {
         this.signModal.modal('hide');
         this.percent = 0;
-        let inputs = this.signForm.getElementsByTagName("input");
         let good = true;
-        for(var i = 0, len = inputs.length; i < len; i++) {
-            let input = inputs[i];
-            if(!input.checkValidity()) {
-                good = false;
+        if(this.signForm) {
+            let inputs = this.signForm.getElementsByTagName("input");
+            for (var i = 0, len = inputs.length; i < len; i++) {
+                let input = inputs[i];
+                if (!input.checkValidity()) {
+                    good = false;
+                }
             }
         }
         if(good) {

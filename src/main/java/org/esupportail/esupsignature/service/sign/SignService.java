@@ -319,7 +319,11 @@ public class SignService {
 			Document toSignFile = documents.get(0);
 			if(toSignFile.getContentType().equals("application/pdf") && visual) {
 				signatureForm = SignatureForm.PAdES;
-				inputStream = toSignFile.getInputStream();
+				if(toSignFile.getTransientInputStream() != null) {
+					inputStream = toSignFile.getTransientInputStream();
+				} else {
+					inputStream = toSignFile.getInputStream();
+				}
 				if(signRequest.getSignedDocuments().size() == 0) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}

@@ -7,6 +7,7 @@
 html {
     position: relative;
     min-height: 100%;
+    font-size: 16px;
 }
 
 body {
@@ -532,7 +533,7 @@ input:checked + .slider:before {
     max-width: 100%;
 }
 .bs-stepper-label {
-    max-width: 100%;
+    width: 100%;
 }
 .step-trigger {
     width: 100% !important;
@@ -584,6 +585,10 @@ float:left;
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     position:relative;
     top:-5px;
+}
+
+.postit-global-red {
+    background: #FF7EB9 !important;
 }
 
 .postit-global {

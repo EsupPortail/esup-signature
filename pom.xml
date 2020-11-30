@@ -17,7 +17,7 @@
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.66</bouncycastle.version>
-		<java.version>11</java.version>
+		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
 		<spring.version>5.2.8.RELEASE</spring.version>
@@ -703,6 +703,11 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
+			<version>2.3.0.RELEASE</version>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>intro.js</artifactId>
 			<version>3.0.1</version>
@@ -718,7 +723,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>build-info</id>
 						<goals>
 							<goal>build-info</goal>
 						</goals>

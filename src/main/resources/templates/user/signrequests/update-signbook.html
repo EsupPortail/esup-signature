@@ -2,7 +2,7 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/head"></head>
-<script type="module">
+<script th:inline="javascript" type="module">
     import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
     new SelectUser("recipientsEmails2");
 </script>
@@ -10,21 +10,17 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:fragment="side" id="sidebar" class="scrollbar-lite">
-            <div class="m-1">
-
-            </div>
-        </nav>
+        <nav th:insert="fragments/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
-                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="'Demande : ' + ${signBook.name}"></a></li>
+                <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.name}"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edition</span>
                 </li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn" style="margin-bottom: 100px;"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+            <div id="addButton" th:style="${user == signBook.createBy}? 'margin-bottom: 100px;'" class="fixed-action-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -42,12 +38,9 @@
                     </div>
                 </div>
             </div>
-            <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                <div th:replace="user/signbooks/cards/stepscard :: stepscard"></div>
-            </th:block>
-            <div class="card col-lg-11 mb-1">
+            <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
-                <h5 class="text-center"><b>Demandes à signer</b></h5>
+                    <h5 class="text-center"><b>Demandes à signer dans ce parapheur</b></h5>
                     <div th:if="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
                         <table class="table table-sm table-hover">
                             <thead class="thead-dark">
@@ -65,7 +58,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
                                     <td class="">
-                                         <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
@@ -73,8 +66,8 @@
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                     <i class="fas fa-eye pr-2"></i>Consulter
                                                 </a>
-                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Modifier" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
-                                                    <i class="fas fa-pencil-alt pr-2"></i>Modifier
+                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                                                    <i class="fas fa-info-circle pr-2"></i>Détails
                                                 </a>
                                                 <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
@@ -114,7 +107,9 @@
                     </div>
                 </div>
             </div>
-            <div th:replace="user/signbooks/cards/logscard :: logscard"></div>
+            <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                <div th:replace="user/signrequests/cards/stepscard-updatable :: stepscard-updatable"></div>
+            </th:block>
         </div>
     </div>
 </main>
@@ -155,7 +150,7 @@
 <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signbooks/add-step/' + ${id}" method="post">
+            <form th:action="'/user/signbooks/add-live-step/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter une étape</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -206,6 +201,7 @@
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

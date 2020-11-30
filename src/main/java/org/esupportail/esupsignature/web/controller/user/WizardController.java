@@ -26,6 +26,7 @@ import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user/wizard")
@@ -71,38 +72,42 @@ public class WizardController {
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
+        ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
         if (workflowId != null) {
             Workflow workflow = workflowRepository.findById(workflowId).get();
-            ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
             modelAndView.addObject("workflowId", workflow.getId());
-            return modelAndView;
         }
-        return new ModelAndView("user/wizard/wiz3");
+        return modelAndView;
     }
 
     @GetMapping(value = "/wiz4Workflow")
     public String wizWorkflow(@ModelAttribute("user") User user,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        Model model) {
-        Workflow workflow = new Workflow();
-        workflow.setCreateDate(new Date());
-        workflow.setCreateBy(user);
-        workflowRepository.save(workflow);
-        model.addAttribute("workflow", workflow);
         model.addAttribute("workflowStepForm", true);
         model.addAttribute("signTypes", SignType.values());
         return "user/wizard/wiz4Workflow";
     }
 
-    @PostMapping(value = "/wizXWorkflow/{id}", produces = "text/html")
-    public String wizXWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id,
-                       @RequestParam(name="signType", required = false) SignType signType,
-                       @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                       @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
-                       @RequestParam(name="addNew", required = false) Boolean addNew,
-                       @RequestParam(name="end", required = false) Boolean end,
-                       Model model) throws EsupSignatureUserException, InterruptedException {
-        Workflow workflow = workflowRepository.findById(id).get();
+    @PostMapping(value = "/wizXWorkflow", produces = "text/html")
+    public String wizXWorkflow(@ModelAttribute("user") User user,
+                               @RequestParam(name = "id", required = false) Long id,
+                               @RequestParam(name="signType", required = false) SignType signType,
+                               @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                               @RequestParam(name = "recipientsEmail", required = false) String[] recipientsEmail,
+                               @RequestParam(name="addNew", required = false) Boolean addNew,
+                               @RequestParam(name="end", required = false) Boolean end,
+                               Model model, RedirectAttributes redirectAttributes) throws EsupSignatureUserException {
+        Workflow workflow;
+        if (id != null) {
+            workflow = workflowRepository.findById(id).get();
+        } else {
+            workflow = new Workflow();
+            workflow.setCreateDate(new Date());
+            workflow.setCreateBy(user);
+            workflowRepository.save(workflow);
+        }
+        model.addAttribute("workflow", workflow);
         if(workflow.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
@@ -243,6 +248,17 @@ public class WizardController {
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             return "user/wizard/wizend";
+        } else {
+            throw new EsupSignatureException("not authorized");
+        }
+    }
+
+    @GetMapping(value = "/wizredirect/{id}")
+    public String wizRedirect(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        SignBook signBook = signBookRepository.findById(id).get();
+        if(signBook.getCreateBy().equals(user)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
+            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
             throw new EsupSignatureException("not authorized");
         }

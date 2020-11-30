@@ -158,7 +158,7 @@ public class LiveWorkflow {
             }
         } else {
             if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
-                return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;
+                return this.getWorkflowSteps().size();
             }
         }
         return this.workflowSteps.indexOf(this.getCurrentStep()) + 1;

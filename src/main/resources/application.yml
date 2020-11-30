@@ -16,16 +16,18 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
-    version: '@project.version@'
 
 #tomcat:
 #    ajp:
 #        port: 6009
+
 info:
     app:
         name: esup-signature
-        version: 1.2
-        description: Instance de dev
+        description: Instance de production
+    tags:
+        environment: PROD
+
 management:
     endpoints:
         jmx:
@@ -39,7 +41,8 @@ management:
             show-details: always
 
 spring:
-
+    session:
+        store-type: jdbc
     data:
         ldap:
             repositories:
@@ -51,6 +54,7 @@ spring:
         password: esup
         url: jdbc:postgresql://localhost:5432/esupsignature
         username: esupsignature
+        data: classpath:org/springframework/session/jdbc/schema-postgresql.sql
     jpa:
         hibernate:
             ddl-auto: update
