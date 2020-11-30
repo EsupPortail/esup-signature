@@ -20,7 +20,7 @@ import java.util.Collections;
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
 
-    @Autowired
+    @Autowired(required = false)
     private BuildProperties buildProperties;
 
     @Resource
@@ -59,7 +59,9 @@ public class SetGlobalAttributs {
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
-        model.addAttribute("version", buildProperties.getVersion());
+        if(buildProperties != null) {
+            model.addAttribute("version", buildProperties.getVersion());
+        }
     }
 
     private void parseRoles(User user) {
