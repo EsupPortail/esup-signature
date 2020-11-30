@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="help" id="help">
+    <script th:inline="javascript" type="module">
+        import {Help} from "/static/js/modules/ui/users/Help.js";
+        let help = new Help();
+    </script>
     <h5>Bienvenue sur l'application Esup-Signature.</h5>
     <ul>
         <li class="mb-2">
@@ -39,5 +43,6 @@
     <p>
         Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
     </p>
+    <button id="helpStartButton">Start</button>
 </div>
 </html>
