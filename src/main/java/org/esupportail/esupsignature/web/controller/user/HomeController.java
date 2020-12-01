@@ -76,6 +76,7 @@ public class HomeController {
             if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
                 final Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
+                ctx.setVariable("splashMessage", authUser.getSplash());
                 Message splashMessage = new Message();
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);

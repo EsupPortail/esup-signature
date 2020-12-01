@@ -1,4 +1,4 @@
-export class Help {
+export class HomeHelp {
 
     constructor(splashMessage) {
         this.splashMessage = splashMessage;
@@ -6,11 +6,18 @@ export class Help {
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
         this.initListeners();
         this.initStep();
+        this.doneTour = false;
     }
 
     initListeners() {
         this.intro.onafterchange(e => this.modButtons());
-        this.intro.oncomplete(function(){
+        this.intro.oncomplete(function () {
+            localStorage.setItem('MyTour', 'Completed');
+            $.get("/user/users/mark-as-read/0");
+        });
+
+        this.intro.onexit(function () {
+            localStorage.setItem('MyTour', 'Completed');
             $.get("/user/users/mark-as-read/0");
         });
         $("#helpStartButton").on('click', e => this.start());
@@ -28,6 +35,13 @@ export class Help {
             intro: "Voici les principaux éléments de navigation : <ul><li>Dans les brouillons vous retrouvez les formulaires en cours d'édition</li><li>Dans le tableau de bord, la liste de demandes à signer, ou en cours de signature</li><li>Dans outils, vous pouvez créer vos propres circuits de signature ou vérifier des documents</li></ul>",
             highlightClass: 'intro-js-custom-highlight',
             position: 'auto'
+        });
+
+        this.intro.addStep({
+            element: '#user-buttons',
+            intro: "Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.",
+            highlightClass: 'intro-js-custom-highlight',
+            position: 'left'
         });
 
         this.intro.addStep({
@@ -51,32 +65,28 @@ export class Help {
             position: 'right'
         });
         this.intro.addStep({
-            element: document.querySelectorAll('#newForm')[0],
+            element: '#newForm',
             intro: "Les boutons <i class='fas fa-file-alt'></i> permettent de remplir un formulaire",
             position: 'right'
         });
         this.intro.addStep({
-            element: document.querySelectorAll('#toSignList')[0],
+            element: '#toSignList',
             intro: "Losrque vous avez un document à signer, il apparait dans cette liste",
             position: 'right'
         });
-        // this.intro.addStep({
-        //     element: document.querySelectorAll('#signType2')[0],
-        //     intro: "Ok, wasn't that fun3?",
-        //     position: 'right'
-        // });
+    }
+
+    autoStart() {
+        this.doneTour = localStorage.getItem('MyTour') === 'Completed';
+        if (!this.doneTour) {
+            this.intro.start();
+
+        }
     }
 
     start() {
-        // this.intro.onbeforechange(function (targetElement){
-        //     if (targetElement.id === 'signType2') {
-        //         $('#sendSignRequestModal').modal('show');
-        //         $('.introjs-overlay, .introjs-helperLayer, .introjs-tooltipReferenceLayer, .introjs-fixedTooltip').appendTo('#signType2');
-        //     }
-        // });
         $('#helpModal').modal('hide');
         this.intro.start();
-        // this.modButtons();
     }
 
     modButtons() {

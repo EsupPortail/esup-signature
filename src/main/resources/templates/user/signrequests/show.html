@@ -10,6 +10,12 @@
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
+    import {SignRequestHelp} from "/static/js/modules/help/SignRequestHelp.js";
+
+    let help = new SignRequestHelp();
+    if(help.splashMessage != null) {
+        help.start();
+    }
 
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];
@@ -50,13 +56,13 @@
         </nav>
         <div id="content" class="content">
             <div id="signButtons" class="fixed-action-btns active">
-                <ul class="list-unstyled">
+                <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signRequest.signable && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Signer"><i class="fas fa-file-signature"></i></a>
                     </li>
                     <li th:unless="${!signRequest.signable || currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
+                        <a  role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
                     <li th:if="${signRequest.signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
@@ -78,7 +84,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="tools">
+            <div id="tools" class="tools">
                 <div class="d-flex mb-1">
                     <!--                    <a th:if="${signRequest.createBy == user && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
                     <a th:if="${signRequest.createBy == user}"

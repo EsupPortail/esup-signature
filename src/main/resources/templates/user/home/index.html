@@ -5,14 +5,12 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {HomeUi} from "/static/js/modules/ui/HomeUi.js";
-    import {Help} from "/static/js/modules/ui/users/Help.js";
+    import {HomeHelp} from "/static/js/modules/help/HomeHelp.js";
 
     new HomeUi();
 
-    let help = new Help([[${splashMessage}]]);
-    if(help.splashMessage != null) {
-        help.start();
-    }
+    let help = new HomeHelp([[${splashMessage}]]);
+    help.autoStart();
 
 </script>
 <body>
