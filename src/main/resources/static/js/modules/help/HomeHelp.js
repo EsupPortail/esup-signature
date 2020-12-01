@@ -32,7 +32,12 @@ export class HomeHelp {
 
         this.intro.addStep({
             element: '#navbar-buttons',
-            intro: "Voici les principaux éléments de navigation : <ul><li>Dans les brouillons vous retrouvez les formulaires en cours d'édition</li><li>Dans le tableau de bord, la liste de demandes à signer, ou en cours de signature</li><li>Dans outils, vous pouvez créer vos propres circuits de signature ou vérifier des documents</li></ul>",
+            intro: "Voici les principaux éléments de navigation : " +
+                "<ul>" +
+                "<li>Dans les brouillons vous retrouvez les formulaires en cours d'édition</li>" +
+                "<li>Dans le tableau de bord, la liste de demandes à signer, ou en cours de signature</li>" +
+                "<li>Dans \"Outils\", vous pouvez créer vos propres circuits de signature ou vérifier des documents</li>" +
+                "</ul>",
             highlightClass: 'intro-js-custom-highlight',
             position: 'auto'
         });
@@ -46,7 +51,7 @@ export class HomeHelp {
 
         this.intro.addStep({
             element: '#newfastSign',
-            intro: "Ce bouton vous permet de signer signer un document présent sur votre poste de travail",
+            intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail",
             position: 'right'
         });
         this.intro.addStep({
@@ -61,17 +66,17 @@ export class HomeHelp {
         });
         this.intro.addStep({
             element: '#newWorkflow',
-            intro: "Les boutons <i class='fas fa-project-diagram'></i> permettent de démarrer des circuits personnalisés ou pré-définis ",
+            intro: "Les boutons <i class='fas fa-project-diagram fa-2x'></i> permettent de démarrer des circuits personnalisés ou pré-définis ",
             position: 'right'
         });
         this.intro.addStep({
             element: '#newForm',
-            intro: "Les boutons <i class='fas fa-file-alt'></i> permettent de remplir un formulaire",
+            intro: "Les boutons <i class='fas fa-file-alt fa-2x'></i> permettent de remplir un formulaire",
             position: 'right'
         });
         this.intro.addStep({
             element: '#toSignList',
-            intro: "Losrque vous avez un document à signer, il apparait dans cette liste",
+            intro: "Lorsque vous avez un document à signer, il apparait dans cette liste",
             position: 'right'
         });
     }

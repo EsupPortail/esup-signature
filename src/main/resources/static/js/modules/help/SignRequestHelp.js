@@ -21,9 +21,9 @@ export class SignRequestHelp {
         this.intro.addStep({
             intro: "Cette est l'interface va vous permettre de :" +
                 "<ul>" +
-                "<li>Consulter de le document que vous devez signer</li>" +
+                "<li>Consulter le document que vous devez signer</li>" +
                 "<li>Signer le document (avec ou sans certificat)</li>" +
-                "<li>Ajouter des commentaire à des endroits précis du document</li>" +
+                "<li>Ajouter des commentaires à des endroits précis du document</li>" +
                 "</ul>"
         });
 
@@ -35,25 +35,25 @@ export class SignRequestHelp {
                 "<li>d'obtenir des details sur la demande</li>" +
                 "<li>de naviguer dans le document (ajuster le zoom, changer de page)</li>" +
                 "<li>d'ajouter des pièces jointes (document ou liens)</li>" +
-                "<li>dajouter ou de modifier la/les signature</li>",
+                "<li>d'ajouter ou de modifier la/les signature(s)</li>",
             position: 'auto'
         });
 
         this.intro.addStep({
             element: '#signTools',
             highlightClass: 'intro-js-custom-highlight',
-            intro: "Ici vous pouvez ajouter des signature et les mentions \"signé par\", \"signé le\"",
+            intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
             position: 'bottom'
         });
         this.intro.addStep({
             element: '#sidebar',
-            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancée du circuit",
+            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancé du circuit",
             position: 'right'
         });
         this.intro.addStep({
             element: '#cross',
             highlightClass: 'intro-js-transparent-highlight',
-            intro: "Deplacer votre signature en maintenant le bouton gauche de la sourie enfoncée",
+            intro: "Déplacer votre signature en maintenant le bouton gauche de la souris enfoncée",
             position: 'bottom'
         });
         this.intro.addStep({
