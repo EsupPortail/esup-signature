@@ -561,14 +561,35 @@ input:checked + .slider:before {
     background-color: #CCCCCC !important;
 }
 
-.intro-js-custom-highlight {
-    background-color: rgba(255, 255, 255, 0);
-    border: 2px solid white;
+.introjs-helperLayer {
+    background: transparent;
 }
 
-.intro-js-transparent-highlight {
-    opacity: 0;
+.introjs-overlay {
+    opacity: 0 !important;
 }
+
+.introjs-helperLayer:before {
+    opacity: 0;
+    content: '';
+    position: fixed;
+    width: inherit;
+    height: inherit;
+    border-radius: 0.5em;
+    box-shadow: 0 0 0 1000em rgba(0,0,0, .7);
+    opacity: 1;
+}
+
+.introjs-helperLayer:after {
+    content: '';
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
 
 .embedresize {
 max-width: 560px;
