@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
@@ -56,6 +57,7 @@ public class SignRequest {
     private SignRequestStatus status;
 
     @ManyToOne
+    @NotNull
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

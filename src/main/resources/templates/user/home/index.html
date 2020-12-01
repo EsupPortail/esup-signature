@@ -5,7 +5,15 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {HomeUi} from "/static/js/modules/ui/HomeUi.js";
+    import {Help} from "/static/js/modules/ui/users/Help.js";
+
     new HomeUi();
+
+    let help = new Help([[${splashMessage}]]);
+    if(help.splashMessage != null) {
+        help.start();
+    }
+
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

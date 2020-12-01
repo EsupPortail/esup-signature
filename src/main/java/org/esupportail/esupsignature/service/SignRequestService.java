@@ -31,12 +31,15 @@ import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.sign.SignService;
+import org.esupportail.esupsignature.service.utils.CustomMetricsService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.beans.support.SortDefinition;
+import org.springframework.boot.actuate.metrics.MetricsEndpoint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -61,9 +64,6 @@ import java.util.stream.Collectors;
 public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
-
-	@PersistenceContext
-	private EntityManager entityManager;
 
 	@Resource
 	private GlobalProperties globalProperties;
@@ -93,19 +93,13 @@ public class SignRequestService {
 	private DocumentRepository documentRepository;
 
 	@Resource
-	private BigFileRepository bigFileRepository;
-
-	@Resource
 	private ActionRepository actionRepository;
 
 	@Resource
 	private SignRequestParamsRepository signRequestParamsRepository;
 
 	@Resource
-	private WorkflowRepository workflowRepository;
-
-	@Resource
-	private BigFileService bigFileService;
+	private CustomMetricsService customMetricsService;
 
 	@Resource
 	private SignBookService signBookService;
@@ -142,6 +136,14 @@ public class SignRequestService {
 
 	@Resource
 	private EventService eventService;
+
+	@Autowired
+	private MetricsEndpoint metricsEndpoint;
+
+	public void init() {
+		customMetricsService.registerValue("esup-signature.signrequests", "new");
+		customMetricsService.registerValue("esup-signature.signrequests", "signed");
+	}
 
 	public List<SignRequest> getSignRequestsForCurrentUserByStatus(User user, User authUser, String statusFilter) {
 		List<SignRequest> signRequestList = new ArrayList<>();
@@ -303,12 +305,12 @@ public class SignRequestService {
 		}
 	}
 
-	public SignBook addDocsInSignBook(User user, String name, String workflowName, MultipartFile[] multipartFiles) throws EsupSignatureException, EsupSignatureIOException {
+	public SignBook addDocsInSignBook(User user, String name, String workflowName, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
 		SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
 		for (MultipartFile multipartFile : multipartFiles) {
 			SignRequest signRequest = createSignRequest(workflowName + "_" + multipartFile.getOriginalFilename(), user);
-			addDocsToSignRequest(signRequest, multipartFile);
 			signBookService.addSignRequest(signBook, signRequest);
+			addDocsToSignRequest(signRequest, multipartFile);
 		}
 		return signBook;
 	}
@@ -397,6 +399,7 @@ public class SignRequestService {
 //		} else {
 //			logger.warn("already pending");
 //		}
+		customMetricsService.incValue("esup-signature.signrequests", "new");
 	}
 
 
@@ -470,7 +473,7 @@ public class SignRequestService {
 		}
 		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", user);
 		applyEndOfSignRules(signRequest, user);
-
+		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
 
 	private void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {

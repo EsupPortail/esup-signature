@@ -39,5 +39,8 @@
     <p>
         Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
     </p>
+    <div th:if="${#httpServletRequest.requestURI == '/user/'}">
+    <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-light btn-outline-dark" id="helpStartButton">Redémarrer l'animation d'aide</button>
+    </div>
 </div>
 </html>

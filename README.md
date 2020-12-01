@@ -15,6 +15,8 @@ La signature à l'aide d'une clé matérielle est possible à l'aide de l'applic
 
 # Changelog
 
+Important, sur la page changelog vous trouverez aussi des détails sur les montés de version : 
+
 https://www.esup-portail.org/wiki/display/SIGN/Change+log
 
 # Prérequis

@@ -79,7 +79,7 @@ public class HomeController {
                 Message splashMessage = new Message();
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);
-                messages.add(splashMessage);
+                model.addAttribute("splashMessage", splashMessage);
             } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {
                 messages.addAll(userService.getMessages(authUser));
             }
