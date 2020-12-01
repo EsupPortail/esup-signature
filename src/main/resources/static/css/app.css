@@ -549,16 +549,14 @@ input:checked + .slider:before {
 .bs-stepper-header {
     max-width: 100%;
 }
-.bs-stepper-label {
-    width: 100%;
-}
+
 .step-trigger {
     width: 100% !important;
     justify-content: left !important;
 }
 
 .current-step {
-background-color: #CCCCCC !important;
+    background-color: #CCCCCC !important;
 }
 
 .intro-js-custom-highlight {
