@@ -40,6 +40,7 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.ui.Model;
@@ -416,23 +417,23 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
-                                    HttpServletRequest request, RedirectAttributes redirectAttributes) throws EsupSignatureException, EsupSignatureIOException {
+                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
 
             if (signRequestService.checkSignTypeDocType(signType, multipartFiles[0])) {
-                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
                 try {
+                    SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
                     signBookRepository.save(signBook);
                     signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), false, signType, user.getEmail()));
                     signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
-                } catch (EsupSignatureUserException e) {
+                    signBookService.pendingSignBook(signBook, user);
+                    return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+                } catch (EsupSignatureUserException | EsupSignatureIOException e) {
+                    TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de charger le document : documents corrompu"));
                     return "redirect:" + request.getHeader("Referer");
                 }
-                signBookService.pendingSignBook(signBook, user);
-
-                return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType()));
                 return "redirect:" + request.getHeader("Referer");
