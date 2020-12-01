@@ -518,6 +518,23 @@ input:checked + .slider:before {
     word-break: break-all;
 }
 
+.introjs-prevbutton {
+    border-right: 1px solid #343a40;
+}
+
+.introjs-nextbutton {
+    border-left: 1px solid #343a40;
+}
+
+.introjs-floating {
+    position: absolute !important;
+    left: 50% !important;
+    margin-left: -400px !important;
+    padding: 20px;
+    min-width: 800px !important;
+    max-width: 1000px;
+}
+
 #stepper {
     max-width: 100%;
 }
@@ -542,6 +559,11 @@ input:checked + .slider:before {
 
 .current-step {
 background-color: #CCCCCC !important;
+}
+
+.intro-js-custom-highlight {
+    background-color: rgba(255, 255, 255, .1);
+    border: 2px solid white;
 }
 
 .embedresize {

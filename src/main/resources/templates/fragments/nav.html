@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<header th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
+<header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
@@ -24,7 +24,7 @@
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
-            <ul class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
+            <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
                     <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
