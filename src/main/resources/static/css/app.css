@@ -527,12 +527,14 @@ input:checked + .slider:before {
 }
 
 .introjs-floating {
-    position: absolute !important;
-    left: 50% !important;
-    margin-left: -400px !important;
+    position: fixed !important;
+    margin-top: 0px !important;
+    margin-left: 0px !important;
     padding: 20px;
-    min-width: 800px !important;
-    max-width: 1000px;
+    left: 25% !important;
+    top: 10px !important;
+    min-width: 50% !important;
+    max-width: 800px;
 }
 
 #stepper {
@@ -560,8 +562,12 @@ input:checked + .slider:before {
 }
 
 .intro-js-custom-highlight {
-    background-color: rgba(255, 255, 255, .1);
+    background-color: rgba(255, 255, 255, 0);
     border: 2px solid white;
+}
+
+.intro-js-transparent-highlight {
+    opacity: 0;
 }
 
 .embedresize {

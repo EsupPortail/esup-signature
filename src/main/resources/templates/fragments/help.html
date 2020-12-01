@@ -2,6 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="help" id="help">
     <h5>Bienvenue sur l'application Esup-Signature.</h5>
+    <br>
+    <div th:if="${#httpServletRequest == null || (#httpServletRequest.requestURI == '/user/' || (signRequest != null &&#httpServletRequest.requestURI == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
+        <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-primary mx-auto" id="helpStartButton">Lancer le didacticiel</button>
+    </div>
+    <br>
     <ul>
         <li class="mb-2">
             Pour effectuer des signatures calligraphiques sur un PDF il faut au préalable déposer un fichier image de votre
@@ -10,7 +15,7 @@
             Un tutoriel video est disponible à cette adresse : <a href="https://drive.univ-rouen.fr/f/149b761199c740c8b776/" target="_blank">Insérer sa signature</a>
         </li>
         <li>
-            <a> En savoir plus sur les autres types de signature</a>
+            <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur#Documentationutilisateur-Lessignatures%C3%A9lectronique" target="_blank">Cliquez ici pour en savoir plus sur les autres types de signature</a>
             <div class="collapse">
         <ul>
                 <li class="mb-2">
@@ -30,7 +35,7 @@
 
     </ul>
     <p>
-        Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.
+
     </p>
     <hr>
     <p>
@@ -39,8 +44,5 @@
     <p>
         Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
     </p>
-    <div th:if="${#httpServletRequest.requestURI == '/user/'}">
-    <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-light btn-outline-dark" id="helpStartButton">Redémarrer l'animation d'aide</button>
-    </div>
 </div>
 </html>

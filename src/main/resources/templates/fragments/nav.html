@@ -127,7 +127,7 @@
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav" th:if="${user.name != null}">
+            <ul id="user-buttons" class="navbar-nav" th:if="${user.name != null}">
                 <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
                     <form th:action="'/su-logout'" method="POST">
                         <button type="submit" class="btn bg-dark text-white"><i class="fas fa-user-secret"></i></button>
