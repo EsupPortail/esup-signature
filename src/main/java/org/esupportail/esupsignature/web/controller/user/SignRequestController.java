@@ -449,9 +449,10 @@ public class SignRequestController {
     public String sendSignRequest(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                   @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                   @RequestParam(value = "pending", required = false) Boolean pending,
                                   @RequestParam(value = "comment", required = false) String comment,
-                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException, InterruptedException {
+                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             if (allSignToComplete == null) {
@@ -461,6 +462,9 @@ public class SignRequestController {
             SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
             try {
                 signBookRepository.save(signBook);
+                if(userSignFirst != null && userSignFirst) {
+                    signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), false, SignType.pdfImageStamp, user.getEmail()));
+                }
                 signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(multipartFiles[0].getOriginalFilename(), "signbook", signBook.getId(), allSignToComplete, signType, recipientsEmails));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
             } catch (EsupSignatureUserException e) {
