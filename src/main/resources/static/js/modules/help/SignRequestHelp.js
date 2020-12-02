@@ -10,7 +10,8 @@ export class SignRequestHelp {
     }
 
     initListeners() {
-        this.intro.onafterchange(e => this.modButtons());
+        this.intro.onafterchange(e => this.modButtons(e));
+        this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.oncomplete(function () {
             localStorage.setItem('signRequestIntro', 'Completed');
         });
@@ -34,7 +35,6 @@ export class SignRequestHelp {
 
         this.intro.addStep({
             element: '#tools',
-            highlightClass: 'intro-js-transparent-highlight',
             intro: "La barre d'outils permet :" +
                 "<ul>" +
                 "<li>d'obtenir des details sur la demande</li>" +
@@ -46,7 +46,6 @@ export class SignRequestHelp {
         if($.trim($("#signTools").html()) !== '') {
             this.intro.addStep({
                 element: '#signTools',
-                highlightClass: 'intro-js-custom-highlight',
                 intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
                 position: 'bottom'
             });
@@ -59,7 +58,6 @@ export class SignRequestHelp {
         if($.trim($("#cross").html()) !== '') {
             this.intro.addStep({
                 element: '#cross',
-                highlightClass: 'intro-js-transparent-highlight',
                 intro: "Déplacer votre signature en maintenant le bouton gauche de la souris enfoncée",
                 position: 'bottom'
             });
@@ -85,9 +83,12 @@ export class SignRequestHelp {
         this.intro.start();
     }
 
-    modButtons() {
+    scrollTop(e) {
+        window.scrollTo(0, 0);
+    }
+
+    modButtons(e) {
         $('.introjs-button').each(function(){
-            console.log($(this));
             if($(this).hasClass('introjs-disabled')) {
                 $(this).removeClass('introjs-disabled');
                 $(this).addClass('disabled');
@@ -98,6 +99,4 @@ export class SignRequestHelp {
         });
     }
 
-    workflow() {
-    }
 }

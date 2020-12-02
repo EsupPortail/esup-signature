@@ -10,6 +10,7 @@ export class HomeHelp {
     }
 
     initListeners() {
+        this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
         this.intro.oncomplete(function () {
             localStorage.setItem('homeIntro', 'Completed');
@@ -46,7 +47,6 @@ export class HomeHelp {
         this.intro.addStep({
             element: '#user-buttons',
             intro: "Vous pouvez modifier / compléter vos paramètres à tous moments en utilisant le bouton paramètres en haut à droite.",
-            highlightClass: 'intro-js-custom-highlight',
             position: 'left'
         });
         if($.trim($("#newfastSign").html()) !== '') {
@@ -106,9 +106,12 @@ export class HomeHelp {
         this.intro.start();
     }
 
+    scrollTop(e) {
+        window.scrollTo(0, 0);
+    }
+
     modButtons() {
         $('.introjs-button').each(function(){
-            console.log($(this));
             if($(this).hasClass('introjs-disabled')) {
                 $(this).removeClass('introjs-disabled');
                 $(this).addClass('disabled');
@@ -119,6 +122,4 @@ export class HomeHelp {
         });
     }
 
-    workflow() {
-    }
 }
