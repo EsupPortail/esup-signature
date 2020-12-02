@@ -39,7 +39,7 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 

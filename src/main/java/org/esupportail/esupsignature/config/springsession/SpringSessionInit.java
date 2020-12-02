@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-//@Service
+@Service
 public class SpringSessionInit {
 
 	private static final Logger logger = LoggerFactory.getLogger(SpringSessionInit.class);
@@ -35,7 +35,7 @@ public class SpringSessionInit {
 			connection.commit();
 			connection.close();
 		} catch(Exception e) {
-			throw new RuntimeException("Erreur durant l'import du schéma pour spring-session", e);
+			logger.error("Erreur durant l'import du schéma pour spring-session", e);
 		}
 	}
 

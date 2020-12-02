@@ -60,7 +60,7 @@
                                     <td th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                     <td>
                                         <table class="table table-sm">
-                                            <tbody th:if="${signRequest.parentSignBook != null}">
+                                            <tbody th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.liveWorkflow.currentStep != null}">
                                             <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                                                 <tr>
                                                     <td width="100%"

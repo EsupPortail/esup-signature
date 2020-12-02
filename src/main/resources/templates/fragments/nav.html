@@ -26,7 +26,7 @@
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
-                    <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
+                    <a
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                        href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
@@ -35,8 +35,7 @@
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${user == authUser || isOneCreateShare}">
-                    <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft).size()}"
-                       th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
+                    <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
                         <i class="fab fa-firstdraft"></i> <span
                             class="nav-item-label d-none d-xl-inline">Brouillons</span>
@@ -46,8 +45,7 @@
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${user == authUser || isOneSignShare || isOneReadShare}" >
-                    <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user, T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending).size()}"
-                       th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
+                    <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
                         <i class="fas fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
@@ -212,9 +210,9 @@
                     <td>
                         <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
                             <div class="carousel-inner">
-                                <th:block th:each="signImage, iterator : ${user.signImages}">
+                                <th:block th:each="signImage, iterator : ${base64UserSignatures}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                        <img width="250" th:src="'data:image/png;base64,' + ${signImage}" />
                                     </div>
                                 </th:block>
                             </div>
@@ -349,7 +347,7 @@
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
                         <select name="signType" id="signType2" class="form-control">
-                            <th:block th:each="signType : $signTypes}">
+                            <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
                             </th:block>

@@ -45,10 +45,10 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <th:block th:each="signImage : ${authUser.signImages}">
+                                        <th:block th:each="signImage : ${base64UserSignatures}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${signImage}" />
                                                 </td>
                                                 <td>
                                                     <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
@@ -134,9 +134,9 @@
                     </div>
                 </div>
 
-                <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled}">
                     <div class="card-body">
-                        <h5 class="text-center"><b>Paramètres de signature électronique</b>(Facultatif)</h5>
+                        <h5 class="text-center"><b>Paramètres de signature électronique</b> (Facultatif)</h5>
                         <div id="keyForm" class="form-group col-10 mx-auto">
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"

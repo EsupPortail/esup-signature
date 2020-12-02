@@ -1,25 +1,41 @@
 package org.esupportail.esupsignature.web.controller;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
+import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.service.file.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
+
+    private static final Logger logger = LoggerFactory.getLogger(SetGlobalAttributs.class);
 
     @Autowired(required = false)
     private BuildProperties buildProperties;
@@ -31,10 +47,25 @@ public class SetGlobalAttributs {
     private UserService userService;
 
     @Resource
+    private FileService fileService;
+
+    @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
     private FormRepository formRepository;
 
     @Resource
+    private SignRequestRepository signRequestRepository;
+
+    @Resource
+    private DataRepository dataRepository;
+
+    @Resource
     private UserShareService userShareService;
+    
+    @Autowired(required = false)
+    private ValidationService validationService;
 
     private GlobalProperties myGlobalProperties;
 
@@ -58,12 +89,27 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
+            model.addAttribute("validationToolsEnabled", validationService!=null);
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
         if(buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
         model.addAttribute("signTypes", SignType.values());
+        List<String> base64UserSignatures = new ArrayList<>();
+        if(user != null) {
+            for (Document signature : user.getSignImages()) {
+                try {
+                    base64UserSignatures.add(fileService.getBase64Image(signature));
+                } catch (IOException e) {
+                    logger.error("error on convert sign image document : " + signature.getId() + " for " + user.getEppn());
+                }
+            }
+            model.addAttribute("base64UserSignatures", base64UserSignatures);
+            model.addAttribute("nbDatas", dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size());
+            model.addAttribute("nbSignRequests", signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.pending).size());
+            model.addAttribute("nbToSign", signRequestService.getToSignRequests(user).size());
+        }
     }
 
     private void parseRoles(User user) {
