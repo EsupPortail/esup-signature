@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class SpringSessionInit {
 
 	private static final Logger logger = LoggerFactory.getLogger(SpringSessionInit.class);
