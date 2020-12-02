@@ -104,6 +104,17 @@ public class WorkflowService {
         }
     }
 
+    public boolean preAuthorizeOwner(String name, User user) {
+        Workflow workflow = workflowRepository.findByName(name);
+        return workflow.getCreateBy().equals(user);
+    }
+
+    public boolean preAuthorizeOwner(Long id, User user) {
+        Workflow workflow = workflowRepository.findById(id).get();
+        return user.equals(workflow.getCreateBy());
+    }
+
+
     @Transactional
     public void init() throws EsupSignatureException {
         for (Workflow classWorkflow : getClassesWorkflows()) {
