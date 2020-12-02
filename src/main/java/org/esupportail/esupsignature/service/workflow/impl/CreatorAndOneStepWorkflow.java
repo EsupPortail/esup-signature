@@ -26,7 +26,7 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 
 	@Override
 	public Boolean getPublicUsage() {
-		return true;
+		return false;
 	}
 
 	private List<WorkflowStep> workflowSteps;
