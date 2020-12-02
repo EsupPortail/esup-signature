@@ -1,28 +1,67 @@
 package org.esupportail.esupsignature.service;
 
-import eu.europa.esig.dss.AbstractSignatureParameters;
-import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
-import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
-import eu.europa.esig.dss.enumerations.ASiCContainerType;
-import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
-import eu.europa.esig.dss.model.x509.CertificateToken;
-import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.token.SignatureTokenConnection;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
+import javax.mail.MessagingException;
+
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.*;
+import org.esupportail.esupsignature.entity.Action;
+import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.LiveWorkflowStep;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.Recipient;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserShare;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.enums.ActionType;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.ActionRepository;
+import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.DocumentRepository;
+import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.RecipientRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsAccessFactory;
@@ -47,18 +86,17 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.mail.MessagingException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.stream.Collectors;
+import eu.europa.esig.dss.AbstractSignatureParameters;
+import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
+import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
+import eu.europa.esig.dss.enumerations.ASiCContainerType;
+import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
+import eu.europa.esig.dss.enumerations.SignatureForm;
+import eu.europa.esig.dss.model.DSSDocument;
+import eu.europa.esig.dss.model.InMemoryDocument;
+import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.token.SignatureTokenConnection;
 
 @Service
 public class SignRequestService {
@@ -137,7 +175,7 @@ public class SignRequestService {
 	@Resource
 	private EventService eventService;
 
-        @Autowired(required=false)
+    @Autowired(required=false)
 	private MetricsEndpoint metricsEndpoint;
 
 	public void init() {

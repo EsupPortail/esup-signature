@@ -1,5 +1,10 @@
 package org.esupportail.esupsignature.web.controller;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
@@ -7,15 +12,12 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
+import org.esupportail.esupsignature.service.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
@@ -34,6 +36,9 @@ public class SetGlobalAttributs {
 
     @Resource
     private UserShareService userShareService;
+    
+    @Autowired(required = false)
+    private ValidationService validationService;
 
     private GlobalProperties myGlobalProperties;
 
@@ -57,6 +62,7 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
+            model.addAttribute("validationToolsEnabled", validationService!=null);
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
         if(buildProperties != null) {

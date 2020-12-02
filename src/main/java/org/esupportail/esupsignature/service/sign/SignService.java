@@ -500,6 +500,7 @@ public class SignService {
 	}
 
 	public List<SignType> getSignTypes() {
+		// TODO : filtrer en fonction de la bonne configuration de DSS ?
 		return Arrays.asList(SignType.values());
 	}
 }
