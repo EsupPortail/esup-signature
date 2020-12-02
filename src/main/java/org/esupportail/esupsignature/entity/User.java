@@ -2,13 +2,12 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "user_account")
@@ -31,7 +30,8 @@ public class User {
     @Column(unique=true)
     private String email;
 
-    private Boolean splash = false;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
 
@@ -123,12 +123,12 @@ public class User {
         this.email = email;
     }
 
-    public Boolean getSplash() {
-        return splash;
+    public Map<UiParams, String> getUiParams() {
+        return uiParams;
     }
 
-    public void setSplash(Boolean splash) {
-        this.splash = splash;
+    public void setUiParams(Map<UiParams, String> uiParams) {
+        this.uiParams = uiParams;
     }
 
     public String getFormMessages() {

@@ -281,16 +281,18 @@ public class UserController {
 		return "redirect:"+ referer;
 	}
 
+	@GetMapping("/mark-intro-as-read/{name}")
+	public String markIntroAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable String name, HttpServletRequest httpServletRequest) {
+		logger.info(authUser.getEppn() + " mark " + name + " as read");
+		userService.disableIntro(authUser, name);
+		String referer = httpServletRequest.getHeader("Referer");
+		return "redirect:"+ referer;
+	}
+
 	@GetMapping("/mark-as-read/{id}")
 	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
-    	if(id == 0) {
-    		User user = userRepository.findByEppn(authUser.getEppn()).get(0);
-    		user.setSplash(true);
-		} else {
-			userService.disableMessage(authUser, id);
-		}
-
+		userService.disableMessageForUser(authUser, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
