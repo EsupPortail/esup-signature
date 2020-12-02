@@ -45,10 +45,10 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <th:block th:each="signImage : ${base64UserSignatures}">
+                                        <th:block th:each="signImage, iterator : ${authUser.signImages}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${signImage}" />
+                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${base64UserSignatures.get(iterator.index)}" />
                                                 </td>
                                                 <td>
                                                     <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">

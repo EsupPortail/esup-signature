@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
@@ -607,10 +608,10 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), "sign", user);
 		try {
 			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), "sign", user);
-			SignatureTokenConnection signatureTokenConnection = userKeystoreService.getSignatureTokenConnection(user.getKeystore().getInputStream(), password);
-			CertificateToken certificateToken = userKeystoreService.getCertificateToken(user.getKeystore().getInputStream(), password);
-			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(user.getKeystore().getInputStream(), password);
-
+			Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
+			pkcs12SignatureToken.close();
 			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), "sign", user);
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
@@ -649,9 +650,9 @@ public class SignRequestService {
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
 			DSSDocument dssDocument;
 			if(toSignDocuments.size() > 1) {
-				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, signatureTokenConnection);
+				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			} else {
-				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, signatureTokenConnection);
+				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			}
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", user);
