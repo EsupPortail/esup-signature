@@ -166,7 +166,7 @@ security:
         url: https://cas.univ-ville.fr
 #    shib:
 #        credentials-request-header: MEMBER
-#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
+#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville,dc=fr
 #        idp-url: https://idp.univ-ville.fr
 #        principal-request-header: REMOTE_USER
 #        title: Compte d’un autre établissement (Shibboleth)

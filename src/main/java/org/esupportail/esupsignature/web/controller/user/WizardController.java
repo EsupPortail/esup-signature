@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -145,6 +146,9 @@ public class WizardController {
     @PostMapping(value = "/wiz5Workflow/{id}")
     public String wiz5Workflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowRepository.findById(id).get();
+        workflow.setSourceType(DocumentIOType.none);
+        workflow.setTargetType(DocumentIOType.none);
+        workflow.setCreateBy(user);
         workflow.setName(name);
         workflow.setDescription(name);
         workflow.setTitle(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));

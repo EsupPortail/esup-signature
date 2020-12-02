@@ -137,7 +137,7 @@ public class SignRequestService {
 	@Resource
 	private EventService eventService;
 
-	@Autowired
+        @Autowired(required=false)
 	private MetricsEndpoint metricsEndpoint;
 
 	public void init() {
