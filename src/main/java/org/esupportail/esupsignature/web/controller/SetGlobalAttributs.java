@@ -1,16 +1,7 @@
 package org.esupportail.esupsignature.web.controller;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -27,10 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+
+import javax.annotation.Resource;
+import javax.servlet.ServletRequest;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
@@ -79,6 +75,7 @@ public class SetGlobalAttributs {
         return userService.getUserFromAuthentication();
     }
 
+
     @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         if(authUser != null) {
@@ -96,15 +93,9 @@ public class SetGlobalAttributs {
             model.addAttribute("version", buildProperties.getVersion());
         }
         model.addAttribute("signTypes", SignType.values());
-        List<String> base64UserSignatures = new ArrayList<>();
+
         if(user != null) {
-            for (Document signature : user.getSignImages()) {
-                try {
-                    base64UserSignatures.add(fileService.getBase64Image(signature));
-                } catch (IOException e) {
-                    logger.error("error on convert sign image document : " + signature.getId() + " for " + user.getEppn());
-                }
-            }
+            List<String> base64UserSignatures = userService.getBase64UserSignatures(user);
             model.addAttribute("base64UserSignatures", base64UserSignatures);
             model.addAttribute("nbDatas", dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size());
             model.addAttribute("nbSignRequests", signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.pending).size());

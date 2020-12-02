@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -46,6 +48,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -462,4 +465,18 @@ public class UserService {
         }
         return UserType.external;
     }
+
+    @Transactional
+    public List<String> getBase64UserSignatures(User user) {
+        List<String> base64UserSignatures = new ArrayList<>();
+        for (Document signature : user.getSignImages()) {
+            try {
+                base64UserSignatures.add(fileService.getBase64Image(signature));
+            } catch (IOException e) {
+                logger.error("error on convert sign image document : " + signature.getId() + " for " + user.getEppn());
+            }
+        }
+        return base64UserSignatures;
+    }
+
 }
