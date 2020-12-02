@@ -279,6 +279,7 @@ public class UserService {
         user.setEmail(email);
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
+        	// TODO ! 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
@@ -289,6 +290,7 @@ public class UserService {
             			Set<String> roles = new HashSet<>();
             			for (GrantedAuthority authority : authorities) {
             				if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+            					// TODO ! 
             					String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
             					roles.add(role);
             				}
