@@ -68,6 +68,9 @@
                             <a role="button" th:if="${workflow.createBy == user}" title="Supprimer" type="button" th:data-id="${workflow.id}" onclick="$('#delete'+this.getAttribute('data-id')).submit();" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -50px; margin-top: 170px">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
+                            <a th:if="${workflow.createBy == user}" title="Modifier" th:href="'/user/workflows/' + ${workflow.name}" type="button" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -150px; margin-top: 170px">
+                                <i class="fas fa-cog"></i>
+                            </a>
                         </th:block>
                     </div>
                     <th:block th:if="${workflows != null && workflows.size() == 0}">
