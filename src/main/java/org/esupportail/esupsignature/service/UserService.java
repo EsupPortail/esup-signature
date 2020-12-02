@@ -278,24 +278,25 @@ public class UserService {
         user.setEmail(email);
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
-            logger.info("mise à jour de l'utilisateur " + eppn);
-            List<String> recipientEmails = new ArrayList<>();
-            recipientEmails.add(user.getEmail());
-            try {
-                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-                if (authorities.size() > 0) {
-                    user.getRoles().clear();
-                    Set<String> roles = new HashSet<>();
-                    for (GrantedAuthority authority : authorities) {
-                        if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
-                            String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
-                            roles.add(role);
-                        }
-                    }
-                    user.getRoles().addAll(roles);
-                }
-            } catch (Exception e) {
-                logger.warn("unable to get roles " + e);
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
+                logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+            	try {
+            		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+            		if (authorities.size() > 0) {
+            			user.getRoles().clear();
+            			Set<String> roles = new HashSet<>();
+            			for (GrantedAuthority authority : authorities) {
+            				if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
+            					String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
+            					roles.add(role);
+            				}
+            			}
+            			user.getRoles().addAll(roles);
+            		}
+            	} catch (Exception e) {
+            		logger.warn(String.format("unable to get/update roles for user %s", eppn), e);
+            	}
             }
         }
         userRepository.save(user);
