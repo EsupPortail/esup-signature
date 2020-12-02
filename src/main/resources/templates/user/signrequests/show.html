@@ -12,10 +12,8 @@
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
     import {SignRequestHelp} from "/static/js/modules/help/SignRequestHelp.js";
 
-    let help = new SignRequestHelp();
-    if(help.splashMessage != null) {
-        help.start();
-    }
+    let help = new SignRequestHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
+    help.autoStart();
 
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];

@@ -111,11 +111,12 @@ public class ShibSecurityServiceImpl implements SecurityService {
 			}
 		}
 		groupService.setGroups4eppnSpel(groups4eppnSpel);
-		
+
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
+		group2UserRoleService.setPrefix(globalProperties.getGroupPrefixRoleName());
 		group2UserRoleService.setMappingGroupesRoles(mappingGroupesRoles);
-		
 		group2UserRoleService.setGroupService(groupService);
+
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
 		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService.getIfAvailable());
