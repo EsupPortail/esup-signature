@@ -178,7 +178,7 @@ export class GlobalUi {
                 this.hideSideBar();
                 this.disableSideBarButton();
             }
-            if(url.match("^/user/signbooks/+[\\w\\W]+") || url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(url.match("^/user/workflows/+[\\w\\W]+") || url.match("^/user/signbooks/+[\\w\\W]+") || url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
                 this.showSideBar();
                 this.disableSideBarButton();
