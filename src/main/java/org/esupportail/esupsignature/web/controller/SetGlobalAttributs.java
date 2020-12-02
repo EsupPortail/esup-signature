@@ -4,6 +4,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
@@ -62,6 +63,7 @@ public class SetGlobalAttributs {
         if(buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
+        model.addAttribute("signTypes", SignType.values());
     }
 
     private void parseRoles(User user) {

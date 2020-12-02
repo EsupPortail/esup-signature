@@ -499,7 +499,4 @@ public class SignService {
 		return signConfig.getSignProperties().getPasswordTimeout();
 	}
 
-	public List<SignType> getSignTypes() {
-		return Arrays.asList(SignType.values());
-	}
 }
