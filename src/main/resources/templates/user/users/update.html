@@ -4,7 +4,11 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/static/js/modules/ui/users/UserUi.js";
+    import {UserParamsHelp} from "/static/js/modules/help/UserParamsHelp.js";
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
+
+    let help = new UserParamsHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
+    help.autoStart();
 </script>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -31,7 +35,7 @@
                         <h5 class="text-center"><b>Paramètres de signature calligraphique</b></h5>
                         <div id="signImageForm">
                             <div class="row">
-                                <div class="col-12 col-xl-4 mb-2 text-center">
+                                <div id="mySigns" class="col-12 col-xl-4 mb-2 text-center">
                                     <label><strong>Mes signatures</strong></label>
                                     <table class="table table-borderless table-striped">
                                         <thead class="thead-dark">
