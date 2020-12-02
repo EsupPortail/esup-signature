@@ -1,8 +1,7 @@
 export class SignRequestHelp {
 
-    constructor(splashMessage) {
-        this.doneTour = false;
-        this.splashMessage = splashMessage;
+    constructor(doneTour) {
+        this.doneTour = doneTour;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
         this.initListeners();
@@ -10,14 +9,14 @@ export class SignRequestHelp {
     }
 
     initListeners() {
-        this.intro.onafterchange(e => this.modButtons(e));
         this.intro.onbeforechange(e => this.scrollTop(e));
+        this.intro.onafterchange(e => this.modButtons());
         this.intro.oncomplete(function () {
-            localStorage.setItem('signRequestIntro', 'Completed');
+            $.get("/user/users/mark-intro-as-read/signRequestHelp");
         });
 
         this.intro.onexit(function () {
-            localStorage.setItem('signRequestIntro', 'Completed');
+            $.get("/user/users/mark-intro-as-read/signRequestHelp");
         });
         $("#helpStartButton").on('click', e => this.start());
     }
@@ -72,7 +71,6 @@ export class SignRequestHelp {
     }
 
     autoStart() {
-        this.doneTour = localStorage.getItem('signRequestIntro') === 'Completed';
         if (!this.doneTour) {
             this.intro.start();
         }

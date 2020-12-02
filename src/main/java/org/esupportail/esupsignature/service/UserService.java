@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -425,13 +426,17 @@ public class UserService {
         return messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date());
     }
 
+    public void disableIntro(User authUser, String name) {
+        authUser.getUiParams().put(UiParams.valueOf(name), "true");
+    }
+
     public void disableLastMessage(User authUser) {
         if (messageRepository.countByUsersNotContainsAndEndDateAfter(authUser, new Date()) > 0) {
             messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date()).get(0).getUsers().add(authUser);
         }
     }
 
-    public void disableMessage(User authUser, long id) {
+    public void disableMessageForUser(User authUser, long id) {
         Message message = messageRepository.findById(id).get();
         message.getUsers().add(authUser);
     }
