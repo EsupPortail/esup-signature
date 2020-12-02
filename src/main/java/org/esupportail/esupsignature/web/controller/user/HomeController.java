@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.FormService;
@@ -73,10 +74,10 @@ public class HomeController {
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
 
-            if ((authUser.getSplash() == null || !authUser.getSplash()) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+            if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
                 final Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
-                ctx.setVariable("splashMessage", authUser.getSplash());
+                ctx.setVariable("splashMessage", true);
                 Message splashMessage = new Message();
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);

@@ -1,8 +1,7 @@
 export class HomeHelp {
 
-    constructor(splashMessage) {
-        this.doneTour = false;
-        this.splashMessage = splashMessage;
+    constructor(doneTour) {
+        this.doneTour = doneTour;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
         this.initListeners();
@@ -13,13 +12,11 @@ export class HomeHelp {
         this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
         this.intro.oncomplete(function () {
-            localStorage.setItem('homeIntro', 'Completed');
-            $.get("/user/users/mark-as-read/0");
+            $.get("/user/users/mark-intro-as-read/homeHelp");
         });
 
         this.intro.onexit(function () {
-            localStorage.setItem('homeIntro', 'Completed');
-            $.get("/user/users/mark-as-read/0");
+            $.get("/user/users/mark-intro-as-read/homeHelp");
         });
         $("#helpStartButton").on('click', e => this.start());
     }
@@ -94,7 +91,6 @@ export class HomeHelp {
     }
 
     autoStart() {
-        this.doneTour = localStorage.getItem('homeIntro') === 'Completed';
         if (!this.doneTour) {
             this.intro.start();
 
