@@ -1,6 +1,7 @@
 export class SignRequestHelp {
 
     constructor(splashMessage) {
+        this.doneTour = false;
         this.splashMessage = splashMessage;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
@@ -10,8 +11,12 @@ export class SignRequestHelp {
 
     initListeners() {
         this.intro.onafterchange(e => this.modButtons());
-        this.intro.oncomplete(function(){
-            $.get("/user/users/mark-as-read/0");
+        this.intro.oncomplete(function () {
+            localStorage.setItem('signRequestIntro', 'Completed');
+        });
+
+        this.intro.onexit(function () {
+            localStorage.setItem('signRequestIntro', 'Completed');
         });
         $("#helpStartButton").on('click', e => this.start());
     }
@@ -38,41 +43,46 @@ export class SignRequestHelp {
                 "<li>d'ajouter ou de modifier la/les signature(s)</li>",
             position: 'auto'
         });
-
-        this.intro.addStep({
-            element: '#signTools',
-            highlightClass: 'intro-js-custom-highlight',
-            intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
-            position: 'bottom'
-        });
+        if($.trim($("#signTools").html()) !== '') {
+            this.intro.addStep({
+                element: '#signTools',
+                highlightClass: 'intro-js-custom-highlight',
+                intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
+                position: 'bottom'
+            });
+        }
         this.intro.addStep({
             element: '#sidebar',
             intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancé du circuit",
             position: 'right'
         });
-        this.intro.addStep({
-            element: '#cross',
-            highlightClass: 'intro-js-transparent-highlight',
-            intro: "Déplacer votre signature en maintenant le bouton gauche de la souris enfoncée",
-            position: 'bottom'
-        });
-        this.intro.addStep({
-            element: '#signButtons',
-            intro: "Utilisez les boutons suivants pour viser, signer ou refuser les documents",
-            position: 'left'
-        });
+        if($.trim($("#cross").html()) !== '') {
+            this.intro.addStep({
+                element: '#cross',
+                highlightClass: 'intro-js-transparent-highlight',
+                intro: "Déplacer votre signature en maintenant le bouton gauche de la souris enfoncée",
+                position: 'bottom'
+            });
+        }
+        if($.trim($("#signButtons").html()) !== '') {
+            this.intro.addStep({
+                element: '#signButtons',
+                intro: "Utilisez les boutons suivants pour viser, signer ou refuser les documents",
+                position: 'left'
+            });
+        }
+    }
+
+    autoStart() {
+        this.doneTour = localStorage.getItem('signRequestIntro') === 'Completed';
+        if (!this.doneTour) {
+            this.intro.start();
+        }
     }
 
     start() {
-        // this.intro.onbeforechange(function (targetElement){
-        //     if (targetElement.id === 'signType2') {
-        //         $('#sendSignRequestModal').modal('show');
-        //         $('.introjs-overlay, .introjs-helperLayer, .introjs-tooltipReferenceLayer, .introjs-fixedTooltip').appendTo('#signType2');
-        //     }
-        // });
         $('#helpModal').modal('hide');
         this.intro.start();
-        // this.modButtons();
     }
 
     modButtons() {

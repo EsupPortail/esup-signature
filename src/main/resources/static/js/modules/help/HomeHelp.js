@@ -1,23 +1,23 @@
 export class HomeHelp {
 
     constructor(splashMessage) {
+        this.doneTour = false;
         this.splashMessage = splashMessage;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'Passer', showStepNumbers: 'false', overlayOpacity: 1})
         this.initListeners();
         this.initStep();
-        this.doneTour = false;
     }
 
     initListeners() {
         this.intro.onafterchange(e => this.modButtons());
         this.intro.oncomplete(function () {
-            localStorage.setItem('MyTour', 'Completed');
+            localStorage.setItem('homeIntro', 'Completed');
             $.get("/user/users/mark-as-read/0");
         });
 
         this.intro.onexit(function () {
-            localStorage.setItem('MyTour', 'Completed');
+            localStorage.setItem('homeIntro', 'Completed');
             $.get("/user/users/mark-as-read/0");
         });
         $("#helpStartButton").on('click', e => this.start());
@@ -29,6 +29,7 @@ export class HomeHelp {
                 intro: this.splashMessage.text
             });
         }
+
 
         this.intro.addStep({
             element: '#navbar-buttons',
@@ -48,32 +49,43 @@ export class HomeHelp {
             highlightClass: 'intro-js-custom-highlight',
             position: 'left'
         });
+        if($.trim($("#newfastSign").html()) !== '') {
+            this.intro.addStep({
+                element: '#newfastSign',
+                intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail",
+                position: 'right'
+            });
+        }
+        if($.trim($("#newSignDemand").html()) !== '') {
+            this.intro.addStep({
+                element: '#newSignDemand',
+                intro: "Utilisez la demande simple pour faire signer le document à quelqu'un",
+                position: 'right'
+            });
+        }
+        if($.trim($("#newWizard").html()) !== '') {
+            this.intro.addStep({
+                element: '#newWizard',
+                intro: "Ici vous pouvez créer une demande pour laquelle vous définissez un circuit personnalisé",
+                position: 'right'
+            });
+        }
+        if($.trim($("#newWorkflow").html()) !== '') {
+            this.intro.addStep({
+                element: '#newWorkflow',
+                intro: "Les boutons <i class='fas fa-project-diagram fa-2x'></i> permettent de démarrer des circuits personnalisés ou pré-définis ",
+                position: 'right'
+            });
+        }
 
-        this.intro.addStep({
-            element: '#newfastSign',
-            intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail",
-            position: 'right'
-        });
-        this.intro.addStep({
-            element: '#newSignDemand',
-            intro: "Utilisez la demande simple pour faire signer le document à quelqu'un",
-            position: 'right'
-        });
-        this.intro.addStep({
-            element: '#newWizard',
-            intro: "Ici vous pouvez créer une demande pour laquelle vous définissez un circuit personnalisé",
-            position: 'right'
-        });
-        this.intro.addStep({
-            element: '#newWorkflow',
-            intro: "Les boutons <i class='fas fa-project-diagram fa-2x'></i> permettent de démarrer des circuits personnalisés ou pré-définis ",
-            position: 'right'
-        });
-        this.intro.addStep({
-            element: '#newForm',
-            intro: "Les boutons <i class='fas fa-file-alt fa-2x'></i> permettent de remplir un formulaire",
-            position: 'right'
-        });
+        if($.trim($("#newForm").html()) !== '') {
+            this.intro.addStep({
+                element: '#newForm',
+                intro: "Les boutons <i class='fas fa-file-alt fa-2x'></i> permettent de remplir un formulaire",
+                position: 'right'
+            });
+        }
+
         this.intro.addStep({
             element: '#toSignList',
             intro: "Lorsque vous avez un document à signer, il apparait dans cette liste",
@@ -82,7 +94,7 @@ export class HomeHelp {
     }
 
     autoStart() {
-        this.doneTour = localStorage.getItem('MyTour') === 'Completed';
+        this.doneTour = localStorage.getItem('homeIntro') === 'Completed';
         if (!this.doneTour) {
             this.intro.start();
 
