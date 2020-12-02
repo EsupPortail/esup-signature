@@ -606,12 +606,12 @@ public class SignRequestService {
 			toSignDocuments.add(document);
 		}
 		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), "sign", user);
+		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
 			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), "sign", user);
-			Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
-			pkcs12SignatureToken.close();
 			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), "sign", user);
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
@@ -654,14 +654,17 @@ public class SignRequestService {
 			} else {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			}
+			pkcs12SignatureToken.close();
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", user);
 			addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), "sign", user);
+			pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", user);
+			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureException(e.getMessage(), e);
 		}
 	}
