@@ -13,9 +13,7 @@
     import {SignRequestHelp} from "/static/js/modules/help/SignRequestHelp.js";
 
     let help = new SignRequestHelp();
-    if(help.splashMessage != null) {
-        help.start();
-    }
+    help.autoStart();
 
     let signable = [[${signRequest.signable}]];
     let currentSignType = [[${currentSignType}]];

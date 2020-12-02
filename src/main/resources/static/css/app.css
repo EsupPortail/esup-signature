@@ -561,6 +561,10 @@ input:checked + .slider:before {
     background-color: #CCCCCC !important;
 }
 
+.introjs-fixParent * {
+    will-change: inherit !important;
+}
+
 .introjs-helperLayer {
     background: transparent;
 }
