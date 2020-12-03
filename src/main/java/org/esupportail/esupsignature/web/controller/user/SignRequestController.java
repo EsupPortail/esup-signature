@@ -325,6 +325,7 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity<String> sign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+                               @RequestParam(value = "sseId") String sseId,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
@@ -367,16 +368,16 @@ public class SignRequestController {
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
+            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
             return new ResponseEntity<>(HttpStatus.OK);
         }
-        eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
+        eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap, sseId);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
-                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);
+                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
                 }
             });
             return new ResponseEntity<>(HttpStatus.OK);
