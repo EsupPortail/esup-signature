@@ -660,7 +660,7 @@ public class SignRequestService {
 			addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), "sign", user);
-			pkcs12SignatureToken.close();
+			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", user);
