@@ -1,5 +1,13 @@
 package org.esupportail.esupsignature.web.controller;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Resource;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
@@ -10,6 +18,7 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserKeystoreService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ValidationService;
@@ -21,11 +30,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
-
-import javax.annotation.Resource;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
-import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
@@ -61,6 +65,9 @@ public class SetGlobalAttributs {
     
     @Autowired(required = false)
     private ValidationService validationService;
+    
+    @Autowired(required = false)
+    private UserKeystoreService userKeystoreService;
 
     private GlobalProperties myGlobalProperties;
 
@@ -91,7 +98,12 @@ public class SetGlobalAttributs {
         if(buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
-        model.addAttribute("signTypes", SignType.values());
+        List<SignType> signTypes = new ArrayList(Arrays.asList(SignType.values()));
+        if(userKeystoreService == null) {
+        	signTypes.remove(SignType.certSign);
+        	signTypes.remove(SignType.nexuSign);
+        }
+        model.addAttribute("signTypes", signTypes);
 
         if(user != null) {
             List<String> base64UserSignatures = userService.getBase64UserSignatures(user);
