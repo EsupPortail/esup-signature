@@ -84,19 +84,7 @@ export class GlobalUi {
         $("#sendPendingButton").on('click', e => this.showSendPendingModal());
         $("#submitSendPending").on('click', e => this.submitSendPending());
 
-        $(window).bind('keydown', function(event) {
-            if (event.ctrlKey || event.metaKey) {
-                switch (String.fromCharCode(event.which).toLowerCase()) {
-                    case 's':
-                        event.preventDefault();
-                        let saveButton = $("#saveButton");
-                        if(saveButton) {
-                            saveButton.click();
-                        }
-                        break;
-                }
-            }
-        });
+        this.bindKeyboardKeys();
     }
 
     submitSendPending() {
@@ -112,7 +100,7 @@ export class GlobalUi {
 
     checkCurrentPage() {
         let url = window.location.pathname;
-        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
+        if(!url.match("/user/signrequests/+[\\w\\W]+") || !url.match("/user/signbooks/+[\\w\\W]+")) {
             this.resetMode();
         }
     }
@@ -178,7 +166,7 @@ export class GlobalUi {
                 this.hideSideBar();
                 this.disableSideBarButton();
             }
-            if(url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(url.match("^/user/workflows/+[\\w\\W]+") || url.match("^/user/signbooks/+[\\w\\W]+") || url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
                 this.showSideBar();
                 this.disableSideBarButton();
@@ -268,7 +256,7 @@ export class GlobalUi {
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId);
+            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'));
         });
     }
 
@@ -324,6 +312,40 @@ export class GlobalUi {
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
+    }
+
+    bindKeyboardKeys() {
+        $(window).bind('keydown', function(event) {
+            console.info('push ' + event.which + ' key');
+            if (event.ctrlKey || event.metaKey) {
+                switch (String.fromCharCode(event.which).toLowerCase()) {
+                    case 's':
+                        event.preventDefault();
+                        let saveButton = $("#saveButton");
+                        if(saveButton) {
+                            saveButton.click();
+                        }
+                        break;
+                }
+            } else {
+                switch (event.which) {
+                    case 39:
+                        event.preventDefault();
+                        let nextSignRequestButton = $("#nextSignRequestButton");
+                        if(nextSignRequestButton) {
+                            location.href = nextSignRequestButton.attr('href');
+                        }
+                        break;
+                    case 37:
+                        event.preventDefault();
+                        let prevSignRequestButton = $("#prevSignRequestButton");
+                        if(prevSignRequestButton) {
+                            location.href = prevSignRequestButton.attr('href');
+                        }
+                        break;
+                }
+            }
+        });
     }
 
 }

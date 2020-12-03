@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.workflow.impl;
 
-import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -18,10 +18,15 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	public String getName() {
 		return "CreatorAndOneStepClassWorkflow";
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return "Signature du créateur puis d'un signataire";
+	}
+
+	@Override
+	public Boolean getPublicUsage() {
+		return false;
 	}
 
 	private List<WorkflowStep> workflowSteps;
@@ -30,7 +35,7 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null, null);
+				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -43,11 +48,11 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, Data data, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
-		workflowStep1.getUsers().add(user);
+		workflowStep1.getUsers().add(userService.getCreatorUser());
 		workflowStep1.setDescription("Votre signature");
 		workflowStep1.setSignType(SignType.pdfImageStamp);
 		workflowSteps.add(workflowStep1);
@@ -55,14 +60,15 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 		WorkflowStep workflowStep2 = new WorkflowStep();
 		workflowStep2.setSignType(SignType.pdfImageStamp);
 		workflowStep2.setDescription("Signataire présélectionné en fonction de vos précédentes saisies");
-		if(data != null) {
-			workflowStep2.setUsers(workflowService.getFavoriteRecipientEmail(2, data.getForm(), recipentEmailsStep, user));
-		} else {
-			workflowStep2.getUsers().add(userService.getGenericUser("Utilisateur issue des favoris", ""));
-		}
+		workflowStep2.getUsers().add(userService.getGenericUser());
 		workflowStep2.setChangeable(true);
 		workflowSteps.add(workflowStep2);
 		return workflowSteps;
+	}
+
+	@Override
+	public void fillWorkflowSteps(Workflow workflow, User user, List<String> recipentEmailsStep) {
+		workflow.getWorkflowSteps().get(1).getUsers().clear();
 	}
 }
 

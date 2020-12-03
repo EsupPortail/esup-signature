@@ -5,7 +5,13 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {HomeUi} from "/static/js/modules/ui/HomeUi.js";
+    import {HomeHelp} from "/static/js/modules/help/HomeHelp.js";
+
     new HomeUi();
+
+    let help = new HomeHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
+    help.autoStart();
+
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -19,7 +25,7 @@
         </nav>
         <div id="content" class="content flex align-content-center">
             <div class="row">
-                <div th:replace="user/home/include/new"></div>
+                <div th:replace="fragments/new"></div>
                 <div id="toSignList" class="d-flex col-12">
                     <div class="col-12 col-lg-10 card mb-2 mx-auto">
                         <div id="myDocs" class="card-body">
@@ -30,13 +36,13 @@
                                 <th:block th:each="signRequest : ${signRequests}">
                                     <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                         <td class="text-break w-5 d-none d-md-inline"><i class="fas fa-book p-2"></i></td>
-                                        <td class="text-break w-35" th:text="${signRequest.title}"></td>
-                                        <td class="text-break w-15 d-none d-md-inline">
+                                        <td class="text-break w-40" th:text="${signRequest.title}"></td>
+                                        <td class="text-break w-30 d-none d-md-inline">
                                             <span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
                                         </td>
-                                        <td class="text-break w-10"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <td class="text-break w-20"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center w-5">
                                              <a aria-label="Accéder à la demande"
                                                class="btn btn-sm text-dark"
                                                title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i

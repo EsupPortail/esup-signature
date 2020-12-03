@@ -169,11 +169,7 @@ public class DataController {
 				}
 			}
 			if(sendMessage && form.getMessage() != null &&!form.getMessage().isEmpty()) model.addAttribute("message", new JsonMessage("help", form.getMessage()));
-			if (form.getDocument() != null) {
-				return "user/datas/create-pdf";
-			} else {
-				return "user/datas/create";
-			}
+			return "user/datas/create";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
@@ -195,12 +191,12 @@ public class DataController {
 			for (Field field : fields) {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
-			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndStepAndForm(user, 0, form);
+			List<UserPropertie> userProperties = userPropertieRepository.findByUserAndWorkflowStep(user, workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0));
 			userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
 			if(userProperties.size() > 0 ) {
 				model.addAttribute("targetEmails", userProperties.get(0).getTargetEmail().split(","));
 			}
-			Workflow workflow = workflowService.getWorkflowByDataAndUser(data, null, user);
+			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, user, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("fields", fields);
 			model.addAttribute("form", form);
@@ -209,11 +205,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user)) {
 				model.addAttribute("toSign", true);
 			}
-			if(form.getDocument() != null) {
-				return "user/datas/create-pdf";
-			} else {
-				return "user/datas/create";
-			}
+			return "user/datas/create";
 		} else {
 			return "redirect:/user/datas/" + data.getId();
 		}

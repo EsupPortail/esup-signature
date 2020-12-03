@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.entity.LiveWorkflow;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -19,6 +20,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByWorkflowId(Long workflowId);
     @Query("select s from SignBook s where s.status = :signRequestStatus and s.liveWorkflow.workflow.name = :workflowName")
     List<SignBook> findByWorkflowNameAndStatus(String workflowName, SignRequestStatus signRequestStatus);
+    List<SignBook> findByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus);
     Long countByName(String name);
     Long countById(Long id);
 }

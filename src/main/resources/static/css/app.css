@@ -7,6 +7,7 @@
 html {
     position: relative;
     min-height: 100%;
+    font-size: 16px;
 }
 
 body {
@@ -517,6 +518,25 @@ input:checked + .slider:before {
     word-break: break-all;
 }
 
+.introjs-prevbutton {
+    border-right: 1px solid #343a40;
+}
+
+.introjs-nextbutton {
+    border-left: 1px solid #343a40;
+}
+
+.introjs-floating {
+    position: fixed !important;
+    margin-top: 0px !important;
+    margin-left: 0px !important;
+    padding: 20px;
+    left: 25% !important;
+    top: 10px !important;
+    min-width: 50% !important;
+    max-width: 800px;
+}
+
 #stepper {
     max-width: 100%;
 }
@@ -531,17 +551,49 @@ input:checked + .slider:before {
 .bs-stepper-header {
     max-width: 100%;
 }
-.bs-stepper-label {
-    max-width: 100%;
-}
+
 .step-trigger {
     width: 100% !important;
     justify-content: left !important;
 }
 
 .current-step {
-background-color: #CCCCCC !important;
+    background-color: #CCCCCC !important;
 }
+
+.introjs-fixParent * {
+    will-change: inherit !important;
+}
+
+.introjs-helperLayer {
+    background: transparent;
+}
+
+.introjs-overlay {
+    opacity: 0 !important;
+}
+
+.introjs-helperLayer:before {
+    opacity: 0;
+    content: '';
+    position: fixed;
+    width: inherit;
+    height: inherit;
+    border-radius: 0.5em;
+    box-shadow: 0 0 0 1000em rgba(0,0,0, .7);
+    opacity: 1;
+}
+
+.introjs-helperLayer:after {
+    content: '';
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: fixed;
+    z-index: 1000;
+}
+
 
 .embedresize {
 max-width: 560px;
@@ -584,6 +636,10 @@ float:left;
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     position:relative;
     top:-5px;
+}
+
+.postit-global-red {
+    background: #FF7EB9 !important;
 }
 
 .postit-global {
@@ -767,7 +823,7 @@ float:left;
 }
 
 .disabled-field {
-    background-color: #eeeeee !important;
+    background-color: transparent !important;
     border-color: #eeeeee !important;
 }
 
@@ -1142,7 +1198,7 @@ float:left;
 .annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
     color: black !important;
     padding: 0 !important;
-    background-color: #ebebeb;
+    /*background-color: #ebebeb;*/
 }
 
 .sign-field {
@@ -1154,6 +1210,10 @@ float:left;
 .bg-striped {
     background-image: linear-gradient(135deg, #8a4848 25%, #474747 25%, #474747 50%, #8a4848 50%, #8a4848 75%, #474747 75%, #474747 100%);
     background-size: 28.28px 28.28px;
+}
+
+.cursor-move {
+    cursor: move;
 }
 
 .disable-div-selection {

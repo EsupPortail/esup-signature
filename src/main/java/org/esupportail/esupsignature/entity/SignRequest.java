@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
@@ -56,10 +57,14 @@ public class SignRequest {
     private SignRequestStatus status;
 
     @ManyToOne
+    @NotNull
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    private Date endDate;
 
     @JsonIgnore
     @Transient
@@ -71,17 +76,13 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
-    transient Date endDate;
-
-    @JsonIgnore
-    @Transient
     transient Boolean signable = false;
 
     @JsonIgnore
     @Transient
     transient Data data;
     
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
@@ -244,12 +245,21 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
-    public SignRequestParams getCurrentSignRequestParams() {
-        if(parentSignBook.getLiveWorkflow().getCurrentStepNumber() > 0 && getSignRequestParams().size() > parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1) {
-            if(parentSignBook == null || (signedDocuments.size() < 1 || !parentSignBook.getLiveWorkflow().getCurrentStep().getAllSignToComplete())) {
-                return getSignRequestParams().get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
-            }
+    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
+        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
         }
+    }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
+        } else {
+            return getEmptySignRequestParams();
+        }
+    }
+
+    public static SignRequestParams getEmptySignRequestParams() {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setSignPageNumber(1);

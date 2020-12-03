@@ -3,10 +3,7 @@ package org.esupportail.esupsignature.service;
 import ch.rasc.sse.eventbus.SseEvent;
 import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
@@ -215,7 +212,7 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = null;
             try {
-                toSaveWorkflowStep = workflowService.createWorkflowStep("", "signBook", signBook.getId(), liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+                toSaveWorkflowStep = workflowService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
             } catch (EsupSignatureUserException e) {
                 logger.error("error on save workflow", e);
             }
@@ -256,7 +253,12 @@ public class SignBookService {
 
     public void removeStep(SignBook signBook, int step) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getWorkflowSteps().get(step);
-        signBook.getLiveWorkflow().getWorkflowSteps().remove(step);
+        signBook.getLiveWorkflow().getWorkflowSteps().remove(liveWorkflowStep);
+        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                signRequest.getRecipientHasSigned().remove(recipient);
+            }
+        }
         liveWorkflowStepRepository.delete(liveWorkflowStep);
     }
 
@@ -386,9 +388,12 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequest.setComment(comment);
-            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null);
+            signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signBook.getLiveWorkflow().getCurrentStepNumber());
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().equals(user)) {
+                    Action action = signRequest.getRecipientHasSigned().get(recipient);
+                    action.setActionType(ActionType.refused);
+                    action.setDate(new Date());
                     recipient.setSigned(true);
                 }
             }

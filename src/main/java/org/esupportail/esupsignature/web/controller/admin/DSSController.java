@@ -1,14 +1,15 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import eu.europa.esig.dss.model.identifier.Identifier;
-import eu.europa.esig.dss.spi.tsl.*;
-import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
-import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
-import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.utils.Utils;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Resource;
+
+import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,12 +17,20 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
+import eu.europa.esig.dss.model.identifier.Identifier;
+import eu.europa.esig.dss.spi.tsl.LOTLInfo;
+import eu.europa.esig.dss.spi.tsl.ParsingInfoRecord;
+import eu.europa.esig.dss.spi.tsl.TLInfo;
+import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
+import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
+import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
+import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
+import eu.europa.esig.dss.tsl.source.LOTLSource;
+import eu.europa.esig.dss.utils.Utils;
 
 @Controller
 @RequestMapping(value = "/admin/dss" )
+@ConditionalOnBean(DSSBeanConfig.class)
 public class DSSController {
 
 	private static final String TL_SUMMARY = "tl-summary";

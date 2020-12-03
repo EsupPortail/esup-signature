@@ -15,16 +15,19 @@ global:
     #   delay-before-cleaning : 0
     enable-su: false
     enable-splash: true
-    version: '@project.version@'
+    application-email: esup.signature@univ-ville.fr
 
 #tomcat:
 #    ajp:
 #        port: 6009
+
 info:
     app:
         name: esup-signature
-        version: 1.2
-        description: Instance de dev
+        description: Instance de production
+    tags:
+        environment: PROD
+
 management:
     endpoints:
         jmx:
@@ -38,7 +41,8 @@ management:
             show-details: always
 
 spring:
-
+    session:
+        store-type: jdbc
     data:
         ldap:
             repositories:
@@ -50,6 +54,7 @@ spring:
         password: esup
         url: jdbc:postgresql://localhost:5432/esupsignature
         username: esupsignature
+        data: classpath:org/springframework/session/jdbc/schema-postgresql.sql
     jpa:
         hibernate:
             ddl-auto: update
@@ -68,7 +73,7 @@ spring:
         urls: ldap://ldap.univ-ville.fr
         username: cn=consult,dc=univ-ville,dc=fr
     mail:
-        host: smtp.univ-ville.fr
+#        host: smtp.univ-ville.fr
     messages:
         basename: i18n/messages
         encoding: UTF-8
@@ -161,7 +166,7 @@ security:
         url: https://cas.univ-ville.fr
 #    shib:
 #        credentials-request-header: MEMBER
-#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
+#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville,dc=fr
 #        idp-url: https://idp.univ-ville.fr
 #        principal-request-header: REMOTE_USER
 #        title: Compte d’un autre établissement (Shibboleth)

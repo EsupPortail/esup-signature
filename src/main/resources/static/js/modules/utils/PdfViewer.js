@@ -10,7 +10,7 @@ export class PdfViewer extends EventFactory {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 0.6;
+        this.scale = 1;
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -70,6 +70,12 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    annotationLinkTargetBlank() {
+        $('.linkAnnotation').each(function (){
+            $(this).children().attr('target', '_blank');
+        });
+    }
+
     fullWidth() {
         console.info("full width " + window.innerWidth);
         let newScale = (Math.round(window.innerWidth / 100) / 10);
@@ -95,6 +101,9 @@ export class PdfViewer extends EventFactory {
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
+        if(localStorage.getItem('scale') != null) {
+            newScale = localStorage.getItem('scale');
+        }
         if (window.innerWidth < 1200) {
             newScale = 0.9;
         }
@@ -149,6 +158,7 @@ export class PdfViewer extends EventFactory {
         console.info("launch render task");
         this.page = page;
         let scale = this.scale;
+        localStorage.setItem('scale', this.scale);
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -183,10 +193,10 @@ export class PdfViewer extends EventFactory {
                 if (isField) {
                     if (this.dataFields != null) {
                         console.info("render fields");
-                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
+                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
                     }
                 } else {
-                    this.page.getAnnotations().then(items => this.renderPdfForm(items));
+                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(this.annotationLinkTargetBlank());
                 }
                 resolve("Réussite");
             }

@@ -19,7 +19,7 @@
 					<th class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Nom</th>
 					<th class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Date de création</th>
 					<th class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Créé par</th>
-					<th class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Composante</th>
+					<th th:if="${organizationalUnitLdap != null}" class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Composante</th>
 					<th class="text-white" style="text-align:inherit; border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:bottom; border:0; border-bottom:2px solid #dee2e6; background-color:#343a40; border-color:#454d55; color:#fff" align="inherit" valign="bottom" bgcolor="#343a40">Consulter</th>
 				</tr>
 				</thead>
@@ -30,8 +30,8 @@
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span>
 					</td>
-					<td th:with="personLdap = ${userService.findPersonLdapByUser(signRequest.createBy)}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
-						<span th:if="${personLdap != null && userService.findOrganizationalUnitLdapByPersonLdap(personLdap) != null}" th:text="${userService.findOrganizationalUnitLdapByPersonLdap(personLdap).description}"></span>
+					<td th:if="${organizationalUnitLdap != null}" style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
+						<span th:text="${organizationalUnitLdap.description}"></span>
 					</td>
 					<td style="border-top:1px solid #dee2e6; padding:0.75rem; vertical-align:top; border:0" valign="top">
 						<a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}" style="background-color:#343a40; color:#fff; text-decoration:none; -moz-user-select:none; -ms-user-select:none; -webkit-user-select:none; border:1px solid transparent; border-radius:0.2rem; display:inline-block; font-size:0.875rem; font-weight:400; line-height:1.5; padding:0.25rem 0.5rem; text-align:center; transition:color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; user-select:none; vertical-align:middle; border-color:#343a40; margin-right:auto; margin-left:auto" bgcolor="#343a40" align="center" valign="middle">Accéder au document</a>

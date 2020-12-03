@@ -51,7 +51,7 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
-                                    <td class="text-break" th:text="${signRequest.parentSignBook.name}"></td>
+                                    <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td><p class="text-break" th:title="${signRequest.title}"
                                                         th:text="${signRequest.title}"></p></td>
                                     <td><span
@@ -60,7 +60,7 @@
                                     <td th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                     <td>
                                         <table class="table table-sm">
-                                            <tbody th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}">
+                                            <tbody th:if="${signRequest.parentSignBook != null && signRequest.parentSignBook.liveWorkflow.currentStep != null}">
                                             <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                                                 <tr>
                                                     <td width="100%"
@@ -79,7 +79,7 @@
                                         </table>
                                     </td>
                                     <td class="status" style="width: 150px;">
-                                        <div th:replace="user/signrequests/includes/status :: status"></div>
+                                        <div th:if="${signRequest.parentSignBook != null}" th:replace="user/signrequests/includes/status :: status(signBook = ${signRequest.parentSignBook})"></div>
                                     </td>
                                     <td>
                                         <button class="btn btn-primary fas fa-eye" title="Sign Request"

@@ -38,6 +38,8 @@ import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,20 +64,20 @@ public class SignService {
 	@Resource
 	private SignConfig signConfig;
 
-	@Resource
-	private CAdESService cadesService;
+	@Autowired
+	private ObjectProvider<CAdESService> cadesService;
 
-	@Resource
-	private PAdESService padesService;
+	@Autowired
+	private ObjectProvider<PAdESService> padesService;
 
-	@Resource
-	private XAdESService xadesService;
+	@Autowired
+	private ObjectProvider<XAdESService> xadesService;
 
-	@Resource
-	private ASiCWithCAdESService asicWithCAdESService;
+	@Autowired
+	private ObjectProvider<ASiCWithCAdESService> asicWithCAdESService;
 
-	@Resource
-	private ASiCWithXAdESService asicWithXAdESService;
+	@Autowired
+	private ObjectProvider<ASiCWithXAdESService> asicWithXAdESService;
 	
 	@Resource
 	private FileService fileService;
@@ -317,7 +319,11 @@ public class SignService {
 			Document toSignFile = documents.get(0);
 			if(toSignFile.getContentType().equals("application/pdf") && visual) {
 				signatureForm = SignatureForm.PAdES;
-				inputStream = toSignFile.getInputStream();
+				if(toSignFile.getTransientInputStream() != null) {
+					inputStream = toSignFile.getTransientInputStream();
+				} else {
+					inputStream = toSignFile.getInputStream();
+				}
 				if(signRequest.getSignedDocuments().size() == 0) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
 				}
@@ -411,13 +417,13 @@ public class SignService {
 		} else {
 			switch (signatureForm) {
 			case CAdES:
-				service = cadesService;
+				service = cadesService.getIfAvailable();
 				break;
 			case PAdES:
-				service = padesService;
+				service = padesService.getIfAvailable();
 				break;
 			case XAdES:
-				service = xadesService;
+				service = xadesService.getIfAvailable();
 				break;
 			default:
 				logger.error("Unknow signature form : " + signatureForm);
@@ -455,10 +461,10 @@ public class SignService {
 		MultipleDocumentsSignatureService service = null;
 		switch (signatureForm) {
 		case CAdES:
-			service = asicWithCAdESService;
+			service = asicWithCAdESService.getIfAvailable();
 			break;
 		case XAdES:
-			service = asicWithXAdESService;
+			service = asicWithXAdESService.getIfAvailable();
 			break;
 		default:
 			logger.error("Unknow signature form : " + signatureForm);
@@ -493,7 +499,4 @@ public class SignService {
 		return signConfig.getSignProperties().getPasswordTimeout();
 	}
 
-	public List<SignType> getSignTypes() {
-		return Arrays.asList(SignType.values());
-	}
 }
