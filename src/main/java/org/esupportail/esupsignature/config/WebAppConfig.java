@@ -92,7 +92,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.setFilter(filter);
 		registrationBean.setOrder(5);
 		registrationBean.addUrlPatterns("/user/", "/user/*",
-										"/admin/", "/admin/*"
+										"/admin/", "/admin/*",
+										"/public/", "/public/*"
 		);
 		return registrationBean;
 	}

@@ -192,14 +192,26 @@ public class SignRequestController {
     public String show(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws Exception {
         SignRequest signRequest = signRequestRepository.findById(id).get();
         List<SignRequest> toSignRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, "tosign");
-        SignRequest nextSignRequest = null;
-        for(SignRequest nextSignRequest1 : toSignRequests) {
-            if(!nextSignRequest1.equals(signRequest)) {
-                nextSignRequest = nextSignRequest1;
-                break;
+        toSignRequests = toSignRequests.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
+        if(toSignRequests.size() > 0) {
+            if (!toSignRequests.contains(signRequest)) {
+                model.addAttribute("nextSignRequest", toSignRequests.get(0));
+            } else {
+                if(toSignRequests.size() > 1) {
+                    int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest);
+                    if (indexOfCurrentSignRequest == 0) {
+                        model.addAttribute("nextSignRequest", toSignRequests.get(indexOfCurrentSignRequest + 1));
+                        model.addAttribute("prevSignRequest", toSignRequests.get(toSignRequests.size() - 1));
+                    } else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
+                        model.addAttribute("nextSignRequest", toSignRequests.get(0));
+                        model.addAttribute("prevSignRequest", toSignRequests.get(indexOfCurrentSignRequest - 1));
+                    } else {
+                        model.addAttribute("nextSignRequest", toSignRequests.get(indexOfCurrentSignRequest + 1));
+                        model.addAttribute("prevSignRequest", toSignRequests.get(indexOfCurrentSignRequest - 1));
+                    }
+                }
             }
         }
-        model.addAttribute("nextSignRequest", nextSignRequest);
         if (signRequest.getStatus().equals(SignRequestStatus.pending)
                 && signRequestService.checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0
                 && signRequestService.needToSign(signRequest, user)) {

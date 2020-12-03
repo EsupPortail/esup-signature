@@ -84,19 +84,7 @@ export class GlobalUi {
         $("#sendPendingButton").on('click', e => this.showSendPendingModal());
         $("#submitSendPending").on('click', e => this.submitSendPending());
 
-        $(window).bind('keydown', function(event) {
-            if (event.ctrlKey || event.metaKey) {
-                switch (String.fromCharCode(event.which).toLowerCase()) {
-                    case 's':
-                        event.preventDefault();
-                        let saveButton = $("#saveButton");
-                        if(saveButton) {
-                            saveButton.click();
-                        }
-                        break;
-                }
-            }
-        });
+        this.bindKeyboardKeys();
     }
 
     submitSendPending() {
@@ -324,6 +312,40 @@ export class GlobalUi {
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
+    }
+
+    bindKeyboardKeys() {
+        $(window).bind('keydown', function(event) {
+            console.info('push ' + event.which + ' key');
+            if (event.ctrlKey || event.metaKey) {
+                switch (String.fromCharCode(event.which).toLowerCase()) {
+                    case 's':
+                        event.preventDefault();
+                        let saveButton = $("#saveButton");
+                        if(saveButton) {
+                            saveButton.click();
+                        }
+                        break;
+                }
+            } else {
+                switch (event.which) {
+                    case 39:
+                        event.preventDefault();
+                        let nextSignRequestButton = $("#nextSignRequestButton");
+                        if(nextSignRequestButton) {
+                            location.href = nextSignRequestButton.attr('href');
+                        }
+                        break;
+                    case 37:
+                        event.preventDefault();
+                        let prevSignRequestButton = $("#prevSignRequestButton");
+                        if(prevSignRequestButton) {
+                            location.href = prevSignRequestButton.attr('href');
+                        }
+                        break;
+                }
+            }
+        });
     }
 
 }

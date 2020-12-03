@@ -10,7 +10,7 @@ export class PdfViewer extends EventFactory {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 0.6;
+        this.scale = 1;
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -101,6 +101,9 @@ export class PdfViewer extends EventFactory {
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
+        if(localStorage.getItem('scale') != null) {
+            newScale = localStorage.getItem('scale');
+        }
         if (window.innerWidth < 1200) {
             newScale = 0.9;
         }
@@ -155,6 +158,7 @@ export class PdfViewer extends EventFactory {
         console.info("launch render task");
         this.page = page;
         let scale = this.scale;
+        localStorage.setItem('scale', this.scale);
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
