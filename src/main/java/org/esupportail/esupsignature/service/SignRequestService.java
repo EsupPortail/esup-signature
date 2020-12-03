@@ -119,7 +119,7 @@ public class SignRequestService {
 	@Resource
 	private RecipientRepository recipientRepository;
 
-	@Resource
+	@Autowired(required=false)
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
