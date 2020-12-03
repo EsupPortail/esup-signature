@@ -98,10 +98,14 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    isFloat(n){
+        return Number(n) === n && n % 1 !== 0;
+    }
+
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
-        if(localStorage.getItem('scale') != null) {
+        if(this.isFloat(localStorage.getItem('scale'))) {
             newScale = localStorage.getItem('scale');
         }
         if (window.innerWidth < 1200) {
