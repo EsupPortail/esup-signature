@@ -21,8 +21,10 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +60,7 @@ public class SetGlobalAttributs {
 
     @Resource
     private UserShareService userShareService;
-    
+
     @Autowired(required = false)
     private ValidationService validationService;
 
@@ -76,8 +78,10 @@ public class SetGlobalAttributs {
 
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        if(authUser != null) {
+    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, HttpServletRequest request, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        String method = request.getMethod();
+        if (!method.equals("GET")) return;
+        if (authUser != null) {
             this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
             parseRoles(user);
             model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
@@ -85,15 +89,15 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
             model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
-            model.addAttribute("validationToolsEnabled", validationService!=null);
+            model.addAttribute("validationToolsEnabled", validationService != null);
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
-        if(buildProperties != null) {
+        if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
         model.addAttribute("signTypes", SignType.values());
 
-        if(user != null) {
+        if (user != null) {
             List<String> base64UserSignatures = userService.getBase64UserSignatures(user);
             model.addAttribute("base64UserSignatures", base64UserSignatures);
             model.addAttribute("nbDatas", dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size());
@@ -103,27 +107,30 @@ public class SetGlobalAttributs {
     }
 
     private void parseRoles(User user) {
-        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles())) myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
-        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles())) myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
-        if(!Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles())) myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
+        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles()))
+            myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
+        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles()))
+            myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
+        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles()))
+            myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
 
-        if(user.getRoles().contains("create_signrequest")) {
+        if (user.getRoles().contains("create_signrequest")) {
             myGlobalProperties.setHideSendSignRequest(false);
         }
-        if(user.getRoles().contains("create_wizard")) {
+        if (user.getRoles().contains("create_wizard")) {
             myGlobalProperties.setHideWizard(false);
         }
-        if(user.getRoles().contains("create_autosign")) {
+        if (user.getRoles().contains("create_autosign")) {
             myGlobalProperties.setHideAutoSign(false);
         }
 
-        if(user.getRoles().contains("no_create_signrequest")) {
+        if (user.getRoles().contains("no_create_signrequest")) {
             myGlobalProperties.setHideSendSignRequest(true);
         }
-        if(user.getRoles().contains("no_create_wizard")) {
+        if (user.getRoles().contains("no_create_wizard")) {
             myGlobalProperties.setHideWizard(true);
         }
-        if(user.getRoles().contains("no_create_autosign")) {
+        if (user.getRoles().contains("no_create_autosign")) {
             myGlobalProperties.setHideAutoSign(true);
         }
     }
