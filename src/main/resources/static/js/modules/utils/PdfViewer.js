@@ -337,6 +337,9 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
                 }
+
+                //TODO Repair currentStep enable input
+
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {

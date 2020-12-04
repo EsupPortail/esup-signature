@@ -515,8 +515,7 @@ public class SignRequestService {
 		signRequestParams.setyPos(signRequestParamses.get(0).getyPos());
 		signRequestParams.setSignWidth(signRequestParamses.get(0).getSignWidth());
 		signRequestParams.setSignHeight(signRequestParamses.get(0).getSignHeight());
-		signRequestParams.setAddDate(signRequestParamses.get(0).isAddDate());
-		signRequestParams.setAddName(signRequestParamses.get(0).isAddName());
+		signRequestParams.setAddExtra(signRequestParamses.get(0).isAddExtra());
 	}
 
 	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws IOException {

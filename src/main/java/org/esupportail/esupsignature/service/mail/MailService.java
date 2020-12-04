@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -94,9 +95,9 @@ public class MailService {
             if(mailSender.getIfAvailable() != null) {
                 mailSender.getIfAvailable().send(mimeMessage);
             }
-        } catch (MessagingException e) {
+        } catch (MailSendException | MessagingException e) {
             logger.error("unable to send email", e);
-            throw new EsupSignatureException("unable to send email", e);
+            throw new EsupSignatureException("Problème lors de l'envoi du mail", e);
         }
     }
 

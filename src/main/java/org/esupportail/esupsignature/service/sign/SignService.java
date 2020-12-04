@@ -190,18 +190,9 @@ public class SignService {
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
-		DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
-		String addText = "";
-		int lineNumber = 0;
-		if(signRequestParams.isAddName()) {
-			addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
-			lineNumber++;
-		}
-		if (signRequestParams.isAddDate()) {
-			addText +="Le " + dateFormat.format(new Date());
-			lineNumber++;
-		}
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber, false);
+		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss ", Locale.FRENCH);
+		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false);
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);
@@ -211,14 +202,19 @@ public class SignService {
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile.getInputStream());
-		int heightAdjusted = Math.round(((float) signRequestParams.getSignWidth() / bufferedSignImage.getWidth()) * bufferedSignImage.getHeight());
+		if(signRequestParams.isAddExtra()) {
+			signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
+		}
+		int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
+		int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+
 		if(pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(signRequestParams.getSignWidth());
+			imageParameters.setWidth(widthAdjusted);
 			imageParameters.setHeight(heightAdjusted);
 			imageParameters.setxAxis(signRequestParams.getxPos());
 		} else {
 			imageParameters.setWidth(heightAdjusted);
-			imageParameters.setHeight(signRequestParams.getSignWidth());
+			imageParameters.setHeight(widthAdjusted);
 			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
 		}
 		int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);

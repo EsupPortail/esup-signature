@@ -384,6 +384,7 @@ public class SignRequestController {
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", sseId);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
        }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

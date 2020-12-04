@@ -10,24 +10,27 @@ export class SignPosition extends EventFactory {
         this.currentScale = 1;
         this.signScale = 1;
         this.fixRatio = .75;
+        this.extraWidth = 0;
         this.currentSign = 0;
         this.signImages = signImages;
         let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
-        let sizes = this.getImageDimensions(img);
+        this.sizes = this.getImageDimensions(img);
         let signRequestParams = new SignRequestParams();
         signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
         signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
-        signRequestParams.signWidth = sizes.w * this.fixRatio;
-        signRequestParams.signHeight = sizes.h * this.fixRatio;
+        signRequestParams.signWidth = this.sizes.w * this.fixRatio;
+        signRequestParams.signHeight = this.sizes.h * this.fixRatio;
         signRequestParams.signPageNumber = signPageNumber;
         signRequestParams.signImageNumber = 0;
         this.signRequestParamses = [signRequestParams];
+        console.log(this.signRequestParamses);
         this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
         this.fontSize = 12;
         this.pointItMove = false;
         this.visualActive = true;
+        this.displayExtra = false;
         this.cross = $('#cross');
         this.borders = $('#borders');
         this.signZoomOutButton = $('#signZoomOut');
@@ -51,9 +54,30 @@ export class SignPosition extends EventFactory {
         this.removeSignButton.attr("disabled", "disabled");
         this.events = {};
         if(this.signType === "visa") {
-            this.toggleName();
-            this.toggleDate();
+            this.addText();
+            $('#extraButton').hide();
         }
+    }
+
+    initListeners() {
+        window.addEventListener("touchmove", e => this.touchIt(e), {passive: false});
+        this.initCrossListeners();
+        this.signZoomOutButton.on('click', e => this.signZoomOut(e));
+        this.signZoomInButton.on('click', e => this.signZoomIn(e));
+        this.signNextImageButton.on('click', e => this.signNextImage(e));
+        this.signPrevImageButton.on('click', e => this.signPrevImage(e));
+        this.addSignButton.on('click', e => this.addSign(e));
+        this.removeSignButton.on('click', e => this.removeSign(e));
+        if(this.signType !== "visa") {
+            $(document).ready(e => this.toggleExtraInfos());
+        }
+    }
+
+    initCrossListeners() {
+        this.cross.on('mousedown', e => this.dragSignature());
+        this.cross.on('touchstart', e => this.dragSignature());
+        this.cross.on('mouseup', e => this.stopDragSignature());
+        this.cross.on('touchend', e => this.stopDragSignature());
     }
 
     getCurrentSignParams() {
@@ -74,24 +98,6 @@ export class SignPosition extends EventFactory {
 
     getPdfYpos() {
         return Math.round(this.getCurrentSignParams().yPos / this.currentScale);
-    }
-
-    initListeners() {
-        window.addEventListener("touchmove", e => this.touchIt(e), {passive: false});
-        this.initCrossListeners();
-        this.signZoomOutButton.on('click', e => this.signZoomOut(e));
-        this.signZoomInButton.on('click', e => this.signZoomIn(e));
-        this.signNextImageButton.on('click', e => this.signNextImage(e));
-        this.signPrevImageButton.on('click', e => this.signPrevImage(e));
-        this.addSignButton.on('click', e => this.addSign(e));
-        this.removeSignButton.on('click', e => this.removeSign(e));
-    }
-
-    initCrossListeners() {
-        this.cross.on('mousedown', e => this.dragSignature());
-        this.cross.on('touchstart', e => this.dragSignature());
-        this.cross.on('mouseup', e => this.stopDragSignature());
-        this.cross.on('touchend', e => this.stopDragSignature());
     }
 
     addSign() {
@@ -151,13 +157,9 @@ export class SignPosition extends EventFactory {
         this.cross.children().children().remove();
         this.updateCrossPosition();
         this.initCrossListeners();
-        if(this.getCurrentSignParams().addName) {
-            this.getCurrentSignParams().addName = false;
-            this.toggleName()
-        }
-        if(this.getCurrentSignParams().addDate) {
-            this.getCurrentSignParams().addDate = false;
-            this.toggleDate()
+        if(this.getCurrentSignParams().extraName) {
+            this.getCurrentSignParams().extraName = false;
+            this.toggleExtraInfos();
         }
     }
 
@@ -279,9 +281,9 @@ export class SignPosition extends EventFactory {
 
         let signPrevImage = $("#signPrevImage");
         let signNextImage = $("#signNextImage");
-        signPrevImage.css('left', this.getUiXpos() + (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio) + 5 + "px");
+        signPrevImage.css('left', this.getUiXpos() - 80 + "px");
         signPrevImage.css('top', this.getUiYpos() + "px");
-        signNextImage.css('left', this.getUiXpos() + (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio) + 5 + "px");
+        signNextImage.css('left', this.getUiXpos() - 80 + "px");
         signNextImage.css('top', this.getUiYpos() + 32 + "px");
     }
 
@@ -310,12 +312,12 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignSize() {
-        console.debug("update sign size");
-        this.cross.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
-        this.cross.css('height', this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio);
-        this.borders.css('width', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
-        this.borders.css('height', this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio);
-        this.cross.css('background-size', this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio);
+        console.debug("update sign size " + this.getCurrentSignParams().signWidth);
+        this.cross.css('width', (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio));
+        this.cross.css('height', (this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio));
+        this.borders.css('width', (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio));
+        this.borders.css('height', (this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio));
+        this.cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale / this.fixRatio);
         $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         let textDate = $('#textDate');
         textDate.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
@@ -323,6 +325,10 @@ export class SignPosition extends EventFactory {
         let textName = $('#textName');
         textName.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
+        let textExtra = $('#textExtra');
+        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale + "px");
+        textExtra.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
+        textExtra.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();
     }
 
@@ -379,52 +385,49 @@ export class SignPosition extends EventFactory {
         console.log("toggle visual");
         if(this.visualActive) {
             this.visualActive = false;
-            $('#dateButton').prop('disabled', true);
-            $('#nameButton').prop('disabled', true);
             this.hideButtons();
         } else {
             this.visualActive = true;
-            $('#dateButton').prop('disabled', false);
-            $('#nameButton').prop('disabled', false);
-
         }
         this.cross.toggle();
         $('#pen').toggleClass('btn-outline-success btn-outline-dark').children().toggleClass('fa-eye-slash fa-eye');
     }
 
-    toggleDate() {
+    addText() {
         console.log("toggle date");
         $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
-        if(!this.getCurrentSignParams().addDate) {
-            this.getCurrentSignParams().addDate = true;
-            if(this.signType === "visa") {
-                this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
-            } else {
-                this.borders.append("<span id='textDate' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
-            }
-        } else {
-            this.getCurrentSignParams().addDate = false;
-            document.getElementById("textDate").remove();
-        }
+        this.borders.append("<span id='textName' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
+            "Visé par " + this.userName + "</span>");
+        this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
     }
 
-    toggleName() {
-        console.log("toggle name");
-        $('#nameButton').toggleClass('btn-outline-success btn-outline-dark');
-        if(!this.getCurrentSignParams().addName) {
-            this.getCurrentSignParams().addName = true;
-            if(this.signType === "visa") {
-                this.borders.prepend("<span id='textName' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
-                    "Visé par " + this.userName + "</span>");
-            } else {
-                this.borders.prepend("<span id='textName' class='align-top sign-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
-                    "Signé par " + this.userName + "</span>");
-            }
-
+    toggleExtraInfos() {
+        console.log("toggle extra");
+        $('#extraButton').toggleClass('btn-outline-success btn-outline-dark');
+        if(this.displayExtra) {
+            this.displayExtra = false;
+            this.getCurrentSignParams().addExtra = false;
+            this.extraWidth = 0;
+            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+            document.getElementById("textExtra").remove();
         } else {
-            this.getCurrentSignParams().addName = false;
-            document.getElementById("textName").remove();
+            this.displayExtra = true;
+            this.getCurrentSignParams().addExtra = true;
+            this.extraWidth = 200;
+            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + 200;
+            let signTypeText = "Signature calligraphique";
+            if(this.signType === "certSign" || this.signType === "nexuSign") {
+                signTypeText = "Signature électronique";
+            }
+            this.borders.append("<span id='textExtra' class='align-top visa-text' style='margin-left: " + this.extraWidth * this.currentScale + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
+                signTypeText +
+                "<br>" +
+                "Signé par " + this.userName +
+                "<br>" +
+                "Le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT] Z') +
+                "</span>");
         }
+        this.updateSignSize();
     }
 
 }

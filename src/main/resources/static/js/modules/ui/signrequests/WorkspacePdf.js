@@ -48,8 +48,7 @@ export class WorkspacePdf {
                         visualButton.classList.remove("d-none");
                         visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
                     }
-                    document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
-                    document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
+                    document.getElementById('extraButton').addEventListener('click', e => this.signPosition.toggleExtraInfos());
                 }
                 document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
             }
@@ -145,6 +144,7 @@ export class WorkspacePdf {
         }
 
     }
+
 
     static launchValidate() {
         if(!WorkspacePdf.validateForm()) {
