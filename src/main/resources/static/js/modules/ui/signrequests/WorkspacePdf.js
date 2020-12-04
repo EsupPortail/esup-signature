@@ -5,8 +5,8 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
-        console.info("Starting workspace UI");
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType) {
+        console.info("Starting workspace UI ");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
@@ -14,10 +14,9 @@ export class WorkspacePdf {
         this.signable = signable;
         this.signRequestId = id;
         this.signPosition = new SignPosition(
+            signType,
             this.currentSignRequestParams[0].xPos,
             this.currentSignRequestParams[0].yPos,
-            signWidth,
-            signHeight,
             this.currentSignRequestParams[0].signPageNumber,
             signImages,
             userName);

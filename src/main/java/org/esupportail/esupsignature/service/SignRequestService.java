@@ -471,19 +471,12 @@ public class SignRequestService {
 		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
-			if (signType.equals(SignType.visa)) {
-				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-					if (visual) {
-						eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
-						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequest.getCurrentSignRequestParams(), user);
-					}
-				}
-			} else {
-				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-					for(SignRequestParams signRequestParams : signRequestParamses) {
-						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
-						updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-					}
+
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
+				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
+				for(SignRequestParams signRequestParams : signRequestParamses) {
+					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
+					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
 				}
 			}
 			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
