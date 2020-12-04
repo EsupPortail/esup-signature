@@ -151,12 +151,9 @@ fs:
 
 pdf:
     convert-to-pdf-a: true
-    height: 842
-    path-to-g-s: /usr/bin/gs
     pdf-a-level: 2
+    path-to-g-s: /usr/bin/gs
     pdf-to-image-dpi: 72
-    sign-width-threshold: 150
-    width: 595
 
 security:
     cas:

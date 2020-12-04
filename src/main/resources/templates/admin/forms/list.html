@@ -114,9 +114,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="addModel"
-                  th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
-                  method="post" enctype="multipart/form-data">
+            <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="name" class="col-form-label">Nom</label>
@@ -139,7 +137,7 @@
                         </div>
                     <div class="form-group">
                         <label for="roleName" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
-                        <input type="text" id="roleName" name="roleName" class="form-control" required>
+                        <input type="text" id="roleName" name="roleName" class="form-control">
                     </div>
                     <div class="form-group">
                         <label for="workflowType" class="col-form-label">Type de workflow</label>

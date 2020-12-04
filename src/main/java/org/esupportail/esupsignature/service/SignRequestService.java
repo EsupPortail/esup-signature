@@ -442,7 +442,7 @@ public class SignRequestService {
 	}
 
 
-	public void sign(SignRequest signRequest, User user, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap) throws EsupSignatureException, IOException, InterruptedException {
+	public void sign(SignRequest signRequest, User user, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId) throws EsupSignatureException, IOException, InterruptedException {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest);
 		SignType signType = getCurrentSignType(signRequest);
 		InputStream filledInputStream;
@@ -462,7 +462,7 @@ public class SignRequestService {
 			}
 		}
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", sseId);
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
@@ -471,19 +471,12 @@ public class SignRequestService {
 		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
-			if (signType.equals(SignType.visa)) {
-				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-					if (visual) {
-						eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", user);
-						signedInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequest.getCurrentSignRequestParams(), user);
-					}
-				}
-			} else {
-				if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-					for(SignRequestParams signRequestParams : signRequestParamses) {
-						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
-						updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-					}
+
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
+				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
+				for(SignRequestParams signRequestParams : signRequestParamses) {
+					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
+					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
 				}
 			}
 			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
@@ -495,7 +488,7 @@ public class SignRequestService {
 				copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
-			certSign(signRequest, user, password, visual);
+			certSign(signRequest, user, password, visual, sseId);
 		}
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
@@ -510,7 +503,7 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
 			}
 		}
-		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", user);
+		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
 		applyEndOfSignRules(signRequest, user);
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
@@ -599,25 +592,25 @@ public class SignRequestService {
 //
 //	}
 
-	public void certSign(SignRequest signRequest, User user, String password, boolean visual) throws EsupSignatureException, InterruptedException {
+	public void certSign(SignRequest signRequest, User user, String password, boolean visual, String sseId) throws EsupSignatureException, InterruptedException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest)) {
 			toSignDocuments.add(document);
 		}
-		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), "sign", user);
+		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), "sign", sseId);
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
-			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), "sign", sseId);
 			pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
-			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), "sign", sseId);
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 
-			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), "sign", sseId);
 
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
@@ -640,9 +633,9 @@ public class SignRequestService {
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
-				eventService.publishEvent(new JsonMessage("step", "Signature du document", null), "sign", user);
+				eventService.publishEvent(new JsonMessage("step", "Signature du document", null), "sign", sseId);
 			} else {
-				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), "sign", user);
+				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), "sign", sseId);
 			}
 
 			parameters.setSigningCertificate(certificateToken);
@@ -656,14 +649,14 @@ public class SignRequestService {
 			}
 			pkcs12SignatureToken.close();
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), "sign", sseId);
 			addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), "sign", user);
+			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), "sign", sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", user);
+			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureException(e.getMessage(), e);
 		}
@@ -717,7 +710,7 @@ public class SignRequestService {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (!recipientUser.getUserType().equals(UserType.external) && !recipientUser.equals(user) && (recipientUser.getEmailAlertFrequency() == null || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) || userService.checkEmailAlert(recipientUser))) {
-					sendSignRequestEmailAlert(recipientUser, signRequest);
+				sendSignRequestEmailAlert(recipientUser, signRequest);
 			}
 		}
 	}
