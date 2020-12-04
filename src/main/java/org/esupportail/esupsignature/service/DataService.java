@@ -110,6 +110,7 @@ public class DataService {
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
+        signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
         if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
             try {
@@ -124,7 +125,6 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
-        signBookService.importWorkflow(signBook, computedWorkflow);
         workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
