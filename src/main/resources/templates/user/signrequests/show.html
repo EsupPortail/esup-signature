@@ -60,7 +60,7 @@
                            title="Signer"><i class="fas fa-file-signature"></i></a>
                     </li>
                     <li th:unless="${!signRequest.signable || currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <a  role="button" class="btn-floating btn-lg bg-success waves-effect"
+                        <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
                     <li th:if="${signRequest.signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
