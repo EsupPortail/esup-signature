@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -141,25 +142,24 @@ public class DataService {
         return signBook;
     }
 
-    public Data updateData(@RequestParam MultiValueMap<String, String> formDatas, User user, Form form, Data data) {
-
+    public Data updateData(@RequestParam Map<String, String> formDatas, User user, Form form, Data data) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
             if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
-                formDatas.add(field.getName(), field.getDefaultValue());
+                formDatas.put(field.getName(), field.getDefaultValue());
             }
         }
 
         for(String savedDataKeys : data.getDatas().keySet()) {
             if(!formDatas.containsKey(savedDataKeys)) {
-                formDatas.put(savedDataKeys, Collections.singletonList(""));
+                formDatas.put(savedDataKeys, "");
             }
         }
 
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         data.setName(form.getTitle() + "_" + format.format(new Date()));
-        data.getDatas().putAll(formDatas.toSingleValueMap());
+        data.getDatas().putAll(formDatas);
         data.setForm(form);
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());

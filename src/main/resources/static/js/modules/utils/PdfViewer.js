@@ -519,21 +519,46 @@ export class PdfViewer extends EventFactory {
         if (this.pageNum <= 1) {
             return;
         }
-        this.pageNum--;
-        this.renderPage(this.pageNum);
-        window.scrollTo(0, 0);
-        this.fireEvent('pageChange', ['prev']);
-
+        let tempName = document.getElementById('tempName');
+        if (tempName != null) {
+            if (tempName.checkValidity()) {
+                this.pageNum--;
+                this.renderPage(this.pageNum);
+                window.scrollTo(0, 0);
+                this.fireEvent('pageChange', ['prev']);
+            } else {
+                tempName.focus();
+                document.getElementById('tempName');
+            }
+        } else {
+            this.pageNum--;
+            this.renderPage(this.pageNum);
+            window.scrollTo(0, 0);
+            this.fireEvent('pageChange', ['prev']);
+        }
     }
 
     nextPage() {
         if (this.pageNum >= this.numPages) {
             return;
         }
-        this.pageNum++;
-        this.renderPage(this.pageNum);
-        window.scrollTo(0, 0);
-        this.fireEvent('pageChange', ['next']);
+        let tempName = document.getElementById('tempName');
+        if (tempName != null) {
+            if (tempName.checkValidity()) {
+                this.pageNum++;
+                this.renderPage(this.pageNum);
+                window.scrollTo(0, 0);
+                this.fireEvent('pageChange', ['next']);
+            } else {
+                tempName.focus();
+                document.getElementById('tempName');
+            }
+        } else {
+            this.pageNum++;
+            this.renderPage(this.pageNum);
+            window.scrollTo(0, 0);
+            this.fireEvent('pageChange', ['next']);
+        }
     }
 
     zoomIn() {

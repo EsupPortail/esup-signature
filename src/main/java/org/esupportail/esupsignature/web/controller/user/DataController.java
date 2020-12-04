@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -212,22 +214,23 @@ public class DataController {
 	}
 
 	@PostMapping("form/{id}")
+	@ResponseBody
 	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 						  @RequestParam Long dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
-						  RedirectAttributes redirectAttributes) {
+						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
 		Form form = formService.getFormById(id);
-		formData.remove("_csrf");
-		formData.remove("dataId");
 		Data data;
 		if(dataId != null) {
 			data = dataRepository.findById(dataId).get();
 		} else {
 			data = new Data();
 		}
-		data = dataService.updateData(formData, user, form, data);
+		data = dataService.updateData(datas, user, form, data);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
-		return "redirect:/user/datas/" + data.getId() + "/update";
+		return "/user/datas/" + data.getId() + "/update";
 	}
 
 	@PutMapping("{id}")
