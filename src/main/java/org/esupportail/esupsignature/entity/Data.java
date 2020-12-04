@@ -35,7 +35,7 @@ public class Data {
     private Date updateDate;
 
     @OrderColumn
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
 	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)
