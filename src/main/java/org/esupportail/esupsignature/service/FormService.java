@@ -293,4 +293,12 @@ public class FormService {
 			}
 		}
 	}
+
+	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
+		return formRepository.findFormByNameAndActiveVersion(name, true);
+	}
+
+	public List<Form> getFormByName(String name) {
+		return formRepository.findFormByName(name);
+	}
 }
