@@ -116,4 +116,11 @@ public class DocumentService {
 		}
 	}
 
+	public void delete(Document document) {
+		documentRepository.delete(document);
+	}
+
+	public Document getDocumentById(Long id) {
+		return documentRepository.findById(id).get();
+	}
 }
