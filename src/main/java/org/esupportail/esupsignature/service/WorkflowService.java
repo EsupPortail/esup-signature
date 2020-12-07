@@ -106,14 +106,13 @@ public class WorkflowService {
 
     public boolean preAuthorizeOwner(String name, User user) {
         Workflow workflow = workflowRepository.findByName(name);
-        return workflow.getCreateBy().equals(user);
+        return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());
     }
 
     public boolean preAuthorizeOwner(Long id, User user) {
         Workflow workflow = workflowRepository.findById(id).get();
-        return user.equals(workflow.getCreateBy());
+        return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());
     }
-
 
     @Transactional
     public void init() throws EsupSignatureException {
@@ -378,6 +377,14 @@ public class WorkflowService {
         return workflowStep;
     }
 
+
+    public void addStep(String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Workflow workflow) throws EsupSignatureUserException {
+        WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+        workflowStep.setDescription(description);
+        workflowStep.setChangeable(changeable);
+        workflow.getWorkflowSteps().add(workflowStep);
+    }
+
     public boolean isWorkflowStepFullSigned(LiveWorkflowStep liveWorkflowStep) {
         for (Recipient recipient : liveWorkflowStep.getRecipients()) {
             if (!recipient.getSigned()) {
@@ -434,6 +441,10 @@ public class WorkflowService {
             }
         }
         return null;
+    }
+
+    public Workflow getWorkflowById(Long id) {
+        return workflowRepository.findById(id).get();
     }
 
     public Workflow getWorkflowByName(String name) {
@@ -493,6 +504,48 @@ public class WorkflowService {
             }
             i++;
         }
+    }
+
+    public WorkflowStep addStepRecipients(User user, Long workflowStepId, String recipientsEmails, Workflow workflow) {
+        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+        if(user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser())) {
+            addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
+        } else {
+            logger.warn(user.getEppn() + " try to update " + workflow.getId() + " without rights");
+        }
+        return workflowStep;
+    }
+
+    public WorkflowStep removeStepRecipient(User user, Long workflowStepId, Long userId, Workflow workflow) {
+        WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
+        if(user.equals(workflow.getCreateBy()) || userService.getSystemUser().equals(workflow.getCreateBy())) {
+            User recipientToRemove = userRepository.findById(userId).get();
+            workflowStep.getUsers().remove(recipientToRemove);
+        } else {
+            logger.warn(user.getEppn() + " try to move " + workflow.getId() + " without rights");
+        }
+        return workflowStep;
+    }
+
+
+    public void updateStep(Integer step, SignType signType, String description, Boolean changeable, Boolean allSignToComplete, Workflow workflow) {
+        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
+        changeSignType(workflowStep, null, signType);
+        workflowStep.setDescription(description);
+        workflowStep.setChangeable(changeable);
+        workflowStep.setAllSignToComplete(allSignToComplete);
+    }
+
+    public void removeStep(Integer stepNumber, Workflow workflow) {
+        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
+        workflow.getWorkflowSteps().remove(workflowStep);
+        workflowRepository.save(workflow);
+        workflowStepRepository.delete(workflowStep);
+    }
+
+
+    public void deleteWorkflow(Workflow workflow) {
+        workflowRepository.delete(workflow);
     }
 
 }
