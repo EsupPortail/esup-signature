@@ -1098,4 +1098,8 @@ public class SignRequestService {
 			userRepository.save(recipientUser);
 		}
 	}
+
+	public SignRequest getSignRequestsById(long id) {
+		return signRequestRepository.findById(id).get();
+	}
 }
