@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import ch.rasc.sse.eventbus.SseEvent;
-import ch.rasc.sse.eventbus.SseEventBus;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -13,10 +11,6 @@ import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.ApplicationEventMulticaster;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -103,11 +97,24 @@ public class SignBookService {
         }
     }
 
-    public SignBook getSignBook(String name) throws EsupSignatureException {
-        if (signBookRepository.countByName(name) > 0) {
-            return signBookRepository.findByName(name).get(0);
-        }
-        return null;
+
+    public void initSignBook(User user, Long id, SignBook signBook) {
+        Workflow workflow = workflowService.getWorkflowById(id);
+        signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
+        signBook.setTitle(workflow.getDescription());
+        signBook.getLiveWorkflow().setWorkflow(workflow);
+    }
+
+    public List<SignBook> getSignBooksByCreateBy(User user) {
+        return signBookRepository.findByCreateBy(user);
+    }
+
+    public SignBook getSignBookByName(String name) {
+        return signBookRepository.findByName(name).get(0);
+    }
+
+    public SignBook getSignBookById(Long id) {
+        return signBookRepository.findById(id).get();
     }
 
     public List<SignBook> getSharedSignBooks(User user) {
@@ -173,7 +180,7 @@ public class SignBookService {
     }
 
     public boolean preAuthorizeManage(String name, User user) throws EsupSignatureException {
-        SignBook signBook = getSignBook(name);
+        SignBook signBook = getSignBookByName(name);
         return checkUserManageRights(user, signBook);
     }
 
@@ -248,6 +255,16 @@ public class SignBookService {
         if(nbDocOnDataBase == 0) {
             signBook.setStatus(SignRequestStatus.cleaned);
 
+        }
+    }
+
+    public boolean startLiveWorkflow(User user, SignBook signBook) {
+        if(signBook.getLiveWorkflow().getWorkflowSteps().size() >  0) {
+            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
+            pendingSignBook(signBook, user);
+            return true;
+        }else {
+            return false;
         }
     }
 

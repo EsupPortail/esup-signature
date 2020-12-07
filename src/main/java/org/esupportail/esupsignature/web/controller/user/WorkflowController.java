@@ -112,7 +112,7 @@ public class WorkflowController {
     @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
     public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getWorkflowById(id);
-        workflowService.deleteWorkflow(workflow);
+        workflowService.delete(workflow);
         return "redirect:/";
     }
 

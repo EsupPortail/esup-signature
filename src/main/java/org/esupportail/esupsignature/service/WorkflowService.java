@@ -3,10 +3,7 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -47,6 +44,12 @@ public class WorkflowService {
 
     @Resource
     private WorkflowStepRepository workflowStepRepository;
+
+    @Resource
+    private LiveWorkflowRepository liveWorkflowRepository;
+
+    @Resource
+    private SignBookRepository signBookRepository;
 
     @Resource
     private UserRepository userRepository;
@@ -169,6 +172,15 @@ public class WorkflowService {
 
     public boolean isWorkflowExist(String name) {
         return workflowRepository.countByName(name) > 0;
+    }
+
+    public Workflow createWorkflow(User user) {
+        Workflow workflow;
+        workflow = new Workflow();
+        workflow.setCreateDate(new Date());
+        workflow.setCreateBy(user);
+        workflowRepository.save(workflow);
+        return workflow;
     }
 
     public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
@@ -451,6 +463,17 @@ public class WorkflowService {
         return workflowRepository.findByName(name);
     }
 
+    public Workflow initWorkflow(User user, Long id, String name) {
+        Workflow workflow = getWorkflowById(id);
+        workflow.setSourceType(DocumentIOType.none);
+        workflow.setTargetType(DocumentIOType.none);
+        workflow.setCreateBy(user);
+        workflow.setName(name);
+        workflow.setDescription(name);
+        workflow.setTitle(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+        return workflow;
+    }
+
     public Workflow computeWorkflow(Workflow workflow, List<String> recipientEmails, User user, boolean computeForDisplay) throws EsupSignatureException {
         try {
             Workflow modelWorkflow = (Workflow) BeanUtils.cloneBean(workflow);
@@ -544,7 +567,16 @@ public class WorkflowService {
     }
 
 
-    public void deleteWorkflow(Workflow workflow) {
+    public void delete(Workflow workflow) {
+        List<LiveWorkflow> liveWorkflows = liveWorkflowRepository.findByWorkflow(workflow);
+        List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
+        List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
+        for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
+            List<SignBook> signBooks = signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
+            signBooks.forEach(s -> signBookRepository.delete(s));
+        }
+        deleteLiveWorkflows.forEach(l -> liveWorkflowRepository.delete(l));
+        noneDeleteLiveWorkflows.forEach(l -> l.setWorkflow(null));
         workflowRepository.delete(workflow);
     }
 
