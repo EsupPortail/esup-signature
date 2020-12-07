@@ -199,6 +199,10 @@ public class SignRequestService {
 		return signRequestList;
 	}
 
+	public Page<SignRequest> getSignRequestsByStatus(SignRequestStatus signRequestStatus, Pageable pageable) {
+		return signRequestRepository.findBySignResquestByStatus(signRequestStatus, pageable);
+	}
+
 	public List<SignRequest> getSignRequestsByStatus(User user, String statusFilter) {
 		Set<SignRequest> signRequests = new HashSet<>();
 		if (statusFilter != null) {
@@ -1097,5 +1101,9 @@ public class SignRequestService {
 			mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
 			userRepository.save(recipientUser);
 		}
+	}
+
+	public SignRequest findById(Long id) {
+		return signRequestRepository.findById(id).get();
 	}
 }

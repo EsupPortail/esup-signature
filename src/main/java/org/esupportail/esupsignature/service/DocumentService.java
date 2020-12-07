@@ -116,4 +116,8 @@ public class DocumentService {
 		}
 	}
 
+	public Document findById(Long id) {
+		return documentRepository.findById(id).get();
+	}
+
 }
