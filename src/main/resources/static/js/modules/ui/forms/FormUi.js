@@ -8,7 +8,7 @@ export default class FormUi {
         this.formId = formId;
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
-        this.btnSaveFields = $('#btn-save-fields');
+        this.btnSaveFields = $('#saveButton');
         this.sseDispatcher = new SseDispatcher();
         this.initListeners();
     }
