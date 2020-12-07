@@ -7,11 +7,11 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module" th:if="${form.document != null}">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-    new CreateDataUi([[${form.action}]], [[${form.document.id}]], [[${fields}]]);</script>
+    new CreateDataUi([[${form.id}]], [[${form.action}]], [[${form.document.id}]], [[${fields}]], [[${_csrf}]]);</script>
 <body>
 <script th:inline="javascript" type="module" th:unless="${form.document != null}">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-    new CreateDataUi([[${form.action}]], null, null);</script>
+    new CreateDataUi([[${form.id}]], [[${form.action}]], null, null, [[${_csrf}]]);</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -187,7 +187,8 @@
                                 </p>
                             </div>
                         </th:block>
-                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
+                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">                XHR.open('POST', '/user/datas/form/' + this.formId);
+                XHR.send(FD);
                             <label>Etape finale : Envoi par mail à </label>
                             <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                                 <th:block th:each="targetEmail : ${targetEmails}">

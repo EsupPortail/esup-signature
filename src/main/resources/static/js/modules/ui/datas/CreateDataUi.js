@@ -2,7 +2,7 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 
 export class CreateDataUi {
 
-    constructor(action, documentId, fields) {
+    constructor(id, action, documentId, fields, csrf) {
         console.info("Starting data UI");
         if(documentId) {
             this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
@@ -12,6 +12,13 @@ export class CreateDataUi {
         this.action = action;
         this.actionEnable = 0;
         this.initListeners();
+        this.formId = id;
+        this.csrf = csrf;
+        if (this.pdfViewer.dataFields[0].defaultValue != null) {
+            for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
+                this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
+            }
+        }
     }
 
 
@@ -59,13 +66,26 @@ export class CreateDataUi {
         this.actionEnable++;
     }
 
-    saveData(e) {
+    async saveData(e) {
         e.preventDefault();
+        await this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items));
+        Promise.resolve(this.pdfViewer.page.getAnnotations());
+        var formData  = new Map();
         console.info("check data name");
         let tempName = document.getElementById('tempName');
         if (tempName.checkValidity()) {
-            console.info("submit form");
-            document.getElementById('newDataSubmit').click();
+            this.pdfViewer.savedFields.forEach(function (value, key, map){
+                formData[key]= value;
+            })
+            var json = JSON.stringify(formData);
+            $.ajax({
+                data: {'formData': json},
+                type: 'POST',
+                url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + $('#dataId').val(),
+                success: function (response){
+                    window.location.href = response;
+                }
+            });
         } else {
             tempName.focus();
             document.getElementById('tempName');

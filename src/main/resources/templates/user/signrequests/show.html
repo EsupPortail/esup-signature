@@ -33,6 +33,11 @@
     );
     if(signUi.workspace.pdfViewer) {
         signUi.workspace.pdfViewer.setDataFields([[${fields}]]);
+        if (signUi.workspace.pdfViewer.dataFields[0].defaultValue != null) {
+            for (let i = 0 ; i < signUi.workspace.pdfViewer.dataFields.length ; i++) {
+                signUi.workspace.pdfViewer.savedFields.set(signUi.workspace.pdfViewer.dataFields[i].name, signUi.workspace.pdfViewer.dataFields[i].defaultValue);
+            }
+        }
     }
 </script>
 <main role="main">
