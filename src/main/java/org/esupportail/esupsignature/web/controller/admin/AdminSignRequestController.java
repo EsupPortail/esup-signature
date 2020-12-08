@@ -9,8 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
@@ -56,21 +54,24 @@ public class AdminSignRequestController {
 	}
 
 	private SignRequestStatus statusFilter = null;
+
+	@Resource
+	private SignRequestRepository signRequestRepository;
 	
 	@Resource
 	private SignRequestService signRequestService;
 
 	@Resource
+	private DocumentRepository documentRepository;
+
+	@Resource
 	private SignBookService signBookService;
 
 	@Resource
+	private LogRepository logRepository;
+
+	@Resource
 	private FileService fileService;
-
-	@Resource
-	private LogService logService;
-
-	@Resource
-	private DocumentService documentService;
 
 	@GetMapping
 	public String list(
@@ -86,7 +87,7 @@ public class AdminSignRequestController {
 			}
 		}
 
-		Page<SignRequest> signRequests = signRequestService.getSignRequestsByStatus(this.statusFilter,  pageable);
+		Page<SignRequest> signRequests = signRequestRepository.findBySignResquestByStatus(this.statusFilter,  pageable);
 
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signRequests", signRequests);
@@ -96,19 +97,19 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
 
-		SignRequest signRequest = signRequestService.findById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
-			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+			if(signRequest.getToSignDocuments().size() == 1) {
+				toDisplayDocument = signRequest.getToSignDocuments().get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				}
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
-			List<Log> logs = logService.findBySignRequestId(signRequest.getId());
+			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
 			model.addAttribute("logs", logs);
 			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
 			model.addAttribute("signRequest", signRequest);
@@ -118,7 +119,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/getfile/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		Document document = documentService.findById(id);
+		Document document = documentRepository.findById(id).get();
 		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 		response.setContentType(document.getContentType());
 		IOUtils.copy(document.getInputStream(), response.getOutputStream());
@@ -127,7 +128,7 @@ public class AdminSignRequestController {
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@PathVariable("id") Long id, Model model) {
-		SignRequest signRequest = signRequestService.findById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signBookService.delete(signRequest.getParentSignBook());
 
 		return "redirect:/admin/signrequests/";
@@ -136,7 +137,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestService.findById(id);
-		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+		List<Document> documents = signRequest.getToSignDocuments();
 		try {
 			if(documents.size() > 1) {
 				response.sendRedirect("/user/signrequests/" + id);
@@ -154,7 +155,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/complete/{id}")
 	public String complete(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
-		SignRequest signRequest = signRequestService.findById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		if(signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			//signRequestService.completeSignRequest(signRequest, user);
 		} else {
@@ -166,7 +167,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/pending/{id}")
 	public String pending(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, HttpServletRequest request) {
-		SignRequest signRequest = signRequestService.findById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
 			signRequestService.updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS");
@@ -179,7 +180,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/comment/{id}")
 	public String comment(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 			@RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-		SignRequest signRequest = signRequestService.findById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signRequest.setComment(comment);
 		signRequestService.updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", null, null, null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Commentaire ajouté"));

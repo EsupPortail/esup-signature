@@ -29,8 +29,6 @@ import java.util.List;
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SetGlobalAttributs {
 
-    private static final Logger logger = LoggerFactory.getLogger(SetGlobalAttributs.class);
-
     @Autowired(required = false)
     private BuildProperties buildProperties;
 

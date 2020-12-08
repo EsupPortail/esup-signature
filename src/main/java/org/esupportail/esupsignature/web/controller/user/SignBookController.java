@@ -103,25 +103,6 @@ public class SignBookController {
         return "user/signrequests/update-signbook";
     }
 
-//    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
-//    @GetMapping(value = "/update-step/{id}/{step}")
-//    public String changeStepSignType(@ModelAttribute("user") User authUser, @PathVariable("id") Long id,
-//                                     @PathVariable("step") Integer step,
-//                                     @RequestParam(name="name", required = false) String name,
-//                                     @RequestParam(name="signType") SignType signType,
-//                                     @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-//        SignBook signBook = signBookRepository.findById(id).get();
-//        if(user.equals(signBook.getCreateBy()) && signBook.getLiveWorkflow().getCurrentStepNumber() <= step + 1) {
-//            if(allSignToComplete == null) {
-//                allSignToComplete = false;
-//            }
-//            signBookService.changeSignType(signBook, step, signType);
-//            signBookService.toggleNeedAllSign(signBook, step, allSignToComplete);
-//            return "redirect:/user/signrequests/" + id + "/?form";
-//        }
-//        return "redirect:/user/signbooks/";
-//    }
-
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
@@ -134,7 +115,7 @@ public class SignBookController {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber + 1 >= currentSetNumber) {
             try {
-                liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+                liveWorkflowStep = liveWorkflowService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
             } catch (EsupSignatureUserException e) {
                 logger.error("error on add step", e);
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout des participants"));
@@ -189,8 +170,7 @@ public class SignBookController {
             SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), authUser);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
-            LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-            signRequestService.pendingSignRequest(signRequest, liveWorkflowStep.getSignType(), liveWorkflowStep.getAllSignToComplete());
+            signRequestService.pendingSignRequest(signRequest);
         }
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
@@ -238,14 +218,18 @@ public class SignBookController {
                                                     @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
+        addDocsInSignBookUnique(user, name, multipartFiles);
+        String[] ok = {"ok"};
+        return ok;
+    }
+
+    private void addDocsInSignBookUnique(User user, String name, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         SignBook signBook = signBookService.createSignBook(name, "", user, false);
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
             signBookService.addSignRequest(signBook, signRequest);
         }
-        String[] ok = {"ok"};
-        return ok;
     }
 
 }

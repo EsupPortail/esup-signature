@@ -285,4 +285,40 @@ public class SignRequest {
         }
         return liteDocuments;
     }
+
+    public List<Document> getToSignDocuments() {
+        List<Document> documents = new ArrayList<>();
+        if(this.getSignedDocuments() != null && this.getSignedDocuments().size() > 0 ) {
+            documents.add(this.getLastSignedDocument());
+        } else {
+            documents.addAll(this.getOriginalDocuments());
+        }
+        return documents;
+    }
+
+    public Document getLastSignedDocument() {
+        if(this.getSignedDocuments().size() > 0) {
+            return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);
+        } else {
+            return getLastOriginalDocument();
+        }
+    }
+
+    public Document getLastOriginalDocument() {
+        List<Document> documents = this.getOriginalDocuments();
+        if (documents.size() != 1) {
+            return null;
+        } else {
+            return documents.get(0);
+        }
+    }
+
+    public SignType getCurrentSignType() {
+        if(this.getParentSignBook().getLiveWorkflow().getWorkflowSteps() != null && this.getSignable()) {
+            return this.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
+        } else {
+            return null;
+        }
+    }
+
 }

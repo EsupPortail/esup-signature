@@ -67,16 +67,13 @@ public class NexuProcessController {
 		if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
 			AbstractSignatureForm signatureDocumentForm;
 			List<Document> toSignFiles = new ArrayList<>();
-			for(Document document : signRequestService.getToSignDocuments(signRequest)) {
+			for(Document document : signRequest.getToSignDocuments()) {
 				toSignFiles.add(document);
 			}
 			signatureDocumentForm = signService.getSignatureDocumentForm(toSignFiles, signRequest, true);
 			model.addAttribute("signRequestId", signRequest.getId());
 			model.addAttribute("signatureDocumentForm", signatureDocumentForm);
 			model.addAttribute("digestAlgorithm", signatureDocumentForm.getDigestAlgorithm());
-			model.addAttribute("rootUrl", globalProperties.getRootUrl());
-			model.addAttribute("nexuUrl", globalProperties.getNexuUrl());
-			model.addAttribute("nexuVersion", globalProperties.getNexuVersion());
 			model.addAttribute("referer", referer);
 			return "user/signrequests/nexu-signature-process";
 		} else {
