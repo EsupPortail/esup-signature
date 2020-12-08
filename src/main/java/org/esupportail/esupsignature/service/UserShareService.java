@@ -6,9 +6,15 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.web.controller.user.UserController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,6 +22,8 @@ import java.util.List;
 
 @Service
 public class UserShareService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserShareService.class);
 
     @Resource
     private UserService userService;
@@ -76,6 +84,53 @@ public class UserShareService {
         userShareRepository.save(userShare);
     }
 
+    public void addUserShare(User authUser, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
+        List<User> users = new ArrayList<>();
+        for (String userEmail : userEmails) {
+            users.add(userService.checkUserByEmail(userEmail));
+        }
+        Date beginDateDate = null;
+        Date endDateDate = null;
+        if (beginDate != null && endDate != null) {
+            try {
+                beginDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(beginDate);
+                endDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+            } catch (ParseException e) {
+                logger.error("error on parsing dates");
+            }
+        }
+        createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+    }
+
+    public void updateUserShare(User authUser, String[] types, String[] userEmails, String beginDate, String endDate, UserShare userShare) {
+        if(userShare.getUser().equals(authUser)) {
+            userShare.getToUsers().clear();
+            for (String userEmail : userEmails) {
+                userShare.getToUsers().add(userService.checkUserByEmail(userEmail));
+            }
+            userShare.getShareTypes().clear();
+            List<ShareType> authorizedShareTypes = new ArrayList<>();
+            if(userShare.getWorkflow() != null) {
+                authorizedShareTypes.addAll(userShare.getWorkflow().getAuthorizedShareTypes());
+            }
+            if(userShare.getForm() != null ) {
+                authorizedShareTypes.addAll(userShare.getForm().getAuthorizedShareTypes());
+            }
+            for(String type : types) {
+                if(authorizedShareTypes.contains(ShareType.valueOf(type))) {
+                    userShare.getShareTypes().add(ShareType.valueOf(type));
+                }
+            }
+            if (beginDate != null && endDate != null) {
+                try {
+                    userShare.setBeginDate(new SimpleDateFormat("yyyy-MM-dd").parse(beginDate));
+                    userShare.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(endDate));
+                } catch (ParseException e) {
+                    logger.error("error on parsing dates");
+                }
+            }
+        }
+    }
 
     public Boolean switchToShareUser(String eppn) {
         if(eppn == null || eppn.isEmpty()) {
@@ -164,4 +219,15 @@ public class UserShareService {
         return false;
     }
 
+    public List<UserShare> getUserShareByUser(User authUser) {
+        return userShareRepository.findByUser(authUser);
+    }
+
+    public UserShare getUserShareById(Long id) {
+        return userShareRepository.findById(id).get();
+    }
+
+    public void delete(UserShare userShare) {
+        userShareRepository.delete(userShare);
+    }
 }

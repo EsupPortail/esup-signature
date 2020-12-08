@@ -60,9 +60,6 @@ public class ValidationController {
 	private PdfService pdfService;
 
 	@Resource
-	private SignRequestRepository signRequestRepository;
-	
-	@Resource
 	private SignRequestService signRequestService;
 	
 	@GetMapping
@@ -100,7 +97,7 @@ public class ValidationController {
 //	@Transactional
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
+		SignRequest signRequest = signRequestService.getSignRequestsById(id);
 
 		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
 

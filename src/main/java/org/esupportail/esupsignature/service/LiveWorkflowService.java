@@ -1,14 +1,14 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.LiveWorkflowStep;
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.web.controller.user.WizardController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -16,6 +16,8 @@ import java.util.Arrays;
 
 @Service
 public class LiveWorkflowService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LiveWorkflowService.class);
 
     @Resource
     LiveWorkflowStepRepository liveWorkflowStepRepository;
@@ -76,6 +78,12 @@ public class LiveWorkflowService {
             liveWorkflowStep.setAllSignToComplete(true);
         }
         return liveWorkflowStep.getId();
+    }
+
+    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, SignBook signBook) throws EsupSignatureUserException {
+        logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
+        LiveWorkflowStep liveWorkflowStep = createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
+        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
     }
 
     public Long setSignTypeForWorkflowStep(SignType signType, LiveWorkflowStep liveWorkflowStep) {

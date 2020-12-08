@@ -87,4 +87,8 @@ public class UserPropertieService {
         }
         return users;
     }
+
+    public List<UserPropertie> getUserPropertiesByUser(User user) {
+        return userPropertieRepository.findByUser(user);
+    }
 }

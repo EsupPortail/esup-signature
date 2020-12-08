@@ -1106,4 +1106,8 @@ public class SignRequestService {
 	public SignRequest findById(Long id) {
 		return signRequestRepository.findById(id).get();
 	}
+
+	public SignRequest getSignRequestsById(long id) {
+		return signRequestRepository.findById(id).get();
+	}
 }
