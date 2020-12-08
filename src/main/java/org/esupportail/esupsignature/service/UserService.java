@@ -479,4 +479,7 @@ public class UserService {
         return base64UserSignatures;
     }
 
+    public User getUserById(Long id) {
+        return userRepository.findById(id).get();
+    }
 }

@@ -34,7 +34,7 @@ public class LiveWorkflowService {
     @Resource
     RecipientRepository recipientRepository;
 
-    public LiveWorkflowStep createWorkflowStep(String name, String parentType, Long parentId, Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
+    public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         if(allSignToComplete ==null) {
             liveWorkflowStep.setAllSignToComplete(false);
@@ -82,7 +82,7 @@ public class LiveWorkflowService {
 
     public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, SignBook signBook) throws EsupSignatureUserException {
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-        LiveWorkflowStep liveWorkflowStep = createWorkflowStep("", "signBook", signBook.getId(), allSignToComplete, signType, recipientsEmail);
+        LiveWorkflowStep liveWorkflowStep = createWorkflowStep(allSignToComplete, signType, recipientsEmail);
         signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
     }
 

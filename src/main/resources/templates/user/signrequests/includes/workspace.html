@@ -59,7 +59,7 @@
         </div>
     </form>
 
-    <div id="commentsTools" th:if="${documentType == 'pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
+    <div id="commentsTools" th:if="${signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
         <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
             cliquant sur l’endroit concerné du document
         </div>

@@ -1,11 +1,10 @@
 export class Nexu {
 
-    constructor(nexuUrl, nexuVersion, rootUrl, addDate, addName) {
+    constructor(nexuUrl, nexuVersion, rootUrl, addExtra) {
         this.nexuUrl = nexuUrl;
         this.nexuVersion = nexuVersion;
         Nexu.rootUrl = rootUrl;
-        Nexu.addDate = addDate;
-        Nexu.addName = addName;
+        Nexu.addExtra = addExtra;
         this.tokenId = null;
         this.keyId = null;
         this.checkNexuClient();
@@ -43,7 +42,7 @@ export class Nexu {
             Nexu.keyId = certificateData.response.keyId;
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addDate=" + Nexu.addDate + "&addName=" + Nexu.addName, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addExtra=" + Nexu.addExtra, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 

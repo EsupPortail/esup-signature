@@ -218,7 +218,7 @@ public class MailService {
         message.setFrom(mailConfig.getIfAvailable().getMailFrom());
         message.setTo(targetUri);
         for(SignRequest signRequest : signRequests) {
-            Document toSendDocument = signRequestService.getLastSignedDocument(signRequest);
+            Document toSendDocument = signRequest.getLastSignedDocument();
             message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
         }
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);

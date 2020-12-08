@@ -102,11 +102,10 @@ public class AdminSignRequestController {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
-			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+			if(signRequest.getToSignDocuments().size() == 1) {
+				toDisplayDocument = signRequest.getToSignDocuments().get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				}
-				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -137,7 +136,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+		List<Document> documents = signRequest.getToSignDocuments();
 		try {
 			if(documents.size() > 1) {
 				response.sendRedirect("/user/signrequests/" + id);

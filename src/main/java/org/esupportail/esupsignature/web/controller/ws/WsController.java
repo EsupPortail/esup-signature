@@ -103,7 +103,7 @@ public class WsController {
         SignRequest signRequest = signRequestService.createSignRequest(title, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
-        signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false);
+        signRequestService.pendingSignRequest(signRequest);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -154,22 +154,21 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity addWorkflowStep(@ModelAttribute("user") User user, @RequestParam String name,
+    public ResponseEntity<HttpStatus> addWorkflowStep(@ModelAttribute("user") User user, @RequestParam String name,
                                   @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
-        SignType signType = null;
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
-        signType = signRequestService.getSignTypeByLevel(level);
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        SignType signType = signRequestService.getSignTypeByLevel(level);
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
         signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ResponseBody
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail) throws EsupSignatureUserException {
+    public List<JsonDocuments> listSignedFiles(@RequestParam("recipientEmail") String recipientEmail) {
         List<JsonDocuments> signedFiles = new ArrayList<>();
         User user = userService.checkUserByEmail(recipientEmail);
         List<SignRequest> signRequests = signRequestService.getSignRequestsSignedByUser(user);
@@ -194,12 +193,12 @@ public class WsController {
     @PostMapping(value = "/pending-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
     public void pendingSignRequest(@RequestParam String token,
                                    @RequestParam("recipientsEmail") String recipientsEmail,
-                                   @RequestParam("signLevel") int signLevel) throws IOException, EsupSignatureUserException {
+                                   @RequestParam("signLevel") int signLevel) throws IOException {
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
             signRequestService.addRecipients(signRequest, mapper.readValue(recipientsEmail, String[].class));
-            signRequestService.pendingSignRequest(signRequest, signRequestService.getSignTypeByLevel(signLevel), false);
+            signRequestService.pendingSignRequest(signRequest);
         }
     }
 
@@ -210,7 +209,7 @@ public class WsController {
         User user = userRepository.findByEmail(recipientEmail).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         for (SignRequest signRequest : signRequestService.getToSignRequests(user)) {
-            signedFiles.add(new JsonDocuments(signRequest.getTitle(), signRequestService.getToSignDocuments(signRequest).get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
+            signedFiles.add(new JsonDocuments(signRequest.getTitle(), signRequest.getToSignDocuments().get(0).getContentType(), signRequest.getToken(), signRequest.getStatus().name(), signRequest.getCreateDate()));
         }
         return signedFiles;
     }
@@ -294,7 +293,7 @@ public class WsController {
 
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
         if (signRequestService.checkUserViewRights(user, authUser, signRequest)) {
-            List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+            List<Document> documents = signRequest.getToSignDocuments();
             try {
                 if (documents.size() > 1) {
                     response.sendRedirect("/user/signrequests/" + signRequest.getId());

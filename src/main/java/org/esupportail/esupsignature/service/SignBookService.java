@@ -197,7 +197,7 @@ public class SignBookService {
             }
             LiveWorkflowStep newWorkflowStep = null;
             try {
-                newWorkflowStep = liveWorkflowService.createWorkflowStep("", "signBook", signBook.getId(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
+                newWorkflowStep = liveWorkflowService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
             } catch (EsupSignatureUserException e) {
                 logger.error("error on import workflow", e);
             }
@@ -355,19 +355,36 @@ public class SignBookService {
         return false;
     }
 
+
+    public void initWorkflowAndPendingSignRequest(Long id, User user, List<String> recipientEmails, String comment) throws EsupSignatureException {
+        SignRequest signRequest = signRequestService.getSignRequestsById(id);
+        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
+            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+                Workflow workflow = workflowService.computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
+                importWorkflow(signRequest.getParentSignBook(), workflow);
+                nextWorkFlowStep(signRequest.getParentSignBook());
+            }
+            pendingSignBook(signRequest.getParentSignBook(), user);
+            if(comment != null && !comment.isEmpty()) {
+                signRequest.setComment(comment);
+                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
+            }
+        }
+    }
+
     public void pendingSignBook(SignBook signBook, User user) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment());
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(liveWorkflowStep != null) {
-                signRequestService.pendingSignRequest(signRequest, liveWorkflowStep.getSignType(), liveWorkflowStep.getAllSignToComplete());
+                signRequestService.pendingSignRequest(signRequest);
                 if (!emailSended) {
                     signRequestService.sendEmailAlerts(signRequest, user);
                     emailSended = true;
                 }
                 for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-                    eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(user.getEppn()));
+                    eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(recipient.getUser().getEppn()));
                 }
                 logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
             } else {

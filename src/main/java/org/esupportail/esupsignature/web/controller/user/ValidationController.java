@@ -94,12 +94,11 @@ public class ValidationController {
 		return "user/validation/result";
 	}
 	
-//	@Transactional
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
 		SignRequest signRequest = signRequestService.getSignRequestsById(id);
 
-		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
+		Document toValideDocument = signRequest.getLastSignedDocument();
 
 		File file = fileService.getTempFile(toValideDocument.getFileName());
 		OutputStream outputStream = new FileOutputStream(file);

@@ -56,6 +56,10 @@ public class SignBook {
 
     @JsonIgnore
     @Transient
+    transient String createMessage;
+
+    @JsonIgnore
+    @Transient
     transient String comment;
 
     public Long getId() {
