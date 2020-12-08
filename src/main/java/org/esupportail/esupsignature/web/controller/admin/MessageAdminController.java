@@ -20,6 +20,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import ch.rasc.sse.eventbus.SseEvent;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.repository.MessageRepository;
+import org.esupportail.esupsignature.service.MessageService;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,31 +50,27 @@ public class MessageAdminController {
 	}
 
 	@Resource
-	private MessageRepository messageRepository;
+	private EventService eventService;
 
 	@Resource
-	private EventService eventService;
+	private MessageService messageService;
 
 	@GetMapping
 	public String messages(Pageable pageable, Model model) {
-		model.addAttribute("messages", messageRepository.findAll(pageable));
+		model.addAttribute("messages", messageService.getAll(pageable));
 		return "admin/messages";
 	}
 
 	@PostMapping("/add")
 	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException, InterruptedException {
-		Message message = new Message();
-		Date date = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
-		message.setEndDate(date);
-		message.setText(text);
-		messageRepository.save(message);
+		Message message = messageService.createMessage(endDate, text);
 		eventService.publishEvent(new JsonMessage("custom", message.getText()), "global", null);
 		return "redirect:/admin/messages";
 	}
 
 	@DeleteMapping("{id}")
 	public String messages(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-		messageRepository.deleteById(id);
+		messageService.deleteMessage(id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Message supprimé"));
 		return "redirect:/admin/messages";
 	}

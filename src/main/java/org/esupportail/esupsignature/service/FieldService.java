@@ -26,7 +26,32 @@ public class FieldService {
 	}
 	
 	public void updateField(Field field) {
-		fieldRepository.save(field);
+		Field daoField = fieldRepository.findById(field.getId()).get();
+		daoField.setRequired(Boolean.valueOf(field.getRequired()));
+		daoField.setReadOnly(Boolean.valueOf(field.getReadOnly()));
+		daoField.setExtValueServiceName(field.getExtValueServiceName());
+		daoField.setExtValueType(field.getExtValueType());
+		daoField.setExtValueReturn(field.getExtValueReturn());
+		daoField.setSearchServiceName(field.getSearchServiceName());
+		daoField.setSearchType(field.getSearchType());
+		daoField.setSearchReturn(field.getSearchReturn());
+		daoField.setStepNumbers(field.getStepNumbers());
+		fieldRepository.save(daoField);
+	}
+
+	public Field createField(Long id, String required, String readOnly, String extValueServiceName, String extValueType,
+								String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers) {
+		Field field = new Field();
+		field.setRequired(Boolean.valueOf(required));
+		field.setReadOnly(Boolean.valueOf(readOnly));
+		field.setExtValueServiceName(extValueServiceName);
+		field.setExtValueType(extValueType);
+		field.setExtValueReturn(extValueReturn);
+		field.setSearchServiceName(searchServiceName);
+		field.setSearchType(searchType);
+		field.setSearchReturn(searchReturn);
+		field.setStepNumbers(stepNumbers);
+		return field;
 	}
 	
 	public void deleteField(int fieldId) {

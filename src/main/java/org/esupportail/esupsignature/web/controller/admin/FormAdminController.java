@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.repository.FieldRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
+import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.DataExportService;
@@ -56,12 +57,6 @@ public class FormAdminController {
 	private DocumentService documentService;
 
 	@Resource
-	private FormRepository formRepository;
-
-	@Resource
-	private FieldRepository fieldRepository;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -71,31 +66,18 @@ public class FormAdminController {
 	private PreFillService preFillService;
 
 	@Resource
-	private UserShareRepository userShareRepository;
-
-	@Resource
 	private DataExportService dataExportService;
 
+	@Resource
+	private FieldService fieldService;
+
 	@PostMapping()
-	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam("fieldTypes[]") String[] fieldTypes, Model model) {
-		Form form = new Form();
-		form.setDocument(null);
-		form.setName(name);
+	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames) throws IOException {
+		DocumentIOType documentIOType = null;
 		if(targetType != null) {
-			form.setTargetType(DocumentIOType.valueOf(targetType));
-			form.setTargetUri(targetUri);
+			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		for(String fieldName : fieldNames) {
-			Field field = new Field();
-			field.setName(fieldName);
-			field.setLabel(fieldName);
-			field.setType(FieldType.text);
-			form.getFields().add(field);
-		}
-		//TODO check other version
-		form.setVersion(1);
-		form.setActiveVersion(true);
-		formRepository.save(form);
+		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -151,48 +133,13 @@ public class FormAdminController {
 							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		Form form = formService.getFormById(updateForm.getId());
-		form.setPdfDisplay(updateForm.getPdfDisplay());
-		form.getManagers().clear();
-		if(managers != null) {
-			form.getManagers().addAll(managers);
-		}
-		form.setName(updateForm.getName());
-		form.setTitle(updateForm.getTitle());
-		form.setRole(updateForm.getRole());
-		form.setPreFillType(updateForm.getPreFillType());
-		form.setWorkflowType(updateForm.getWorkflowType());
-		form.setTargetUri(updateForm.getTargetUri());
-		form.setTargetType(updateForm.getTargetType());
-		form.setDescription(updateForm.getDescription());
-		form.setMessage(updateForm.getMessage());
-		form.setPublicUsage(updateForm.getPublicUsage());
-		form.setAction(updateForm.getAction());
-		form.getAuthorizedShareTypes().clear();
-		List<ShareType> shareTypes = new ArrayList<>();
-		if(types != null) {
-			for (String type : types) {
-				ShareType shareType = ShareType.valueOf(type);
-				form.getAuthorizedShareTypes().add(shareType);
-				shareTypes.add(shareType);
-			}
-		}
-		List<UserShare> userShares = userShareRepository.findByFormId(form.getId());
-		for(UserShare userShare : userShares) {
-			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
-		}
-		formRepository.save(form);
+		formService.updateForm(updateForm.getId(), updateForm, managers, types);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
 	
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Form form = formRepository.findById(id).get();
-		List<UserShare> userShares = userShareRepository.findByForm(form);
-		for(UserShare userShare : userShares) {
-			userShareRepository.deleteById(userShare.getId());
-		}
 		formService.deleteForm(id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
 		return "redirect:/admin/forms";
@@ -200,7 +147,7 @@ public class FormAdminController {
 
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-		List<Form> forms = formRepository.findFormByName(name);
+		List<Form> forms = formService.getFormByName(name);
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
@@ -231,16 +178,8 @@ public class FormAdminController {
 							  @RequestParam(value = "searchType", required = false) String searchType,
 							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
 							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
-		Field field = fieldRepository.findById(id).get();
-		field.setRequired(Boolean.valueOf(required));
-		field.setReadOnly(Boolean.valueOf(readOnly));
-		field.setExtValueServiceName(extValueServiceName);
-		field.setExtValueType(extValueType);
-		field.setExtValueReturn(extValueReturn);
-		field.setSearchServiceName(searchServiceName);
-		field.setSearchType(searchType);
-		field.setSearchReturn(searchReturn);
-		field.setStepNumbers(stepNumbers);
+		Field field = fieldService.createField(id, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(field);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

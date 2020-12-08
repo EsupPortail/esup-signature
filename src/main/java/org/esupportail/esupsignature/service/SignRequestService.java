@@ -1136,6 +1136,10 @@ public class SignRequestService {
 		return signRequestRepository.findById(id).get();
 	}
 
+	public SignRequest findById(long id) {
+		return signRequestRepository.findById(id).get();
+	}
+
 	public List<SignRequest> getSignRequestsByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}

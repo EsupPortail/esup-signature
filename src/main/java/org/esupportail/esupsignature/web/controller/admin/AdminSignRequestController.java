@@ -97,7 +97,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
 
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
@@ -106,6 +106,7 @@ public class AdminSignRequestController {
 				toDisplayDocument = signRequest.getToSignDocuments().get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				}
+				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
 			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
@@ -135,7 +136,7 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
+		SignRequest signRequest = signRequestService.findById(id);
 		List<Document> documents = signRequest.getToSignDocuments();
 		try {
 			if(documents.size() > 1) {
