@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -12,6 +13,8 @@ import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -21,6 +24,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -254,6 +261,18 @@ public class UserController {
 		authUser.setFormMessages(authUser.getFormMessages() + " " + form.getId());
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
+	}
+
+	@GetMapping(value = "/get-keystore")
+	public ResponseEntity<Void> getKeystore(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		return getDocumentResponseEntity(response, user.getKeystore());
+	}
+
+	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, Document document) throws IOException {
+		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
+		response.setContentType(document.getContentType());
+		IOUtils.copy(document.getInputStream(), response.getOutputStream());
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 }

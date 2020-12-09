@@ -20,7 +20,7 @@ public class UserPropertieService {
     private UserPropertieRepository userPropertieRepository;
 
     public void createUserPropertie(User user, WorkflowStep workflowStep, List<User> users) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
+        List<UserPropertie> userProperties = getUserProperties(user, workflowStep);
         if (userProperties.size() == 0) {
             addPropertie(user, users, workflowStep);
         } else {
@@ -60,7 +60,7 @@ public class UserPropertieService {
     }
 
     public List<User> getFavoritesEmails(User user, WorkflowStep workflowStep) {
-        List<UserPropertie> userProperties = userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
+        List<UserPropertie> userProperties = getUserProperties(user, workflowStep);
         List<User> favoriteUsers = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
@@ -71,6 +71,10 @@ public class UserPropertieService {
             }
         }
         return favoriteUsers;
+    }
+
+    public List<UserPropertie> getUserProperties(User user, WorkflowStep workflowStep) {
+        return userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
     }
 
     public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user, WorkflowService workflowService) {

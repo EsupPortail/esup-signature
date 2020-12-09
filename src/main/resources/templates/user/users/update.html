@@ -155,7 +155,7 @@
                             </label>
                             <div th:if="${authUser.keystore != null}" class="alert alert-secondary">
                                 Keystore actuel : <a
-                                    th:href="'/user/documents/getfile/' + ${authUser.keystore.id}"><span
+                                    th:href="'/user/users/get-keystore"><span
                                     th:text="${authUser.keystore.fileName}"></span></a>
                                 <br>
                                 <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"

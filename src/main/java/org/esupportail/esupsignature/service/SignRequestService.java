@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -764,7 +763,7 @@ public class SignRequestService {
 	}
 
 	public List<User> getTempUsers(Long id) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		return getTempUsers(signRequest);
 	}
 
@@ -793,7 +792,7 @@ public class SignRequestService {
 	}
 
 	public void completeSignRequest(Long id, User user) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		completeSignRequest(signRequest, user);
 	}
 
@@ -1123,7 +1122,7 @@ public class SignRequestService {
 	}
 
 	public SignRequest getSignRequestsFullById(long id, User user, User authUser) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		if (signRequest.getStatus().equals(SignRequestStatus.pending)
 				&& checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0
 				&& needToSign(signRequest, user)) {
@@ -1132,7 +1131,7 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public SignRequest getSignRequestsById(long id) {
+	public SignRequest getSignRequestById(long id) {
 		return signRequestRepository.findById(id).get();
 	}
 
@@ -1145,7 +1144,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, String[] names, String[] firstnames, String[] phones) throws MessagingException {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		List<User> tempUsers = getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
 			if (names != null && tempUsers.size() == names.length) {
@@ -1190,7 +1189,7 @@ public class SignRequestService {
 	}
 
 	public InputStream getLastFileBase64(Long id) throws SQLException, EsupSignatureException {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		InputStream inputStream = null;
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signRequest.getToSignDocuments();
@@ -1218,7 +1217,7 @@ public class SignRequestService {
 	}
 
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		Document attachement = documentService.getDocumentById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -1229,19 +1228,19 @@ public class SignRequestService {
 	}
 
 	public void removeLink(Long id, Integer linkId) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		String toRemove = signRequest.getLinks().get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 
 	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		signRequest.setComment(comment);
 		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
 	}
 
 	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
-		SignRequest signRequest = getSignRequestsById(id);
+		SignRequest signRequest = getSignRequestById(id);
 		addRecipients(signRequest, recipientsEmails);
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
 		if (allSignToComplete != null && allSignToComplete) {

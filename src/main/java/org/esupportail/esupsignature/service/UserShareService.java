@@ -15,10 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class UserShareService {
@@ -188,7 +185,7 @@ public class UserShareService {
         if(fromUser.equals(toUser)) {
             return true;
         }
-        List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, Arrays.asList(toUser), shareType);
+        List<UserShare> userShares = getUserShares(fromUser, Collections.singletonList(toUser), shareType);
         if(shareType.equals(ShareType.sign) && userShares.size() > 0) {
             return true;
         }
@@ -200,11 +197,16 @@ public class UserShareService {
         return false;
     }
 
+    public List<UserShare> getUserShares(User fromUser, List<User> toUsers, ShareType shareType) {
+        return userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, toUsers, shareType);
+    }
+
+
     public Boolean isOneShareByType(User fromUser, User toUser, ShareType shareType) {
         if(fromUser.equals(toUser)) {
             return true;
         }
-        List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, Arrays.asList(toUser), shareType);
+        List<UserShare> userShares = getUserShares(fromUser, Collections.singletonList(toUser), shareType);
         if(userShares.size() > 0 ) {
             return true;
         }
@@ -230,4 +232,9 @@ public class UserShareService {
     public void delete(UserShare userShare) {
         userShareRepository.delete(userShare);
     }
+
+    public List<UserShare> getUserSharesByForm(Form form) {
+        return userShareRepository.findByFormId(form.getId());
+    }
+
 }

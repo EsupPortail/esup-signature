@@ -21,7 +21,6 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,7 @@ public class FormService {
 	private PdfService pdfService;
 
 	@Resource
-	private UserShareRepository userShareRepository;
+	private UserShareService userShareService;
 
 	@Resource
 	private FieldService fieldService;
@@ -77,7 +76,7 @@ public class FormService {
 		if(user.equals(authUser)) {
 			forms = authorizedForms;
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
+			for(UserShare userShare : userShareService.getUserShares(user, Collections.singletonList(authUser), ShareType.create)) {
 				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
 					forms.add(userShare.getForm());
 				}
@@ -123,18 +122,19 @@ public class FormService {
 				shareTypes.add(shareType);
 			}
 		}
-		List<UserShare> userShares = userShareRepository.findByFormId(form.getId());
+		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
 		for(UserShare userShare : userShares) {
 			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
 		}
 		formRepository.save(form);
 	}
-	
+
+
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
-		List<UserShare> userShares = userShareRepository.findByForm(form);
+		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
 		for(UserShare userShare : userShares) {
-			userShareRepository.deleteById(userShare.getId());
+			userShareService.delete(userShare);
 		}
 		List<Data> datas = dataRepository.findByForm(form);
 		for(Data data : datas) {
@@ -198,7 +198,7 @@ public class FormService {
 		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
+			List<UserShare> userShares = userShareService.getUserSharesByForm(testForms.get(0));
 			for (UserShare userShare : userShares) {
 				userShare.setForm(form);
 			}
@@ -349,6 +349,21 @@ public class FormService {
 
 	public List<Form> getFormByManagersContains(User authUser) {
 		return formRepository.findFormByManagersContains(authUser.getEmail());
+	}
+
+	public String getHelpMessage(User user, Form form) {
+		String messsage = null;
+		boolean sendMessage = true;
+		if(user.getFormMessages() != null) {
+			String[] formMessages = user.getFormMessages().split(" ");
+			if(Arrays.asList(formMessages).contains(form.getId().toString())) {
+				sendMessage = false;
+			}
+		}
+		if(sendMessage && form.getMessage() != null && !form.getMessage().isEmpty()) {
+			messsage = form.getMessage();
+		}
+		return messsage;
 	}
 
 }

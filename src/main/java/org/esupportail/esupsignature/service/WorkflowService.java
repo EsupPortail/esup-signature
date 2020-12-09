@@ -643,4 +643,14 @@ public class WorkflowService {
         workflow.setUpdateBy(updateBy);
         workflow.setUpdateDate(new Date());
     }
+
+
+    public String[] getTargetEmails(User user, Form form) {
+        List<UserPropertie> userProperties = userPropertieService.getUserProperties(user, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0));
+        userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
+        if(userProperties.size() > 0 ) {
+            return userProperties.get(0).getTargetEmail().split(",");
+        }
+        return null;
+    }
 }
