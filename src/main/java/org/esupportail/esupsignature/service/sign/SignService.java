@@ -23,16 +23,15 @@ import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.esupportail.esupsignature.config.sign.SignConfig;
 import org.esupportail.esupsignature.dss.DssUtils;
-import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
-import org.esupportail.esupsignature.dss.model.ExtensionForm;
-import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.pdf.PdfService;
@@ -81,9 +80,12 @@ public class SignService {
 	
 	@Resource
 	private FileService fileService;
-	
+
 	@Resource
 	private PdfService pdfService;
+
+	@Resource
+	private SignRequestService signRequestService;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument extend(ExtensionForm extensionForm) {
@@ -103,7 +105,7 @@ public class SignService {
 			parameters.setDetachedContents(originalDocuments);
 		}
 
-		DSSDocument extendedDoc = (DSSDocument) service.extendDocument(signedDocument, parameters);
+		DSSDocument extendedDoc = service.extendDocument(signedDocument, parameters);
 		logger.info("End extend with one document");
 		return extendedDoc;
 	}
@@ -493,6 +495,43 @@ public class SignService {
 
 	public Long getPasswordTimeout() {
 		return signConfig.getSignProperties().getPasswordTimeout();
+	}
+
+	public AbstractSignatureForm getAbstractSignatureForm(SignRequest signRequest) throws IOException, EsupSignatureException {
+		return getSignatureDocumentForm(signRequest.getToSignDocuments(), signRequest, true);
+	}
+
+	public ToBeSigned getToBeSigned(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws IOException {
+		ToBeSigned dataToSign;
+		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
+			parameters = fillParameters((SignatureMultipleDocumentsForm) signatureDocumentForm);
+		} else {
+			if(signatureDocumentForm.getSignatureForm().equals(SignatureForm.PAdES)) {
+				SignatureDocumentForm documentForm = (SignatureDocumentForm) signatureDocumentForm;
+				parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getSignRequestParams().get(signRequest.getSignedDocuments().size()), documentForm.getDocumentToSign(), user);
+			} else {
+				parameters = fillParameters((SignatureDocumentForm) signatureDocumentForm);
+			}
+		}
+		dataToSign = getDataToSign((SignatureDocumentForm) signatureDocumentForm, parameters);
+		return dataToSign;
+	}
+
+	public SignDocumentResponse getSignDocumentResponse(User user, SignatureValueAsString signatureValue, AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, AbstractSignatureParameters parameters) throws EsupSignatureException {
+		SignDocumentResponse signedDocumentResponse;
+		signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
+		try {
+			Document signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
+			if(signedFile != null) {
+				signedDocumentResponse = new SignDocumentResponse();
+				signedDocumentResponse.setUrlToDownload("download");
+				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
+				signRequestService.applyEndOfSignRules(signRequest, user);
+			}
+		} catch (IOException e) {
+			throw new EsupSignatureException("unable to sign" , e);
+		}
+		return null;
 	}
 
 }
