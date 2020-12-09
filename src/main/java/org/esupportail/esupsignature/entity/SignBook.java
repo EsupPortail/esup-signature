@@ -2,12 +2,10 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,7 +54,7 @@ public class SignBook {
 
     @JsonIgnore
     @Transient
-    transient String createMessage;
+    transient List<Log> logs;
 
     @JsonIgnore
     @Transient
@@ -158,6 +156,14 @@ public class SignBook {
         this.signRequests = signRequests;
     }
 
+    public List<Log> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Log> logs) {
+        this.logs = logs;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -165,5 +171,7 @@ public class SignBook {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+
 
 }

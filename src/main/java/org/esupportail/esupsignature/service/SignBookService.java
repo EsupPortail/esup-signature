@@ -3,15 +3,18 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -38,7 +41,7 @@ public class SignBookService {
     private DataRepository dataRepository;
 
     @Resource
-    private WorkflowStepRepository workflowStepRepository;
+    private WorkflowRepository workflowRepository;
 
     @Resource
     private UserService userService;
@@ -60,6 +63,9 @@ public class SignBookService {
 
     @Resource
     private UserShareRepository userShareRepository;
+
+    @Resource
+    private FileService fileService;
 
     @Resource
     private EventService eventService;
@@ -114,7 +120,9 @@ public class SignBookService {
     }
 
     public SignBook getSignBookById(Long id) {
-        return signBookRepository.findById(id).get();
+        SignBook signBook = signBookRepository.findById(id).get();
+        signBook.setLogs(getLogsFromSignBook(signBook));
+        return signBook;
     }
 
     public List<SignBook> getSharedSignBooks(User user) {
@@ -450,4 +458,76 @@ public class SignBookService {
         signBookName += "_" + user.getEppn();
         return signBookName;
     }
+
+
+    public void addDocsInSignBook(User authUser, String name, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        SignBook signBook = createSignBook(name, "", authUser, false);
+        SignRequest signRequest = signRequestService.createSignRequest(name, authUser);
+        signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+        addSignRequest(signBook, signRequest);
+        logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
+    }
+
+    public void addDocumentsToSignBook(User authUser, MultipartFile[] multipartFiles, SignBook signBook) throws EsupSignatureIOException {
+        for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), authUser);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            addSignRequest(signBook, signRequest);
+            signRequestService.pendingSignRequest(signRequest);
+        }
+    }
+
+    public void addDocsInSignBookUnique(User user, String name, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+        SignBook signBook = createSignBook(name, "", user, false);
+        for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), user);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            addSignRequest(signBook, signRequest);
+        }
+    }
+
+    public void addWorkflowToSignBook(User authUser, Long workflowSignBookId, SignBook signBook) {
+        Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
+        importWorkflow(signBook, workflow);
+        nextWorkFlowStep(signBook);
+        pendingSignBook(signBook, authUser);
+    }
+
+    public List<Log> getLogsFromSignBook(SignBook signBook) {
+        List<Log> logs = new ArrayList<>();
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
+        }
+        return logs;
+    }
+
+    public List<LiveWorkflowStep> getAllSteps(SignBook signBook) {
+        List<LiveWorkflowStep> allSteps = new ArrayList<>(signBook.getLiveWorkflow().getWorkflowSteps());
+        if (allSteps.size() > 0) {
+            allSteps.remove(0);
+        }
+        return allSteps;
+    }
+
+    public void addLiveStep(SignBook signBook, User authUser, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType) throws EsupSignatureException {
+        int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
+        if(stepNumber + 1 >= currentSetNumber) {
+            try {
+                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+                if (stepNumber == -1) {
+                    signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+                } else {
+                    signBook.getLiveWorkflow().getWorkflowSteps().add(stepNumber, liveWorkflowStep);
+                }
+                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(currentSetNumber - 1));
+                pendingSignBook(signBook, authUser);
+            } catch (EsupSignatureUserException e) {
+                logger.error("error on add step", e);
+                throw new EsupSignatureException("Erreur lors de l'ajout des participants");
+            }
+        } else {
+            throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
+        }
+    }
+
 }
