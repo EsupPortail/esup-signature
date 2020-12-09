@@ -1319,5 +1319,18 @@ public class SignRequestService {
 		return signImages;
 	}
 
+	public AbstractMap.SimpleEntry<List<User>, List<User>> checkUserResponse(SignRequest signRequest) {
+		List<User> usersHasSigned = new ArrayList<>();
+		List<User> usersHasRefused = new ArrayList<>();
+		for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
+			if (recipientActionEntry.getValue().getActionType().equals(ActionType.signed)) {
+				usersHasSigned.add(recipientActionEntry.getKey().getUser());
+			}
+			if (recipientActionEntry.getValue().getActionType().equals(ActionType.refused)) {
+				usersHasRefused.add(recipientActionEntry.getKey().getUser());
+			}
+		}
+		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
+	}
 }
 
