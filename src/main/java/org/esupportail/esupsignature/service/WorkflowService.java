@@ -579,4 +579,68 @@ public class WorkflowService {
         workflowRepository.delete(workflow);
     }
 
+    public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
+        if (displayWorkflowType == null) {
+            displayWorkflowType = DisplayWorkflowType.SYSTEM;
+        }
+        List<Workflow> workflows = new ArrayList<>();
+        if(DisplayWorkflowType.SYSTEM.equals(displayWorkflowType)) {
+            workflows.addAll(getWorkflowsBySystemUser());
+        } else if(DisplayWorkflowType.CLASSES.equals(displayWorkflowType)) {
+            workflows.addAll(getClassesWorkflows());
+        } else if(DisplayWorkflowType.ALL.equals(displayWorkflowType)) {
+            workflows.addAll(getAllWorkflows());
+        } else if(DisplayWorkflowType.USERS.equals(displayWorkflowType)) {
+            workflows.addAll(getAllWorkflows());
+            workflows.removeAll(getClassesWorkflows());
+            workflows.removeAll(getWorkflowsBySystemUser());
+        }
+        return workflows;
+    }
+
+    public Workflow update(Workflow workflow, User user, String[] types, List<String> managers) {
+        Workflow workflowToUpdate = getWorkflowById(workflow.getId());
+        if(managers != null && managers.size() > 0) {
+            workflowToUpdate.getManagers().clear();
+            for(String manager : managers) {
+                User managerUser = userService.checkUserByEmail(manager);
+                if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
+                    workflowToUpdate.getManagers().add(managerUser.getEmail());
+                }
+            }
+        } else {
+            workflowToUpdate.getManagers().clear();
+        }
+        workflowToUpdate.getAuthorizedShareTypes().clear();
+        List<ShareType> shareTypes = new ArrayList<>();
+        if(types != null) {
+            for (String type : types) {
+                ShareType shareType = ShareType.valueOf(type);
+                workflowToUpdate.getAuthorizedShareTypes().add(shareType);
+                shareTypes.add(shareType);
+            }
+        }
+        List<UserShare> userShares = userShareRepository.findByWorkflowId(workflowToUpdate.getId());
+        for(UserShare userShare : userShares) {
+            userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
+        }
+        workflowToUpdate.setSourceType(workflow.getSourceType());
+        workflowToUpdate.setTargetType(workflow.getTargetType());
+        workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+        workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+        workflowToUpdate.setDescription(workflow.getDescription());
+        workflowToUpdate.setTitle(workflow.getTitle());
+        workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
+        workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
+        workflowToUpdate.setRole(workflow.getRole());
+        workflowToUpdate.setUpdateBy(user.getEppn());
+        workflowToUpdate.setUpdateDate(new Date());
+        workflowRepository.save(workflowToUpdate);
+        return workflowToUpdate;
+    }
+
+    public void setUpdateByAndUpdateDate(Workflow workflow, String updateBy) {
+        workflow.setUpdateBy(updateBy);
+        workflow.setUpdateDate(new Date());
+    }
 }
