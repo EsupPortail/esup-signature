@@ -178,7 +178,7 @@ public class FormAdminController {
 							  @RequestParam(value = "searchType", required = false) String searchType,
 							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
 							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
-		Field field = fieldService.createField(id, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		Field field = fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		fieldService.updateField(field);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

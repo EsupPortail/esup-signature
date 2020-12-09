@@ -115,7 +115,10 @@ public class DataController {
 			model.addAttribute("data", new Data());
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("page", page);
-			model.addAttribute("message", new JsonMessage("help", formService.getHelpMessage(user, form)));
+			String message = formService.getHelpMessage(user, form);
+			if(message != null) {
+				model.addAttribute("message", new JsonMessage("help", message));
+			}
 			return "user/datas/create";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
@@ -157,7 +160,7 @@ public class DataController {
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
 		Data data = dataService.addData(user, id, dataId, datas);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
-		return "/user/datas/" + data.getId() + "/update";
+		return "" + data.getId();
 	}
 
 
@@ -259,6 +262,21 @@ public class DataController {
 		IOUtils.copy(in, httpServletResponse.getOutputStream());
 		in.close();
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/get-model/{id}")
+	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
+		Form form = formService.getFormById(id);
+		try {
+			Document model = form.getDocument();
+			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(model.getFileName(), StandardCharsets.UTF_8.toString()));
+			response.setContentType(model.getContentType());
+			IOUtils.copy(model.getInputStream(), response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("get file error", e);
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 }

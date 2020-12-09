@@ -27,8 +27,6 @@ export class PdfViewer extends EventFactory {
     }
 
     initListeners() {
-        document.getElementById('prev').addEventListener('click', e => this.prevPage());
-        document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
         document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
@@ -523,49 +521,25 @@ export class PdfViewer extends EventFactory {
     }
 
     prevPage() {
+        this.fireEvent('beforeChange', ['prev']);
         if (this.pageNum <= 1) {
             return;
         }
-        let tempName = document.getElementById('tempName');
-        if (tempName != null) {
-            if (tempName.checkValidity()) {
-                this.pageNum--;
-                this.renderPage(this.pageNum);
-                window.scrollTo(0, 0);
-                this.fireEvent('pageChange', ['prev']);
-            } else {
-                tempName.focus();
-                document.getElementById('tempName');
-            }
-        } else {
-            this.pageNum--;
-            this.renderPage(this.pageNum);
-            window.scrollTo(0, 0);
-            this.fireEvent('pageChange', ['prev']);
-        }
+        this.pageNum--;
+        this.renderPage(this.pageNum);
+        window.scrollTo(0, 0);
+        this.fireEvent('pageChange', ['prev']);
     }
 
     nextPage() {
+        this.fireEvent('beforeChange', ['next']);
         if (this.pageNum >= this.numPages) {
             return;
         }
-        let tempName = document.getElementById('tempName');
-        if (tempName != null) {
-            if (tempName.checkValidity()) {
-                this.pageNum++;
-                this.renderPage(this.pageNum);
-                window.scrollTo(0, 0);
-                this.fireEvent('pageChange', ['next']);
-            } else {
-                tempName.focus();
-                document.getElementById('tempName');
-            }
-        } else {
-            this.pageNum++;
-            this.renderPage(this.pageNum);
-            window.scrollTo(0, 0);
-            this.fireEvent('pageChange', ['next']);
-        }
+        this.pageNum++;
+        this.renderPage(this.pageNum);
+        window.scrollTo(0, 0);
+        this.fireEvent('pageChange', ['next']);
     }
 
     zoomIn() {

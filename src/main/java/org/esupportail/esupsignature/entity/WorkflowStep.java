@@ -22,7 +22,7 @@ public class WorkflowStep {
 
     private Integer maxRecipients = 99;
 
-    @ManyToMany()
+    @ManyToMany(fetch = FetchType.LAZY)
     private List<User> users = new ArrayList<>();
 
     private Boolean changeable = false;
