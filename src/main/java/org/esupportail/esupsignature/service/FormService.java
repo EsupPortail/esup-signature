@@ -345,4 +345,10 @@ public class FormService {
 	public List<Form> getFormByName(String name) {
 		return formRepository.findFormByName(name);
 	}
+
+
+	public List<Form> getFormByManagersContains(User authUser) {
+		return formRepository.findFormByManagersContains(authUser.getEmail());
+	}
+
 }
