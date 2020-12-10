@@ -1218,7 +1218,7 @@ public class SignRequestService {
 
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = getSignRequestById(id);
-		Document attachement = documentService.getDocumentById(attachementId);
+		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
 		} else {

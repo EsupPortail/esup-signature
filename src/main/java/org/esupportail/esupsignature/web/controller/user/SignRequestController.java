@@ -248,7 +248,7 @@ public class SignRequestController {
     public String removeDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
-        Document document = documentService.getDocumentById(id);
+        Document document = documentService.getById(id);
         SignRequest signRequest = signRequestService.getSignRequestById(document.getParentId());
         if(signRequest.getCreateBy().equals(user)) {
             signRequest.getOriginalDocuments().remove(document);
@@ -431,7 +431,7 @@ public class SignRequestController {
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestService.getSignRequestById(id);
-        Document attachement = documentService.getDocumentById(attachementId);
+        Document attachement = documentService.getById(attachementId);
         try {
             if (!attachement.getParentId().equals(signRequest.getId())) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -494,7 +494,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/get-file/{id}")
     public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
-        Document document = documentService.getDocumentById(id);
+        Document document = documentService.getById(id);
         if(signRequestService.getSignRequestById(document.getParentId()) != null) {
             httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
             httpServletResponse.setContentType(document.getContentType());

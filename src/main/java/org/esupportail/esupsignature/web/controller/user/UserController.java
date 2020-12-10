@@ -112,7 +112,7 @@ public class UserController {
 
 	@GetMapping("/delete-sign/{id}")
 	public String deleteSign(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
-    	Document signDocument = documentService.getDocumentById(id);
+    	Document signDocument = documentService.getById(id);
 		authUser.getSignImages().remove(signDocument);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
 		return "redirect:/user/users";
