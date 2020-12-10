@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -123,5 +124,13 @@ public class DocumentService {
 
 	public void delete(Document document) {
 		documentRepository.delete(document);
+	}
+
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
+		String docName = getSignedName(originalName);
+		Document document = createDocument(signedInputStream, docName, mimeType);
+		document.setParentId(signRequest.getId());
+		signRequest.getSignedDocuments().add(document);
+		return document;
 	}
 }

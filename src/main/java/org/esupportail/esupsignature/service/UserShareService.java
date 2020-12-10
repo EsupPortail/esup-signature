@@ -35,6 +35,9 @@ public class UserShareService {
     @Resource
     private DataService dataService;
 
+    @Resource
+    private SignRequestService signRequestService;
+
     public List<User> getSuUsers(User authUser) {
         List<User> suUsers = new ArrayList<>();
         for (UserShare userShare : userShareRepository.findByToUsersIn(Arrays.asList(authUser))) {
@@ -238,5 +241,29 @@ public class UserShareService {
     public List<UserShare> getByToUsersInAndShareTypesContains(List<User> users, ShareType shareType) {
         return userShareRepository.findByToUsersInAndShareTypesContains(users, shareType);
     }
+
+    public User checkShare(SignRequest signRequest) {
+        SignBook signBook = signRequest.getParentSignBook();
+        if(signBook != null) {
+            User toUser = userService.getUserFromAuthentication();
+            List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
+            for (UserShare userShare : userShares) {
+                Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
+                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                    return userShare.getUser();
+                }
+            }
+            Data data = dataService.getBySignBook(signBook);
+            if(data !=  null) {
+                for (UserShare userShare : userShares) {
+                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                        return userShare.getUser();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
 }

@@ -31,6 +31,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfParameters;
@@ -77,6 +78,9 @@ public class SignService {
 
 	@Autowired
 	private ObjectProvider<ASiCWithXAdESService> asicWithXAdESService;
+
+	@Resource
+	private DocumentService documentService;
 	
 	@Resource
 	private FileService fileService;
@@ -521,7 +525,7 @@ public class SignService {
 		SignDocumentResponse signedDocumentResponse;
 		signatureDocumentForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		try {
-			Document signedFile = signRequestService.nexuSign(signRequest, user, signatureDocumentForm, parameters);
+			Document signedFile = nexuSign(signRequest, user, signatureDocumentForm, parameters);
 			if(signedFile != null) {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
@@ -532,6 +536,21 @@ public class SignService {
 			throw new EsupSignatureException("unable to sign" , e);
 		}
 		return null;
+	}
+
+	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters parameters) throws IOException {
+		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
+		DSSDocument dssDocument;
+
+		if(signatureDocumentForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
+			dssDocument = signDocument((SignatureMultipleDocumentsForm) signatureDocumentForm);
+		} else {
+			dssDocument = nexuSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters);
+		}
+
+		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+
+		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), signedDocument.getMimeType().getMimeTypeString());
 	}
 
 }

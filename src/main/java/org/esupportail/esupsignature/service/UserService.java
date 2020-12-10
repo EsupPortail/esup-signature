@@ -1,9 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -472,5 +470,50 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id).get();
+    }
+
+    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
+        List<User> tempUsers = new ArrayList<>();
+        for (String recipientEmail : recipientsEmails) {
+            if(recipientEmail.contains("*")) {
+                recipientEmail = recipientEmail.split("\\*")[1];
+            }
+            User recipientUser = getUserByEmail(recipientEmail);
+            if(recipientUser.getUserType().equals(UserType.external)) {
+                tempUsers.add(recipientUser);
+            }
+        }
+        return tempUsers;
+    }
+
+    public boolean isTempUsers(SignRequest signRequest) {
+        boolean isTempUsers = false;
+        if(getTempUsers(signRequest).size() > 0) {
+            isTempUsers = true;
+        }
+        return isTempUsers;
+    }
+
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
+        Set<User> users = new HashSet<>();
+        users.addAll(getTempUsers(signRequest));
+        if(recipientsEmails != null) {
+            users.addAll(getTempUsersFromRecipientList(recipientsEmails));
+        }
+        return new ArrayList<>(users);
+    }
+
+    public List<User> getTempUsers(SignRequest signRequest) {
+        Set<User> users = new HashSet<>();
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+                for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+                        users.add(recipient.getUser());
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(users);
     }
 }

@@ -106,7 +106,7 @@ public class IndexController {
 				try {
 					if (signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
 						SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
-						User suUser = signRequestService.checkShare(signRequest);
+						User suUser = userShareService.checkShare(signRequest);
 						if (suUser != null) {
 							if (userShareService.switchToShareUser(suUser.getEppn())) {
 								redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
