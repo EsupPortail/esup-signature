@@ -312,7 +312,7 @@ public class SignBookService {
 
 
     public void initWorkflowAndPendingSignRequest(Long id, User user, List<String> recipientEmails, String comment) throws EsupSignatureException {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
             if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
                 Workflow workflow = workflowService.computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), recipientEmails, user, false);

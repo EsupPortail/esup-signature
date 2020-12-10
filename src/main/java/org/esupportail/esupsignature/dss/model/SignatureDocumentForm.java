@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.dss.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignaturePackaging;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +9,6 @@ import javax.validation.constraints.NotNull;
 
 public class SignatureDocumentForm extends AbstractSignatureForm {
 
-	@JsonIgnore
 	private MultipartFile documentToSign;
 
 	@NotNull(message = "{error.signature.packaging.mandatory}")

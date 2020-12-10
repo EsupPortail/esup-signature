@@ -138,7 +138,7 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
         } else if(message.type === "initNexu") {
             console.info("redirect to NexU sign proccess");
-            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
+            document.location.href="/user/nexu-sign/" + this.signRequestId;
         }else if(message.type === "end") {
             console.info("sign end");
             document.getElementById("bar-text").innerHTML = "";

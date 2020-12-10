@@ -94,7 +94,7 @@ public class ValidationController {
 	
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
-		SignRequest signRequest = signRequestService.getSignRequestById(id);
+		SignRequest signRequest = signRequestService.getById(id);
 
 		Document toValideDocument = signRequest.getLastSignedDocument();
 

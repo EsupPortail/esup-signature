@@ -3,11 +3,10 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.enumerations.*;
 
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public abstract class AbstractSignatureForm implements Serializable {
+public abstract class AbstractSignatureForm {
 
 	// @AssertTrue(message = "{error.nexu.not.found}")
 	private boolean nexuDetected;

@@ -185,7 +185,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/details/{id}")
     public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logService.getById(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
@@ -236,7 +236,7 @@ public class SignRequestController {
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentToNewSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         for (MultipartFile multipartFile : multipartFiles) {
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         }
@@ -249,7 +249,7 @@ public class SignRequestController {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         Document document = documentService.getById(id);
-        SignRequest signRequest = signRequestService.getSignRequestById(document.getParentId());
+        SignRequest signRequest = signRequestService.getById(document.getParentId());
         if(signRequest.getCreateBy().equals(user)) {
             signRequest.getOriginalDocuments().remove(document);
         } else {
@@ -354,7 +354,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
     @GetMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         signRequest.setComment(comment);
         signRequestService.refuse(signRequest, user);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
@@ -364,7 +364,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         if(signRequestService.delete(signRequest)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         } else {
@@ -401,7 +401,7 @@ public class SignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         signRequestService.addAttachement(multipartFiles, link, signRequest);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à bien été ajoutée"));
         return "redirect:/user/signrequests/" + id;
@@ -430,7 +430,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         Document attachement = documentService.getById(attachementId);
         try {
             if (!attachement.getParentId().equals(signRequest.getId())) {
@@ -449,7 +449,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/get-last-file/{id}")
     public ResponseEntity<Void> getLastFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         try {
             InputStream inputStream = null;
             String contentType = "";
@@ -495,7 +495,7 @@ public class SignRequestController {
     @GetMapping(value = "/get-file/{id}")
     public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         Document document = documentService.getById(id);
-        if(signRequestService.getSignRequestById(document.getParentId()) != null) {
+        if(signRequestService.getById(document.getParentId()) != null) {
             httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
             httpServletResponse.setContentType(document.getContentType());
             IOUtils.copy(document.getInputStream(), httpServletResponse.getOutputStream());
@@ -507,7 +507,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
@@ -564,7 +564,7 @@ public class SignRequestController {
     @ResponseBody
     public List<User> isTempUsers(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                               @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
         return userService.getTempUsers(signRequest, recipientList);

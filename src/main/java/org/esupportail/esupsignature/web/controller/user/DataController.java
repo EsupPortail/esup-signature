@@ -240,7 +240,7 @@ public class DataController {
 	@PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
 	@GetMapping("{id}/clone-from-signrequests")
 	public String cloneDataFromSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		SignRequest signRequest = signRequestService.getSignRequestById(id);
+		SignRequest signRequest = signRequestService.getById(id);
 		Data cloneData = dataService.cloneFromSignRequest(signRequest);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";

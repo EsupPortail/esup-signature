@@ -56,7 +56,7 @@ public class OtpService {
     }
 
     public void generateOtpForSignRequest(Long id, User extUser) throws MessagingException {
-        SignRequest signRequest = signRequestService.getSignRequestById(id);
+        SignRequest signRequest = signRequestService.getById(id);
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
         otp.setPhoneNumber(extUser.getEppn());

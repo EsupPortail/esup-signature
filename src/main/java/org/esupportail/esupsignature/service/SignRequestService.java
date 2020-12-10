@@ -72,6 +72,9 @@ public class SignRequestService {
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
+	private ObjectMapper objectMapper;
+
+	@Resource
 	private ActionService actionService;
 
 	@Resource
@@ -333,7 +336,6 @@ public class SignRequestService {
 		SignRequest signRequest = getSignRequestsFullById(id, user, user);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
-		ObjectMapper objectMapper = new ObjectMapper();
 		if(formData != null) {
 			try {
 				formDataMap = objectMapper.readValue(formData, Map.class);
@@ -363,8 +365,9 @@ public class SignRequestService {
 			formDataMap.remove(toRemoveKey);
 		}
 		try {
-			List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+			List<SignRequestParams> signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
 			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
+				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
 				return true;
 			}
@@ -623,7 +626,7 @@ public class SignRequestService {
 	}
 
 	public void completeSignRequest(Long id, User user) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		completeSignRequest(signRequest, user);
 	}
 
@@ -893,7 +896,7 @@ public class SignRequestService {
 	}
 
 	public SignRequest getSignRequestsFullById(long id, User user, User authUser) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		if (signRequest.getStatus().equals(SignRequestStatus.pending)
 				&& checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0
 				&& needToSign(signRequest, user)) {
@@ -902,11 +905,7 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public SignRequest getSignRequestById(long id) {
-		return signRequestRepository.findById(id).get();
-	}
-
-	public SignRequest findById(long id) {
+	public SignRequest getById(long id) {
 		return signRequestRepository.findById(id).get();
 	}
 
@@ -915,7 +914,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, String[] names, String[] firstnames, String[] phones) throws MessagingException {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
 			if (names != null && tempUsers.size() == names.length) {
@@ -960,7 +959,7 @@ public class SignRequestService {
 	}
 
 	public InputStream getLastFileBase64(Long id) throws SQLException, EsupSignatureException {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		InputStream inputStream = null;
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = signRequest.getToSignDocuments();
@@ -988,7 +987,7 @@ public class SignRequestService {
 	}
 
 	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -999,19 +998,19 @@ public class SignRequestService {
 	}
 
 	public void removeLink(Long id, Integer linkId) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		String toRemove = signRequest.getLinks().get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 
 	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		signRequest.setComment(comment);
 		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
 	}
 
 	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
-		SignRequest signRequest = getSignRequestById(id);
+		SignRequest signRequest = getById(id);
 		liveWorkflowService.addRecipientsToWorkflowStep(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), recipientsEmails);
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
 		if (allSignToComplete != null && allSignToComplete) {
