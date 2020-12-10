@@ -1,13 +1,8 @@
 package org.esupportail.esupsignature.web.controller.pub;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.LogRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -33,7 +28,7 @@ public class PublicController {
         List<SignRequest> signRequestOptional = signRequestService.getSignRequestsByToken(token);
         if(signRequestOptional.size() > 0) {
             SignRequest signRequest = signRequestOptional.get(0);
-            List<Log> logs = logService.findBySignRequestId(signRequest.getId());
+            List<Log> logs = logService.getById(signRequest.getId());
             AbstractMap.SimpleEntry<List<User>, List<User>> userResponse = signRequestService.checkUserResponse(signRequest);
             model.addAttribute("usersHasSigned", userResponse.getValue());
             model.addAttribute("usersHasRefused", userResponse.getKey());

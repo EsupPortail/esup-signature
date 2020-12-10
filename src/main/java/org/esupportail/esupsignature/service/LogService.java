@@ -41,10 +41,7 @@ public class LogService {
         return logs;
     }
 
-    public List<Log> getLogsBySignRequestId(Long id) {
-        return logRepository.findBySignRequestId(id);
-    }
-    public List<Log> findBySignRequestId(Long id) {
+    public List<Log> getById(Long id) {
         return logRepository.findBySignRequestId(id);
     }
 
