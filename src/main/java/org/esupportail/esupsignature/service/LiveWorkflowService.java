@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.LiveWorkflowStep;
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
@@ -77,5 +74,9 @@ public class LiveWorkflowService {
     public Long setSignTypeForWorkflowStep(SignType signType, LiveWorkflowStep liveWorkflowStep) {
         liveWorkflowStep.setSignType(signType);
         return liveWorkflowStep.getId();
+    }
+
+    public void deleteWork(LiveWorkflow liveWorkflow) {
+
     }
 }

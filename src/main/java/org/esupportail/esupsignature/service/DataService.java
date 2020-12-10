@@ -202,16 +202,12 @@ public class DataService {
         return null;
     }
 
-    public Data getDataFromSignRequest(SignRequest signRequest) {
-        return getDataFromSignBook(signRequest.getParentSignBook());
+    public Data getBySignRequest(SignRequest signRequest) {
+        return getBySignBook(signRequest.getParentSignBook());
     }
 
-    public Data getDataFromSignBook(SignBook signBook) {
-        List<Data> datas = dataRepository.findBySignBook(signBook);
-        if (datas.size() > 0) {
-            return datas.get(0);
-        }
-        return null;
+    public Data getBySignBook(SignBook signBook) {
+        return dataRepository.findBySignBook(signBook);
     }
 
     public List<Data> getDataDraftByOwner(User user) {
@@ -272,7 +268,7 @@ public class DataService {
     }
 
     public Data cloneFromSignRequest(SignRequest signRequest) {
-        Data data = getDataFromSignRequest(signRequest);
+        Data data = getBySignRequest(signRequest);
         return cloneData(data);
     }
 
@@ -300,7 +296,11 @@ public class DataService {
         List<Data> datas = dataRepository.findByForm(form);
         for(Data data : datas) {
             data.setForm(null);
-            dataRepository.save(data);
         }
+    }
+
+    public void nullifySignBook(SignBook signBook) {
+        Data data = getBySignBook(signBook);
+        data.setSignBook(null);
     }
 }

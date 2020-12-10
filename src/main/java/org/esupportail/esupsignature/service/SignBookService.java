@@ -5,7 +5,7 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.mail.MailService;
@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -38,31 +38,16 @@ public class SignBookService {
     private RecipientService recipientService;
 
     @Resource
-    private DataRepository dataRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
     private UserService userService;
 
     @Resource
     private MailService mailService;
 
     @Resource
-    private LogRepository logRepository;
-
-    @Resource
     private WorkflowService workflowService;
 
     @Resource
     private WorkflowService workflowStepService;
-
-    @Resource
-    private RecipientRepository recipientRepository;
-
-    @Resource
-    private UserShareRepository userShareRepository;
 
     @Resource
     private FileService fileService;
@@ -74,7 +59,16 @@ public class SignBookService {
     private LiveWorkflowService liveWorkflowService;
 
     @Resource
-    private LiveWorkflowStepRepository liveWorkflowStepRepository;
+    private UserShareService userShareService;
+
+    @Resource
+    private DataService dataService;
+
+    @Resource
+    private LiveWorkflowStepService liveWorkflowStepService;
+
+    @Resource
+    private LogService logService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -111,15 +105,15 @@ public class SignBookService {
         signBook.getLiveWorkflow().setWorkflow(workflow);
     }
 
-    public List<SignBook> getSignBooksByCreateBy(User user) {
+    public List<SignBook> getByCreateBy(User user) {
         return signBookRepository.findByCreateBy(user);
     }
 
-    public SignBook getSignBookByName(String name) {
+    public SignBook getByName(String name) {
         return signBookRepository.findByName(name).get(0);
     }
 
-    public SignBook getSignBookById(Long id) {
+    public SignBook getById(Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
         signBook.setLogs(getLogsFromSignBook(signBook));
         return signBook;
@@ -127,18 +121,16 @@ public class SignBookService {
 
     public List<SignBook> getSharedSignBooks(User user) {
         List<SignBook> sharedSignBook = new ArrayList<>();
-        for(UserShare userShare : userShareRepository.findByToUsersInAndShareTypesContains(Arrays.asList(user), ShareType.sign)) {
+        for(UserShare userShare : userShareService.getByToUsersInAndShareTypesContains(Collections.singletonList(user), ShareType.sign)) {
             if(userShare.getWorkflow() != null) {
                 sharedSignBook.addAll(signBookRepository.findByWorkflowId(userShare.getWorkflow().getId()));
             } else if(userShare.getForm() != null) {
                 List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser());
                 for (SignRequest signRequest : signRequests) {
-                    List<Data> datas = dataRepository.findBySignBook(signRequest.getParentSignBook());
-                    for (Data data : datas) {
-                        if(data.getForm().equals(userShare.getForm())) {
-                            sharedSignBook.add(signRequest.getParentSignBook());
-                            break;
-                        }
+                    Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+                    if(data.getForm().equals(userShare.getForm())) {
+                        sharedSignBook.add(signRequest.getParentSignBook());
+                        break;
                     }
                 }
             }
@@ -156,11 +148,7 @@ public class SignBookService {
 //        if(signBook.getCurrentWorkflowStepNumber() > 0) {
 //            return false;
 //        }
-        List<Data> datas = dataRepository.findBySignBook(signBook);
-        for (Data data : datas) {
-            data.setSignBook(null);
-            dataRepository.save(data);
-        }
+        dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
         return true;
     }
@@ -188,7 +176,7 @@ public class SignBookService {
     }
 
     public boolean preAuthorizeManage(String name, User user) throws EsupSignatureException {
-        SignBook signBook = getSignBookByName(name);
+        SignBook signBook = getByName(name);
         return checkUserManageRights(user, signBook);
     }
 
@@ -284,48 +272,7 @@ public class SignBookService {
                 signRequest.getRecipientHasSigned().remove(recipient);
             }
         }
-        liveWorkflowStepRepository.delete(liveWorkflowStep);
-    }
-
-    public void removeStepRecipient(SignBook signBook, int step, Long recipientId) {
-        Recipient recipientToRemove = recipientRepository.findById(recipientId).get();
-        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getWorkflowSteps().get(step);
-        liveWorkflowStep.getRecipients().remove(recipientToRemove);
-        for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() == step + 1) {
-                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().removeIf(recipient -> recipient.getUser().equals(recipientToRemove.getUser()));
-            }
-        }
-    }
-
-    public void toggleNeedAllSign(SignBook signBook, int step, Boolean allSignToComplete) {
-        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getWorkflowSteps().get(step);
-        if(allSignToComplete != null && !allSignToComplete.equals(liveWorkflowStep.getAllSignToComplete())) {
-            liveWorkflowService.toggleAllSignToCompleteForWorkflowStep(liveWorkflowStep);
-        }
-    }
-
-    public void changeSignType(SignBook signBook, int step, SignType signType) {
-        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getWorkflowSteps().get(step);
-        liveWorkflowService.setSignTypeForWorkflowStep(signType, liveWorkflowStep);
-    }
-
-    public boolean isUserSignAllDocs(SignBook signBook, User user) {
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public boolean isStepAllDocsDone(SignBook signBook) {
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                return false;
-            }
-        }
-        return true;
+        liveWorkflowStepService.delete(liveWorkflowStep);
     }
 
     public boolean isStepAllSignDone(SignBook signBook) {
@@ -404,26 +351,16 @@ public class SignBookService {
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment) {
-        Log log = new Log();
-        log.setSignRequestId(signBook.getId());
-        if(userService.getUserFromAuthentication() != null) {
-            log.setEppn(userService.getUserFromAuthentication().getEppn());
-            log.setEppnFor(userService.getSuEppn());
-            log.setIp(userService.getUserFromAuthentication().getIp());
-        }
-        log.setInitialStatus(signBook.getStatus().toString());
-        log.setLogDate(new Date());
-        log.setAction(action);
-        log.setReturnCode(returnCode);
-        log.setComment(comment);
+        Log log = logService.create(signBook.getId(), signBook.getStatus().name(), action, returnCode, comment);
         if(signRequestStatus != null) {
             log.setFinalStatus(signRequestStatus.toString());
             signBook.setStatus(signRequestStatus);
         } else {
             log.setFinalStatus(signBook.getStatus().toString());
         }
-        logRepository.save(log);
     }
+
+
 
     public void refuse(SignBook signBook, String comment, User user) {
         mailService.sendRefusedMail(signBook, comment);
@@ -487,7 +424,7 @@ public class SignBookService {
     }
 
     public void addWorkflowToSignBook(User authUser, Long workflowSignBookId, SignBook signBook) {
-        Workflow workflow = workflowRepository.findById(workflowSignBookId).get();
+        Workflow workflow = workflowService.getWorkflowById(workflowSignBookId);
         importWorkflow(signBook, workflow);
         nextWorkFlowStep(signBook);
         pendingSignBook(signBook, authUser);
@@ -496,7 +433,7 @@ public class SignBookService {
     public List<Log> getLogsFromSignBook(SignBook signBook) {
         List<Log> logs = new ArrayList<>();
         for (SignRequest signRequest : signBook.getSignRequests()) {
-            logs.addAll(logRepository.findBySignRequestId(signRequest.getId()));
+            logs.addAll(logService.getBySignRequestId(signRequest.getId()));
         }
         return logs;
     }

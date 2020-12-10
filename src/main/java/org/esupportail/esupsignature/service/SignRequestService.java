@@ -416,7 +416,7 @@ public class SignRequestService {
 			try {
 				formDataMap = objectMapper.readValue(formData, Map.class);
 				formDataMap.remove("_csrf");
-				Data data = dataService.getDataFromSignBook(signRequest.getParentSignBook());
+				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null) {
 					List<Field> fields = data.getForm().getFields();
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
@@ -468,7 +468,7 @@ public class SignRequestService {
 		SignType signType = signRequest.getCurrentSignType();
 		InputStream filledInputStream;
 		if(!signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
-			Data data = dataService.getDataFromSignRequest(signRequest);
+			Data data = dataService.getBySignRequest(signRequest);
 			if(data != null) {
 				Form form = data.getForm();
 				for (Field field : form.getFields()) {
@@ -1070,10 +1070,10 @@ public class SignRequestService {
 					return userShare.getUser();
 				}
 			}
-			List<Data> datas = dataRepository.findBySignBook(signBook);
-			if(datas.size() > 0) {
+			Data data = dataRepository.findBySignBook(signBook);
+			if(data !=  null) {
 				for (UserShare userShare : userShares) {
-					if (userShare.getForm().equals(datas.get(0).getForm()) && checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+					if (userShare.getForm().equals(data.getForm()) && checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
 						return userShare.getUser();
 					}
 				}
@@ -1087,12 +1087,12 @@ public class SignRequestService {
         Set<String> toEmails = new HashSet<>();
         toEmails.add(recipientUser.getEmail());
 		SignBook signBook = signRequest.getParentSignBook();
-		List<Data> datas = dataRepository.findBySignBook(signBook);
+		Data data = dataRepository.findBySignBook(signBook);
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
 		for (UserShare userShare : userShareRepository.findByUser(recipientUser)) {
 			if (userShare.getShareTypes().contains(ShareType.sign)) {
-				if ((datas.size() > 0 && datas.get(0).getForm().equals(userShare.getForm()))
+				if ((data != null && data.getForm().equals(userShare.getForm()))
 				|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
 					for (User toUser : userShare.getToUsers()) {
 						toEmails.add(toUser.getEmail());
@@ -1165,7 +1165,7 @@ public class SignRequestService {
 
 	public List<Field> prefillSignRequestFields(SignRequest signRequest, User user) {
 		List<Field> prefilledFields = new ArrayList<>();
-		Data data = dataService.getDataFromSignBook(signRequest.getParentSignBook());
+		Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 		if(data != null) {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();

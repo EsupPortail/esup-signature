@@ -6,11 +6,9 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.web.controller.user.UserController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -152,7 +150,7 @@ public class UserShareService {
                 }
             }
         }
-        Data data = dataService.getDataFromSignRequest(signRequest);
+        Data data = dataService.getBySignRequest(signRequest);
         if(data != null) {
             List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndFormAndShareTypesContains(fromUser, Arrays.asList(toUser), data.getForm(), shareType);
             for (UserShare userShare : userShares) {
@@ -235,6 +233,10 @@ public class UserShareService {
 
     public List<UserShare> getUserSharesByForm(Form form) {
         return userShareRepository.findByFormId(form.getId());
+    }
+
+    public List<UserShare> getByToUsersInAndShareTypesContains(List<User> users, ShareType shareType) {
+        return userShareRepository.findByToUsersInAndShareTypesContains(users, shareType);
     }
 
 }
