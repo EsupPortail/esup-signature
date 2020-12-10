@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -55,7 +54,7 @@ public class DocumentAdminController {
 	
 	@GetMapping("/{id}")
 	public String getDocumentById(@PathVariable("id") Long id, Model model) {
-		Document document = documentService.findById(id);
+		Document document = documentService.getById(id);
 		model.addAttribute("document", document);
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("workflowTypes", workflowService.getClassesWorkflows());
@@ -97,7 +96,7 @@ public class DocumentAdminController {
 
 	@GetMapping("/{id}/getimagepdfpage/{page}")
 	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, @PathVariable("page") int page, HttpServletResponse response) throws IOException {
-		Document document = documentService.findById(id);;
+		Document document = documentService.getById(id);;
 		InputStream in = null;
 		try {
 			in = pdfService.pageAsInputStream(document.getInputStream(), page);
@@ -119,7 +118,7 @@ public class DocumentAdminController {
 	
 	@GetMapping(value = "documents/getfile/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
-		Document document = documentService.findById(id);
+		Document document = documentService.getById(id);
 			try {
 				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 				response.setContentType(document.getContentType());

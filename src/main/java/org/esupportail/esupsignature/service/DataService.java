@@ -68,7 +68,7 @@ public class DataService {
     @Resource
     private UserShareService userShareService;
 
-    public Data getDataById(Long dataId) {
+    public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
     }
 
@@ -288,7 +288,7 @@ public class DataService {
         Form form = formService.getFormById(id);
         Data data;
         if(dataId != null) {
-            data = getDataById(dataId);
+            data = getById(dataId);
         } else {
             data = new Data();
         }

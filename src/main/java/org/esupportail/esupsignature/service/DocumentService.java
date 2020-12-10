@@ -90,10 +90,6 @@ public class DocumentService {
 		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
 	}
 
-	public String exportDocument(String targetUrl, Document signedFile) throws EsupSignatureException {
-		return exportDocument(fsAccessFactory.getPathIOType(targetUrl), targetUrl, signedFile);
-	}
-
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureException {
 		String documentUri;
 		try {
@@ -116,7 +112,7 @@ public class DocumentService {
 		}
 	}
 
-	public Document findById(Long id) {
+	public Document getById(Long id) {
 		return documentRepository.findById(id).get();
 	}
 
