@@ -1,28 +1,7 @@
 package org.esupportail.esupsignature.service;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -51,6 +30,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.time.DayOfWeek;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -157,8 +145,9 @@ public class UserService {
     public User getUserByEmail(String email) {
         if (userRepository.countByEmail(email) > 0) {
             return userRepository.findByEmail(email).get(0);
+        } else {
+            return createUserWithEmail(email);
         }
-        return null;
     }
 
     public User getUserByEppn(String eppn) {
@@ -481,5 +470,50 @@ public class UserService {
 
     public User getUserById(Long id) {
         return userRepository.findById(id).get();
+    }
+
+    public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
+        List<User> tempUsers = new ArrayList<>();
+        for (String recipientEmail : recipientsEmails) {
+            if(recipientEmail.contains("*")) {
+                recipientEmail = recipientEmail.split("\\*")[1];
+            }
+            User recipientUser = getUserByEmail(recipientEmail);
+            if(recipientUser.getUserType().equals(UserType.external)) {
+                tempUsers.add(recipientUser);
+            }
+        }
+        return tempUsers;
+    }
+
+    public boolean isTempUsers(SignRequest signRequest) {
+        boolean isTempUsers = false;
+        if(getTempUsers(signRequest).size() > 0) {
+            isTempUsers = true;
+        }
+        return isTempUsers;
+    }
+
+    public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
+        Set<User> users = new HashSet<>();
+        users.addAll(getTempUsers(signRequest));
+        if(recipientsEmails != null) {
+            users.addAll(getTempUsersFromRecipientList(recipientsEmails));
+        }
+        return new ArrayList<>(users);
+    }
+
+    public List<User> getTempUsers(SignRequest signRequest) {
+        Set<User> users = new HashSet<>();
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+                for (Recipient recipient : liveWorkflowStep.getRecipients()) {
+                    if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
+                        users.add(recipient.getUser());
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(users);
     }
 }

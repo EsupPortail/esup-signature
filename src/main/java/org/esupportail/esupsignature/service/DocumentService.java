@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -90,10 +91,6 @@ public class DocumentService {
 		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
 	}
 
-	public String exportDocument(String targetUrl, Document signedFile) throws EsupSignatureException {
-		return exportDocument(fsAccessFactory.getPathIOType(targetUrl), targetUrl, signedFile);
-	}
-
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureException {
 		String documentUri;
 		try {
@@ -116,19 +113,24 @@ public class DocumentService {
 		}
 	}
 
-	public Document findById(Long id) {
+	public Document getById(Long id) {
 		return documentRepository.findById(id).get();
 	}
 
 	public void delete(Long id) {
 		Document document = documentRepository.findById(id).get();
-		documentRepository.delete(document);
+		delete(document);
 	}
+
 	public void delete(Document document) {
 		documentRepository.delete(document);
 	}
 
-	public Document getDocumentById(Long id) {
-		return documentRepository.findById(id).get();
+	public Document addSignedFile(SignRequest signRequest, InputStream signedInputStream, String originalName, String mimeType) throws IOException {
+		String docName = getSignedName(originalName);
+		Document document = createDocument(signedInputStream, docName, mimeType);
+		document.setParentId(signRequest.getId());
+		signRequest.getSignedDocuments().add(document);
+		return document;
 	}
 }

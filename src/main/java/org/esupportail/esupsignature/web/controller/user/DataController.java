@@ -86,7 +86,7 @@ public class DataController {
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}")
 	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if (user.getEppn().equals(data.getOwner())) {
 			if (page == null) {
@@ -105,7 +105,7 @@ public class DataController {
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> authorizedForms = formService.getFormsByUser(user, authUser);
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
@@ -130,7 +130,7 @@ public class DataController {
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/update")
 	public String updateData(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
@@ -166,7 +166,7 @@ public class DataController {
 
 	@PutMapping("{id}")
 	public String updateData(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		if(page == null) {
 			page = 1;
 		}
@@ -175,7 +175,7 @@ public class DataController {
 		} else if("prev".equals(navPage)) {
 			page--;
 		}
-		dataService.updateData(name, formData, data);
+		dataService.setDatas(name, formData, data);
 		redirectAttributes.addAttribute("page", page);
 		if(navPage != null && !navPage.isEmpty()) {
 			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId() + "/update?page=" + page;
@@ -188,9 +188,9 @@ public class DataController {
 	@PostMapping("{id}/send")
 	public String sendDataById(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		try {
-			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, redirectAttributes, data);
+			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 
@@ -203,7 +203,7 @@ public class DataController {
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		if(user.getEppn().equals(data.getCreateBy()) || user.getEppn().equals(data.getOwner())) {
 			dataService.delete(data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
@@ -216,7 +216,7 @@ public class DataController {
 	@GetMapping("{id}/export-pdf")
 	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
-			Data data = dataService.getDataById(id);
+			Data data = dataService.getById(id);
 			InputStream exportPdf = dataService.generateFile(data);
 			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(data.getName(), StandardCharsets.UTF_8.toString()));
 			response.setContentType("application/pdf");
@@ -228,18 +228,10 @@ public class DataController {
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	}
 
-	@GetMapping("{id}/reset")
-	public String resetData(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-		Data data = dataService.getDataById(id);
-		dataService.resetData(user, data);
-		return "redirect:/user/" + user.getEppn() + "/data/" + id;
-
-	}
-
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/clone")
 	public String cloneData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Data data = dataService.getDataById(id);
+		Data data = dataService.getById(id);
 		Data cloneData = dataService.cloneData(data);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
@@ -256,7 +248,7 @@ public class DataController {
 
 	@GetMapping("forms/{id}/get-image")
 	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws Exception {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
 		httpServletResponse.setContentType(MediaType.IMAGE_PNG_VALUE);
 		IOUtils.copy(in, httpServletResponse.getOutputStream());
@@ -266,7 +258,7 @@ public class DataController {
 
 	@GetMapping(value = "/get-model/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		try {
 			Document model = form.getDocument();
 			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(model.getFileName(), StandardCharsets.UTF_8.toString()));

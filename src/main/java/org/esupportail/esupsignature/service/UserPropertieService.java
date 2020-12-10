@@ -1,7 +1,8 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.repository.RecipientRepository;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
 
@@ -94,5 +95,13 @@ public class UserPropertieService {
 
     public List<UserPropertie> getUserPropertiesByUser(User user) {
         return userPropertieRepository.findByUser(user);
+    }
+
+    public List<UserPropertie> getByWorkflowStep(WorkflowStep workflowStep) {
+        return userPropertieRepository.findByWorkflowStep(workflowStep);
+    }
+
+    public void delete(UserPropertie userPropertie) {
+        userPropertieRepository.delete(userPropertie);
     }
 }

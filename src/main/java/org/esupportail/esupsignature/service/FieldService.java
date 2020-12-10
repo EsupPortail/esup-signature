@@ -14,7 +14,7 @@ public class FieldService {
 	@Resource
 	private FieldRepository fieldRepository;
 	
-	public Field getFieldById(long fieldId) {
+	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
 		return obj;
 	}	
@@ -61,6 +61,6 @@ public class FieldService {
 	}
 	
 	public void deleteField(int fieldId) {
-		fieldRepository.delete(getFieldById(fieldId));
+		fieldRepository.delete(getById(fieldId));
 	}
 }

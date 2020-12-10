@@ -52,7 +52,7 @@ public class WizardController {
     @PostMapping(value = "/wiz3", produces = "text/html")
     public ModelAndView wiz3(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix d'un workflow");
-        List<SignBook> signBooks = signBookService.getSignBooksByCreateBy(user);
+        List<SignBook> signBooks = signBookService.getByCreateBy(user);
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
@@ -132,7 +132,7 @@ public class WizardController {
     public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        Model model) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
@@ -153,7 +153,7 @@ public class WizardController {
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
                        Model model) throws EsupSignatureUserException {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 liveWorkflowService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, signBook);
@@ -182,7 +182,7 @@ public class WizardController {
     @GetMapping(value = "/wiz5/{id}")
     public String saveForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
 
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
         }
@@ -191,7 +191,7 @@ public class WizardController {
 
     @PostMapping(value = "/wiz5/{id}")
     public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         try {
             signBookService.saveWorkflow(name, name, user, signBook);
         } catch (EsupSignatureException e) {
@@ -213,7 +213,7 @@ public class WizardController {
 
     @GetMapping(value = "/wizend/{id}")
     public String wizEnd(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
             return "user/wizard/wizend";
@@ -224,7 +224,7 @@ public class WizardController {
 
     @GetMapping(value = "/wizredirect/{id}")
     public String wizRedirect(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

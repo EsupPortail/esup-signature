@@ -37,14 +37,14 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         if(signBookService.delete(signBook)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         } else {
@@ -56,7 +56,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
         model.addAttribute("logs", signBook.getLogs());
         model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
@@ -72,7 +72,7 @@ public class SignBookController {
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         try {
             signBookService.addLiveStep(signBook, authUser, recipientsEmails, stepNumber, allSignToComplete, signType);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
@@ -86,7 +86,7 @@ public class SignBookController {
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(currentStepNumber <= step) {
             signBookService.removeStep(signBook, step);
@@ -101,7 +101,7 @@ public class SignBookController {
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(authUser, workflowSignBookId, signBook);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
@@ -111,26 +111,15 @@ public class SignBookController {
     public String addDocumentToNewSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         signBookService.addDocumentsToSignBook(authUser, multipartFiles, signBook);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
-    }
-
-    @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
-    @DeleteMapping(value = "/remove-live-step-recipent/{id}/{step}")
-    public String removeStepRecipient(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
-                                 @PathVariable("step") Integer step,
-                                 @RequestParam(value = "recipientId") Long recipientId, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getSignBookById(id);
-        signBookService.removeStepRecipient(signBook, step, recipientId);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le destinataire a été supprimé"));
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
     @PreAuthorize("@signBookService.preAuthorizeManage(#id, #authUser)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id) {
-        SignBook signBook = signBookService.getSignBookById(id);
+        SignBook signBook = signBookService.getById(id);
         signBookService.pendingSignBook(signBook, authUser);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }

@@ -18,9 +18,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +45,17 @@ public class FormService {
 
 	@Resource
 	private FieldService fieldService;
-
-	@Resource
-	private UserPropertieRepository userPropertiesRepository;
-
-	@Resource
-	private DataRepository dataRepository;
-
+	
 	@Resource
 	private WorkflowService workflowService;
 
-	public Form getFormById(Long formId) {
+	@Resource
+	private DataService dataService;
+
+	@Resource
+	private UserPropertieService userPropertieService;
+
+	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
 	}
@@ -96,7 +94,7 @@ public class FormService {
 	}
 
 	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
-		Form form = getFormById(id);
+		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.getManagers().clear();
 		if(managers != null) {
@@ -136,15 +134,11 @@ public class FormService {
 		for(UserShare userShare : userShares) {
 			userShareService.delete(userShare);
 		}
-		List<Data> datas = dataRepository.findByForm(form);
-		for(Data data : datas) {
-			data.setForm(null);
-			dataRepository.save(data);
-		}
+		dataService.nullifyForm(form);
 		for (WorkflowStep workflowStep : workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps()) {
-			List<UserPropertie> userProperties = userPropertiesRepository.findByWorkflowStep(workflowStep);
+			List<UserPropertie> userProperties = userPropertieService.getByWorkflowStep(workflowStep);
 			for(UserPropertie userPropertie : userProperties) {
-				userPropertiesRepository.delete(userPropertie);
+				userPropertieService.delete(userPropertie);
 			}
 		}
 		formRepository.delete(form);
@@ -339,7 +333,7 @@ public class FormService {
 	}
 
 	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
-		return formRepository.findFormByNameAndActiveVersion(name, true);
+		return formRepository.findFormByNameAndActiveVersion(name, activeVersion);
 	}
 
 	public List<Form> getFormByName(String name) {

@@ -3,11 +3,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.repository.FieldRepository;
-import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
@@ -33,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -83,7 +78,7 @@ public class FormAdminController {
 	
 	@GetMapping("{id}")
 	public String getFormById(@PathVariable("id") Long id, Model model) {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/show";
@@ -98,7 +93,7 @@ public class FormAdminController {
 
 	@GetMapping("update/{id}")
 	public String updateForm(@PathVariable("id") long id, Model model) {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("document", form.getDocument());

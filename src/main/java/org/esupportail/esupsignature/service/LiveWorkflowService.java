@@ -4,9 +4,6 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
-import org.esupportail.esupsignature.repository.RecipientRepository;
-import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.web.controller.user.WizardController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,16 +20,10 @@ public class LiveWorkflowService {
     LiveWorkflowStepRepository liveWorkflowStepRepository;
 
     @Resource
-    UserRepository userRepository;
-
-    @Resource
     UserService userService;
 
     @Resource
     RecipientService recipientService;
-
-    @Resource
-    RecipientRepository recipientRepository;
 
     public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
@@ -52,12 +43,7 @@ public class LiveWorkflowService {
     public void addRecipientsToWorkflowStep(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
-            User recipientUser;
-            if (userRepository.countByEmail(recipientEmail) == 0) {
-                recipientUser = userService.createUserWithEmail(recipientEmail);
-            } else {
-                recipientUser = userRepository.findByEmail(recipientEmail).get(0);
-            }
+            User recipientUser = userService.getUserByEmail(recipientEmail);
             if(liveWorkflowStep.getId() != null) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().equals(recipientUser)) {
@@ -65,8 +51,7 @@ public class LiveWorkflowService {
                     }
                 }
             }
-            Recipient recipient = recipientService.createRecipient(liveWorkflowStep.getId(), recipientUser);
-            recipientRepository.save(recipient);
+            Recipient recipient = recipientService.createRecipient(recipientUser);
             liveWorkflowStep.getRecipients().add(recipient);
         }
     }
@@ -91,12 +76,7 @@ public class LiveWorkflowService {
         return liveWorkflowStep.getId();
     }
 
-    public boolean isWorkflowStepFullSigned(LiveWorkflowStep liveWorkflowStep) {
-        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-            if(!recipient.getSigned()) {
-                return false;
-            }
-        }
-        return true;
+    public void deleteWork(LiveWorkflow liveWorkflow) {
+
     }
 }

@@ -162,7 +162,7 @@ public class SignRequestController {
         } catch (EsupSignatureUserException e) {
             model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
         }
-        model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest));
+        model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
         model.addAttribute("steps", getWorkflowStepsFromSignRequest(signRequest, user));
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("postits", logService.getLogs(signRequest.getId()));
@@ -187,7 +187,7 @@ public class SignRequestController {
     public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
         SignRequest signRequest = signRequestService.getSignRequestById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
-        List<Log> logs = logService.getLogsBySignRequestId(signRequest.getId());
+        List<Log> logs = logService.getById(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
@@ -248,7 +248,7 @@ public class SignRequestController {
     public String removeDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
-        Document document = documentService.getDocumentById(id);
+        Document document = documentService.getById(id);
         SignRequest signRequest = signRequestService.getSignRequestById(document.getParentId());
         if(signRequest.getCreateBy().equals(user)) {
             signRequest.getOriginalDocuments().remove(document);
@@ -276,7 +276,7 @@ public class SignRequestController {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             try {
-                SignRequest signRequest = signRequestService.initCreateSignRequest(user, multipartFiles, signType);
+                SignRequest signRequest = signRequestService.createFastSignRequest(user, multipartFiles, signType);
                 return "redirect:/user/signrequests/" + signRequest.getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -300,7 +300,7 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signRequestService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
+                SignBook signBook = signBookService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
                 String message = sendSignRequest(user, signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType);
                 if (message != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", message));
@@ -333,7 +333,7 @@ public class SignRequestController {
             logger.error("error with users on create signbook " + signBook.getId());
             throw new EsupSignatureException("Problème lors de l’envoi");
         }
-        if(signRequestService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
+        if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
             pending = false;
             message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
         }
@@ -431,7 +431,7 @@ public class SignRequestController {
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         SignRequest signRequest = signRequestService.getSignRequestById(id);
-        Document attachement = documentService.getDocumentById(attachementId);
+        Document attachement = documentService.getById(attachementId);
         try {
             if (!attachement.getParentId().equals(signRequest.getId())) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -494,7 +494,7 @@ public class SignRequestController {
     @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
     @GetMapping(value = "/get-file/{id}")
     public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
-        Document document = documentService.getDocumentById(id);
+        Document document = documentService.getById(id);
         if(signRequestService.getSignRequestById(document.getParentId()) != null) {
             httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
             httpServletResponse.setContentType(document.getContentType());
@@ -567,6 +567,6 @@ public class SignRequestController {
         SignRequest signRequest = signRequestService.getSignRequestById(id);
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
-        return signRequestService.getTempUsers(signRequest, recipientList);
+        return userService.getTempUsers(signRequest, recipientList);
     }
 }

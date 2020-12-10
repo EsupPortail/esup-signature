@@ -6,11 +6,9 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.web.controller.user.UserController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -36,6 +34,9 @@ public class UserShareService {
 
     @Resource
     private DataService dataService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     public List<User> getSuUsers(User authUser) {
         List<User> suUsers = new ArrayList<>();
@@ -152,7 +153,7 @@ public class UserShareService {
                 }
             }
         }
-        Data data = dataService.getDataFromSignRequest(signRequest);
+        Data data = dataService.getBySignRequest(signRequest);
         if(data != null) {
             List<UserShare> userShares = userShareRepository.findByUserAndToUsersInAndFormAndShareTypesContains(fromUser, Arrays.asList(toUser), data.getForm(), shareType);
             for (UserShare userShare : userShares) {
@@ -236,5 +237,33 @@ public class UserShareService {
     public List<UserShare> getUserSharesByForm(Form form) {
         return userShareRepository.findByFormId(form.getId());
     }
+
+    public List<UserShare> getByToUsersInAndShareTypesContains(List<User> users, ShareType shareType) {
+        return userShareRepository.findByToUsersInAndShareTypesContains(users, shareType);
+    }
+
+    public User checkShare(SignRequest signRequest) {
+        SignBook signBook = signRequest.getParentSignBook();
+        if(signBook != null) {
+            User toUser = userService.getUserFromAuthentication();
+            List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
+            for (UserShare userShare : userShares) {
+                Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
+                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                    return userShare.getUser();
+                }
+            }
+            Data data = dataService.getBySignBook(signBook);
+            if(data !=  null) {
+                for (UserShare userShare : userShares) {
+                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                        return userShare.getUser();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
 }
