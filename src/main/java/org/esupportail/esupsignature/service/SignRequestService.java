@@ -582,7 +582,7 @@ public class SignRequestService {
 	public void applyEndOfSignRules(SignRequest signRequest, User user) throws EsupSignatureException {
 		recipientService.validateRecipient(signRequest, user);
 		if (isSignRequestCompleted(signRequest)) {
-			completeSignRequest(signRequest, user);
+			completeSignRequests(Collections.singletonList(signRequest));
 			if (isCurrentStepCompleted(signRequest)) {
 				for (Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
 					recipient.setSigned(!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
@@ -628,7 +628,7 @@ public class SignRequestService {
 	}
 
 	private void completeSignRequest(SignRequest signRequest, User user) {
-		if (signRequest.getCreateBy().equals(user.getEppn()) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
+		if (signRequest.getCreateBy().equals(user) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
 			completeSignRequests(Arrays.asList(signRequest));
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");

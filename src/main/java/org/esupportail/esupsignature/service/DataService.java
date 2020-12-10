@@ -301,6 +301,6 @@ public class DataService {
 
     public void nullifySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
-        data.setSignBook(null);
+        if(data != null) data.setSignBook(null);
     }
 }
