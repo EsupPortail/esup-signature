@@ -105,7 +105,7 @@ public class DataController {
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		List<Form> authorizedForms = formService.getFormsByUser(user, authUser);
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
 			if (page == null) {
 				page = 1;
@@ -248,7 +248,7 @@ public class DataController {
 
 	@GetMapping("forms/{id}/get-image")
 	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws Exception {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);
 		httpServletResponse.setContentType(MediaType.IMAGE_PNG_VALUE);
 		IOUtils.copy(in, httpServletResponse.getOutputStream());
@@ -258,7 +258,7 @@ public class DataController {
 
 	@GetMapping(value = "/get-model/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		try {
 			Document model = form.getDocument();
 			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(model.getFileName(), StandardCharsets.UTF_8.toString()));

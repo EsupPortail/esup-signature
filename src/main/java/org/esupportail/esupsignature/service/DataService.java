@@ -285,7 +285,7 @@ public class DataService {
     }
 
     public Data addData(User user, Long id, Long dataId, Map<String, String> datas) {
-        Form form = formService.getFormById(id);
+        Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
             data = getById(dataId);
@@ -294,5 +294,13 @@ public class DataService {
         }
         updateDatas(datas, user, form, data);
         return data;
+    }
+
+    public void nullifyForm(Form form) {
+        List<Data> datas = dataRepository.findByForm(form);
+        for(Data data : datas) {
+            data.setForm(null);
+            dataRepository.save(data);
+        }
     }
 }

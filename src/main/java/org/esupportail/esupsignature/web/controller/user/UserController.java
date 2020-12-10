@@ -257,7 +257,7 @@ public class UserController {
 	@GetMapping("/mark-help-as-read/{id}")
 	public String markHelpAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
 		logger.info(authUser.getEppn() + " mark " + id + " as read");
-		Form form = formService.getFormById(id);
+		Form form = formService.getById(id);
 		authUser.setFormMessages(authUser.getFormMessages() + " " + form.getId());
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
