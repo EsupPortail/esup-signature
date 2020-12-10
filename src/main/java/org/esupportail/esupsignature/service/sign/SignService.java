@@ -105,7 +105,7 @@ public class SignService {
 			parameters.setDetachedContents(originalDocuments);
 		}
 
-		DSSDocument extendedDoc = service.extendDocument(signedDocument, parameters);
+		DSSDocument extendedDoc = (DSSDocument) service.extendDocument(signedDocument, parameters);
 		logger.info("End extend with one document");
 		return extendedDoc;
 	}

@@ -1277,12 +1277,14 @@ public class SignRequestService {
 		if(toSignRequests.size() > 0) {
 			if(toSignRequests.size() > 1) {
 				int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest);
-				if (indexOfCurrentSignRequest == 0) {
-					return toSignRequests.get(toSignRequests.size() - 1);
-				} else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
-					return toSignRequests.get(indexOfCurrentSignRequest - 1);
-				} else {
-					return toSignRequests.get(indexOfCurrentSignRequest - 1);
+				if (indexOfCurrentSignRequest > -1) {
+					if (indexOfCurrentSignRequest == 0) {
+						return toSignRequests.get(toSignRequests.size() - 1);
+					} else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
+						return toSignRequests.get(indexOfCurrentSignRequest - 1);
+					} else {
+						return toSignRequests.get(indexOfCurrentSignRequest - 1);
+					}
 				}
 			}
 		}
