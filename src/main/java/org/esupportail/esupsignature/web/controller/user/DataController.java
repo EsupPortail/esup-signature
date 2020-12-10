@@ -175,7 +175,7 @@ public class DataController {
 		} else if("prev".equals(navPage)) {
 			page--;
 		}
-		dataService.updateData(name, formData, data);
+		dataService.setDatas(name, formData, data);
 		redirectAttributes.addAttribute("page", page);
 		if(navPage != null && !navPage.isEmpty()) {
 			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId() + "/update?page=" + page;
@@ -190,7 +190,7 @@ public class DataController {
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		Data data = dataService.getDataById(id);
 		try {
-			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, redirectAttributes, data);
+			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 
@@ -226,14 +226,6 @@ public class DataController {
 			logger.error("get file error", e);
 		}
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	}
-
-	@GetMapping("{id}/reset")
-	public String resetData(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-		Data data = dataService.getDataById(id);
-		dataService.resetData(user, data);
-		return "redirect:/user/" + user.getEppn() + "/data/" + id;
-
 	}
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")

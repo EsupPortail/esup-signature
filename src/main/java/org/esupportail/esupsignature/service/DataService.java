@@ -6,28 +6,28 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.service.prefill.PreFillService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -57,12 +57,6 @@ public class DataService {
     private SignBookService signBookService;
 
     @Resource
-    private SignRequestRepository signRequestRepository;
-
-    @Resource
-    private SignBookRepository signBookRepository;
-
-    @Resource
     private FileService fileService;
 
     @Resource
@@ -75,8 +69,7 @@ public class DataService {
     private UserShareService userShareService;
 
     public Data getDataById(Long dataId) {
-        Data obj = dataRepository.findById(dataId).get();
-        return obj;
+        return dataRepository.findById(dataId).get();
     }
 
     public boolean preAuthorizeUpdate(Long id, User user) {
@@ -93,12 +86,6 @@ public class DataService {
         }
         data.setForm(null);
         dataRepository.delete(data);
-    }
-
-    public void reset(Data data) {
-        data.setStatus(SignRequestStatus.draft);
-        data.setSignBook(null);
-        dataRepository.save(data);
     }
 
     public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
@@ -133,7 +120,6 @@ public class DataService {
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
 
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        signRequestRepository.save(signRequest);
         signBookService.addSignRequest(signBook, signRequest);
         workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
@@ -145,14 +131,21 @@ public class DataService {
                 signBook.getLiveWorkflow().setDocumentsTargetUri(form.getTargetUri());
             }
         }
-        signBookRepository.save(signBook);
         data.setSignBook(signBook);
         signBookService.pendingSignBook(signBook, user);
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }
 
-    public void updateData(@RequestParam Map<String, String> formDatas, User user, Form form, Data data) {
+    public void setDatas(String name, MultiValueMap<String, String> formData, Data data) {
+        data.setName(name);
+        for(String key : formData.keySet()) {
+            data.getDatas().put(key, formData.get(key).get(0));
+        }
+        data.setUpdateDate(new Date());
+    }
+
+    public void updateDatas(@RequestParam Map<String, String> formDatas, User user, Form form, Data data) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
@@ -259,16 +252,7 @@ public class DataService {
         return prefilledFields;
     }
 
-
-    public void updateData(String name, MultiValueMap<String, String> formData, Data data) {
-        data.setName(name);
-        for(String key : formData.keySet()) {
-            data.getDatas().put(key, formData.get(key).get(0));
-        }
-        data.setUpdateDate(new Date());
-    }
-
-    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, RedirectAttributes redirectAttributes, Data data) throws EsupSignatureIOException, EsupSignatureException {
+    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, Data data) throws EsupSignatureIOException, EsupSignatureException {
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user);
@@ -283,15 +267,7 @@ public class DataService {
                 throw new EsupSignatureException(e.getMessage(), e);
             }
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Attention, la procédure est déjà démarée"));
-        }
-        return null;
-    }
-
-    public void resetData(User user, Data data) {
-        if(user.getEmail().equals(data.getCreateBy())) {
-            signBookService.delete(data.getSignBook());
-            reset(data);
+            throw new EsupSignatureException("Attention, la procédure est déjà démarrée");
         }
     }
 
@@ -316,7 +292,7 @@ public class DataService {
         } else {
             data = new Data();
         }
-        updateData(datas, user, form, data);
+        updateDatas(datas, user, form, data);
         return data;
     }
 }
