@@ -319,10 +319,10 @@ public class SignRequestController {
     }
 
     public String sendSignRequest(User user, SignBook signBook, String[] recipientsEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType) throws EsupSignatureException {
+        String message = null;
         if (allSignToComplete == null) {
             allSignToComplete = false;
         }
-        String message = "Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
         try {
             if(userSignFirst != null && userSignFirst) {
                 signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
@@ -345,6 +345,8 @@ public class SignRequestController {
                     signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0);
                 }
             }
+        } else {
+            message = "Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
         }
         return message;
     }
