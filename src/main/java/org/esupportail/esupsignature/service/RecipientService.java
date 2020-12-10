@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +28,6 @@ public class RecipientService {
         return recipient;
     }
 
-    public Recipient findRecipientByUser(List<Recipient> recipients, User user) {
-        return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
-    }
-
     public boolean needSign(List<Recipient> recipients, User user) {
         List<Recipient> recipients1 = recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList());
         if(recipients1.size() > 0 && !recipients1.get(0).getSigned()) {
@@ -47,15 +42,11 @@ public class RecipientService {
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
     }
 
-    public long checkFalseRecipients(List<Recipient> recipients) {
-        return recipients.stream().filter(recipient -> !recipient.getSigned()).count();
-    }
-
     public long recipientsContainsUser(List<Recipient> recipients, User user) {
         return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).count();
     }
 
-    public Recipient getRecipientByEmail(Long parentId, String email) throws EsupSignatureUserException {
+    public Recipient getByEmail(String email) {
         User user = userService.checkUserByEmail(email);
         Recipient recipient = new Recipient();
         recipient.setUser(user);

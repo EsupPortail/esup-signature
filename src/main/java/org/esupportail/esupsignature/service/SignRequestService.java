@@ -380,15 +380,10 @@ public class SignRequestService {
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		for(Recipient recipient : recipients) {
 			Recipient newRecipient = null;
-			try {
-				newRecipient = recipientService.getRecipientByEmail(signRequest.getId(), recipient.getUser().getEmail());
-				recipientRepository.save(newRecipient);
-				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(newRecipient);
-			} catch (EsupSignatureUserException e) {
-				logger.error("add recipient fail", e);
-			}
+			newRecipient = recipientService.getByEmail(recipient.getUser().getEmail());
+			recipientRepository.save(newRecipient);
+			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(newRecipient);
 		}
-		//signRequestRepository.save(signRequest);
 	}
 
 	public void addRecipients(SignRequest signRequest, User user) {
