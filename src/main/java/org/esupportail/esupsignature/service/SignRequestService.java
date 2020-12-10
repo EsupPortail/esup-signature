@@ -368,7 +368,7 @@ public class SignRequestService {
 				recipientUser = userRepository.findByEmail(recipientEmail).get(0);
 			}
 			if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(r -> r.getUser().equals(recipientUser))) {
-				Recipient recipient = recipientService.createRecipient(signRequest.getId(), recipientUser);
+				Recipient recipient = recipientService.createRecipient(recipientUser);
 				recipientRepository.save(recipient);
 				signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(recipient);
 			}
@@ -397,7 +397,7 @@ public class SignRequestService {
 				return;
 			}
 		}
-		Recipient recipient = recipientService.createRecipient(signRequest.getId(), user);
+		Recipient recipient = recipientService.createRecipient(user);
 		recipientRepository.save(recipient);
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().add(recipient);
 	}

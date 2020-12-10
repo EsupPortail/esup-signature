@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.Action;
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,9 +22,10 @@ public class RecipientService {
     @Resource
     private UserService userService;
 
-    public Recipient createRecipient(Long parentId, User user) {
+    public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
         recipient.setUser(user);
+        recipientRepository.save(recipient);
         return recipient;
     }
 
