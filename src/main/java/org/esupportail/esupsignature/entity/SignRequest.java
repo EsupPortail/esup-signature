@@ -50,7 +50,7 @@ public class SignRequest {
     private List<Document> attachments = new ArrayList<>();
 
     @JsonIgnore
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> links = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

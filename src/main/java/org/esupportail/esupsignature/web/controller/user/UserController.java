@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -61,7 +62,7 @@ public class UserController {
 	@Resource
 	private WorkflowService workflowService;
 
-	@Resource
+	@Autowired(required=false)
 	private UserKeystoreService userKeystoreService;
 	
 	@Resource

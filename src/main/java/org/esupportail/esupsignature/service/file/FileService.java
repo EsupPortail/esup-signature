@@ -221,13 +221,19 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, String text, int lineNumber) throws IOException {
-		final BufferedImage signImage = ImageIO.read(imageStream);
-		BufferedImage  image = new BufferedImage(signImage.getWidth(), signImage.getHeight() + (30 * lineNumber), BufferedImage.TYPE_INT_ARGB);
-		Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-		graphics2D.drawImage(signImage, 0, 50 * lineNumber, null);
-		graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	public InputStream addTextToImage(InputStream imageStream, String text, int lineNumber, boolean visa) throws IOException {
+		InputStream textAddedInputStream = imageStream;
 		if(text != null && !text.isEmpty() && lineNumber > 0) {
+
+			final BufferedImage signImage = ImageIO.read(imageStream);
+			int newHeightOffset = 0;
+			if(!visa) {
+				newHeightOffset = 50;
+			}
+			BufferedImage  image = new BufferedImage(signImage.getWidth(),  signImage.getHeight() + (newHeightOffset * lineNumber), BufferedImage.TYPE_INT_ARGB);
+			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
+			graphics2D.drawImage(signImage, 0, newHeightOffset * lineNumber, null);
+			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 1;
 			Map<TextAttribute, Object> map = new Hashtable<>();
 			int fontSize = 36;
@@ -247,11 +253,12 @@ public class FileService {
 			int x = 0;
 			int y = fm.getHeight() * lineCount + 1;
 			graphics2D.drawString("", x, y);
+			graphics2D.dispose();
+			File fileImage = getTempFile("sign.png");
+			ImageIO.write(image, "png", fileImage);
+			textAddedInputStream = new FileInputStream(fileImage);
 		}
-		graphics2D.dispose();
-		File fileImage = getTempFile("sign.png");
-		ImageIO.write(image, "png", fileImage);
-		return new FileInputStream(fileImage);
+		return textAddedInputStream;
 	}
 
 	public InputStream svgToPng(InputStream svgInputStream) throws IOException {

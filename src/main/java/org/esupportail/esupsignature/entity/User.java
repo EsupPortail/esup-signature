@@ -30,7 +30,7 @@ public class User {
     @Column(unique=true)
     private String email;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
@@ -72,7 +72,7 @@ public class User {
         this.emailAlertFrequency = emailAlertFrequency;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {

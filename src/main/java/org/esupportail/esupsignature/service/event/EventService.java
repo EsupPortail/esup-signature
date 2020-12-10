@@ -11,17 +11,29 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class EventService {
 
-    public final ApplicationEventPublisher applicationEventPublisher;
+    private Map<String, String> sseClientIds = new HashMap<>();
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public EventService(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
-    public void publishEvent(JsonMessage jsonMessage, String channel, User user) {
+    public Map<String, String> getSseClientIds() {
+        return sseClientIds;
+    }
+
+    public String getClientIdByEppn(String eppn) {
+        return sseClientIds.get(eppn.split("@")[0]);
+    }
+
+    public void publishEvent(JsonMessage jsonMessage, String channel, String id) {
         ObjectMapper mapper = new ObjectMapper();
         String jsonMessageString= "";
         try {
@@ -34,8 +46,8 @@ public class EventService {
 
         String isoEncodedString = new String(bytes, StandardCharsets.ISO_8859_1);
 
-        if(user != null) {
-            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(user.getEppn()).data(isoEncodedString).build());
+        if(id != null) {
+            applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).addClientId(id).data(isoEncodedString).build());
         } else {
             applicationEventPublisher.publishEvent(SseEvent.builder().event(channel).data(isoEncodedString).build());
         }

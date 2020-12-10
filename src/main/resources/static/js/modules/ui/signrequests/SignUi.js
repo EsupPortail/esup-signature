@@ -4,7 +4,7 @@ import {PrintDocument} from "../../utils/PrintDocument.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, isPdf, currentStepNumber, signImages, userName , csrf) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -13,7 +13,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -87,6 +87,7 @@ export class SignUi {
         });
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
+                "&sseId=" + sessionStorage.getItem("sseId") +
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
@@ -95,6 +96,7 @@ export class SignUi {
             ;
         } else {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
+                "&sseId=" + sessionStorage.getItem("sseId") +
                 "&" + this.csrf.name + "=" + this.csrf.value;
         }
         console.info("params to send : " + this.signRequestUrlParams);
