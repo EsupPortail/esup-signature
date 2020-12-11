@@ -27,8 +27,6 @@ export class PdfViewer extends EventFactory {
     }
 
     initListeners() {
-        document.getElementById('prev').addEventListener('click', e => this.prevPage());
-        document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
         document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
@@ -337,6 +335,9 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
                 }
+
+                //TODO Repair currentStep enable input
+
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
@@ -520,6 +521,7 @@ export class PdfViewer extends EventFactory {
     }
 
     prevPage() {
+        this.fireEvent('beforeChange', ['prev']);
         if (this.pageNum <= 1) {
             return;
         }
@@ -527,10 +529,10 @@ export class PdfViewer extends EventFactory {
         this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['prev']);
-
     }
 
     nextPage() {
+        this.fireEvent('beforeChange', ['next']);
         if (this.pageNum >= this.numPages) {
             return;
         }

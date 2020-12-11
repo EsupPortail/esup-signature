@@ -47,9 +47,6 @@ public class WsOtpSignController {
     AuthenticationManager authenticationManager;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private SmsService smsService;
 
     @GetMapping(value = "/{urlId}")
@@ -76,7 +73,6 @@ public class WsOtpSignController {
                 Otp otp = otpService.getOtp(urlId);
                 logger.info("otp success for : " + urlId);
                 User user = userService.checkUserByEmail(otp.getEmail());
-                userRepository.save(user);
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(otp.getPhoneNumber(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
                 SecurityContext securityContext = SecurityContextHolder.getContext();

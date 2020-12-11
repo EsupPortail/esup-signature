@@ -236,7 +236,7 @@
                         <div th:unless="${user.keystore == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
-                            <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
+                            <a href="/user/users/get-keystore">
                                 <span th:text="${user.keystore.fileName}"></span>
                             </a>
                         </div>

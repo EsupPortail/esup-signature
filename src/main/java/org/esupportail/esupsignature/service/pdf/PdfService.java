@@ -43,9 +43,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
@@ -88,27 +90,16 @@ public class PdfService {
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
 
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss", Locale.FRENCH);
             Date newDate = new Date();
-            String addText = "";
-            int lineNumber = 0;
-            if(signRequestParams.isAddName()) {
-                if(signType.equals(SignType.visa)) {
-                    addText += "Visé par " + user.getFirstname() + " " + user.getName() + "\n";
-                } else {
-                    addText += "Signé par " + user.getFirstname() + " " + user.getName() + "\n";
-                }
-                lineNumber++;
-            }
-            if (signRequestParams.isAddDate()) {
-                addText +="Le " + dateFormat.format(newDate);
-                lineNumber++;
-            }
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss 'GMT' Z", Locale.FRENCH);
+            List<String> addText = getSignatureStrings(user, signType, newDate, dateFormat);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, lineNumber, true);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, true);
+            } else if (signRequestParams.isAddExtra()) {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false);
             } else {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber, false);
+                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
@@ -119,13 +110,13 @@ public class PdfService {
             float ty = 0;
             float xAdjusted = signRequestParams.getxPos();
             float yAdjusted;
-            float width =  bufferedSignImage.getWidth();
-            float height = bufferedSignImage.getHeight();
-            int heightAdjusted = Math.round(((float) signRequestParams.getSignWidth() / width) * height);
+            int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
+            int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+
             if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-                yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + (heightAdjusted - signRequestParams.getSignHeight()) + pdPage.getCropBox().getLowerLeftY();
+                yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
             } else {
-                yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + (heightAdjusted - signRequestParams.getSignHeight()) + pdPage.getCropBox().getLowerLeftY();
+                yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();
             }
             if (pdfParameters.isLandScape()) {
                 tx = pdfParameters.getWidth();
@@ -166,7 +157,8 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
+            logger.info("stamp image to " + xAdjusted +", " + yAdjusted);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, widthAdjusted, heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);
@@ -177,6 +169,23 @@ public class PdfService {
             logger.error("error to add image", e);
         }
         return null;
+    }
+
+    public List<String> getSignatureStrings(User user, SignType signType, Date newDate, DateFormat dateFormat) throws IOException {
+        List<String> addText = new ArrayList<>();
+        if(signType.equals(SignType.visa)) {
+            addText.add("Visa\n");
+            addText.add("Visé par " + user.getFirstname() + " " + user.getName() + "\n");
+        } else {
+            if(signType.equals(SignType.pdfImageStamp)) {
+                addText.add("Signature calligraphique\n");
+            } else {
+                addText.add("Signature électronique\n");
+            }
+            addText.add("Signé par " + user.getFirstname() + " " + user.getName() + "\n");
+        }
+        addText.add("Le " + dateFormat.format(newDate));
+        return addText;
     }
 
 //    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {

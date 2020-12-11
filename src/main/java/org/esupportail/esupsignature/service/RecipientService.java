@@ -1,18 +1,15 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.Action;
 import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,14 +21,11 @@ public class RecipientService {
     @Resource
     private UserService userService;
 
-    public Recipient createRecipient(Long parentId, User user) {
+    public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
         recipient.setUser(user);
+        recipientRepository.save(recipient);
         return recipient;
-    }
-
-    public Recipient findRecipientByUser(List<Recipient> recipients, User user) {
-        return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).collect(Collectors.toList()).get(0);
     }
 
     public boolean needSign(List<Recipient> recipients, User user) {
@@ -48,15 +42,11 @@ public class RecipientService {
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
     }
 
-    public long checkFalseRecipients(List<Recipient> recipients) {
-        return recipients.stream().filter(recipient -> !recipient.getSigned()).count();
-    }
-
     public long recipientsContainsUser(List<Recipient> recipients, User user) {
         return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).count();
     }
 
-    public Recipient getRecipientByEmail(Long parentId, String email) throws EsupSignatureUserException {
+    public Recipient getByEmail(String email) {
         User user = userService.checkUserByEmail(email);
         Recipient recipient = new Recipient();
         recipient.setUser(user);

@@ -3,9 +3,9 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
-<div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}" class="m-2 col-12">
+<div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}">
     <div class="bs-stepper vertical linear">
-        <div class="bs-stepper-header" role="tablist">
+        <div class="bs-stepper-header mx-auto" role="tablist">
             <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
                 <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
                     <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab"
@@ -14,7 +14,7 @@
                             <h5>Étape : <span class="bs-stepper-circle bg-primary"
                                               th:text="${iterator.index + 1}"></span></h5>
 
-                            <form th:action="${fromAdmin == true ? '/admin/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}">
+                            <form th:action="${fromAdmin == true ? '/admin/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
                                 <div class="form-group">
                                     <label>Description de l’étape:</label>
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>

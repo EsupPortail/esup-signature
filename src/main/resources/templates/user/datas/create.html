@@ -7,11 +7,15 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module" th:if="${form.document != null}">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-    new CreateDataUi([[${form.action}]], [[${form.document.id}]], [[${fields}]]);</script>
+    import {Data} from "/static/js/prototypes/Data.js";
+    let data = new Data([[${data}]]);
+    console.log(data);
+    new CreateDataUi([[${form.id}]], [[${form.action}]], [[${data}]], [[${fields}]], [[${_csrf}]]);
+</script>
 <body>
 <script th:inline="javascript" type="module" th:unless="${form.document != null}">
     import {CreateDataUi} from "/static/js/modules/ui/datas/CreateDataUi.js";
-    new CreateDataUi([[${form.action}]], null, null);</script>
+    new CreateDataUi([[${form.id}]], [[${form.action}]], null, null, [[${_csrf}]]);</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -29,8 +33,7 @@
         <div id="content" class="content">
             <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}"
                  class="fixed-action-btn-simple">
-                <a onclick="return false;" id="saveButton" href="#"
-                   title="Enregistrer les modifications" class="btn-floating btn-lg bg-primary wave-effect">
+                <a id="saveButton" type="button" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
@@ -44,7 +47,7 @@
                             <i class="fas fa-play"></i></a>
                     </li>
                     <li>
-                        <a onclick="return false;" id="saveButton" href="#"
+                        <a id="saveButton"
                            title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                             <i class="fas fa-save"></i>
                         </a>
@@ -112,12 +115,14 @@
             </div>
             <div id="workspace" class="workspace alert alert-secondary fadein justify-content-center">
                 <form th:if="${form.document != null}" id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post">
-                    <input id="newDataSubmit" type="submit" style="display: none;"/>
+                    <input id="realDataSubmit" type="submit" style="display: none;"/>
+                    <input id="simulateDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
                     <div id="pdf" class="drop-shadows mx-auto"></div>
                 </form>
                 <form th:unless="${form.document != null}" id="newData" th:action="'/user/datas/form/' + ${form.id}" method="post" class="vw-100">
-                    <input id="newDataSubmit" type="submit" style="display: none;"/>
+                    <input id="realDataSubmit" type="submit" style="display: none;"/>
+                    <input id="simulateDataSubmit" type="submit" style="display: none;"/>
                     <input id="dataId" type="hidden" name="dataId" th:value="${data.id}"/>
                     <input id="name" type="hidden" name="name" th:value="${data.name}" required/>
                     <th:block th:each="field : ${fields}">
@@ -187,7 +192,8 @@
                                 </p>
                             </div>
                         </th:block>
-                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
+                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">                XHR.open('POST', '/user/datas/form/' + this.formId);
+                XHR.send(FD);
                             <label>Etape finale : Envoi par mail à </label>
                             <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                                 <th:block th:each="targetEmail : ${targetEmails}">
@@ -217,29 +223,6 @@
                     }
                 });
             </script>
-        </div>
-    </div>
-</div>
-<div id="saveModal" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>Enregistrement du document</h5>
-            </div>
-            <form id="saveForm">
-                <div class="modal-body text-center">
-                    <div class="form-group">
-                        <input id="tempName" autocomplete="no" class="form-control" type="text" name="name"
-                               placeholder="Saisir un nom pour ce document" th:value="${data.name}"/>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
-                        Fermer
-                    </button>
-                    <button type="submit" class="btn btn-success">Enregistrer</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

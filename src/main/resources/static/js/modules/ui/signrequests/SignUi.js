@@ -4,7 +4,7 @@ import {PrintDocument} from "../../utils/PrintDocument.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -21,6 +21,7 @@ export class SignUi {
         this.signModal = $('#signModal');
         this.printDocument = new PrintDocument();
         this.initListeners();
+        this.initDataFileds(fields);
     }
 
     initListeners() {
@@ -34,6 +35,17 @@ export class SignUi {
         $("#copyButton").on('click', e => this.copy());
         $("#print").on('click', e => this.launchPrint());
         document.addEventListener("sign", e => this.updateWaitModal(e));
+    }
+
+    initDataFileds(fields) {
+        if(this.workspace.pdfViewer) {
+            this.workspace.pdfViewer.setDataFields(fields);
+            if (this.workspace.pdfViewer.dataFields.length > 0 && this.workspace.pdfViewer.dataFields[0].defaultValue != null) {
+                for (let i = 0 ; i < signUi.workspace.pdfViewer.dataFields.length ; i++) {
+                    this.workspace.pdfViewer.savedFields.set(this.workspace.pdfViewer.dataFields[i].name, this.workspace.pdfViewer.dataFields[i].defaultValue);
+                }
+            }
+        }
     }
 
     launchPrint() {
@@ -91,7 +103,7 @@ export class SignUi {
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
-                "&formData=" + JSON.stringify(formData) +
+                // "&formData=" + JSON.stringify(formData) +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token
             ;
         } else {
@@ -126,7 +138,7 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
         } else if(message.type === "initNexu") {
             console.info("redirect to NexU sign proccess");
-            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
+            document.location.href="/user/nexu-sign/" + this.signRequestId;
         }else if(message.type === "end") {
             console.info("sign end");
             document.getElementById("bar-text").innerHTML = "";

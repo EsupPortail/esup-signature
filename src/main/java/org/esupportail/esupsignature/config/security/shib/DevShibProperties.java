@@ -1,15 +1,34 @@
 package org.esupportail.esupsignature.config.security.shib;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "security.shib.dev")
 public class DevShibProperties {
 
+	/**
+	 * If true, each session will use user attributes defined here ; use it only for development/test purposes !
+	 */
 	private Boolean enable = false;
 	
+	/**
+	 * Eppn (user id) used for each sessions.
+	 */
 	private String eppn = "testju@esup-portail.org";
 	
+	/**
+	 * Email address used for each sessions.
+	 */
 	private String mail = "justin.test@esup-portail.org";
 	
+	
+	/**
+	 * Family name used for each sessions.
+	 */
 	private String sn = "Test";
 	
+	/**
+	 * First name used for each sessions.
+	 */
 	private String givenName = "Justin";
 
 	public Boolean getEnable() {
@@ -31,7 +50,7 @@ public class DevShibProperties {
 	public String getMail() {
 		return mail;
 	}
-
+	
 	public void setMail(String mail) {
 		this.mail = mail;
 	}

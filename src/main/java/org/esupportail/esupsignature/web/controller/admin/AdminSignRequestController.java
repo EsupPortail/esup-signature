@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,13 +96,13 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws Exception {
+	public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
 
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
 			Document toDisplayDocument = null;
-			if(signRequestService.getToSignDocuments(signRequest).size() == 1) {
-				toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
+			if(signRequest.getToSignDocuments().size() == 1) {
+				toDisplayDocument = signRequest.getToSignDocuments().get(0);
 				if(toDisplayDocument.getContentType().equals("application/pdf")) {
 				}
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
@@ -136,8 +135,8 @@ public class AdminSignRequestController {
 
 	@GetMapping(value = "/get-last-file/{id}")
 	public void getLastFile(@ModelAttribute("user") User user, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		List<Document> documents = signRequestService.getToSignDocuments(signRequest);
+		SignRequest signRequest = signRequestService.getById(id);
+		List<Document> documents = signRequest.getToSignDocuments();
 		try {
 			if(documents.size() > 1) {
 				response.sendRedirect("/user/signrequests/" + id);

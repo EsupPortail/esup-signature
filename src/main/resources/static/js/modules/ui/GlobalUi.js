@@ -163,12 +163,20 @@ export class GlobalUi {
             } else {
                 this.hideSideBar();
             }
-            if(!url.match("/user/users+[\\w\\W]+") && !url.match("/admin/+[\\w\\W]+") && !url.match("^/user/$") && !url.match("^/user/signrequests$") && !url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(!url.match("/user/users+[\\w\\W]+")
+                && !url.match("/admin/+[\\w\\W]+")
+                && !url.match("^/user/$")
+                && !url.match("^/user/signrequests$")
+                && !url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : show");
                 this.hideSideBar();
                 this.disableSideBarButton();
             }
-            if(url.match("^/user/workflows/+[\\w\\W]+") || url.match("^/user/signbooks/+[\\w\\W]+") || url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(url.match("^/user/workflows/+[\\w\\W]+")
+                || url.match("^/user/signbooks/+[\\w\\W]+")
+                || url.match("^/user/signrequests$")
+                || url.match("^/user/signrequests/$")
+                || url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
                 this.showSideBar();
                 this.disableSideBarButton();

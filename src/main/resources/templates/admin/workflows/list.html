@@ -26,10 +26,10 @@
                         <span class="input-group-text">Filtrer</span>
                     </div>
                     <select name="displayWorkflowType" class="form-control" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
-                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
-                        <option value="users" th:selected="${displayWorkflowType == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
-                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
+                        <option value="system" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).SYSTEM}">Workflows globaux (définis pas les administrateurs)</option>
+                        <option value="classes" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).CLASSES}">Classes workflow (définies par les développeurs)</option>
+                        <option value="users" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).USERS}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
+                        <option value="all" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).ALL}">Tout voir</option>
                     </select>
                     </div>
                     <table class="table table-sm table-borderless table-hover table-striped">
@@ -39,7 +39,7 @@
                             <th>Créé par</th>
                             <th>Destinataires</th>
                             <th>Gestionnaire(s) du circuit</th>
-                            <th>Voir</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -71,15 +71,62 @@
                                         <br/>
                                     </th:block>
                                 </td>
-                                <td >
-<!--                                    <a role="button" th:if="${workflow.id != null}" aria-label="Voir"-->
-<!--                                       class="btn btn-sm btn-primary" title="Voir"-->
-<!--                                       th:href="'/admin/workflows/' + ${workflow.id}">-->
-<!--                                        <i aria-hidden="true" class="fas fa-eye"></i></a>-->
-                                    <a role="button" aria-label="Voir"
-                                       class="btn btn-sm btn-primary text-white" title="Voir"
-                                       th:href="'/admin/workflows/' + ${workflow.name}">
-                                        <i aria-hidden="true" class="fas fa-eye"></i></a>
+                                <td class="text-center">
+                                    <div class="position-relative">
+                                        <button type="button" th:id="'menu-toggle-' + ${workflow.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${workflow.title}"
+                                                th:data-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-toggle="collapse">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${workflow.id}">
+                                            <div class=" card-body">
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/workflows/update/' + ${workflow.id}">
+                                                    <i class="fas fa-pencil-alt pr-2"></i> Voir/Modifier les paramètres
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/workflows/' + ${workflow.name}">
+                                                    <i class="fas fa-shoe-prints pr-2"></i> Voir/Modifier les étapes
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
+                                                    <i class="fas fa-binoculars pr-2"></i> Scanner la source
+                                                </a>
+                                                <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
+                                                   data-toggle="modal" th:data-target="'#modal-warning-' + ${workflow.id}">
+                                                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">Confirmez-vous la
+                                                            suppression du circuit ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left"
+                                                                data-dismiss="modal">Non
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="btn btn-outline pull-left btn-danger">
+                                                            Oui
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </td>
                             </tr>
                         </th:block>

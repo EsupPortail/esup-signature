@@ -2,27 +2,47 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 
 export class CreateDataUi {
 
-    constructor(action, documentId, fields) {
+    constructor(id, action, documentId, fields, csrf) {
         console.info("Starting data UI");
+        console.log(fields);
         if(documentId) {
-            this.pdfViewer = new PdfViewer('/user/documents/getfile/' + documentId, true, 0);
+            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0);
             this.pdfViewer.setDataFields(fields);
             this.pdfViewer.scale = 0.70;
         }
         this.action = action;
         this.actionEnable = 0;
         this.initListeners();
+        this.formId = id;
+        this.csrf = csrf;
+        if (this.pdfViewer.dataFields[0].defaultValue != null) {
+            for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
+                this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
+            }
+        }
+        this.newData = $('#newData');
+        this.nextCommand = "none";
     }
-
 
     initListeners() {
         if(this.pdfViewer) {
+            document.getElementById('prev').addEventListener('click', e => this.simulateSave("prev"));
+            document.getElementById('next').addEventListener('click', e => this.simulateSave("next"));
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
             this.pdfViewer.addEventListener('change', e => this.enableSave());
         }
-        document.getElementById('saveButton').addEventListener('click', e => this.saveData(e));
-        document.getElementById('saveForm').addEventListener('submit', e => this.saveData(e));
+        document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
+        document.getElementById('newData').addEventListener('submit', e => this.launchSave(e));
+    }
+
+    launchSave(e) {
+        e.preventDefault()
+        if(this.nextCommand === "none") {
+            this.saveData();
+        } else {
+            this.pushData(false);
+        }
     }
 
     initChangeControl() {
@@ -59,17 +79,47 @@ export class CreateDataUi {
         this.actionEnable++;
     }
 
-    saveData(e) {
-        e.preventDefault();
+    saveData() {
+        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(true));
+    }
+
+    submitForm() {
+        this.nextCommand = "none";
+        $('#realDataSubmit').click();
+    }
+
+    simulateSave(command) {
+        this.nextCommand = command;
+        $('#simulateDataSubmit').click();
+    }
+
+    pushData(redirect) {
+        let formData  = new Map();
         console.info("check data name");
-        let tempName = document.getElementById('tempName');
-        if (tempName.checkValidity()) {
-            console.info("submit form");
-            document.getElementById('newDataSubmit').click();
-        } else {
-            tempName.focus();
-            document.getElementById('tempName');
-        }
+        let pdfViewer = this.pdfViewer;
+        pdfViewer.savedFields.forEach(function (value, key, map){
+            formData[key]= value;
+        })
+        let json = JSON.stringify(formData);
+        let command = this.nextCommand;
+        let dataId = $('#dataId');
+        $.ajax({
+            data: {'formData': json},
+            type: 'POST',
+            url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + dataId.val(),
+            success: function (response) {
+                dataId.val(response);
+                if(redirect) {
+                    location.href = "/user/datas/" + response + "/update";
+                } else {
+                    if(command === "next") {
+                        pdfViewer.nextPage();
+                    } else if(command === "prev") {
+                        pdfViewer.prevPage()
+                    }
+                }
+            }
+        });
     }
 
     startRender() {

@@ -14,6 +14,10 @@ public class ShibProperties {
     private String groupMappingRoleAdmin;
     private String domainsWhiteListUrl;
     private Map<String, String> groupMappingSpel;
+    
+	/**
+	 * Properties to set for development/test purposes .
+	 */
     private DevShibProperties dev;
 
     public String getTitle() {

@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,21 +31,20 @@ public class ManageController {
     private static final Logger logger = LoggerFactory.getLogger(ManageController.class);
 
     @Resource
-    private FormRepository formRepository;
-
-    @Resource
     private DataExportService dataExportService;
 
-    @GetMapping
-    public String index(@ModelAttribute("authUser") User authUser, Model model) {
-        return "user/manage";
+    @Resource
+    private FormService formService;
 
+    @GetMapping
+    public String index(@ModelAttribute("authUser") User authUser) {
+        return "user/manage";
     }
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUser") User authUser, @PathVariable String name, HttpServletResponse response) {
-        List<Form> formManaged = formRepository.findFormByManagersContains(authUser.getEmail());
-        List<Form> forms = formRepository.findFormByName(name);
+        List<Form> formManaged =formService.getFormByManagersContains(authUser);
+        List<Form> forms = formService.getFormByName(name);
         if (forms.size() > 0 && formManaged.contains(forms.get(0))) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
