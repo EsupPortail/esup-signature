@@ -74,6 +74,9 @@ public class UserController {
 	@Resource
 	private UserPropertieService userPropertieService;
 
+	@Resource
+	private MessageService messageService;
+
     @GetMapping
     public String createForm(@ModelAttribute("authUser") User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
@@ -249,7 +252,7 @@ public class UserController {
 	@GetMapping("/mark-as-read/{id}")
 	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
-		userService.disableMessageForUser(authUser, id);
+		messageService.disableMessageForUser(authUser, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}

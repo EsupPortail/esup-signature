@@ -3,16 +3,13 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.MessageRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -58,16 +55,7 @@ public class UserService {
     List<SecurityService> securityServices;
 
     @Resource
-    SignRequestService signRequestService;
-
-    @Resource
-    private MessageRepository messageRepository;
-
-    @Resource
-    private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
-
-    @Resource
-    private UserShareRepository userShareRepository;
+    LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
     private FileService fileService;
@@ -317,13 +305,6 @@ public class UserService {
         return false;
     }
 
-    public Boolean getSignShare(User user, User authUser) {
-        if (userShareRepository.countByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.sign) > 0) {
-            return true;
-        }
-        return false;
-    }
-
     public List<PersonLdap> getPersonLdaps(String searchString) {
         List<PersonLdap> personLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
@@ -409,31 +390,13 @@ public class UserService {
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
         if (ldapPersonService.getIfAvailable() != null) {
-            List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale());
-            if (organizationalUnitLdap.size() > 0) {
-                return organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale()).get(0);
-            }
+            return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;
     }
 
-    public List<Message> getMessages(User authUser) {
-        return messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date());
-    }
-
     public void disableIntro(User authUser, String name) {
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
-    }
-
-    public void disableLastMessage(User authUser) {
-        if (messageRepository.countByUsersNotContainsAndEndDateAfter(authUser, new Date()) > 0) {
-            messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date()).get(0).getUsers().add(authUser);
-        }
-    }
-
-    public void disableMessageForUser(User authUser, long id) {
-        Message message = messageRepository.findById(id).get();
-        message.getUsers().add(authUser);
     }
 
     public UserType checkMailDomain(String email) {

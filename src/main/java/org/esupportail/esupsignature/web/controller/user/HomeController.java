@@ -9,11 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -69,6 +65,9 @@ public class HomeController {
     @Resource
     private TemplateEngine templateEngine;
 
+    @Resource
+    private MessageService messageService;
+
     @GetMapping
     public String list(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException {
         if(authUser != null) {
@@ -83,7 +82,7 @@ public class HomeController {
                 splashMessage.setId(0L);
                 model.addAttribute("splashMessage", splashMessage);
             } else if (!authUser.getEppn().equals("system") && user.equals(authUser)) {
-                messages.addAll(userService.getMessages(authUser));
+                messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
             List<SignRequest> signRequestsToSign = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, "tosign");
