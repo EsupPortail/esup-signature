@@ -871,7 +871,7 @@ public class SignRequestService {
 		Data data = dataService.getBySignBook(signBook);
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
-		for (UserShare userShare : userShareService.getUserShareByUser(recipientUser)) {
+		for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser)) {
 			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				if ((data != null && data.getForm().equals(userShare.getForm()))
 				|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
