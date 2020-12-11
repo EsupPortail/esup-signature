@@ -4,14 +4,8 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.ui.Model;
@@ -41,13 +35,10 @@ public class SetGlobalAttributs {
     private SignRequestService signRequestService;
 
     @Resource
-    private FormRepository formRepository;
+    private FormService formService;
 
     @Resource
-    private SignRequestRepository signRequestRepository;
-
-    @Resource
-    private DataRepository dataRepository;
+    private DataService dataService;
 
     @Resource
     private UserShareService userShareService;
@@ -82,7 +73,7 @@ public class SetGlobalAttributs {
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
-            model.addAttribute("formManaged", formRepository.findFormByManagersContains(authUser.getEmail()));
+            model.addAttribute("formManaged", formService.getFormByManagersContains(authUser));
             model.addAttribute("validationToolsEnabled", validationService != null);
         }
         model.addAttribute("globalProperties", this.myGlobalProperties);
@@ -99,8 +90,8 @@ public class SetGlobalAttributs {
         if (user != null) {
             List<String> base64UserSignatures = userService.getBase64UserSignatures(user);
             model.addAttribute("base64UserSignatures", base64UserSignatures);
-            model.addAttribute("nbDatas", dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size());
-            model.addAttribute("nbSignRequests", signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.pending).size());
+            model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(user));
+            model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(user));
             model.addAttribute("nbToSign", signRequestService.getToSignRequests(user).size());
         }
     }

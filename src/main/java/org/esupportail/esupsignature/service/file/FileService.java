@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.file;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -13,7 +12,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -67,7 +65,7 @@ public class FileService {
 		return baos;
 	}
 
-	public MultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
+	public MockMultipartFile toMultipartFile(InputStream file, String name, String mimeType) {
 		try {
 			return new MockMultipartFile(name, name, mimeType, file);
 		} catch (IOException e) {

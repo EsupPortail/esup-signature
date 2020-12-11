@@ -53,10 +53,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
@@ -539,7 +536,7 @@ public class SignRequestService {
 			}
 			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
 
-			AbstractSignatureParameters parameters = null;
+			AbstractSignatureParameters<?> parameters;
 			if(signatureForm.equals(SignatureForm.CAdES)) {
 				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
 				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
@@ -548,8 +545,8 @@ public class SignRequestService {
 				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
-			} else if(signatureForm.equals(SignatureForm.PAdES)) {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), ((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign(), user);
+			} else {
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -562,7 +559,7 @@ public class SignRequestService {
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
 			DSSDocument dssDocument;
-			if(toSignDocuments.size() > 1) {
+			if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			} else {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
@@ -1103,5 +1100,9 @@ public class SignRequestService {
 		}
 		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
 	}
-}
 
+	public int getNbByCreateAndStatus(User user) {
+		return signRequestRepository.findByCreateByAndStatus(user, SignRequestStatus.pending).size();
+	}
+
+}

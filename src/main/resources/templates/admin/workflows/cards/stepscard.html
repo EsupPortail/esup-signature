@@ -14,7 +14,7 @@
                             <h5>Étape : <span class="bs-stepper-circle bg-primary"
                                               th:text="${iterator.index + 1}"></span></h5>
 
-                            <form th:action="${fromAdmin == true ? '/admin/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}">
+                            <form th:action="${fromAdmin == true ? '/admin/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
                                 <div class="form-group">
                                     <label>Description de l’étape:</label>
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>

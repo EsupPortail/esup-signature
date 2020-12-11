@@ -15,9 +15,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.fs.FsFile;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
-import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -228,9 +226,6 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @Nullable
-
-
     @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -352,7 +347,7 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
-    @GetMapping(value = "/refuse/{id}")
+    @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.setComment(comment);

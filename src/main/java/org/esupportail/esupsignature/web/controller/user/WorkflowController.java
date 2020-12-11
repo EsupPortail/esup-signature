@@ -69,7 +69,7 @@ public class WorkflowController {
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getWorkflowById(id);
-        workflowService.updateStep(step, signType, description, changeable, allSignToComplete, workflow);
+        workflowService.updateStep(workflow, step, signType, description, changeable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getName();
     }
 

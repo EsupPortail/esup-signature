@@ -1,19 +1,19 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -23,9 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @RequestMapping("/admin/workflows")
@@ -133,7 +131,7 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
-	@GetMapping(value = "/update-step/{id}/{step}")
+	@PostMapping(value = "/update-step/{id}/{step}")
 	public String changeStepSignType(@ModelAttribute("user") User user,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
@@ -142,12 +140,13 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		workflowService.updateStep(step, signType, description, changeable, allSignToComplete, workflow);
+		workflowService.updateStep(workflow, step, signType, description, changeable, allSignToComplete);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-	public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+	public String removeStepRecipient(@ModelAttribute("user") User user,
+									  @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userId") Long userId, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getWorkflowById(id);

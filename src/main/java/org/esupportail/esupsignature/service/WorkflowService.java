@@ -550,7 +550,7 @@ public class WorkflowService {
     }
 
 
-    public void updateStep(Integer step, SignType signType, String description, Boolean changeable, Boolean allSignToComplete, Workflow workflow) {
+    public void updateStep(Workflow workflow, Integer step, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
         WorkflowStep workflowStep = workflow.getWorkflowSteps().get(step);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);

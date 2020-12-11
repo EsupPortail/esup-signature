@@ -303,4 +303,9 @@ public class DataService {
         Data data = getBySignBook(signBook);
         if(data != null) data.setSignBook(null);
     }
+
+    public int getNbCreateByAndStatus(User user) {
+        return dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size();
+    }
+
 }

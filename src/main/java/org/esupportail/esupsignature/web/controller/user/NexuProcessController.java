@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.model.ToBeSigned;
 import org.esupportail.esupsignature.dss.model.*;
@@ -30,10 +32,6 @@ public class NexuProcessController {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-	private AbstractSignatureForm signatureDocumentForm;
-	private AbstractSignatureParameters<?> parameters;
-
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "signrequests";
@@ -45,12 +43,15 @@ public class NexuProcessController {
 	@Resource
 	private SignRequestService signRequestService;
 
+	@Resource
+	private ObjectMapper objectMapper;
+
 	@PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws IOException, EsupSignatureException {
+	public String showSignatureParameters(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,
+										  @PathVariable("id") Long id, Model model) {
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("init nexu sign by : " + user.getEppn() + " for signRequest : " + id);
-		this.signatureDocumentForm = signService.getAbstractSignatureForm(signRequest);
 		model.addAttribute("id", signRequest.getId());
 		return "user/signrequests/nexu-signature-process";
 	}
@@ -59,26 +60,35 @@ public class NexuProcessController {
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
 	public GetDataToSignResponse getDataToSign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,
-								@RequestBody @Valid DataToSignParams params, @ModelAttribute("id") Long id) throws IOException {
+											   @ModelAttribute("abstractSignatureFormJson") String abstractSignatureFormJson,
+											   @RequestBody @Valid DataToSignParams params,
+											   @ModelAttribute("id") Long id, Model model) throws IOException, EsupSignatureException {
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("get data to sign for signRequest: " + id);
-		signatureDocumentForm.setBase64Certificate(params.getSigningCertificate());
-		signatureDocumentForm.setBase64CertificateChain(params.getCertificateChain());
-		signatureDocumentForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(signRequest);
+		abstractSignatureForm.setBase64Certificate(params.getSigningCertificate());
+		abstractSignatureForm.setBase64CertificateChain(params.getCertificateChain());
+		abstractSignatureForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
+		AbstractSignatureParameters<?> parameters = signService.getSignatureParameters(signRequest, user, abstractSignatureForm);
+		ToBeSigned dataToSign = signService.getDataToSign((SignatureDocumentForm) abstractSignatureForm, parameters);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
-		parameters = signService.getToBeSigned(signRequest, user, signatureDocumentForm);
-		ToBeSigned dataToSign = signService.getDataToSign((SignatureDocumentForm) signatureDocumentForm, parameters);
 		responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
+		abstractSignatureFormJson = objectMapper.writeValueAsString(abstractSignatureForm);
+		model.addAttribute("parameters", parameters);
 		return responseJson;
 	}
 
 	@PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestBody @Valid SignatureValueAsString signatureValue,
-			@ModelAttribute("id") Long id) throws EsupSignatureException {
+	public SignDocumentResponse signDocument(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,
+											 @ModelAttribute("abstractSignatureFormJson") String abstractSignatureFormJson,
+											 @ModelAttribute("parameters") @Valid AbstractSignatureParameters<?> parameters,
+											 @RequestBody @Valid SignatureValueAsString signatureValue,
+											 @ModelAttribute("id") Long id) throws EsupSignatureException, JsonProcessingException {
 		SignRequest signRequest = signRequestService.getById(id);
-		return signService.getSignDocumentResponse(signRequest, signatureValue, signatureDocumentForm, parameters, user);
+		AbstractSignatureForm abstractSignatureForm = objectMapper.readValue(abstractSignatureFormJson, AbstractSignatureForm.class);
+		return signService.getSignDocumentResponse(signRequest, signatureValue, abstractSignatureForm, parameters, user);
 	}
 
 }

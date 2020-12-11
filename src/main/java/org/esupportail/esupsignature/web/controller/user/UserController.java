@@ -19,6 +19,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -225,13 +227,16 @@ public class UserController {
 
 	@GetMapping("/change-share")
 	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-		if(userShareService.switchToShareUser(eppn)) {
-			if(eppn == null || eppn.isEmpty()) {
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
-			} else {
+		if(eppn == null || eppn.isEmpty()) {
+			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+			attr.getRequest().getSession().setAttribute("suEppn", null);
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
+		} else {
+			if(userShareService.checkShare(userService.getUserByEppn(eppn), userService.getUserFromAuthentication())) {
+				ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+				attr.getRequest().getSession().setAttribute("suEppn", eppn);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			}
-		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
 		}
 		String referer = httpServletRequest.getHeader("Referer");
