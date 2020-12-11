@@ -1,10 +1,13 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.LiveWorkflowService;
+import org.esupportail.esupsignature.service.LiveWorkflowStepService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -37,7 +40,7 @@ public class WizardController {
     private SignBookService signBookService;
 
     @Resource
-    private LiveWorkflowService liveWorkflowService;
+    private LiveWorkflowStepService liveWorkflowStepService;
 
     @Resource
     private WorkflowStepService workflowStepService;
@@ -160,7 +163,7 @@ public class WizardController {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
-                liveWorkflowService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, signBook);
+                liveWorkflowStepService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, signBook);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());

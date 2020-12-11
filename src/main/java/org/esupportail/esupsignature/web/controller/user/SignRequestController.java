@@ -99,7 +99,7 @@ public class SignRequestController {
     private TemplateEngine templateEngine;
 
     @Resource
-    private LiveWorkflowService liveWorkflowService;
+    private LiveWorkflowStepService liveWorkflowStepService;
 
 //
 //    @Resource
@@ -325,9 +325,9 @@ public class SignRequestController {
         }
         try {
             if(userSignFirst != null && userSignFirst) {
-                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
             }
-            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
+            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
         } catch (EsupSignatureUserException e) {
             logger.error("error with users on create signbook " + signBook.getId());

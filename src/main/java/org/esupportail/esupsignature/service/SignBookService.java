@@ -197,7 +197,7 @@ public class SignBookService {
             }
             LiveWorkflowStep newWorkflowStep = null;
             try {
-                newWorkflowStep = liveWorkflowService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
+                newWorkflowStep = liveWorkflowStepService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
             } catch (EsupSignatureUserException e) {
                 logger.error("error on import workflow", e);
             }
@@ -450,7 +450,7 @@ public class SignBookService {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber + 1 >= currentSetNumber) {
             try {
-                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+                LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
                 if (stepNumber == -1) {
                     signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                 } else {

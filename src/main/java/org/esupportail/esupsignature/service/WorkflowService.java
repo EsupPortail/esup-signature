@@ -72,6 +72,9 @@ public class WorkflowService {
     @Resource
     private UserShareService userShareService;
 
+    @Resource
+    private LiveWorkflowStepService liveWorkflowStepService;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator = userService.getCreatorUser();
@@ -260,7 +263,7 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
