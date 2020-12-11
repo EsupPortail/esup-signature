@@ -529,7 +529,7 @@ public class SignRequestController {
             return "redirect:/user/signrequests/" + id;
         }
         SignRequest signRequest = signRequestService.getById(id);
-        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), user, recipientEmails, comment, authUser);
+        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, user, authUser);
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(signRequest, comment, user, authUser);
         }

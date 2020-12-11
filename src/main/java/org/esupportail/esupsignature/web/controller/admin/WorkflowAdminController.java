@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -123,9 +122,9 @@ public class WorkflowAdminController {
 						  @RequestParam(name="description", required = false) String description,
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
-						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		workflowService.addStep(signType, description, recipientsEmails, changeable, allSignToComplete, workflow);
+		workflowStepService.addStep(workflow, signType, description, recipientsEmails, changeable, allSignToComplete);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
@@ -138,7 +137,7 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		workflowStepService.updateStep(signType, description, changeable, allSignToComplete, workflow.getWorkflowSteps().get(step));
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step), signType, description, changeable, allSignToComplete);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
@@ -168,7 +167,7 @@ public class WorkflowAdminController {
 						  @PathVariable("id") Long id,
 						  @PathVariable("stepNumber") Integer stepNumber) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		workflowService.removeStep(stepNumber, workflow);
+		workflowStepService.removeStep(workflow, stepNumber);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 

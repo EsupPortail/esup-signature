@@ -82,7 +82,7 @@ public class SignBookController {
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.addLiveStep(signBook, authUser, recipientsEmails, stepNumber, allSignToComplete, signType);
+            signBookService.addLiveStep(signBook, recipientsEmails, stepNumber, allSignToComplete, signType, authUser);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));

@@ -328,7 +328,7 @@ public class SignBookService {
         return false;
     }
 
-    public void initWorkflowAndPendingSignBook(SignBook signBook, User user, List<String> recipientEmails, String comment, User authUser) throws EsupSignatureException {
+    public void initWorkflowAndPendingSignBook(SignBook signBook, List<String> recipientEmails, User user, User authUser) throws EsupSignatureException {
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
             if (signBook.getLiveWorkflow().getWorkflow() != null) {
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
@@ -457,7 +457,7 @@ public class SignBookService {
         return allSteps;
     }
 
-    public void addLiveStep(SignBook signBook, User authUser, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType) throws EsupSignatureException {
+    public void addLiveStep(SignBook signBook, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType, User authUser) throws EsupSignatureException {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber + 1 >= currentSetNumber) {
             try {
@@ -476,6 +476,10 @@ public class SignBookService {
         } else {
             throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
         }
+    }
+
+    public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus) {
+        return signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, signRequestStatus);
     }
 
 

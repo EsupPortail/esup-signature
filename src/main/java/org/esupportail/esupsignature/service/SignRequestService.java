@@ -53,6 +53,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import java.io.*;
@@ -136,11 +137,11 @@ public class SignRequestService {
 	@Resource
 	private SignRequestParamsService signRequestParamsService;
 
-	public void init() {
+	@PostConstruct
+	public void initSignrequestMetrics() {
 		customMetricsService.registerValue("esup-signature.signrequests", "new");
 		customMetricsService.registerValue("esup-signature.signrequests", "signed");
 	}
-
 
 	public SignRequest getById(long id) {
 		return signRequestRepository.findById(id).get();
@@ -149,7 +150,6 @@ public class SignRequestService {
 	public List<SignRequest> getSignRequestsByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
-
 
 	public List<SignRequest> getSignRequestsForCurrentUserByStatus(User user, User authUser, String statusFilter) {
 		List<SignRequest> signRequestList = new ArrayList<>();

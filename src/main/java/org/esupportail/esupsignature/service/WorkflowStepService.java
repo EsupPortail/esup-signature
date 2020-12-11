@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
@@ -45,11 +46,6 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
-    public Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
-        workflowStep.setSignType(signType);
-        return workflowStep.getId();
-    }
-
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
         recipientsEmail = Arrays.stream(recipientsEmail).distinct().toArray(String[]::new);
         for (String recipientEmail : recipientsEmail) {
@@ -69,7 +65,7 @@ public class WorkflowStepService {
         if (name != null) {
             workflowStep.setName(name);
         }
-        setSignTypeForWorkflowStep(signType, workflowStep);
+        workflowStep.setSignType(signType);
     }
 
     public WorkflowStep addStepRecipients(Long workflowStepId, String recipientsEmails) {
@@ -86,11 +82,24 @@ public class WorkflowStepService {
     }
 
 
-    public void updateStep(SignType signType, String description, Boolean changeable, Boolean allSignToComplete, WorkflowStep workflowStep) {
+    public void updateStep(WorkflowStep workflowStep, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflowStep.setAllSignToComplete(allSignToComplete);
+    }
+
+    public void addStep(Workflow workflow, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+        WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+        workflowStep.setDescription(description);
+        workflowStep.setChangeable(changeable);
+        workflow.getWorkflowSteps().add(workflowStep);
+    }
+
+    public void removeStep(Workflow workflow, Integer stepNumber) {
+        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
+        workflow.getWorkflowSteps().remove(workflowStep);
+        delete(workflowStep);
     }
 
     public void delete(WorkflowStep workflowStep) {
