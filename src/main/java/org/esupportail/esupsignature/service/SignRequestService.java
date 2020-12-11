@@ -247,7 +247,7 @@ public class SignRequestService {
 	public SignRequest createFastSignRequest(User user, MultipartFile[] multipartFiles, SignType signType, User authUser) throws EsupSignatureException {
 		if (checkSignTypeDocType(signType, multipartFiles[0])) {
 			try {
-				SignBook signBook = signBookService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
+				SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
 				signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, signType, user.getEmail()));
 				signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
 				signBookService.pendingSignBook(signBook, user, authUser);
@@ -657,6 +657,13 @@ public class SignRequestService {
 					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUser, authUser);
 				}
 			}
+		}
+	}
+
+	public void addPostit(SignRequest signRequest, String comment, User user, User authUser) {
+		if(comment != null && !comment.isEmpty()) {
+			signRequest.setComment(comment);
+			updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user, authUser);
 		}
 	}
 

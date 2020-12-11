@@ -145,7 +145,7 @@ public class WsController {
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
         user.setIp(httpServletRequest.getRemoteAddr());
-        signBookService.addDocsInSignBook(user, name, workflowName, multipartFiles);
+        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, user);
         String[] ok = {"ok"};
         return ok;
     }

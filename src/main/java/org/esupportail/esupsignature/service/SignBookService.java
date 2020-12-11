@@ -176,7 +176,7 @@ public class SignBookService {
         return checkUserManageRights(user, signBook);
     }
 
-    public boolean preAuthorizeManage(String name, User user) throws EsupSignatureException {
+    public boolean preAuthorizeManage(String name, User user) {
         SignBook signBook = getByName(name);
         return checkUserManageRights(user, signBook);
     }
@@ -207,7 +207,7 @@ public class SignBookService {
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
 
-    public void saveWorkflow(String title, String description, User user, SignBook signBook) throws EsupSignatureException {
+    public void saveWorkflow(SignBook signBook, String title, String description, User user) throws EsupSignatureException {
         Workflow workflow = workflowService.createWorkflow(title, description, user);
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
@@ -306,20 +306,14 @@ public class SignBookService {
         return false;
     }
 
-
-    public void initWorkflowAndPendingSignRequest(Long id, User user, List<String> recipientEmails, String comment, User authUser) throws EsupSignatureException {
-        SignRequest signRequest = signRequestService.getById(id);
-        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.draft)) {
-            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-                Workflow workflow = workflowService.computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
-                importWorkflow(signRequest.getParentSignBook(), workflow);
-                nextWorkFlowStep(signRequest.getParentSignBook());
+    public void initWorkflowAndPendingSignBook(SignBook signBook, User user, List<String> recipientEmails, String comment, User authUser) throws EsupSignatureException {
+        if(signBook.getStatus().equals(SignRequestStatus.draft)) {
+            if (signBook.getLiveWorkflow().getWorkflow() != null) {
+                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), recipientEmails, user, false);
+                importWorkflow(signBook, workflow);
+                nextWorkFlowStep(signBook);
             }
-            pendingSignBook(signRequest.getParentSignBook(), user, authUser);
-            if(comment != null && !comment.isEmpty()) {
-                signRequest.setComment(comment);
-                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user, authUser);
-            }
+            pendingSignBook(signBook, user, authUser);
         }
     }
 
@@ -393,7 +387,24 @@ public class SignBookService {
     }
 
 
-    public void addDocsInSignBook(User authUser, String name, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+    public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
+        if(!prefix.isEmpty()) {
+            prefix += "_";
+        }
+        for (MultipartFile multipartFile : multipartFiles) {
+            SignRequest signRequest = signRequestService.createSignRequest(prefix + fileService.getNameOnly(multipartFile.getOriginalFilename()), authUser, authUser);
+            addSignRequest(signBook, signRequest);
+            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+        }
+    }
+
+    public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
+        SignBook signBook = createSignBook(workflowName, name, authUser, true);
+        addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser);
+        return signBook;
+    }
+
+    public void addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
         SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, authUser, authUser);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
@@ -401,25 +412,7 @@ public class SignBookService {
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
     }
 
-    public void addDocumentsToSignBook(User authUser, MultipartFile[] multipartFiles, SignBook signBook) throws EsupSignatureIOException {
-        for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook.getName() + "_" + multipartFile.getOriginalFilename(), authUser, authUser);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-            addSignRequest(signBook, signRequest);
-            signRequestService.pendingSignRequest(signRequest, authUser);
-        }
-    }
-
-    public void addDocsInSignBookUnique(User authUser, String name, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(name, "", authUser, false);
-        for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), authUser, authUser);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-            addSignRequest(signBook, signRequest);
-        }
-    }
-
-    public void addWorkflowToSignBook(User authUser, Long workflowSignBookId, SignBook signBook) {
+    public void addWorkflowToSignBook(SignBook signBook, User authUser, Long workflowSignBookId) {
         Workflow workflow = workflowService.getWorkflowById(workflowSignBookId);
         importWorkflow(signBook, workflow);
         nextWorkFlowStep(signBook);
@@ -461,16 +454,6 @@ public class SignBookService {
         } else {
             throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
         }
-    }
-
-    public SignBook addDocsInSignBook(User authUser, String name, String workflowName, MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(workflowName, name, authUser, true);
-        for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(workflowName + "_" + multipartFile.getOriginalFilename(), authUser, authUser);
-            addSignRequest(signBook, signRequest);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        }
-        return signBook;
     }
 
 

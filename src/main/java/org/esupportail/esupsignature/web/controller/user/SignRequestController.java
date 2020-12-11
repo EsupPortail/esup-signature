@@ -295,7 +295,7 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signBookService.addDocsInSignBook(user, "", "Demande simple", multipartFiles);
+                SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
                 String message = sendSignRequest(user, signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, authUser);
                 if (message != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", message));
@@ -527,7 +527,11 @@ public class SignRequestController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
-        signBookService.initWorkflowAndPendingSignRequest(id, user, recipientEmails, comment, authUser);
+        SignRequest signRequest = signRequestService.getById(id);
+        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), user, recipientEmails, comment, authUser);
+        if(comment != null && !comment.isEmpty()) {
+            signRequestService.addPostit(signRequest, comment, user, authUser);
+        }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }

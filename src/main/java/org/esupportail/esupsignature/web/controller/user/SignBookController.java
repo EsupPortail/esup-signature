@@ -110,7 +110,7 @@ public class SignBookController {
     public String addWorkflow(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
         SignBook signBook = signBookService.getById(id);
-        signBookService.addWorkflowToSignBook(authUser, workflowSignBookId, signBook);
+        signBookService.addWorkflowToSignBook(signBook, authUser, workflowSignBookId);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
@@ -120,7 +120,7 @@ public class SignBookController {
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         SignBook signBook = signBookService.getById(id);
-        signBookService.addDocumentsToSignBook(authUser, multipartFiles, signBook);
+        signBookService.addDocumentsToSignBook(signBook, signBook.getName(), multipartFiles, authUser);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 
@@ -140,7 +140,7 @@ public class SignBookController {
                                              @PathVariable("workflowName") String workflowName,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        signBookService.addDocsInSignBook(authUser, name, multipartFiles);
+        signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUser);
         String[] ok = {"ok"};
         return ok;
     }
@@ -152,7 +152,7 @@ public class SignBookController {
                                                     @PathVariable("workflowName") String workflowName,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        signBookService.addDocsInSignBookUnique(user, name, multipartFiles);
+        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, user);
         String[] ok = {"ok"};
         return ok;
     }

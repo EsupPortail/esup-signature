@@ -200,7 +200,7 @@ public class WizardController {
     public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.saveWorkflow(name, name, user, signBook);
+            signBookService.saveWorkflow(signBook, name, name, user);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
             return "redirect:/user/wizard/wiz5/" + signBook.getId();
