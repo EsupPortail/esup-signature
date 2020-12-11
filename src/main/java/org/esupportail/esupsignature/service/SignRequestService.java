@@ -664,8 +664,7 @@ public class SignRequestService {
 		if(globalProperties.getArchiveUri() != null) {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
-				String subPath = "";
-				subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
+				String subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
 					signRequest.setExportedDocumentURI(documentUri);

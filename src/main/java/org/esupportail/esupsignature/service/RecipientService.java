@@ -18,9 +18,6 @@ public class RecipientService {
     @Resource
     private RecipientRepository recipientRepository;
 
-    @Resource
-    private UserService userService;
-
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
         recipient.setUser(user);
@@ -46,10 +43,4 @@ public class RecipientService {
         return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).count();
     }
 
-    public Recipient getByEmail(String email) {
-        User user = userService.checkUserByEmail(email);
-        Recipient recipient = new Recipient();
-        recipient.setUser(user);
-        return recipient;
-    }
 }

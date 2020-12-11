@@ -70,13 +70,9 @@ public class SignBookService {
     @Resource
     private LogService logService;
 
-    public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus status) {
-        return signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, status);
-    }
-
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
-        signBookRepository.findAll().forEach(e -> list.add(e));
+        signBookRepository.findAll().forEach(list::add);
         return list;
     }
 
@@ -212,14 +208,13 @@ public class SignBookService {
     }
 
     public void saveWorkflow(String title, String description, User user, SignBook signBook) throws EsupSignatureException {
-        Workflow workflow = workflowService.createWorkflow(title, description, user, false);
+        Workflow workflow = workflowService.createWorkflow(title, description, user);
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getWorkflowSteps()) {
             List<String> recipientsEmails = new ArrayList<>();
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                 recipientsEmails.add(recipient.getUser().getEmail());
             }
-            WorkflowStep toSaveWorkflowStep = null;
-            toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
+            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }

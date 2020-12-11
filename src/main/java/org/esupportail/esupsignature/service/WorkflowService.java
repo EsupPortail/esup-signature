@@ -123,7 +123,7 @@ public class WorkflowService {
             logger.info("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getClass().getSimpleName())) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
-                Workflow newWorkflow = createWorkflow(classWorkflow.getClass().getSimpleName(), classWorkflow.getDescription(), userService.getSystemUser(), classWorkflow.getPublicUsage());
+                Workflow newWorkflow = createWorkflow(classWorkflow.getClass().getSimpleName(), classWorkflow.getDescription(), userService.getSystemUser());
                 newWorkflow.setFromCode(true);
             } else {
                 logger.info("update " + classWorkflow.getName() + " on database");
@@ -183,7 +183,7 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow createWorkflow(String title, String description, User user, boolean external) throws EsupSignatureException {
+    public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureException {
         String name;
         if (userService.getSystemUser().equals(user)) {
             name = title;
@@ -319,35 +319,6 @@ public class WorkflowService {
             }
         }
         return nbImportedFiles;
-    }
-
-    public boolean checkUserManageRights(User user, Workflow workflow) {
-        if ((workflow.getCreateBy().equals(user) || workflow.getManagers().contains(user.getEmail())) && !workflow.getCreateBy().equals(userService.getSystemUser())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void changeSignType(WorkflowStep workflowStep, String name, SignType signType) {
-        if (name != null) {
-            workflowStep.setName(name);
-        }
-        setSignTypeForWorkflowStep(signType, workflowStep);
-    }
-
-    public Long setSignTypeForWorkflowStep(SignType signType, WorkflowStep workflowStep) {
-        workflowStep.setSignType(signType);
-        return workflowStep.getId();
-    }
-
-    public Long toggleAllSignToCompleteForWorkflowStep(WorkflowStep workflowStep) {
-        if (workflowStep.getAllSignToComplete()) {
-            workflowStep.setAllSignToComplete(false);
-        } else {
-            workflowStep.setAllSignToComplete(true);
-        }
-        return workflowStep.getId();
     }
 
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, String... recipientsEmail) {
@@ -487,7 +458,7 @@ public class WorkflowService {
                     if(!computeForDisplay) {
                         workflowStep.getUsers().clear();
                     }
-                    List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, user, this);
+                    List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, user);
                     if(recipients.size() > 0 ) {
                         workflowStep.getUsers().clear();
                     }

@@ -1,12 +1,10 @@
 package org.esupportail.esupsignature.service.pdf;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -40,14 +38,12 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.file.FileService;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
@@ -64,7 +60,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -77,6 +72,9 @@ public class PdfService {
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private SignRequestParamsService signRequestParamsService;
 
     @Resource
     private GlobalProperties globalProperties;
@@ -517,7 +515,7 @@ public class PdfService {
         contentStream.endText();
     }
 
-    private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
+    public Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
         Iterator<PDPage> pages = docCatalog.getPages().iterator();
         Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
         int i = 0;
@@ -529,43 +527,6 @@ public class PdfService {
             i++;
         }
         return pageNrByAnnotDict;
-    }
-
-    public List<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
-        List<SignRequestParams> signRequestParamsList = new ArrayList<>();
-		try {
-			PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
-			PDAcroForm acroForm = docCatalog.getAcroForm();
-			if(acroForm != null) {
-                for (PDField pdField : acroForm.getFields()) {
-                    if (pdField instanceof PDSignatureField) {
-                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
-                        SignRequestParams signRequestParams = new SignRequestParams();
-                        List<Integer> annotationPages = new ArrayList<>();
-                        List<PDAnnotationWidget> kids = pdField.getWidgets();
-                        if (kids != null) {
-                            for (COSObjectable kid : kids) {
-                                COSBase kidObject = kid.getCOSObject();
-                                if (kidObject instanceof COSDictionary)
-                                    annotationPages.add(pageNrByAnnotDict.get(kidObject));
-                            }
-                        }
-                        PDPage pdPage = pdDocument.getPage(annotationPages.get(0) - 1);
-                        signRequestParams.setSignImageNumber(0);
-                        signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-                        signRequestParams.setxPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
-                        signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
-                        signRequestParams.setSignPageNumber(annotationPages.get(0));
-                        signRequestParamsList.add(signRequestParams);
-                    }
-                }
-            }
-			pdDocument.close();
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		}
-		return signRequestParamsList.stream().sorted(Comparator.comparingInt(value -> value.getxPos())).sorted(Comparator.comparingInt(value -> value.getyPos())).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
     }
 
     public InputStream fill(InputStream pdfFile, Map<String, String> datas) {
@@ -633,15 +594,6 @@ public class PdfService {
             logger.error("file read error", e);
         }
         return null;
-    }
-
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
-        try {
-            PDDocument pdDocument = PDDocument.load(inputStream);
-            return pdSignatureFieldsToSignRequestParams(pdDocument);
-        } catch (IOException e) {
-            throw new EsupSignatureIOException("unable to open pdf document");
-        }
     }
 
     public PdfParameters getPdfParameters(InputStream pdfFile) {

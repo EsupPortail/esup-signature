@@ -78,7 +78,7 @@ public class UserPropertieService {
         return userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
     }
 
-    public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user, WorkflowService workflowService) {
+    public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user) {
         List<User> users = new ArrayList<>();
         if (recipientEmails != null && recipientEmails.size() > 0) {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());

@@ -46,10 +46,6 @@ public class UserShareService {
         return suUsers;
     }
 
-    public List<UserShare> getByWorkflowId(Long id) {
-        return userShareRepository.findByWorkflowId(id);
-    }
-
     public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
@@ -152,10 +148,6 @@ public class UserShareService {
             }
         }
         return false;
-    }
-
-    public List<UserShare> getByUserAndToUsersInAndShareTypesContains(User fromUser, List<User> toUsers, ShareType shareType) {
-        return userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, toUsers, ShareType.create);
     }
 
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest) {
