@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

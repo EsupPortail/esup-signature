@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

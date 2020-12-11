@@ -16,7 +16,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

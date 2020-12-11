@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.service.extvalue.ExtValue;
-import org.esupportail.esupsignature.service.extvalue.ExtValueService;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;

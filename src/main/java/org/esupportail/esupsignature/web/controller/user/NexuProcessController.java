@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.sign.SignService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;

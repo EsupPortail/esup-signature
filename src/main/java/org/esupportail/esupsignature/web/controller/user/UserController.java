@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
