@@ -230,7 +230,7 @@ public class WorkflowService {
         return workflows;
     }
 
-    public int importFilesFromSource(Workflow workflow, User user) {
+    public int importFilesFromSource(Workflow workflow, User user, User authUser) {
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {
@@ -259,7 +259,7 @@ public class WorkflowService {
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
                             signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
                             signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                            SignRequest signRequest = signRequestService.createSignRequest(documentName, user);
+                            SignRequest signRequest = signRequestService.createSignRequest(documentName, user, authUser);
                             if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                                 user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                                 user.setIp("127.0.0.1");
@@ -303,7 +303,7 @@ public class WorkflowService {
                             }
 
                             signBookService.nextWorkFlowStep(signBook);
-                            signBookService.pendingSignBook(signBook, user);
+                            signBookService.pendingSignBook(signBook, user, authUser);
                             fsAccessService.remove(fsFile);
                             nbImportedFiles++;
                         }

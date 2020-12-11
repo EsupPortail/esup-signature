@@ -31,6 +31,7 @@ public class SetGlobalAttributs {
 
     @Resource
     private UserService userService;
+
     @Resource
     private SignRequestService signRequestService;
 
@@ -50,17 +51,6 @@ public class SetGlobalAttributs {
     private UserKeystoreService userKeystoreService;
 
     private GlobalProperties myGlobalProperties;
-
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return userService.getCurrentUser();
-    }
-
-    @ModelAttribute(value = "authUser", binding = false)
-    public User getAuthUser() {
-        return userService.getUserFromAuthentication();
-    }
-
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, HttpServletRequest request, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {

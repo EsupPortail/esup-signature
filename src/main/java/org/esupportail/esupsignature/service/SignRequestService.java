@@ -244,13 +244,13 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
-	public SignRequest createFastSignRequest(User user, MultipartFile[] multipartFiles, SignType signType) throws EsupSignatureException {
+	public SignRequest createFastSignRequest(User user, MultipartFile[] multipartFiles, SignType signType, User authUser) throws EsupSignatureException {
 		if (checkSignTypeDocType(signType, multipartFiles[0])) {
 			try {
 				SignBook signBook = signBookService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
 				signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, signType, user.getEmail()));
 				signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
-				signBookService.pendingSignBook(signBook, user);
+				signBookService.pendingSignBook(signBook, user, authUser);
 				return signBook.getSignRequests().get(0);
 			} catch (EsupSignatureUserException | EsupSignatureIOException e) {
 				TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
@@ -261,7 +261,7 @@ public class SignRequestService {
 		}
 	}
 
-	public SignRequest createSignRequest(String title, User user) {
+	public SignRequest createSignRequest(String title, User user, User authUser) {
 		SignRequest signRequest = new SignRequest();
 		signRequest.setTitle(title);
 		signRequest.setToken(String.valueOf(generateUniqueId()));
@@ -269,7 +269,7 @@ public class SignRequestService {
 		signRequest.setCreateDate(new Date());
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
-		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande " + title, "SUCCESS");
+		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande " + title, "SUCCESS", user, authUser);
 		return signRequest;
 	}
 
@@ -321,15 +321,15 @@ public class SignRequestService {
 		}
 	}
 
-	public void pendingSignRequest(SignRequest signRequest) {
+	public void pendingSignRequest(SignRequest signRequest, User authUser) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
 		}
-		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null);
+		updateStatus(signRequest, SignRequestStatus.pending, "Envoyé pour signature", "SUCCESS", null, null, null, authUser, authUser);
 		customMetricsService.incValue("esup-signature.signrequests", "new");
 	}
 
-	public boolean initSign(User user, Long id, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password) {
+	public boolean initSign(User user, Long id, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, User authUser) {
 		SignRequest signRequest = getSignRequestsFullById(id, user, user);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -370,7 +370,7 @@ public class SignRequestService {
 			}
 			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
 			signRequest.setComment(comment);
-			sign(signRequest, user, password, visual, signRequestParamses, formDataMap, sseId);
+			sign(signRequest, user, password, visual, signRequestParamses, formDataMap, sseId, authUser);
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
 				public void afterCommit(){
 					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
@@ -385,7 +385,7 @@ public class SignRequestService {
 		return false;
 	}
 
-	public void sign(SignRequest signRequest, User user, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId) throws EsupSignatureException, IOException, InterruptedException {
+	public void sign(SignRequest signRequest, User user, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User authUser) throws EsupSignatureException, IOException, InterruptedException {
 		List<Document> toSignDocuments = signRequest.getToSignDocuments();
 		SignType signType = signRequest.getCurrentSignType();
 		InputStream filledInputStream;
@@ -419,7 +419,7 @@ public class SignRequestService {
 				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
 					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
-					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user, authUser);
 				}
 			}
 			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
@@ -435,19 +435,19 @@ public class SignRequestService {
 		}
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user, authUser);
 			} else {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", user, authUser);
 			}
 		} else {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user, authUser);
 			} else {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user, authUser);
 			}
 		}
 		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
-		applyEndOfSignRules(signRequest, user);
+		applyEndOfSignRules(signRequest, user, authUser);
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
 
@@ -579,25 +579,25 @@ public class SignRequestService {
 		}
 	}
 
-	public void applyEndOfSignRules(SignRequest signRequest, User user) throws EsupSignatureException {
+	public void applyEndOfSignRules(SignRequest signRequest, User user, User authUser) throws EsupSignatureException {
 		recipientService.validateRecipient(signRequest, user);
 		if (isSignRequestCompleted(signRequest)) {
-			completeSignRequests(Collections.singletonList(signRequest));
+			completeSignRequests(Collections.singletonList(signRequest), authUser);
 			if (isCurrentStepCompleted(signRequest)) {
 				for (Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
 					recipient.setSigned(!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
 				}
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-					signBookService.pendingSignBook(signRequest.getParentSignBook(), user);
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), user, authUser);
 				} else {
-					signBookService.completeSignBook(signRequest.getParentSignBook());
-					if (!signRequest.getParentSignBook().getCreateBy().equals("scheduler")) {
+					signBookService.completeSignBook(signRequest.getParentSignBook(), authUser);
+					if (!signRequest.getParentSignBook().getCreateBy().equals(userService.getSchedulerUser())) {
 						mailService.sendCompletedMail(signRequest.getParentSignBook());
 					}
 				}
 			}
 		} else {
-			updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.pending, "Demande incomplète", "SUCCESS", user, authUser);
 		}
 	}
 
@@ -622,26 +622,26 @@ public class SignRequestService {
 		}
 	}
 
-	public void completeSignRequest(Long id, User user) {
+	public void completeSignRequest(Long id, User user, User authUser) {
 		SignRequest signRequest = getById(id);
-		completeSignRequest(signRequest, user);
+		completeSignRequest(signRequest, user, authUser);
 	}
 
-	private void completeSignRequest(SignRequest signRequest, User user) {
+	private void completeSignRequest(SignRequest signRequest, User user, User authUser) {
 		if (signRequest.getCreateBy().equals(user) && (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked))) {
-			completeSignRequests(Arrays.asList(signRequest));
+			completeSignRequests(Arrays.asList(signRequest), authUser);
 		} else {
 			logger.warn(user.getEppn() + " try to complete " + signRequest.getId() + " without rights");
 		}
 	}
 
-	public void completeSignRequests(List<SignRequest> signRequests) {
+	public void completeSignRequests(List<SignRequest> signRequests, User authUser) {
 		for(SignRequest signRequest : signRequests) {
-			updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS", authUser, authUser);
 		}
 	}
 
-	public void sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl) throws EsupSignatureException {
+	public void sendSignRequestsToTarget(String title, List<SignRequest> signRequests, DocumentIOType documentIOType, String targetUrl, User authUser) throws EsupSignatureException {
 		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 			if (documentIOType.equals(DocumentIOType.mail)) {
 				logger.info("send by email to " + targetUrl);
@@ -654,13 +654,13 @@ public class SignRequestService {
 				for (SignRequest signRequest : signRequests) {
 					Document signedFile = signRequest.getLastSignedDocument();
 					documentService.exportDocument(documentIOType, targetUrl, signedFile);
-					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS");
+					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUser, authUser);
 				}
 			}
 		}
 	}
 
-	public void archiveSignRequests(List<SignRequest> signRequests) throws EsupSignatureException {
+	public void archiveSignRequests(List<SignRequest> signRequests, User authUser) throws EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
@@ -669,7 +669,7 @@ public class SignRequestService {
 				if(signRequest.getExportedDocumentURI() == null) {
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
 					signRequest.setExportedDocumentURI(documentUri);
-					updateStatus(signRequest, SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS");
+					updateStatus(signRequest, SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUser, authUser);
 
 				}
 			}
@@ -678,7 +678,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void cleanDocuments(SignRequest signRequest) {
+	public void cleanDocuments(SignRequest signRequest, User authUser) {
 		Date cleanDate = getEndDate(signRequest);
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(cleanDate);
@@ -687,7 +687,7 @@ public class SignRequestService {
 		if (signRequest.getExportedDocumentURI() != null
 				&& new Date().after(cleanDate) && signRequest.getSignedDocuments().size() > 0) {
 			clearAllDocuments(signRequest);
-			updateStatus(signRequest, SignRequestStatus.exported, "Fichiers nettoyés", "SUCCESS");
+			updateStatus(signRequest, SignRequestStatus.exported, "Fichiers nettoyés", "SUCCESS", authUser, authUser);
 		} else {
 			logger.debug("cleanning documents was skipped because date");
 		}
@@ -719,21 +719,20 @@ public class SignRequestService {
 		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode) {
-		updateStatus(signRequest, signRequestStatus, action, returnCode, null, null, null, null);
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, User user, User authUser) {
+		updateStatus(signRequest, signRequestStatus, action, returnCode, null, null, null, null, user, authUser);
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY) {
-		updateStatus(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, null);
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, User user, User authUser) {
+		updateStatus(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, null, user, authUser);
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber) {
-		User user = userService.getUserFromAuthentication();
-		logService.create(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, stepNumber, user);
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, User user, User authUser) {
+		logService.create(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, stepNumber, user, authUser);
 	}
 
-	public void refuse(SignRequest signRequest, User user) {
-		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user);
+	public void refuse(SignRequest signRequest, User user, User authUser) {
+		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user, authUser);
 	}
 
 	public boolean needToSign(SignRequest signRequest, User user) {
@@ -1000,10 +999,10 @@ public class SignRequestService {
 		signRequest.getLinks().remove(toRemove);
 	}
 
-	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY) {
+	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, User authUser) {
 		SignRequest signRequest = getById(id);
 		signRequest.setComment(comment);
-		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY);
+		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY, authUser, authUser);
 	}
 
 	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {

@@ -518,7 +518,7 @@ public class SignService {
 		return parameters;
 	}
 
-	public SignDocumentResponse getSignDocumentResponse(SignRequest signRequest, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, User user) throws EsupSignatureException {
+	public SignDocumentResponse getSignDocumentResponse(SignRequest signRequest, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, User user, User authUser) throws EsupSignatureException {
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		try {
@@ -526,8 +526,8 @@ public class SignService {
 			if(signedFile != null) {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
-				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS");
-				signRequestService.applyEndOfSignRules(signRequest, user);
+				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user, authUser);
+				signRequestService.applyEndOfSignRules(signRequest, user, authUser);
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {

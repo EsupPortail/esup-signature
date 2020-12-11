@@ -89,7 +89,7 @@ public class NexuProcessController implements Serializable {
 		SignRequest signRequest = signRequestService.getById(id);
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		AbstractSignatureParameters<?> abstractSignatureParameters = (AbstractSignatureParameters<?>) httpSession.getAttribute("abstractSignatureParameters");
-		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(signRequest, signatureValue, abstractSignatureForm, abstractSignatureParameters, user);
+		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(signRequest, signatureValue, abstractSignatureForm, abstractSignatureParameters, user, authUser);
 		httpSession.removeAttribute("abstractSignatureForm");
 		httpSession.removeAttribute("abstractSignatureParameters");
 		return signDocumentResponse;

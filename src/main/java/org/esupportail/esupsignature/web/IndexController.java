@@ -63,19 +63,15 @@ public class IndexController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@ModelAttribute
-	public User getUser() {
-		return userService.getCurrentUser();
-	}
-	
 	@GetMapping
-	public String index(@ModelAttribute("user") User user, Model model) {
-		if(user != null && !user.getEppn().equals("system")) {
-			logger.info("utilisateur " + user.getEppn() + " connecté");
+	public String index(Model model) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User authUser = getAuthUser(auth);
+		if(authUser != null && !authUser.getEppn().equals("system")) {
+			logger.info("utilisateur " + authUser.getEppn() + " connecté");
 			model.asMap().clear();
 			return "redirect:/user/";
 		} else {
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
@@ -95,6 +91,8 @@ public class IndexController {
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
 	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		User authUser = getAuthUser(auth);
 		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
 		if(forwardUri !=null) {
 			String[] uriParams = forwardUri.split("/");
@@ -102,9 +100,9 @@ public class IndexController {
 				try {
 					SignRequest signRequest = signRequestService.getById(Long.parseLong(uriParams[3]));
 					if (signRequest != null) {
-						User suUser = userShareService.checkShare(signRequest);
+						User suUser = userShareService.checkShare(signRequest, authUser);
 						if (suUser != null) {
-							if (userShareService.switchToShareUser(suUser.getEppn())) {
+							if (userShareService.switchToShareUser(suUser.getEppn(), authUser)) {
 								redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
 							}
 							return "redirect:" + forwardUri;
@@ -119,6 +117,18 @@ public class IndexController {
 			}
 		}
 		return "denied";
+	}
+
+	public User getAuthUser(Authentication auth) {
+		User user = null;
+		if (auth != null) {
+			String eppn = auth.getName();
+			if (userService.getSuEppn() != null) {
+				eppn = userService.getSuEppn();
+			}
+			user = userService.getUserByEppn(eppn);
+		}
+		return user;
 	}
 
 }

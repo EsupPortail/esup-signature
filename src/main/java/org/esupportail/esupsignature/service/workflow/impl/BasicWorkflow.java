@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.workflow.impl;
 
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -27,10 +26,10 @@ public class BasicWorkflow extends DefaultWorkflow {
 	private List<WorkflowStep> workflowSteps;
 
 	@Override
-	public List<WorkflowStep> getWorkflowSteps() {
+	public List<WorkflowStep> getWorkflowSteps(User user) {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCurrentUser(), null);
+				this.workflowSteps = generateWorkflowSteps(user, null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}

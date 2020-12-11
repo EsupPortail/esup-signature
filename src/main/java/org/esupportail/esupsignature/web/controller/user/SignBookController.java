@@ -1,10 +1,12 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
@@ -34,6 +36,9 @@ public class SignBookController {
     @Resource
     private SignBookService signBookService;
 
+    @Resource
+    private LogService logService;
+
     @PreAuthorize("@signBookService.preAuthorizeView(#id, #user)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
@@ -58,6 +63,9 @@ public class SignBookController {
     public String updateForm(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
+        SignRequest signRequest = signBook.getSignRequests().get(0);
+        model.addAttribute("signRequest", signRequest);
+        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("logs", signBook.getLogs());
         model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
         model.addAttribute("signTypes", SignType.values());
@@ -120,7 +128,7 @@ public class SignBookController {
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id) {
         SignBook signBook = signBookService.getById(id);
-        signBookService.pendingSignBook(signBook, authUser);
+        signBookService.pendingSignBook(signBook, authUser, authUser);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 

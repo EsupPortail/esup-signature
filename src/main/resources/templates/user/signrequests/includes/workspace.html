@@ -60,13 +60,13 @@
     </form>
 
     <div id="commentsTools" th:if="${signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
-        <div th:unless="${postits.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
+        <div th:unless="${comments.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
             cliquant sur l’endroit concerné du document
         </div>
-        <div th:if="${postits.size() > 0}" class="alert alert-warning">
+        <div th:if="${comments.size() > 0}" class="alert alert-warning">
             <h5>Commentaires</h5>
             <ul class="list-group">
-                <th:block th:each="postit : ${postits}">
+                <th:block th:each="postit : ${comments}">
                     <li th:id="'postit' + ${postit.id}" class="list-group-item"
                         style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
                         th:onclick="'$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"

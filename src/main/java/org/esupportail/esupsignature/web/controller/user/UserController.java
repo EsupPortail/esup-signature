@@ -151,11 +151,10 @@ public class UserController {
    }
 
 	@GetMapping("/properties")
-	public String properties(Model model) {
-		User user = userService.getUserFromAuthentication();
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUser(user);
+	public String properties(@ModelAttribute("authUser") User authUser, Model model) {
+		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUser(authUser);
 		model.addAttribute("userProperties", userProperties);
-		model.addAttribute("forms", formService.getFormsByUser(user, user));
+		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
@@ -235,7 +234,7 @@ public class UserController {
 			attr.getRequest().getSession().setAttribute("suEppn", null);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 		} else {
-			if(userShareService.checkShare(userService.getUserByEppn(eppn), userService.getUserFromAuthentication())) {
+			if(userShareService.checkShare(userService.getUserByEppn(eppn), authUser)) {
 				ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
 				attr.getRequest().getSession().setAttribute("suEppn", eppn);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));

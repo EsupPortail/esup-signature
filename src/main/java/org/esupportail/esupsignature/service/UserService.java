@@ -69,29 +69,6 @@ public class UserService {
         return (String) attr.getRequest().getSession().getAttribute("suEppn");
     }
 
-    public User getUserFromAuthentication() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            String eppn = auth.getName();
-            return getUserByEppn(eppn);
-        } else {
-            return null;
-        }
-    }
-
-    public User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            String eppn = auth.getName();
-            if (getSuEppn() != null) {
-                eppn = getSuEppn();
-            }
-            return getUserByEppn(eppn);
-        } else {
-            return null;
-        }
-    }
-
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);
     }

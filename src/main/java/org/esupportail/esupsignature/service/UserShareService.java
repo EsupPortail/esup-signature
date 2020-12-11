@@ -132,12 +132,12 @@ public class UserShareService {
         }
     }
 
-    public Boolean switchToShareUser(String eppn) {
+    public Boolean switchToShareUser(String eppn, User authUser) {
         if(eppn == null || eppn.isEmpty()) {
             userService.setSuEppn(null);
             return true;
         }else {
-            if(checkShare(userService.getUserByEppn(eppn), userService.getUserFromAuthentication())) {
+            if(checkShare(userService.getUserByEppn(eppn), authUser)) {
                 userService.setSuEppn(eppn);
                 return true;
             }
@@ -248,10 +248,10 @@ public class UserShareService {
         return userShareRepository.findByToUsersInAndShareTypesContains(users, shareType);
     }
 
-    public User checkShare(SignRequest signRequest) {
+    public User checkShare(SignRequest signRequest, User authUser) {
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook != null) {
-            User toUser = userService.getUserFromAuthentication();
+            User toUser = authUser;
             List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
             for (UserShare userShare : userShares) {
                 Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();

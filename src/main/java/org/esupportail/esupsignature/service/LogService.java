@@ -44,7 +44,6 @@ public class LogService {
     public List<Log> getLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
         return setUsers(logs);
-
     }
 
     public List<Log> getGlobalLogs(Long id) {
@@ -63,13 +62,13 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public Log create(Long id, String status, String action, String returnCode, String comment) {
+    public Log create(Long id, String status, String action, String returnCode, String comment, User authUser) {
         Log log = new Log();
         log.setSignRequestId(id);
-        if(userService.getUserFromAuthentication() != null) {
-            log.setEppn(userService.getUserFromAuthentication().getEppn());
+        if(authUser != null) {
+            log.setEppn(authUser.getEppn());
             log.setEppnFor(userService.getSuEppn());
-            log.setIp(userService.getUserFromAuthentication().getIp());
+            log.setIp(authUser.getIp());
         }
         log.setInitialStatus(status);
         log.setLogDate(new Date());
@@ -80,14 +79,14 @@ public class LogService {
         return log;
     }
 
-    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, User user) {
+    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, User user, User authUser) {
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());
-        if(user != null) {
-            log.setEppn(user.getEppn());
-            log.setEppnFor(userService.getCurrentUser().getEppn());
-            log.setIp(user.getIp());
+        if(authUser != null) {
+            log.setEppn(authUser.getEppn());
+            log.setEppnFor(user.getEppn());
+            log.setIp(authUser.getIp());
         }
         log.setInitialStatus(signRequest.getStatus().toString());
         log.setLogDate(new Date());
