@@ -51,9 +51,6 @@ public class DataService {
     private SignRequestService signRequestService;
 
     @Resource
-    private UserService userService;
-
-    @Resource
     private SignBookService signBookService;
 
     @Resource

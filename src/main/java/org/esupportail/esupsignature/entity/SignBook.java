@@ -44,8 +44,8 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private LiveWorkflow liveWorkflow = new LiveWorkflow();
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
 	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)

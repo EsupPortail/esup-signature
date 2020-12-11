@@ -94,6 +94,7 @@ public class SignBookService {
             signBook.setCreateBy(user);
             signBook.setCreateDate(new Date());
             signBook.setExternal(external);
+            signBook.setLiveWorkflow(liveWorkflowService.create());
             signBookRepository.save(signBook);
             return signBook;
         } else {
