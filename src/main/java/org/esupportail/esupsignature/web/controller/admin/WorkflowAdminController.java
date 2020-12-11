@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
@@ -48,6 +48,9 @@ public class WorkflowAdminController {
 
 	@Resource
 	private WorkflowService workflowService;
+
+	@Resource
+	private WorkflowStepService workflowStepService;
 
 	@GetMapping(produces = "text/html")
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
@@ -131,7 +134,7 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
-	@PostMapping(value = "/update-step/{id}/{step}")
+	@GetMapping(value = "/update-step/{id}/{step}")
 	public String changeStepSignType(@ModelAttribute("user") User user,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
@@ -140,17 +143,16 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		workflowService.updateStep(workflow, step, signType, description, changeable, allSignToComplete);
+		workflowStepService.updateStep(signType, description, changeable, allSignToComplete, workflow.getWorkflowSteps().get(step));
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-	public String removeStepRecipient(@ModelAttribute("user") User user,
-									  @PathVariable("id") Long id,
+	public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userId") Long userId, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		WorkflowStep workflowStep = workflowService.removeStepRecipient(user, workflowStepId, userId, workflow);
+		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
@@ -159,9 +161,9 @@ public class WorkflowAdminController {
 	public String addStepRecipient(@ModelAttribute("user") User user,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
-								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getWorkflowById(id);
-		WorkflowStep workflowStep = workflowService.addStepRecipients(user, workflowStepId, recipientsEmails, workflow);
+		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}

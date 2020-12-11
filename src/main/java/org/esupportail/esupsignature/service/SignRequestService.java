@@ -96,7 +96,7 @@ public class SignRequestService {
 	private SignBookService signBookService;
 
 	@Resource
-	private LiveWorkflowService liveWorkflowService;
+	private LiveWorkflowStepService liveWorkflowStepService;
 
 	@Resource
 	private SignService signService;
@@ -248,7 +248,7 @@ public class SignRequestService {
 		if (checkSignTypeDocType(signType, multipartFiles[0])) {
 			try {
 				SignBook signBook = signBookService.addDocsInSignBook(user, "", "Signature simple", multipartFiles);
-				signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowService.createWorkflowStep(false, signType, user.getEmail()));
+				signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, signType, user.getEmail()));
 				signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
 				signBookService.pendingSignBook(signBook, user);
 				return signBook.getSignRequests().get(0);
@@ -868,7 +868,7 @@ public class SignRequestService {
 		Data data = dataService.getBySignBook(signBook);
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
-		for (UserShare userShare : userShareService.getUserShareByUser(recipientUser)) {
+		for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser)) {
 			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				if ((data != null && data.getForm().equals(userShare.getForm()))
 				|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
@@ -1008,7 +1008,7 @@ public class SignRequestService {
 
 	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
 		SignRequest signRequest = getById(id);
-		liveWorkflowService.addRecipientsToWorkflowStep(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), recipientsEmails);
+		liveWorkflowStepService.addRecipientsToWorkflowStep(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), recipientsEmails);
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
 		if (allSignToComplete != null && allSignToComplete) {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(true);

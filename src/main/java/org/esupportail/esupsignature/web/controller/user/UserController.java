@@ -76,6 +76,9 @@ public class UserController {
 	@Resource
 	private UserPropertieService userPropertieService;
 
+	@Resource
+	private MessageService messageService;
+
     @GetMapping
     public String createForm(@ModelAttribute("authUser") User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
@@ -160,7 +163,7 @@ public class UserController {
 
 	@GetMapping("/shares")
 	public String params(@ModelAttribute("authUser") User authUser, Model model) {
-		List<UserShare> userShares = userShareService.getUserShareByUser(authUser);
+		List<UserShare> userShares = userShareService.getUserSharesByUser(authUser);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService. getAuthorizedToShareForms());
@@ -173,7 +176,7 @@ public class UserController {
 	@GetMapping("/shares/update/{id}")
 	public String params(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		model.addAttribute("activeMenu", "shares");
-		UserShare userShare = userShareService.getUserShareById(id);
+		UserShare userShare = userShareService.getById(id);
 		if(userShare.getUser().equals(authUser)) {
 			model.addAttribute("shareTypes", ShareType.values());
 			model.addAttribute("userShare", userShare);
@@ -210,14 +213,14 @@ public class UserController {
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
 							  @RequestParam("endDate") String endDate) {
-		UserShare userShare = userShareService.getUserShareById(id);
+		UserShare userShare = userShareService.getById(id);
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
 	public String delShare(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
-		UserShare userShare = userShareService.getUserShareById(id);
+		UserShare userShare = userShareService.getById(id);
 		if (userShare.getUser().equals(authUser)) {
 			userShareService.delete(userShare);
 		}
@@ -254,7 +257,7 @@ public class UserController {
 	@GetMapping("/mark-as-read/{id}")
 	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info(authUser.getEppn() + " mark " + id + " as read");
-		userService.disableMessageForUser(authUser, id);
+		messageService.disableMessageForUser(authUser, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}

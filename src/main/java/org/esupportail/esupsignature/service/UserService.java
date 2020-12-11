@@ -3,16 +3,13 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.MessageRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.repository.ldap.OrganizationalUnitLdapRepository;
 import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -32,7 +29,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.time.DayOfWeek;
@@ -58,22 +54,10 @@ public class UserService {
     List<SecurityService> securityServices;
 
     @Resource
-    SignRequestService signRequestService;
-
-    @Resource
-    private MessageRepository messageRepository;
-
-    @Resource
-    private OrganizationalUnitLdapRepository organizationalUnitLdapRepository;
-
-    @Resource
-    private UserShareRepository userShareRepository;
+    LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
     private FileService fileService;
-
-    @Resource
-    private HttpServletRequest httpServletRequest;
 
     public void setSuEppn(String eppn) {
         ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -154,6 +138,9 @@ public class UserService {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
         }
+        if (eppn.equals("creator")) {
+            return getCreatorUser();
+        }
         if (userRepository.countByEppn(eppn) == 0) {
             if (eppn.split("@").length == 1) {
                 for (SecurityService securityService : this.securityServices) {
@@ -164,13 +151,7 @@ public class UserService {
             }
         }
         if (userRepository.countByEppn(eppn) > 0) {
-            User user = userRepository.findByEppn(eppn).get(0);
-            try {
-                user.setIp(httpServletRequest.getRemoteAddr());
-            } catch (Exception e) {
-                logger.warn("unable to get ip");
-            }
-            return user;
+            return userRepository.findByEppn(eppn).get(0);
         }
 		if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
@@ -317,13 +298,6 @@ public class UserService {
         return false;
     }
 
-    public Boolean getSignShare(User user, User authUser) {
-        if (userShareRepository.countByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.sign) > 0) {
-            return true;
-        }
-        return false;
-    }
-
     public List<PersonLdap> getPersonLdaps(String searchString) {
         List<PersonLdap> personLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
@@ -360,37 +334,6 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdap getPersonLdapFromHeaders() {
-        PersonLdap personLdap = new PersonLdap();
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerAttributeName = headerNames.nextElement();
-            String personAttributeName = headerAttributeName;
-            switch (headerAttributeName) {
-                case "eppn":
-                    personAttributeName = "eduPersonPrincipalName";
-                    break;
-                case "primary-affiliation":
-                    personAttributeName = "eduPersonPrimaryAffiliation";
-                    break;
-                default:
-                    break;
-            }
-            try {
-                java.lang.reflect.Field field = PersonLdap.class.getDeclaredField(personAttributeName);
-                field.setAccessible(true);
-                Class<?> type = field.getType();
-                //TODO manage other types
-                if (type.equals(String.class)) {
-                    field.set(personLdap, httpServletRequest.getHeader(headerAttributeName));
-                }
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                logger.debug("error on set personLdap attribut " + headerAttributeName, e);
-            }
-        }
-        return personLdap;
-    }
-
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
         if (ldapPersonService.getIfAvailable() != null) {
@@ -399,41 +342,20 @@ public class UserService {
                 personLdap = personLdaps.get(0);
             }
         } else {
-            personLdap = getPersonLdapFromHeaders();
-            if (personLdap.getEduPersonPrincipalName() == null) {
-                personLdap = getPersonLdapFromUser(user);
-            }
+            personLdap = getPersonLdapFromUser(user);
         }
         return personLdap;
     }
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
         if (ldapPersonService.getIfAvailable() != null) {
-            List<OrganizationalUnitLdap> organizationalUnitLdap = organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale());
-            if (organizationalUnitLdap.size() > 0) {
-                return organizationalUnitLdapRepository.findBySupannCodeEntite(personLdap.getSupannEntiteAffectationPrincipale()).get(0);
-            }
+            return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;
     }
 
-    public List<Message> getMessages(User authUser) {
-        return messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date());
-    }
-
     public void disableIntro(User authUser, String name) {
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
-    }
-
-    public void disableLastMessage(User authUser) {
-        if (messageRepository.countByUsersNotContainsAndEndDateAfter(authUser, new Date()) > 0) {
-            messageRepository.findByUsersNotContainsAndEndDateAfter(authUser, new Date()).get(0).getUsers().add(authUser);
-        }
-    }
-
-    public void disableMessageForUser(User authUser, long id) {
-        Message message = messageRepository.findById(id).get();
-        message.getUsers().add(authUser);
     }
 
     public UserType checkMailDomain(String email) {

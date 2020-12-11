@@ -3,9 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,16 +25,16 @@ public class UserShareService {
     private UserShareRepository userShareRepository;
 
     @Resource
-    private FormRepository formRepository;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
     private DataService dataService;
 
     @Resource
     private SignRequestService signRequestService;
+    
+    @Resource
+    private FormService formService;
+    
+    @Resource
+    private WorkflowService workflowService;
 
     public List<User> getSuUsers(User authUser) {
         List<User> suUsers = new ArrayList<>();
@@ -48,6 +46,10 @@ public class UserShareService {
         return suUsers;
     }
 
+    public List<UserShare> getByWorkflowId(Long id) {
+        return userShareRepository.findByWorkflowId(id);
+    }
+
     public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
@@ -57,7 +59,7 @@ public class UserShareService {
         }
         userShare.getShareTypes().addAll(shareTypes);
         for(Long formId : formsIds) {
-            Form form = formRepository.findById(formId).get();
+            Form form = formService.getById(formId);
             if(form.getAuthorizedShareTypes().containsAll(shareTypes)) {
                 userShare.setForm(form);
             } else {
@@ -65,7 +67,7 @@ public class UserShareService {
             }
         }
         for(Long workflowId : workflowsIds) {
-            Workflow workflow = workflowRepository.findById(workflowId).get();
+            Workflow workflow = workflowService.getWorkflowById(workflowId);
             if(userShareRepository.findByUserAndWorkflow(user, workflow).size() == 0) {
                 if (workflow.getAuthorizedShareTypes().containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
@@ -165,6 +167,10 @@ public class UserShareService {
         return false;
     }
 
+    public List<UserShare> getByUserAndToUsersInAndShareTypesContains(User fromUser, List<User> toUsers, ShareType shareType) {
+        return userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, toUsers, ShareType.create);
+    }
+
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest) {
         return checkShare(fromUser, toUser, signRequest, ShareType.read)
                 || checkShare(fromUser, toUser, signRequest, ShareType.sign)
@@ -222,11 +228,11 @@ public class UserShareService {
         return false;
     }
 
-    public List<UserShare> getUserShareByUser(User authUser) {
+    public List<UserShare> getUserSharesByUser(User authUser) {
         return userShareRepository.findByUser(authUser);
     }
 
-    public UserShare getUserShareById(Long id) {
+    public UserShare getById(Long id) {
         return userShareRepository.findById(id).get();
     }
 

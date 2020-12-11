@@ -19,7 +19,6 @@ package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
@@ -64,9 +63,6 @@ public class IndexController {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Resource
-	private SignRequestRepository signRequestRepository;
-
 	@ModelAttribute
 	public User getUser() {
 		return userService.getCurrentUser();
@@ -104,8 +100,8 @@ public class IndexController {
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {
 				try {
-					if (signRequestRepository.countById(Long.valueOf(uriParams[3])) > 0) {
-						SignRequest signRequest = signRequestRepository.findById(Long.valueOf(uriParams[3])).get();
+					SignRequest signRequest = signRequestService.getById(Long.parseLong(uriParams[3]));
+					if (signRequest != null) {
 						User suUser = userShareService.checkShare(signRequest);
 						if (suUser != null) {
 							if (userShareService.switchToShareUser(suUser.getEppn())) {

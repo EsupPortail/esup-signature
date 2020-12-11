@@ -47,7 +47,7 @@ public class SignBookService {
     private WorkflowService workflowService;
 
     @Resource
-    private WorkflowService workflowStepService;
+    private WorkflowStepService workflowStepService;
 
     @Resource
     private FileService fileService;
@@ -69,6 +69,10 @@ public class SignBookService {
 
     @Resource
     private LogService logService;
+
+    public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus status) {
+        return signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, status);
+    }
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -193,7 +197,7 @@ public class SignBookService {
             }
             LiveWorkflowStep newWorkflowStep = null;
             try {
-                newWorkflowStep = liveWorkflowService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
+                newWorkflowStep = liveWorkflowStepService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
             } catch (EsupSignatureUserException e) {
                 logger.error("error on import workflow", e);
             }
@@ -214,11 +218,7 @@ public class SignBookService {
                 recipientsEmails.add(recipient.getUser().getEmail());
             }
             WorkflowStep toSaveWorkflowStep = null;
-            try {
-                toSaveWorkflowStep = workflowService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
-            } catch (EsupSignatureUserException e) {
-                logger.error("error on save workflow", e);
-            }
+            toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), recipientsEmails.toArray(String[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
         }
     }
@@ -277,7 +277,7 @@ public class SignBookService {
 
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        if (liveWorkflowStep.getAllSignToComplete() && !workflowStepService.isWorkflowStepFullSigned(liveWorkflowStep)) {
+        if (liveWorkflowStep.getAllSignToComplete() && !workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) {
             return false;
         }
         return true;
@@ -450,7 +450,7 @@ public class SignBookService {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber + 1 >= currentSetNumber) {
             try {
-                LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+                LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
                 if (stepNumber == -1) {
                     signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
                 } else {

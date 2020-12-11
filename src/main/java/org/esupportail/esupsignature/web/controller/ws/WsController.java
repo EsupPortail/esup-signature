@@ -77,9 +77,6 @@ public class WsController {
     private DdDocService ddDocService;
 
     @Resource
-    private LiveWorkflowService liveWorkflowService;
-
-    @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
 
     @ResponseBody
@@ -162,7 +159,7 @@ public class WsController {
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         SignType signType = signRequestService.getSignTypeByLevel(level);
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
         signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
         return new ResponseEntity<>(HttpStatus.OK);
     }

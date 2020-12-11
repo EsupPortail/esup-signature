@@ -1,15 +1,17 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Message;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.MessageRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.springframework.data.domain.Pageable;
+import java.util.List;
 
 @Service
 public class MessageService {
@@ -32,6 +34,15 @@ public class MessageService {
 
     public Page<Message> getAll(Pageable pageable) {
         return messageRepository.findAll(pageable);
+    }
+
+    public List<Message> getByUser(User user) {
+        return messageRepository.findByUsersNotContainsAndEndDateAfter(user, new Date());
+    }
+
+    public void disableMessageForUser(User authUser, long id) {
+        Message message = messageRepository.findById(id).get();
+        message.getUsers().add(authUser);
     }
 
 }
