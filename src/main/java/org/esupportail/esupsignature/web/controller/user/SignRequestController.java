@@ -165,7 +165,7 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
-        model.addAttribute("viewRight", signRequestService.checkUserViewRights(user, authUser, signRequest));
+        model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, user, authUser));
         model.addAttribute("frameMode", frameMode);
         return "user/signrequests/show";
     }
@@ -199,7 +199,7 @@ public class SignRequestController {
         }
         model.addAttribute("signRequest", signRequest);
 
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(user, authUser, signRequest) && signRequest.getOriginalDocuments().size() > 0) {
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(signRequest, user, authUser) && signRequest.getOriginalDocuments().size() > 0) {
             signRequest.setSignable(true);
         }
         model.addAttribute("signTypes", SignType.values());
@@ -220,7 +220,8 @@ public class SignRequestController {
                                @RequestParam(value = "password", required = false) String password) {
 
         if (visual == null) visual = true;
-        if(signRequestService.initSign(user, id, sseId, signRequestParamsJsonString, comment, formData, visual, password, authUser)) {
+        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, user, authUser);
+        if(signRequestService.initSign(signRequest, sseId, signRequestParamsJsonString, comment, formData, visual, password, user, authUser)) {
             new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -271,8 +272,8 @@ public class SignRequestController {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             try {
-                SignRequest signRequest = signRequestService.createFastSignRequest(user, multipartFiles, signType, authUser);
-                return "redirect:/user/signrequests/" + signRequest.getId();
+                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(user, multipartFiles, signType, authUser);
+                return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
                 return "redirect:" + request.getHeader("Referer");

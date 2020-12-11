@@ -289,7 +289,7 @@ public class WsController {
     public void getLastFileByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,  @PathVariable("token") String token, HttpServletResponse response) {
 
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserViewRights(user, authUser, signRequest)) {
+        if (signRequestService.checkUserViewRights(signRequest, user, authUser)) {
             List<Document> documents = signRequest.getToSignDocuments();
             try {
                 if (documents.size() > 1) {

@@ -234,14 +234,14 @@ public class UserShareService {
             List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
             for (UserShare userShare : userShares) {
                 Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(signRequest, userShare.getUser(), toUser)) {
                     return userShare.getUser();
                 }
             }
             Data data = dataService.getBySignBook(signBook);
             if(data !=  null) {
                 for (UserShare userShare : userShares) {
-                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(signRequest, userShare.getUser(), toUser)) {
                         return userShare.getUser();
                     }
                 }

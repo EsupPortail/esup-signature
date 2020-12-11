@@ -4,16 +4,19 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -70,6 +73,9 @@ public class SignBookService {
     @Resource
     private LogService logService;
 
+    @Resource
+    private SignService signService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(list::add);
@@ -98,6 +104,22 @@ public class SignBookService {
         }
     }
 
+    public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, User authUser) throws EsupSignatureException {
+        if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
+            try {
+                SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, signType, user.getEmail()));
+                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
+                pendingSignBook(signBook, user, authUser);
+                return signBook;
+            } catch (EsupSignatureUserException | EsupSignatureIOException e) {
+                TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
+                throw new EsupSignaturePdfException("Impossible de charger le document : documents corrompu", e);
+            }
+        } else {
+            throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+        }
+    }
 
     public void initSignBook(User user, Long id, SignBook signBook) {
         Workflow workflow = workflowService.getWorkflowById(id);
@@ -233,7 +255,7 @@ public class SignBookService {
 
     public void exportFilesToTarget(SignBook signBook, User authUser) throws EsupSignatureException {
         if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow().getDocumentsTargetUri() != null && !signBook.getLiveWorkflow().getTargetType().equals(DocumentIOType.none)) {
-            signRequestService.sendSignRequestsToTarget(signBook.getName(), signBook.getSignRequests(), signBook.getLiveWorkflow().getTargetType(), signBook.getLiveWorkflow().getDocumentsTargetUri(), authUser);
+            signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargetType(), signBook.getLiveWorkflow().getDocumentsTargetUri(), authUser);
             signBook.setStatus(SignRequestStatus.exported);
         }
     }

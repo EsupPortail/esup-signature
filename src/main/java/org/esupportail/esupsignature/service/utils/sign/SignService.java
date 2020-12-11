@@ -551,4 +551,14 @@ public class SignService {
 		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), signedDocument.getMimeType().getMimeTypeString());
 	}
 
+	public boolean checkSignTypeDocType(SignType signType, MultipartFile multipartFile) {
+		boolean check = true;
+		if(!multipartFile.getContentType().toLowerCase().contains("pdf") && !multipartFile.getContentType().toLowerCase().contains("jpeg")) {
+			if(signType.equals(SignType.pdfImageStamp)) {
+				check = false;
+			}
+		}
+		return check;
+	}
+
 }
