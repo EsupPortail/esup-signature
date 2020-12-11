@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class SecurityControllerAdvice {
@@ -16,31 +17,12 @@ public class SecurityControllerAdvice {
     private UserService userService;
 
     @ModelAttribute(value = "user", binding = false)
-    public User getUser() {
-        return getCurrentUser();
-    }
-
-    @ModelAttribute(value = "authUser", binding = false)
-    public User getAuthUser() {
-        return getUserFromAuthentication();
-    }
-
-    private User getUserFromAuthentication() {
+    public User getUser(HttpSession httpSession) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             String eppn = auth.getName();
-            return userService.getUserByEppn(eppn);
-        } else {
-            return null;
-        }
-    }
-
-    private User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            String eppn = auth.getName();
-            if (userService.getSuEppn() != null) {
-                eppn = userService.getSuEppn();
+            if (httpSession.getAttribute("suEppn") != null) {
+                eppn = (String) httpSession.getAttribute("suEppn");
             }
             return userService.getUserByEppn(eppn);
         } else {
@@ -48,5 +30,14 @@ public class SecurityControllerAdvice {
         }
     }
 
-
+    @ModelAttribute(value = "authUser", binding = false)
+    public User getAuthUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            String eppn = auth.getName();
+            return userService.getUserByEppn(eppn);
+        } else {
+            return null;
+        }
+    }
 }

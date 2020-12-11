@@ -25,8 +25,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -58,16 +56,6 @@ public class UserService {
 
     @Resource
     private FileService fileService;
-
-    public void setSuEppn(String eppn) {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        attr.getRequest().getSession().setAttribute("suEppn", eppn);
-    }
-
-    public String getSuEppn() {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        return (String) attr.getRequest().getSession().getAttribute("suEppn");
-    }
 
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);

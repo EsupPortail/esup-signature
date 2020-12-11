@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RequestMapping("/")
@@ -90,7 +91,7 @@ public class IndexController {
 	}
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
-	public String denied(HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
@@ -102,9 +103,8 @@ public class IndexController {
 					if (signRequest != null) {
 						User suUser = userShareService.checkShare(signRequest, authUser);
 						if (suUser != null) {
-							if (userShareService.switchToShareUser(suUser.getEppn(), authUser)) {
-								redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Délégation activée vers : " + suUser.getFirstname() + " " + suUser.getName()));
-							}
+							httpSession.setAttribute("suEppn", suUser);
+							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));
 							return "redirect:" + forwardUri;
 						}
 					} else {
@@ -122,11 +122,7 @@ public class IndexController {
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null) {
-			String eppn = auth.getName();
-			if (userService.getSuEppn() != null) {
-				eppn = userService.getSuEppn();
-			}
-			user = userService.getUserByEppn(eppn);
+			user = userService.getUserByEppn(auth.getName());
 		}
 		return user;
 	}

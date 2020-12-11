@@ -351,7 +351,7 @@ public class SignBookService {
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, User user, User authUser) {
-        Log log = logService.create(signBook.getId(), signBook.getStatus().name(), action, returnCode, comment, authUser);
+        Log log = logService.create(signBook.getId(), signBook.getStatus().name(), action, returnCode, comment, user, authUser);
         if(signRequestStatus != null) {
             log.setFinalStatus(signRequestStatus.toString());
             signBook.setStatus(signRequestStatus);

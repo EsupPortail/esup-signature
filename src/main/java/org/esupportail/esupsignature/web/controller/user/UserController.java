@@ -19,14 +19,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -228,18 +227,17 @@ public class UserController {
 	}
 
 	@GetMapping("/change-share")
-	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
 		if(eppn == null || eppn.isEmpty()) {
-			ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-			attr.getRequest().getSession().setAttribute("suEppn", null);
+			httpSession.setAttribute("suEppn", null);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 		} else {
 			if(userShareService.checkShare(userService.getUserByEppn(eppn), authUser)) {
-				ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-				attr.getRequest().getSession().setAttribute("suEppn", eppn);
+				httpSession.setAttribute("suEppn", eppn);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
 			}
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
 		}
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;

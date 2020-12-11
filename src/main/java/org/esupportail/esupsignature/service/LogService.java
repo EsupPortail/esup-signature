@@ -62,12 +62,12 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public Log create(Long id, String status, String action, String returnCode, String comment, User authUser) {
+    public Log create(Long id, String status, String action, String returnCode, String comment, User user,  User authUser) {
         Log log = new Log();
         log.setSignRequestId(id);
         if(authUser != null) {
             log.setEppn(authUser.getEppn());
-            log.setEppnFor(userService.getSuEppn());
+            log.setEppnFor(user.getEppn());
             log.setIp(authUser.getIp());
         }
         log.setInitialStatus(status);

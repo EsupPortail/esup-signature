@@ -132,19 +132,6 @@ public class UserShareService {
         }
     }
 
-    public Boolean switchToShareUser(String eppn, User authUser) {
-        if(eppn == null || eppn.isEmpty()) {
-            userService.setSuEppn(null);
-            return true;
-        }else {
-            if(checkShare(userService.getUserByEppn(eppn), authUser)) {
-                userService.setSuEppn(eppn);
-                return true;
-            }
-        }
-        return false;
-    }
-
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
         if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
