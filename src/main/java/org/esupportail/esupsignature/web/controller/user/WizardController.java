@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.LiveWorkflowService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +38,9 @@ public class WizardController {
 
     @Resource
     private LiveWorkflowService liveWorkflowService;
+
+    @Resource
+    private WorkflowStepService workflowStepService;
 
     @GetMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@ModelAttribute("user") User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
@@ -92,7 +96,7 @@ public class WizardController {
         if(workflow.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
-                WorkflowStep workflowStep = workflowService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
+                WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
                 workflow.getWorkflowSteps().add(workflowStep);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);

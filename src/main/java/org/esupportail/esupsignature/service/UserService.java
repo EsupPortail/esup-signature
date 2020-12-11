@@ -138,6 +138,9 @@ public class UserService {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
         }
+        if (eppn.equals("creator")) {
+            return getCreatorUser();
+        }
         if (userRepository.countByEppn(eppn) == 0) {
             if (eppn.split("@").length == 1) {
                 for (SecurityService securityService : this.securityServices) {

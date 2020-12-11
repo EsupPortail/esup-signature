@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.LiveWorkflowRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class LiveWorkflowService {
@@ -20,10 +22,17 @@ public class LiveWorkflowService {
     LiveWorkflowStepRepository liveWorkflowStepRepository;
 
     @Resource
+    LiveWorkflowRepository liveWorkflowRepository;
+
+    @Resource
     UserService userService;
 
     @Resource
     RecipientService recipientService;
+
+    public List<LiveWorkflow> getByWorkflow(Workflow workflow) {
+        return liveWorkflowRepository.findByWorkflow(workflow);
+    }
 
     public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
@@ -76,7 +85,7 @@ public class LiveWorkflowService {
         return liveWorkflowStep.getId();
     }
 
-    public void deleteWork(LiveWorkflow liveWorkflow) {
-
+    public void delete(LiveWorkflow liveWorkflow) {
+        liveWorkflowRepository.delete(liveWorkflow);
     }
 }
