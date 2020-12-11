@@ -64,7 +64,7 @@ export class UserParamsHelp {
             position: 'top'
         });
         this.intro.addStep({
-            element: '#userParamsFormSubmit',
+            element: '#saveButton',
             intro: "Attention à bien enregistrer vos modifications ici.",
             position: 'left'
         });
