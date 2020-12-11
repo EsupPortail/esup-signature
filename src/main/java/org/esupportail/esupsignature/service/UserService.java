@@ -29,7 +29,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.time.DayOfWeek;
@@ -59,9 +58,6 @@ public class UserService {
 
     @Resource
     private FileService fileService;
-
-    @Resource
-    private HttpServletRequest httpServletRequest;
 
     public void setSuEppn(String eppn) {
         ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -152,13 +148,7 @@ public class UserService {
             }
         }
         if (userRepository.countByEppn(eppn) > 0) {
-            User user = userRepository.findByEppn(eppn).get(0);
-            try {
-                user.setIp(httpServletRequest.getRemoteAddr());
-            } catch (Exception e) {
-                logger.warn("unable to get ip");
-            }
-            return user;
+            return userRepository.findByEppn(eppn).get(0);
         }
 		if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
@@ -341,37 +331,6 @@ public class UserService {
         return personLdap;
     }
 
-    public PersonLdap getPersonLdapFromHeaders() {
-        PersonLdap personLdap = new PersonLdap();
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerAttributeName = headerNames.nextElement();
-            String personAttributeName = headerAttributeName;
-            switch (headerAttributeName) {
-                case "eppn":
-                    personAttributeName = "eduPersonPrincipalName";
-                    break;
-                case "primary-affiliation":
-                    personAttributeName = "eduPersonPrimaryAffiliation";
-                    break;
-                default:
-                    break;
-            }
-            try {
-                java.lang.reflect.Field field = PersonLdap.class.getDeclaredField(personAttributeName);
-                field.setAccessible(true);
-                Class<?> type = field.getType();
-                //TODO manage other types
-                if (type.equals(String.class)) {
-                    field.set(personLdap, httpServletRequest.getHeader(headerAttributeName));
-                }
-            } catch (IllegalAccessException | NoSuchFieldException e) {
-                logger.debug("error on set personLdap attribut " + headerAttributeName, e);
-            }
-        }
-        return personLdap;
-    }
-
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
         if (ldapPersonService.getIfAvailable() != null) {
@@ -380,10 +339,7 @@ public class UserService {
                 personLdap = personLdaps.get(0);
             }
         } else {
-            personLdap = getPersonLdapFromHeaders();
-            if (personLdap.getEduPersonPrincipalName() == null) {
-                personLdap = getPersonLdapFromUser(user);
-            }
+            personLdap = getPersonLdapFromUser(user);
         }
         return personLdap;
     }
