@@ -273,6 +273,16 @@ public class UserController {
 		return getDocumentResponseEntity(response, user.getKeystore());
 	}
 
+	@GetMapping(value = "/get-sign-image/{id}")
+	public ResponseEntity<Void> getSignature(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		for (Document document : user.getSignImages()) {
+			if(document.getId().equals(id)) {
+				return getDocumentResponseEntity(response, document);
+			}
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+
 	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, Document document) throws IOException {
 		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 		response.setContentType(document.getContentType());

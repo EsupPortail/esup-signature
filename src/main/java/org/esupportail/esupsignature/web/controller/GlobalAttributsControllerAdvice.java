@@ -15,13 +15,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
-public class SetGlobalAttributs {
+public class GlobalAttributsControllerAdvice {
 
     @Autowired(required = false)
     private BuildProperties buildProperties;
@@ -70,7 +69,7 @@ public class SetGlobalAttributs {
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
-        List<SignType> signTypes = new ArrayList(Arrays.asList(SignType.values()));
+        List<SignType> signTypes = Arrays.asList(SignType.values());
         if(userKeystoreService == null) {
         	signTypes.remove(SignType.certSign);
         	signTypes.remove(SignType.nexuSign);
@@ -78,8 +77,6 @@ public class SetGlobalAttributs {
         model.addAttribute("signTypes", signTypes);
 
         if (user != null) {
-            List<String> base64UserSignatures = userService.getBase64UserSignatures(user);
-            model.addAttribute("base64UserSignatures", base64UserSignatures);
             model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(user));
             model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(user));
             model.addAttribute("nbToSign", signRequestService.getToSignRequests(user).size());

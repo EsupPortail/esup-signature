@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.config.tomcat;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AbstractAjpProtocol;
-import org.apache.coyote.http11.Http11NioProtocol;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -39,12 +38,9 @@ public class TomcatAjpConfig {
         }
         ajpConnector.setAsyncTimeout(1200000);
         ajpConnector.setURIEncoding("UTF-8");
-        ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setSecretRequired(false);
-        // TODO : Only If Shib ?
-        ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
-        // Avoid java.lang.IllegalStateException: More than the maximum allowed number of headers, [100], were detected.
-        // (exception occures with shib)
-        ((AbstractAjpProtocol) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
+        ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setSecretRequired(false);
+        ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setTomcatAuthentication(false);
+        ((AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler()).setMaxHeaderCount(400);
         tomcat.addAdditionalTomcatConnectors(ajpConnector);
         return tomcat;
     }
