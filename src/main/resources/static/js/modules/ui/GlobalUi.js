@@ -84,7 +84,7 @@ export class GlobalUi {
         $("#sendPendingButton").on('click', e => this.showSendPendingModal());
         $("#submitSendPending").on('click', e => this.submitSendPending());
 
-        this.bindKeyboardKeys();
+        // this.bindKeyboardKeys();
     }
 
     submitSendPending() {
