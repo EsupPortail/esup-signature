@@ -160,7 +160,7 @@ public class SignRequestController {
     public String listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
                                     @RequestParam(value = "statusFilter", required = false) String statusFilter,
                                     @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequestsByStatus(user, statusFilter);
+        List<SignRequest> signRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, statusFilter);
         Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
@@ -241,25 +241,26 @@ public class SignRequestController {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest);
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 Document toDisplayDocument = signRequestService.getToSignDocuments(signRequest).get(0);
-                if (user.getSignImages().size() >  0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-                    if(signRequestService.checkUserSignRights(user, authUser, signRequest) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
-                        signRequest.setSignable(false);
-                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d’ajouter un certificat à votre profil"));
-                    }
-                    List<String> signImages = new ArrayList<>();
-                    for(Document signImage : user.getSignImages()) {
-                        signImages.add(fileService.getBase64Image(signImage));
-                    }
-                    model.addAttribute("signImages", signImages);
-                    int[] size = pdfService.getSignSize(user.getSignImages().get(0).getInputStream());
-                    model.addAttribute("signWidth", size[0]);
-                    model.addAttribute("signHeight", size[1]);
+                List<String> signImages = new ArrayList<>();
+                if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
+                    signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/sceau.png"), "sceau.png"));
                 } else {
-                    if(signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
-                        model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>"));
-                        signRequest.setSignable(false);
+                    if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
+                        if (signRequestService.checkUserSignRights(user, authUser, signRequest) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+                            signRequest.setSignable(false);
+                            model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d’ajouter un certificat à votre profil"));
+                        }
+                        for (Document signImage : user.getSignImages()) {
+                            signImages.add(fileService.getBase64Image(signImage));
+                        }
+                    } else {
+                        if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
+                            model.addAttribute("message", new JsonMessage("warn", "Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>"));
+                            signRequest.setSignable(false);
+                        }
                     }
                 }
+                model.addAttribute("signImages", signImages);
                 model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
             } else {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign))) {
@@ -325,6 +326,7 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity<String> sign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+                               @RequestParam(value = "sseId") String sseId,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
@@ -367,16 +369,16 @@ public class SignRequestController {
         }
         List<SignRequestParams> signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
         if (signRequestService.getCurrentSignType(signRequest).equals(SignType.nexuSign)) {
-            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", authUser);
+            eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
             return new ResponseEntity<>(HttpStatus.OK);
         }
-        eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", authUser);
+        eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
         try {
             signRequest.setComment(comment);
-            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap);
+            signRequestService.sign(signRequest, user, password, visual, signRequestParamses, formDataMap, sseId);
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
                 public void afterCommit(){
-                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", authUser);
+                    eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
                 }
             });
             return new ResponseEntity<>(HttpStatus.OK);

@@ -383,9 +383,15 @@ input:checked + .slider:before {
 }
 
 .sign-text {
-    font-family: "DejaVu Sans Condensed";
+    font-family: "DejaVu Sans Condensed", serif;
     color: black;
     position : relative; float: left; clear: left;
+}
+
+.visa-text {
+    font-family: "DejaVu Sans Condensed", serif;
+    color: black;
+    float: left; clear: left;
 }
 
 .wrapper {

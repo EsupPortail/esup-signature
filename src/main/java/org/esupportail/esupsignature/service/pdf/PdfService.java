@@ -106,9 +106,9 @@ public class PdfService {
             }
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, lineNumber);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, lineNumber, true);
             } else {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber);
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, lineNumber, false);
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
@@ -506,25 +506,6 @@ public class PdfService {
         contentStream.setFont(font, fontSize);
         contentStream.showText(text);
         contentStream.endText();
-    }
-
-    public int[] getSignSize(BufferedImage bimg) {
-        int signWidth;
-        int signHeight;
-        if (bimg.getWidth() <= pdfConfig.getPdfProperties().getSignWidthThreshold() * 2) {
-            signWidth = bimg.getWidth();
-            signHeight = bimg.getHeight();
-        } else {
-            signWidth = pdfConfig.getPdfProperties().getSignWidthThreshold();
-            double percent = ((double) pdfConfig.getPdfProperties().getSignWidthThreshold() / (double) bimg.getWidth());
-            signHeight = (int) (percent * bimg.getHeight());
-        }
-        return new int[]{signWidth, signHeight};
-    }
-
-    public int[] getSignSize(InputStream signFile) throws IOException {
-        BufferedImage bimg = ImageIO.read(signFile);
-        return getSignSize(bimg);
     }
 
     private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
