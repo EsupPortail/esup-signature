@@ -32,6 +32,8 @@ export class WorkspacePdf {
 
     initListeners() {
         if(this.isPdf) {
+            document.getElementById('prev').addEventListener('click', e => this.pdfViewer.prevPage());
+            document.getElementById('next').addEventListener('click', e => this.pdfViewer.nextPage());
             document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
             this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());

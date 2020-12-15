@@ -210,9 +210,9 @@
                     <td>
                         <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
                             <div class="carousel-inner">
-                                <th:block th:each="signImage, iterator : ${base64UserSignatures}">
+                                <th:block th:each="signImage, iterator : ${user.signImages}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'data:image/png;base64,' + ${signImage}" />
+                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImage.id}" />
                                     </div>
                                 </th:block>
                             </div>

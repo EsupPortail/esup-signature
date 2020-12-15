@@ -7,9 +7,9 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
-import org.esupportail.esupsignature.service.prefill.PreFillService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -51,9 +51,6 @@ public class DataService {
     private SignRequestService signRequestService;
 
     @Resource
-    private UserService userService;
-
-    @Resource
     private SignBookService signBookService;
 
     @Resource
@@ -88,7 +85,7 @@ public class DataService {
         dataRepository.delete(data);
     }
 
-    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientEmails == null) {
             recipientEmails = new ArrayList<>();
         }
@@ -106,7 +103,7 @@ public class DataService {
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user);
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user, authUser);
         signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
         if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
@@ -132,7 +129,7 @@ public class DataService {
             }
         }
         data.setSignBook(signBook);
-        signBookService.pendingSignBook(signBook, user);
+        signBookService.pendingSignBook(signBook, user, authUser);
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }
@@ -145,7 +142,7 @@ public class DataService {
         data.setUpdateDate(new Date());
     }
 
-    public void updateDatas(@RequestParam Map<String, String> formDatas, User user, Form form, Data data) {
+    public void updateDatas(@RequestParam Map<String, String> formDatas, User user, Form form, Data data, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
@@ -167,19 +164,19 @@ public class DataService {
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
-        data.setCreateBy(userService.getUserFromAuthentication().getEppn());
+        data.setCreateBy(authUser.getEppn());
         data.setOwner(user.getEppn());
         data.setCreateDate(new Date());
         dataRepository.save(data);
     }
 
-    public Data cloneData(Data data) {
+    public Data cloneData(Data data, User authUser) {
         Form form = formService.getFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
         Data cloneData = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
         cloneData.setStatus(SignRequestStatus.draft);
-        cloneData.setCreateBy(userService.getCurrentUser().getEppn());
+        cloneData.setCreateBy(authUser.getEppn());
         cloneData.setCreateDate(new Date());
         cloneData.setOwner(data.getOwner());
         cloneData.getDatas().putAll(data.getDatas());
@@ -248,10 +245,10 @@ public class DataService {
         return prefilledFields;
     }
 
-    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, Data data) throws EsupSignatureIOException, EsupSignatureException {
+    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, Data data, User authUser) throws EsupSignatureIOException, EsupSignatureException {
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user);
+                SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user, authUser);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {
@@ -267,9 +264,9 @@ public class DataService {
         }
     }
 
-    public Data cloneFromSignRequest(SignRequest signRequest) {
+    public Data cloneFromSignRequest(SignRequest signRequest, User authUser) {
         Data data = getBySignRequest(signRequest);
-        return cloneData(data);
+        return cloneData(data, authUser);
     }
 
     public List<Field> setFieldsDefaultsValues(Data data, Form form) {
@@ -280,7 +277,7 @@ public class DataService {
         return fields;
     }
 
-    public Data addData(User user, Long id, Long dataId, Map<String, String> datas) {
+    public Data addData(User user, Long id, Long dataId, Map<String, String> datas, User authUser) {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
@@ -288,7 +285,7 @@ public class DataService {
         } else {
             data = new Data();
         }
-        updateDatas(datas, user, form, data);
+        updateDatas(datas, user, form, data, authUser);
         return data;
     }
 

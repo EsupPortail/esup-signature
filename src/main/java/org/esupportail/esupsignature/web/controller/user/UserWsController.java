@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.service.extvalue.ExtValue;
-import org.esupportail.esupsignature.service.extvalue.ExtValueService;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;

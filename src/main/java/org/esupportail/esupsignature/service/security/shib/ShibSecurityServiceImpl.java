@@ -11,7 +11,7 @@ import javax.annotation.Resource;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;

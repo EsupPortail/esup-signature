@@ -5,8 +5,6 @@ import org.esupportail.esupsignature.repository.FieldRepository;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class FieldService {
@@ -18,13 +16,7 @@ public class FieldService {
 		Field obj = fieldRepository.findById(fieldId).get();
 		return obj;
 	}	
-	
-	public List<Field> getAllFields(){
-		List<Field> list = new ArrayList<Field>();
-		fieldRepository.findAll().forEach(e -> list.add(e));
-		return list;
-	}
-	
+
 	public void updateField(Field field) {
 		if(field.getId() != null) {
 			updateField(field.getId(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());

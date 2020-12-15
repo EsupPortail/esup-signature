@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,13 +152,13 @@ public class DataController {
 
 	@PostMapping("form/{id}")
 	@ResponseBody
-	public String addData(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+	public String addData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
 						  @RequestParam Long dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
-		Data data = dataService.addData(user, id, dataId, datas);
+		Data data = dataService.addData(user, id, dataId, datas, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return "" + data.getId();
 	}
@@ -186,11 +186,11 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@PostMapping("{id}/send")
-	public String sendDataById(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+	public String sendDataById(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		Data data = dataService.getById(id);
 		try {
-			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, data);
+			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, data, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 
@@ -230,9 +230,9 @@ public class DataController {
 
 	@PreAuthorize("@dataService.preAuthorizeUpdate(#id, #user)")
 	@GetMapping("{id}/clone")
-	public String cloneData(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+	public String cloneData(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getById(id);
-		Data cloneData = dataService.cloneData(data);
+		Data cloneData = dataService.cloneData(data, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}
@@ -241,7 +241,7 @@ public class DataController {
 	@GetMapping("{id}/clone-from-signrequests")
 	public String cloneDataFromSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		SignRequest signRequest = signRequestService.getById(id);
-		Data cloneData = dataService.cloneFromSignRequest(signRequest);
+		Data cloneData = dataService.cloneFromSignRequest(signRequest, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
 		return "redirect:/user/datas/" + cloneData.getId() + "/update";
 	}

@@ -16,8 +16,8 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.barcode.DdDocService;
-import org.esupportail.esupsignature.service.fs.FsFile;
+import org.esupportail.esupsignature.service.utils.barcode.DdDocService;
+import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
@@ -81,7 +81,7 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/create-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String createSignBook(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) throws EsupSignatureException {
+    public String createSignBook(@RequestParam String name, @RequestParam String createBy, HttpServletRequest httpServletRequest) {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook("", name, user, true);
@@ -94,14 +94,14 @@ public class WsController {
                                     @RequestParam String createBy,
                                     @RequestParam("recipientsEmail") String recipientsEmail,
                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    @RequestParam("signLevel") int signLevel, HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException, EsupSignatureUserException {
+                                    HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        SignRequest signRequest = signRequestService.createSignRequest(title, user);
+        SignRequest signRequest = signRequestService.createSignRequest(title, user, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         liveWorkflowStepService.addRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), mapper.readValue(recipientsEmail, String[].class));
-        signRequestService.pendingSignRequest(signRequest);
+        signRequestService.pendingSignRequest(signRequest, user);
         logger.info("new signRequest created by " + user.getEppn());
         return signRequest.getToken();
     }
@@ -124,12 +124,12 @@ public class WsController {
     public Object addDocumentInSignBookGroup(@ModelAttribute("user") User user,
                                              @PathVariable("name") String name,
                                              @PathVariable("workflowName") String workflowName,
-                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException {
+                                             @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
 
         user.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook(workflowName, name, user, true);
-        SignRequest signRequest = signRequestService.createSignRequest(name, user);
+        SignRequest signRequest = signRequestService.createSignRequest(name, user, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         signBookService.addSignRequest(signBook, signRequest);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
@@ -142,10 +142,10 @@ public class WsController {
     public Object addDocumentToNewSignRequest(@ModelAttribute("user") User user,
                                               @PathVariable("name") String name,
                                               @PathVariable("workflowName") String workflowName,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureException, EsupSignatureIOException, IOException {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
         user.setIp(httpServletRequest.getRemoteAddr());
-        signBookService.addDocsInSignBook(user, name, workflowName, multipartFiles);
+        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, user);
         String[] ok = {"ok"};
         return ok;
     }
@@ -180,23 +180,22 @@ public class WsController {
 
     @ResponseBody
     @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignBook(@RequestParam String name) throws EsupSignatureIOException, InterruptedException {
+    public String pendingSignBook(@RequestParam String name) {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         signBookService.nextWorkFlowStep(signBook);
-        signBookService.pendingSignBook(signBook, userService.getSystemUser());
+        signBookService.pendingSignBook(signBook, userService.getSystemUser(), userService.getSystemUser());
         return signBook.getSignRequests().get(0).getToken();
     }
 
     @ResponseBody
     @PostMapping(value = "/pending-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
     public void pendingSignRequest(@RequestParam String token,
-                                   @RequestParam("recipientsEmail") String recipientsEmail,
-                                   @RequestParam("signLevel") int signLevel) throws IOException {
+                                   @RequestParam("recipientsEmail") String recipientsEmail) throws IOException {
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
             liveWorkflowStepService.addRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), mapper.readValue(recipientsEmail, String[].class));
-            signRequestService.pendingSignRequest(signRequest);
+            signRequestService.pendingSignRequest(signRequest, userService.getSystemUser());
         }
     }
 
@@ -219,7 +218,7 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
         String name = mapper.readValue(workflowString, Workflow.class).getName();
-        Workflow workflow = workflowService.createWorkflow(name, name, user,  false);
+        Workflow workflow = workflowService.createWorkflow(name, name, user);
         return workflow.getName();
     }
 
@@ -290,7 +289,7 @@ public class WsController {
     public void getLastFileByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser,  @PathVariable("token") String token, HttpServletResponse response) {
 
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-        if (signRequestService.checkUserViewRights(user, authUser, signRequest)) {
+        if (signRequestService.checkUserViewRights(signRequest, user, authUser)) {
             List<Document> documents = signRequest.getToSignDocuments();
             try {
                 if (documents.size() > 1) {
@@ -490,7 +489,7 @@ public class WsController {
             User user = userService.getSystemUser();
             user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
-                signRequestService.completeSignRequests(Arrays.asList(signRequest));
+                signRequestService.completeSignRequests(Arrays.asList(signRequest), user);
             } else {
                 logger.warn("no signed version of signRequest : " + token);
             }

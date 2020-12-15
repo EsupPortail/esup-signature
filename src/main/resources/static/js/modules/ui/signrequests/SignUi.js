@@ -33,7 +33,6 @@ export class SignUi {
             }
         });
         $("#copyButton").on('click', e => this.copy());
-        $("#print").on('click', e => this.launchPrint());
         document.addEventListener("sign", e => this.updateWaitModal(e));
     }
 
@@ -46,10 +45,6 @@ export class SignUi {
                 }
             }
         }
-    }
-
-    launchPrint() {
-        this.printDocument.launchPrint("/user/signrequests/get-last-file-base-64/" + this.signRequestId)
     }
 
     launchSign() {

@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
@@ -28,7 +27,7 @@ public class WorkflowController {
     @Resource
     private WorkflowStepService workflowStepService;
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#name, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#name, #user)")
     @GetMapping(value = "/{name}", produces = "text/html")
     public String show(@ModelAttribute("user") User user, @PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
         model.addAttribute("fromAdmin", false);
@@ -49,20 +48,20 @@ public class WorkflowController {
     }
 
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                           @RequestParam("signType") String signType,
                           @RequestParam(name="description", required = false) String description,
                           @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
-                          @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureUserException {
+                          @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getWorkflowById(id);
-        workflowService.addStep(signType, description, recipientsEmails, changeable, allSignToComplete, workflow);
+        workflowStepService.addStep(workflow, signType, description, recipientsEmails, changeable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("user") User user,
                                      @PathVariable("id") Long id,
@@ -72,11 +71,11 @@ public class WorkflowController {
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getWorkflowById(id);
-        workflowStepService.updateStep(signType, description, changeable, allSignToComplete, workflow.getWorkflowSteps().get(step));
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step), signType, description, changeable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@ModelAttribute("user") User user, @PathVariable("id") Long id,
                                       @PathVariable("workflowStepId") Long workflowStepId,
@@ -87,7 +86,7 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
     }
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     @PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
     public String addStepRecipient(@ModelAttribute("user") User user,
                                    @PathVariable("id") Long id,
@@ -99,20 +98,20 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
     }
 
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     @DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
     public String addStep(@ModelAttribute("user") User user,
                           @PathVariable("id") Long id,
                           @PathVariable("stepNumber") Integer stepNumber) {
         Workflow workflow = workflowService.getWorkflowById(id);
-        workflowService.removeStep(stepNumber, workflow);
+        workflowStepService.removeStep(workflow, stepNumber);
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
 
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    @PreAuthorize("@workflowService.preAuthorizeOwner(#id, #user)")
+    @PreAuthorize("@workflowService.preAuthorizeWorkflowOwner(#id, #user)")
     public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getWorkflowById(id);
         workflowService.delete(workflow);

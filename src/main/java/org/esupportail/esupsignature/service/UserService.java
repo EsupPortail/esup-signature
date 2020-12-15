@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.file.FileService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -25,8 +25,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -58,39 +56,6 @@ public class UserService {
 
     @Resource
     private FileService fileService;
-
-    public void setSuEppn(String eppn) {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        attr.getRequest().getSession().setAttribute("suEppn", eppn);
-    }
-
-    public String getSuEppn() {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        return (String) attr.getRequest().getSession().getAttribute("suEppn");
-    }
-
-    public User getUserFromAuthentication() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            String eppn = auth.getName();
-            return getUserByEppn(eppn);
-        } else {
-            return null;
-        }
-    }
-
-    public User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
-            String eppn = auth.getName();
-            if (getSuEppn() != null) {
-                eppn = getSuEppn();
-            }
-            return getUserByEppn(eppn);
-        } else {
-            return null;
-        }
-    }
 
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);

@@ -14,6 +14,12 @@ public class LiveWorkflowService {
     @Resource
     LiveWorkflowRepository liveWorkflowRepository;
 
+    public LiveWorkflow create() {
+        LiveWorkflow liveWorkflow = new LiveWorkflow();
+        liveWorkflowRepository.save(liveWorkflow);
+        return liveWorkflow;
+    }
+
     public List<LiveWorkflow> getByWorkflow(Workflow workflow) {
         return liveWorkflowRepository.findByWorkflow(workflow);
     }
@@ -21,4 +27,5 @@ public class LiveWorkflowService {
     public void delete(LiveWorkflow liveWorkflow) {
         liveWorkflowRepository.delete(liveWorkflow);
     }
+
 }

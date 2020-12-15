@@ -59,24 +59,10 @@ public class LiveWorkflowStepService {
         }
     }
 
-    public Long toggleAllSignToCompleteForWorkflowStep(LiveWorkflowStep liveWorkflowStep) {
-        if(liveWorkflowStep.getAllSignToComplete()) {
-            liveWorkflowStep.setAllSignToComplete(false);
-        } else {
-            liveWorkflowStep.setAllSignToComplete(true);
-        }
-        return liveWorkflowStep.getId();
-    }
-
     public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, SignBook signBook) throws EsupSignatureUserException {
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createWorkflowStep(allSignToComplete, signType, recipientsEmail);
         signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
-    }
-
-    public Long setSignTypeForWorkflowStep(SignType signType, LiveWorkflowStep liveWorkflowStep) {
-        liveWorkflowStep.setSignType(signType);
-        return liveWorkflowStep.getId();
     }
 
     public void addRecipients(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {

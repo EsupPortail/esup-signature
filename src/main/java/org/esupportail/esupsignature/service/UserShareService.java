@@ -50,6 +50,7 @@ public class UserShareService {
         return userShareRepository.findByWorkflowId(id);
     }
 
+
     public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
@@ -132,19 +133,6 @@ public class UserShareService {
         }
     }
 
-    public Boolean switchToShareUser(String eppn) {
-        if(eppn == null || eppn.isEmpty()) {
-            userService.setSuEppn(null);
-            return true;
-        }else {
-            if(checkShare(userService.getUserByEppn(eppn), userService.getUserFromAuthentication())) {
-                userService.setSuEppn(eppn);
-                return true;
-            }
-        }
-        return false;
-    }
-
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest, ShareType shareType) {
         if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
@@ -165,10 +153,6 @@ public class UserShareService {
             }
         }
         return false;
-    }
-
-    public List<UserShare> getByUserAndToUsersInAndShareTypesContains(User fromUser, List<User> toUsers, ShareType shareType) {
-        return userShareRepository.findByUserAndToUsersInAndShareTypesContains(fromUser, toUsers, ShareType.create);
     }
 
     public Boolean checkShare(User fromUser, User toUser, SignRequest signRequest) {
@@ -248,21 +232,21 @@ public class UserShareService {
         return userShareRepository.findByToUsersInAndShareTypesContains(users, shareType);
     }
 
-    public User checkShare(SignRequest signRequest) {
+    public User checkShare(SignRequest signRequest, User authUser) {
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook != null) {
-            User toUser = userService.getUserFromAuthentication();
+            User toUser = authUser;
             List<UserShare> userShares = userShareRepository.findByToUsersInAndShareTypesContains(Collections.singletonList(toUser), ShareType.sign);
             for (UserShare userShare : userShares) {
                 Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(signRequest, userShare.getUser(), toUser)) {
                     return userShare.getUser();
                 }
             }
             Data data = dataService.getBySignBook(signBook);
             if(data !=  null) {
                 for (UserShare userShare : userShares) {
-                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(userShare.getUser(), toUser, signRequest)) {
+                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(signRequest, userShare.getUser(), toUser)) {
                         return userShare.getUser();
                     }
                 }
@@ -270,6 +254,11 @@ public class UserShareService {
         }
         return null;
     }
+
+    public List<UserShare> getByUserAndToUsersInAndShareTypesContains(User user, User authUser, ShareType shareType) {
+        return userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Collections.singletonList(authUser), shareType);
+    }
+
 
 
 }

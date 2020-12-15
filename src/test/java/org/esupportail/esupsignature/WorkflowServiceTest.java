@@ -1,10 +1,9 @@
 package org.esupportail.esupsignature;
 
-import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
 import static org.junit.Assume.assumeTrue;
 

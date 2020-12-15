@@ -37,9 +37,9 @@
         <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signRequest.signable}">
             <i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success"></i> <span class="sidebar-label">Remplir et signer</span>
         </button>
-        <button th:if="${signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
+        <button th:if="${signRequest.toSignDocuments.size() > 0 && signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
             <i class="fas fa-comment text-warning"></i> <span class="sidebar-label">Commentaires</span>
-            <span th:if="${postits.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${postits.size()}"></span>
+            <span th:if="${comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${comments.size()}"></span>
         </button>
 
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->

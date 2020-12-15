@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.config.fs;
 
-import org.esupportail.esupsignature.service.fs.opencmis.CmisAccessImpl;
-import org.esupportail.esupsignature.service.fs.smb.SmbAccessImpl;
-import org.esupportail.esupsignature.service.fs.vfs.VfsAccessImpl;
+import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
+import org.esupportail.esupsignature.service.interfaces.fs.smb.SmbAccessImpl;
+import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

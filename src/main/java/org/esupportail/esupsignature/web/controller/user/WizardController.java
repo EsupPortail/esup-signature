@@ -153,7 +153,7 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
-    public String wizX(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+    public String wizX(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
@@ -172,7 +172,7 @@ public class WizardController {
                 end = true;
             }
             if(end != null) {
-            if (signBookService.startLiveWorkflow(user, signBook)) {
+            if (signBookService.startLiveWorkflow(signBook, user, authUser)) {
                 return "redirect:/user/wizard/wiz5/" + signBook.getId();
             } else {
                 return "redirect:/user/wizard/wizend/" + signBook.getId();
@@ -200,7 +200,7 @@ public class WizardController {
     public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.saveWorkflow(name, name, user, signBook);
+            signBookService.saveWorkflow(signBook, name, name, user);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
             return "redirect:/user/wizard/wiz5/" + signBook.getId();
