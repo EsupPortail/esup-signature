@@ -53,6 +53,7 @@ public class Form {
 
     private String targetUri;
 
+    @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private Document document = new Document();
 
