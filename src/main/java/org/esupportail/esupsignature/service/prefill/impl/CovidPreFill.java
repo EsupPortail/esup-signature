@@ -60,7 +60,7 @@ public class CovidPreFill implements PreFill {
 						}
 					} else if(field.getExtValueType().equals("organizationalUnit")) {
 						String extValueName = field.getExtValueReturn();
-						if (ldapValues.containsKey("supannEntiteAffectationPrincipale")) {
+						if (ldapValues.containsKey("supannEntiteAffectationPrincipale") && ldapValues.get("supannEntiteAffectationPrincipale") != null) {
 							List<Map<String, Object>> supannEntiteAffectationPrincipalValues = extLdapValue.search("organizationalUnit", ldapValues.get("supannEntiteAffectationPrincipale").toString(), extValueName);
 							if(supannEntiteAffectationPrincipalValues.size() > 0) {
 								field.setDefaultValue(supannEntiteAffectationPrincipalValues.get(0).get("value").toString());
