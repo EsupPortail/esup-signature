@@ -1,10 +1,11 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ public class Data {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.REMOVE)
+	@LazyCollection(LazyCollectionOption.FALSE)
     private Form form;
 
 	private String formName;
@@ -35,7 +37,8 @@ public class Data {
     private Date updateDate;
 
     @OrderColumn
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)

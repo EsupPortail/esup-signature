@@ -30,7 +30,8 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
+    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     private String exportedDocumentURI;
@@ -41,12 +42,12 @@ public class SignRequest {
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 

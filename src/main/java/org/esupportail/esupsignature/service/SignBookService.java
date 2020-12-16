@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SignBookService {
@@ -106,7 +103,8 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, User authUser) throws EsupSignatureException {
+    public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, Long authUserId) throws EsupSignatureException {
+        User authUser = userService.getById(authUserId);
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
                 SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
@@ -315,6 +313,7 @@ public class SignBookService {
         return false;
     }
 
+    @Transactional
     public void initWorkflowAndPendingSignBook(SignBook signBook, List<String> recipientEmails, User user, User authUser) throws EsupSignatureException {
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
             if (signBook.getLiveWorkflow().getWorkflow() != null) {
@@ -395,6 +394,41 @@ public class SignBookService {
         return signBookName;
     }
 
+    public Map<SignBook, String> sendSignBook(User user, SignBook signBook, String[] recipientsEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User authUser) throws EsupSignatureException {
+        String message = null;
+        if (allSignToComplete == null) {
+            allSignToComplete = false;
+        }
+        try {
+            if(userSignFirst != null && userSignFirst) {
+                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
+            }
+            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
+            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
+        } catch (EsupSignatureUserException e) {
+            logger.error("error with users on create signbook " + signBook.getId());
+            throw new EsupSignatureException("Problème lors de l’envoi");
+        }
+        if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
+            pending = false;
+            message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
+        }
+        if (pending != null && pending) {
+            pendingSignBook(signBook, user, authUser);
+            if (comment != null && !comment.isEmpty()) {
+                for (SignRequest signRequest : signBook.getSignRequests()) {
+                    signRequest.setComment(comment);
+                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user, authUser);
+                }
+            }
+        } else {
+            message = "Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
+        }
+        Map<SignBook, String> signBookStringMap = new HashMap<>();
+        signBookStringMap.put(signBook, message);
+        return signBookStringMap;
+    }
+
 
     public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
         if(!prefix.isEmpty()) {
@@ -407,12 +441,14 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook("workflowName", "name", authUser, true);
+        SignBook signBook = createSignBook(workflowName, name, authUser, true);
         addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser);
         return signBook;
     }
 
+    @Transactional
     public void addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
         SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, authUser, authUser);
@@ -421,6 +457,7 @@ public class SignBookService {
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
     }
 
+    @Transactional
     public void addWorkflowToSignBook(SignBook signBook, User authUser, Long workflowSignBookId) {
         Workflow workflow = workflowService.getById(workflowSignBookId);
         importWorkflow(signBook, workflow);

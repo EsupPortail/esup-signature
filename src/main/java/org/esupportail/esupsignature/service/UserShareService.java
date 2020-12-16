@@ -192,7 +192,7 @@ public class UserShareService {
         if(fromUserId.equals(toUserId)) {
             return true;
         }
-        List<UserShare> userShares = getUserShares(fromUserId, Collections.singletonList(userService.getUserById(toUserId).getId()), shareType);
+        List<UserShare> userShares = getUserShares(fromUserId, Collections.singletonList(userService.getById(toUserId).getId()), shareType);
         if(userShares.size() > 0 ) {
             return true;
         }

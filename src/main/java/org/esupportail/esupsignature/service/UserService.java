@@ -245,7 +245,7 @@ public class UserService {
 
     @Transactional
     public void updateUser(Long authUserId, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
-        User authUser = getUserById(authUserId);
+        User authUser = getById(authUserId);
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
@@ -371,9 +371,6 @@ public class UserService {
         return base64UserSignatures;
     }
 
-    public User getUserById(Long id) {
-        return userRepository.findById(id).get();
-    }
 
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
@@ -422,7 +419,7 @@ public class UserService {
 
 
     public Map<String, Object> getKeystoreByUser(Long authUserId) throws IOException {
-        User authUser = getUserById(authUserId);
+        User authUser = getById(authUserId);
         Map<String, Object> keystore = new HashMap<>();
         keystore.put("bytes", authUser.getKeystore().getInputStream().readAllBytes());
         keystore.put("fileName", authUser.getKeystore().getFileName());
@@ -433,7 +430,7 @@ public class UserService {
     @Transactional
     public Map<String, Object> getSignatureByUserAndId(Long authUserId, Long id) throws IOException {
         Map<String, Object> signature = new HashMap<>();
-        User authUser = getUserById(authUserId);
+        User authUser = getById(authUserId);
         Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
         if(signImage.isPresent()) {
             signature.put("bytes", signImage.get().getInputStream().readAllBytes());
@@ -445,19 +442,22 @@ public class UserService {
 
     @Transactional
     public List<Long> getSignImagesIds(Long userId) {
-        User user = getUserById(userId);
+        User user = getById(userId);
         return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
     }
 
     @Transactional
     public String getKeystoreFileName(Long userId) {
-        User user = getUserById(userId);
-        return user.getKeystore().getFileName();
+        User user = getById(userId);
+        if(user.getKeystore() != null) {
+            return user.getKeystore().getFileName();
+        }
+        return null;
     }
 
     @Transactional
     public void deleteSign(Long authUserId, long id) {
-        User authUser = getUserById(authUserId);
+        User authUser = getById(authUserId);
         Document signDocument = documentService.getById(id);
         authUser.getSignImages().remove(signDocument);
     }

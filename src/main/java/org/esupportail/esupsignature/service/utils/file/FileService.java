@@ -22,10 +22,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 @Service
 public class FileService {
@@ -282,4 +279,11 @@ public class FileService {
 		return false;
 	}
 
+    public Map<String, Object> getFileResponse(byte[] bytes, String fileName, String contentType) {
+        Map<String, Object> fileResponse = new HashMap<>();
+        fileResponse.put("inputStream", new ByteArrayInputStream(bytes));
+        fileResponse.put("fileName", fileName);
+        fileResponse.put("contentType", contentType);
+        return fileResponse;
+    }
 }

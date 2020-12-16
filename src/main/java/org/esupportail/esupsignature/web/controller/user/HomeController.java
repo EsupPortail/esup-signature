@@ -66,8 +66,8 @@ public class HomeController {
 
     @GetMapping
     public String list(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        User user = userService.getUserById(userId);
-        User authUser = userService.getUserById(authUserId);
+        User user = userService.getById(userId);
+        User authUser = userService.getById(authUserId);
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
             if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
@@ -82,7 +82,7 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userId, authUserId, pageable));
+            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userId, authUserId, "tosign", pageable));
             List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));

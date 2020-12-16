@@ -63,6 +63,7 @@ public class Workflow {
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

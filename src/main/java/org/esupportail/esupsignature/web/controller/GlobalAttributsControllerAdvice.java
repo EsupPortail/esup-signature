@@ -57,10 +57,10 @@ public class GlobalAttributsControllerAdvice {
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        User user = userService.getUserById(userId);
+        User user = userService.getById(userId);
         model.addAttribute("user", user);
         parseRoles(user);
-        User authUser = userService.getUserById(authUserId);
+        User authUser = userService.getById(authUserId);
         model.addAttribute("authUser", authUser);
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
         model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserId));

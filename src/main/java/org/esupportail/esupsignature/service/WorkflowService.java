@@ -18,12 +18,12 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
-
-    @PersistenceContext
-    private EntityManager entityManager;
 
     @Resource
     private List<Workflow> workflows;
@@ -197,8 +194,8 @@ public class WorkflowService {
     }
 
     public Set<Workflow> getWorkflowsByUser(Long userId, Long authUserId) {
-        User user = userService.getUserById(userId);
-        User authUser = userService.getUserById(authUserId);
+        User user = userService.getById(userId);
+        User authUser = userService.getById(authUserId);
         List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByRoles(user.getRoles());
         Set<Workflow> workflows = new HashSet<>();
         if (userId.equals(authUserId)) {
@@ -393,7 +390,7 @@ public class WorkflowService {
             }
             int step = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-                replaceStepSystemUsers(user, workflowStep);
+                replaceStepSystemUsers(user.getId(), workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                     if(!computeForDisplay) {
                         workflowStep.getUsers().clear();
@@ -406,24 +403,27 @@ public class WorkflowService {
                         workflowStep.getUsers().add(oneUser);
                     }
                 }
-                entityManager.detach(workflowStep);
                 step++;
             }
-            entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
             throw new EsupSignatureException("compute workflow error", e);
         }
     }
 
-    private void replaceStepSystemUsers(User user, WorkflowStep workflowStep) {
-        for (User oneUser : workflowStep.getUsers()) {
-            if (oneUser.getEppn().equals("creator")) {
-                workflowStep.getUsers().remove(oneUser);
-                workflowStep.getUsers().add(user);
-            }
-            if (oneUser.getEppn().equals("generic")) {
-                workflowStep.getUsers().remove(oneUser);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void replaceStepSystemUsers(Long userId, Long workflowStepId) {
+        User user = userService.getById(userId);
+        WorkflowStep workflowStep = workflowStepService.getById(workflowStepId);
+        if(TransactionSynchronizationManager.isActualTransactionActive()) {
+            for (User oneUser : workflowStep.getUsers()) {
+                if (oneUser.getEppn().equals("creator")) {
+                    workflowStep.getUsers().remove(oneUser);
+                    workflowStep.getUsers().add(user);
+                }
+                if (oneUser.getEppn().equals("generic")) {
+                    workflowStep.getUsers().remove(oneUser);
+                }
             }
         }
    }
@@ -518,8 +518,8 @@ public class WorkflowService {
     }
 
 
-    public String[] getTargetEmails(User user, Form form) {
-        List<UserPropertie> userProperties = userPropertieService.getUserProperties(user, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0));
+    public String[] getTargetEmails(Long userId, Form form) {
+        List<UserPropertie> userProperties = userPropertieService.getUserProperties(userId, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0).getId());
         userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
         if(userProperties.size() > 0 ) {
             if(userProperties.get(0).getTargetEmail() != null) {
@@ -527,6 +527,15 @@ public class WorkflowService {
             }
         }
         return null;
+    }
+
+    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
+        List<WorkflowStep> workflowSteps = new ArrayList<>();
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
+            workflowSteps.addAll(workflow.getWorkflowSteps());
+        }
+        return workflowSteps;
     }
 
 }

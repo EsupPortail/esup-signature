@@ -121,7 +121,7 @@ public class UserController {
 
 	@GetMapping(value = "/remove-keystore")
 	public String removeKeystore(@ModelAttribute("authUserId") Long authUserId, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
 		return "redirect:/user/users";
@@ -146,7 +146,7 @@ public class UserController {
 
 	@GetMapping("/shares")
 	public String params(@ModelAttribute("authUserId") Long authUserId, Model model) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserId);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
@@ -159,7 +159,7 @@ public class UserController {
 
 	@GetMapping("/shares/update/{id}")
 	public String params(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		model.addAttribute("activeMenu", "shares");
 		UserShare userShare = userShareService.getById(id);
 		if(userShare.getUser().equals(authUser)) {
@@ -181,7 +181,7 @@ public class UserController {
 						   @RequestParam("beginDate") String beginDate,
 						   @RequestParam("endDate") String endDate,
 						   RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		try {
@@ -199,7 +199,7 @@ public class UserController {
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
 							  @RequestParam("endDate") String endDate) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		UserShare userShare = userShareService.getById(id);
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
@@ -207,7 +207,7 @@ public class UserController {
 
 	@DeleteMapping("/del-share/{id}")
 	public String delShare(@ModelAttribute("authUserId") Long authUserId, @PathVariable long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		UserShare userShare = userShareService.getById(id);
 		if (userShare.getUser().equals(authUser)) {
 			userShareService.delete(userShare);

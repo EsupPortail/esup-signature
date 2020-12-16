@@ -5,6 +5,8 @@ import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ public class UserPropertieService {
     private UserPropertieRepository userPropertieRepository;
 
     public void createUserPropertie(User user, WorkflowStep workflowStep, List<User> users) {
-        List<UserPropertie> userProperties = getUserProperties(user, workflowStep);
+        List<UserPropertie> userProperties = getUserProperties(user.getId(), workflowStep.getId());
         if (userProperties.size() == 0) {
             addPropertie(user, users, workflowStep);
         } else {
@@ -60,12 +62,13 @@ public class UserPropertieService {
         }
     }
 
-    public List<User> getFavoritesEmails(User user, WorkflowStep workflowStep) {
-        List<UserPropertie> userProperties = getUserProperties(user, workflowStep);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public List<User> getFavoritesEmails(Long userId, Long workflowStepId) {
+        List<UserPropertie> userProperties = getUserProperties(userId, workflowStepId);
         List<User> favoriteUsers = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
-            if(userPropertie.getScore() > bestScore) {
+            if (userPropertie.getScore() > bestScore) {
                 favoriteUsers.clear();
                 favoriteUsers.addAll(userPropertie.getUsers());
                 bestScore = userPropertie.getScore();
@@ -74,8 +77,8 @@ public class UserPropertieService {
         return favoriteUsers;
     }
 
-    public List<UserPropertie> getUserProperties(User user, WorkflowStep workflowStep) {
-        return userPropertieRepository.findByUserAndWorkflowStep(user, workflowStep);
+    public List<UserPropertie> getUserProperties(Long userId, Long workflowStepId) {
+        return userPropertieRepository.findByUserIdAndWorkflowStepId(userId, workflowStepId);
     }
 
     public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user) {
@@ -87,7 +90,7 @@ public class UserPropertieService {
                 users.add(userService.getUserByEmail(userEmail));
             }
         } else {
-            List<User> favoritesEmail = getFavoritesEmails(user, workflowStep);
+            List<User> favoritesEmail = getFavoritesEmails(user.getId(), workflowStep.getId());
             users.addAll(favoritesEmail);
         }
         return users;

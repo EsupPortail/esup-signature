@@ -51,8 +51,8 @@ public class NexuProcessController implements Serializable {
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId,
 										  @PathVariable("id") Long id, HttpSession httpSession, Model model) {
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		httpSession.removeAttribute("abstractSignatureForm");
 		httpSession.removeAttribute("abstractSignatureParameters");
 		SignRequest signRequest = signRequestService.getById(id);
@@ -69,7 +69,7 @@ public class NexuProcessController implements Serializable {
 											   @ModelAttribute("authUserId") Long authUserId,
 											   @RequestBody @Valid DataToSignParams params,
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureException {
-		User user = userService.getUserById(userId);
+		User user = userService.getById(userId);
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(signRequest);
@@ -92,8 +92,8 @@ public class NexuProcessController implements Serializable {
 	public SignDocumentResponse signDocument(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId,
 											 @RequestBody @Valid SignatureValueAsString signatureValue,
 											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureException {
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		SignRequest signRequest = signRequestService.getById(id);
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		AbstractSignatureParameters<?> abstractSignatureParameters = (AbstractSignatureParameters<?>) httpSession.getAttribute("abstractSignatureParameters");

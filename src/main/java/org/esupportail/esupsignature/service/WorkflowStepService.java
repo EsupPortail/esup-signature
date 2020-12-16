@@ -76,7 +76,7 @@ public class WorkflowStepService {
 
     public WorkflowStep removeStepRecipient(Long workflowStepId, Long userId) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        User recipientToRemove = userService.getUserById(userId);
+        User recipientToRemove = userService.getById(userId);
         workflowStep.getUsers().remove(recipientToRemove);
         return workflowStep;
     }
@@ -104,6 +104,10 @@ public class WorkflowStepService {
 
     public void delete(WorkflowStep workflowStep) {
         workflowStepRepository.delete(workflowStep);
+    }
+
+    public WorkflowStep getById(Long workflowStepId) {
+        return workflowStepRepository.findById(workflowStepId).get();
     }
 
 }

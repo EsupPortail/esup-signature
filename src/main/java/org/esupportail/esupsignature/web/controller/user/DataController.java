@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -48,6 +49,9 @@ public class DataController {
 	}
 
 	@Resource
+	private FileService fileService;
+
+	@Resource
 	private DataService dataService;
 
 	@Resource
@@ -74,8 +78,8 @@ public class DataController {
 	@GetMapping
 
 	public String list(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		List<Data> datas = dataService.getDataDraftByOwner(userId);
 		model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
 		model.addAttribute("workflows", workflowService.getWorkflowsByUser(userId, authUserId));
@@ -86,7 +90,7 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userId)")
 	@GetMapping("{id}")
 	public String show(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
-		User user = userService.getUserById(userId);
+		User user = userService.getById(userId);
 		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if (user.getEppn().equals(data.getOwner())) {
@@ -105,8 +109,8 @@ public class DataController {
 	public String updateData(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId,
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		List<Form> authorizedForms = formService.getFormsByUser(userId, authUserId);
 		Form form = formService.getById(id);
 		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
@@ -132,15 +136,14 @@ public class DataController {
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userId)")
 	@GetMapping("{id}/update")
-
 	public String updateData(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-		User user = userService.getUserById(userId);
+		User user = userService.getById(userId);
 		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
 			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form));
-			model.addAttribute("targetEmails", workflowService.getTargetEmails(user, form));
+			model.addAttribute("targetEmails", workflowService.getTargetEmails(user.getId(), form));
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userId)) {
 				model.addAttribute("toSign", true);
 			}
@@ -161,8 +164,8 @@ public class DataController {
 						  @RequestParam Long dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
 		Data data = dataService.addData(user, id, dataId, datas, authUser);
@@ -195,11 +198,10 @@ public class DataController {
 	@PostMapping("{id}/send")
 	public String sendDataById(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
-		User user = userService.getUserById(userId);
-		User authUser = userService.getUserById(authUserId);
-		Data data = dataService.getById(id);
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
 		try {
-			SignBook signBook = dataService.initSendData(user, recipientEmails, targetEmails, data, authUser);
+			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 
@@ -212,7 +214,7 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userId)")
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserById(userId);
+		User user = userService.getById(userId);
 		Data data = dataService.getById(id);
 		if(user.getEppn().equals(data.getCreateBy()) || user.getEppn().equals(data.getOwner())) {
 			dataService.delete(data);
@@ -241,7 +243,7 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userId)")
 	@GetMapping("{id}/clone")
 	public String cloneData(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getUserById(userId);
+		User user = userService.getById(userId);
 		Data data = dataService.getById(id);
 		Data cloneData = dataService.cloneData(data, user);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
@@ -251,7 +253,7 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserId)")
 	@GetMapping("{id}/clone-from-signrequests")
 	public String cloneDataFromSignRequest(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getUserById(authUserId);
+		User authUser = userService.getById(authUserId);
 		SignRequest signRequest = signRequestService.getById(id);
 		Data cloneData = dataService.cloneFromSignRequest(signRequest, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
@@ -271,12 +273,11 @@ public class DataController {
 	@GetMapping(value = "/get-model/{id}")
 
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
-		Form form = formService.getById(id);
 		try {
-			Document model = form.getDocument();
-			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(model.getFileName(), StandardCharsets.UTF_8.toString()));
-			response.setContentType(model.getContentType());
-			IOUtils.copy(model.getInputStream(), response.getOutputStream());
+			Map<String, Object> modelResponse = dataService.getModelResponse(id);
+			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(modelResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+			response.setContentType(modelResponse.get("contentType").toString());
+			IOUtils.copy((InputStream) modelResponse.get("inputStream"), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
 			logger.error("get file error", e);

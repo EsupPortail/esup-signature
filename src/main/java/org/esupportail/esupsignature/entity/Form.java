@@ -33,6 +33,7 @@ public class Form {
 	private Integer version;
 
 	@ElementCollection(targetClass=String.class)
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<String> managers = new ArrayList<>();
 	
 	private String workflowType;
@@ -60,8 +61,9 @@ public class Form {
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private Document document = new Document();
 
+	@ManyToMany(cascade = {CascadeType.ALL})
 	@OrderColumn
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<Field> fields = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")

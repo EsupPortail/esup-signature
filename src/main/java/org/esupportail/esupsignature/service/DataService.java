@@ -7,15 +7,16 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
-import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -203,7 +205,7 @@ public class DataService {
     }
 
     public List<Data> getDataDraftByOwner(Long userId) {
-        User user = userService.getUserById(userId);
+        User user = userService.getById(userId);
         return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
     }
 
@@ -241,7 +243,9 @@ public class DataService {
         return prefilledFields;
     }
 
-    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, Data data, User authUser) throws EsupSignatureIOException, EsupSignatureException {
+    @Transactional
+    public SignBook initSendData(Long dataId, User user, List<String> recipientEmails, List<String> targetEmails, User authUser) throws EsupSignatureIOException, EsupSignatureException {
+        Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user, authUser);
@@ -299,6 +303,16 @@ public class DataService {
 
     public int getNbCreateByAndStatus(String userEppn) {
         return dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft).size();
+    }
+
+    @Transactional
+    public Map<String, Object> getModelResponse(Long formId) throws SQLException, IOException {
+        Form form = formService.getById(formId);
+        Document model = form.getDocument();
+        if (model != null) {
+            return fileService.getFileResponse(model.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), model.getFileName(), model.getContentType());
+        }
+        return null;
     }
 
 }
