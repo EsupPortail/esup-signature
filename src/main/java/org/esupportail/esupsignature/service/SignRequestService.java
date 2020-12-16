@@ -244,13 +244,13 @@ public class SignRequestService {
 		User user = userService.getById(userId);
 		List<Log> logs = logService.getByEppn(user.getEppn()).stream().filter(
 				log -> !log.getEppn().equals(log.getEppnFor())
-					&&
+						&&
 						(log.getFinalStatus().equals(SignRequestStatus.signed.name())
-						||
-						log.getFinalStatus().equals(SignRequestStatus.checked.name())
-						||
-						log.getFinalStatus().equals(SignRequestStatus.refused.name()))
-				).collect(Collectors.toList());
+								||
+								log.getFinalStatus().equals(SignRequestStatus.checked.name())
+								||
+								log.getFinalStatus().equals(SignRequestStatus.refused.name()))
+		).collect(Collectors.toList());
 		return getSignRequestsFromLogs(logs);
 	}
 
@@ -757,17 +757,17 @@ public class SignRequestService {
 	}
 
 	public long generateUniqueId() {
-        long val = -1;
-        while (val < 0) {
-        	final UUID uid = UUID.randomUUID();
-            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-            buffer.putLong(uid.getLeastSignificantBits());
-            buffer.putLong(uid.getMostSignificantBits());
-            final BigInteger bi = new BigInteger(buffer.array());
-            val = bi.longValue();
-        }
-        return val;
-    }
+		long val = -1;
+		while (val < 0) {
+			final UUID uid = UUID.randomUUID();
+			final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
+			buffer.putLong(uid.getLeastSignificantBits());
+			buffer.putLong(uid.getMostSignificantBits());
+			final BigInteger bi = new BigInteger(buffer.array());
+			val = bi.longValue();
+		}
+		return val;
+	}
 
 	public boolean delete(SignRequest signRequest) {
 		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
@@ -833,10 +833,10 @@ public class SignRequestService {
 		return signType;
 	}
 
-    public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser) {
-        Date date = new Date();
-        Set<String> toEmails = new HashSet<>();
-        toEmails.add(recipientUser.getEmail());
+	public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser) {
+		Date date = new Date();
+		Set<String> toEmails = new HashSet<>();
+		toEmails.add(recipientUser.getEmail());
 		SignBook signBook = signRequest.getParentSignBook();
 		Data data = dataService.getBySignBook(signBook);
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
@@ -844,15 +844,15 @@ public class SignRequestService {
 		for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getId())) {
 			if (userShare.getShareTypes().contains(ShareType.sign)) {
 				if ((data != null && data.getForm().equals(userShare.getForm()))
-				|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
+						|| (workflow != null && workflow.equals(userShare.getWorkflow()))) {
 					for (User toUser : userShare.getToUsers()) {
 						toEmails.add(toUser.getEmail());
 					}
 				}
 			}
 		}
-        mailService.sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
-    }
+		mailService.sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
+	}
 
 
 	public void sendEmailAlertSummary(User recipientUser) {
@@ -910,14 +910,18 @@ public class SignRequestService {
 		if(data != null) {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();
-				prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
-				for (Field field : prefilledFields) {
-					if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null || !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
-						field.setDefaultValue("");
+				if (!"".equals(data.getForm().getPreFillType())) {
+					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+					for (Field field : prefilledFields) {
+						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null || !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().toString())) {
+							field.setDefaultValue("");
+						}
+						if (data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+							field.setDefaultValue(data.getDatas().get(field.getName()));
+						}
 					}
-					if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
-						field.setDefaultValue(data.getDatas().get(field.getName()));
-					}
+				} else {
+					prefilledFields = data.getForm().getFields();
 				}
 			}
 		}
