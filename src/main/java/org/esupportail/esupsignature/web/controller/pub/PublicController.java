@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Controller
-@Transactional
+
 @RequestMapping("/public")
 public class PublicController {
 

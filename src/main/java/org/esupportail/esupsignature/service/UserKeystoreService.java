@@ -6,11 +6,13 @@ import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.InputStream;
@@ -28,6 +30,8 @@ public class UserKeystoreService {
 	@Resource
 	private CertificateVerifier certificateVerifier;
 
+	@Resource
+	private UserService userService;
 	
 	public Pkcs12SignatureToken getPkcs12Token(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
@@ -59,7 +63,10 @@ public class UserKeystoreService {
 			return certificateTokens;
 	}
 
-	public String checkKeystore(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
+	@Transactional
+	public String checkKeystore(Long authUserId, String password) throws EsupSignatureKeystoreException {
+		User authUser = userService.getUserById(authUserId);
+		InputStream keyStoreFile = authUser.getKeystore().getInputStream();
 		String certInfo = "";
 		Pkcs12SignatureToken pkcs12SignatureToken = getPkcs12Token(keyStoreFile, password);
 		CertificateToken certificateToken = getCertificateToken(pkcs12SignatureToken);

@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom {
     List<SignBook> findByName(String name);
-    List<SignBook> findByCreateBy(User createBy);
+    List<SignBook> findByCreateById(Long createBy);
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     @Query("select s from SignBook s where s.status = :signRequestStatus and s.liveWorkflow.documentsTargetUri is not null")
     List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);

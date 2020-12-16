@@ -88,13 +88,13 @@ public class AppliVersion {
         return entityManager().createQuery(jpaQuery, AppliVersion.class).setFirstResult(firstResult).setMaxResults(maxResults).getResultList();
     }
 
-	@Transactional
+
     public void persist() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.persist(this);
     }
 
-	@Transactional
+
     public void remove() {
         if (this.entityManager == null) this.entityManager = entityManager();
         if (this.entityManager.contains(this)) {
@@ -105,19 +105,19 @@ public class AppliVersion {
         }
     }
 
-	@Transactional
+
     public void flush() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.flush();
     }
 
-	@Transactional
+
     public void clear() {
         if (this.entityManager == null) this.entityManager = entityManager();
         this.entityManager.clear();
     }
 
-	@Transactional
+
     public AppliVersion merge() {
         if (this.entityManager == null) this.entityManager = entityManager();
         AppliVersion merged = this.entityManager.merge(this);

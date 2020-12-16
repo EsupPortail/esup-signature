@@ -84,7 +84,7 @@ public class UserPropertieService {
             recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
             for (String recipientEmail : recipientEmails) {
                 String userEmail = recipientEmail.split("\\*")[1];
-                users.add(userService.checkUserByEmail(userEmail));
+                users.add(userService.getUserByEmail(userEmail));
             }
         } else {
             List<User> favoritesEmail = getFavoritesEmails(user, workflowStep);
@@ -93,8 +93,8 @@ public class UserPropertieService {
         return users;
     }
 
-    public List<UserPropertie> getUserPropertiesByUser(User user) {
-        return userPropertieRepository.findByUser(user);
+    public List<UserPropertie> getUserPropertiesByUserId(Long userId) {
+        return userPropertieRepository.findByUserId(userId);
     }
 
     public List<UserPropertie> getByWorkflowStep(WorkflowStep workflowStep) {

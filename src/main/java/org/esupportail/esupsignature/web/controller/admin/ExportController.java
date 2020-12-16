@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
@@ -45,8 +43,8 @@ public class ExportController {
 	private FormService formService;
 
 	@GetMapping
-	public String list(@ModelAttribute("user") User user, Model model) {
-		List<Form> forms = formService.getFormsByUser(user, user);
+	public String list(@ModelAttribute("userId") Long userId, Model model) {
+		List<Form> forms = formService.getFormsByUser(userId, userId);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}

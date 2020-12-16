@@ -59,7 +59,7 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
         List<User> recipientsStep2 = new ArrayList<>();
-        recipientsStep2.add(userService.checkUserByEmail(step2Recipient));
+        recipientsStep2.add(userService.getUserByEmail(step2Recipient));
         workflowStep2.setUsers(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
         workflowSteps.add(workflowStep2);

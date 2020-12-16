@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -16,6 +15,7 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -25,6 +25,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -57,6 +58,13 @@ public class UserService {
     @Resource
     private FileService fileService;
 
+    @Resource
+    private DocumentService documentService;
+
+    public User getById(Long id) {
+        return userRepository.findById(id).get();
+    }
+
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);
     }
@@ -79,18 +87,6 @@ public class UserService {
         return list;
     }
 
-    public boolean preAuthorizeNotInShare(User user, User authUser) {
-        return user.equals(authUser);
-    }
-
-    public User checkUserByEmail(String email) {
-        if (userRepository.countByEmail(email) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        } else {
-            return createUserWithEmail(email);
-        }
-    }
-
     public User getUserByEmail(String email) {
         if (userRepository.countByEmail(email) > 0) {
             return userRepository.findByEmail(email).get(0);
@@ -99,6 +95,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public User getUserByEppn(String eppn) {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
@@ -116,7 +113,9 @@ public class UserService {
             }
         }
         if (userRepository.countByEppn(eppn) > 0) {
-            return userRepository.findByEppn(eppn).get(0);
+            User user = userRepository.findByEppn(eppn).get(0);
+            user.getRoles();
+            return user;
         }
 		if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
@@ -242,6 +241,23 @@ public class UserService {
         }
         userRepository.save(user);
         return user;
+    }
+
+    @Transactional
+    public void updateUser(Long authUserId, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
+        User authUser = getUserById(authUserId);
+        if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+            if(authUser.getKeystore() != null) {
+                documentService.delete(authUser.getKeystore());
+            }
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
+        }
+        if(signImageBase64 != null && !signImageBase64.isEmpty()) {
+            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
+        }
+        authUser.setEmailAlertFrequency(emailAlertFrequency);
+        authUser.setEmailAlertHour(emailAlertHour);
+        authUser.setEmailAlertDay(emailAlertDay);
     }
 
     public boolean checkEmailAlert(User user) {
@@ -403,4 +419,48 @@ public class UserService {
         }
         return new ArrayList<>(users);
     }
+
+
+    public Map<String, Object> getKeystoreByUser(Long authUserId) throws IOException {
+        User authUser = getUserById(authUserId);
+        Map<String, Object> keystore = new HashMap<>();
+        keystore.put("bytes", authUser.getKeystore().getInputStream().readAllBytes());
+        keystore.put("fileName", authUser.getKeystore().getFileName());
+        keystore.put("contentType", authUser.getKeystore().getContentType());
+        return keystore;
+    }
+
+    @Transactional
+    public Map<String, Object> getSignatureByUserAndId(Long authUserId, Long id) throws IOException {
+        Map<String, Object> signature = new HashMap<>();
+        User authUser = getUserById(authUserId);
+        Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
+        if(signImage.isPresent()) {
+            signature.put("bytes", signImage.get().getInputStream().readAllBytes());
+            signature.put("fileName", signImage.get().getFileName());
+            signature.put("contentType", signImage.get().getContentType());
+        }
+        return signature;
+    }
+
+    @Transactional
+    public List<Long> getSignImagesIds(Long userId) {
+        User user = getUserById(userId);
+        return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public String getKeystoreFileName(Long userId) {
+        User user = getUserById(userId);
+        return user.getKeystore().getFileName();
+    }
+
+    @Transactional
+    public void deleteSign(Long authUserId, long id) {
+        User authUser = getUserById(authUserId);
+        Document signDocument = documentService.getById(id);
+        authUser.getSignImages().remove(signDocument);
+    }
+
+
 }

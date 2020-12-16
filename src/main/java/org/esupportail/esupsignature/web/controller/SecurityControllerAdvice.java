@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller;
 
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,26 +15,26 @@ public class SecurityControllerAdvice {
     @Resource
     private UserService userService;
 
-    @ModelAttribute(value = "user", binding = false)
-    public User getUser(HttpSession httpSession) {
+    @ModelAttribute(value = "userId")
+
+    public Long getUserId(HttpSession httpSession) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             String eppn = auth.getName();
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = (String) httpSession.getAttribute("suEppn");
             }
-            return userService.getUserByEppn(eppn);
+            return userService.getUserByEppn(eppn).getId();
         } else {
             return null;
         }
     }
 
-    @ModelAttribute(value = "authUser", binding = false)
-    public User getAuthUser() {
+    @ModelAttribute(value = "authUserId")
+    public Long getAuthUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            String eppn = auth.getName();
-            return userService.getUserByEppn(eppn);
+            return userService.getUserByEppn(auth.getName()).getId();
         } else {
             return null;
         }

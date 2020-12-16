@@ -13,7 +13,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long>, Work
     List<Workflow> findAll();
     Workflow findByName(String name);
     List<Workflow> findByFromCodeIsTrue();
-    List<Workflow> findByCreateBy(User user);
+    List<Workflow> findByCreateById(Long user);
     @Query("select w from Workflow w join w.managers m where m = :email")
     List<Workflow> findByManagersContains(@Param("email") String email);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();

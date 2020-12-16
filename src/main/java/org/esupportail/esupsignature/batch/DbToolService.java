@@ -35,7 +35,7 @@ public class DbToolService {
 	@Resource
 	private DataSource dataSource;
 	
-	@Transactional
+
 	public void upgrade() {
 		AppliVersion appliVersion = null;
 		List<AppliVersion> appliVersions = AppliVersion.findAllAppliVersions();

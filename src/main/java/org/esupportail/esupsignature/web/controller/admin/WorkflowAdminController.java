@@ -15,7 +15,6 @@ import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,7 +26,7 @@ import java.util.List;
 
 @RequestMapping("/admin/workflows")
 @Controller
-@Transactional
+
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
@@ -78,7 +77,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute("authUser") User authUser, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+	public String create(@ModelAttribute("authUserId") Long authUserId, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
 		Workflow workflow;
 		try {
 			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
@@ -90,8 +89,8 @@ public class WorkflowAdminController {
 	}
 
     @GetMapping(value = "/update/{id}")
-    public String updateForm(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+    public String updateForm(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, Model model) {
+		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
@@ -101,87 +100,90 @@ public class WorkflowAdminController {
     }
 	
     @PostMapping(value = "/update")
-    public String update(@ModelAttribute("authUser") User authUser,
+    public String update(@ModelAttribute("authUserId") Long authUserId,
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> managers) {
+		User authUser = userService.getUserById(authUserId);
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
-        return "redirect:/admin/workflows/" + updateWorkflow.getName();
+        return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id) {
-    	Workflow workflow = workflowService.getWorkflowById(id);
+    public String delete(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id) {
+    	Workflow workflow = workflowService.getById(id);
 		workflowService.delete(workflow);
         return "redirect:/admin/workflows";
     }
 
 	@PostMapping(value = "/add-step/{id}")
-	public String addStep(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+	public String addStep(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
 						  @RequestParam(name="description", required = false) String description,
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		Workflow workflow = workflowService.getById(id);
 		workflowStepService.addStep(workflow, signType, description, recipientsEmails, changeable, allSignToComplete);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@GetMapping(value = "/update-step/{id}/{step}")
-	public String changeStepSignType(@ModelAttribute("authUser") User authUser,
+	public String changeStepSignType(@ModelAttribute("authUserId") Long authUserId,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
 									 @RequestParam(name="signType") SignType signType,
 									 @RequestParam(name="description") String description,
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		Workflow workflow = workflowService.getById(id);
 		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step), signType, description, changeable, allSignToComplete);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-	public String removeStepRecipient(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+	public String removeStepRecipient(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userId") Long userId, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		Workflow workflow = workflowService.getById(id);
 		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
-	public String addStepRecipient(@ModelAttribute("authUser") User authUser,
+	public String addStepRecipient(@ModelAttribute("authUserId") Long authUserId,
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		Workflow workflow = workflowService.getById(id);
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
-	public String addStep(@ModelAttribute("authUser") User authUser,
+	public String addStep(@ModelAttribute("authUserId") Long authUserId,
 						  @PathVariable("id") Long id,
 						  @PathVariable("stepNumber") Integer stepNumber) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		Workflow workflow = workflowService.getById(id);
 		workflowStepService.removeStep(workflow, stepNumber);
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@PostMapping(value = "/add-params/{id}")
-	public String addParams(@ModelAttribute("authUser") User authUser,
+	public String addParams(@ModelAttribute("authUserId") Long authUserId,
 							@PathVariable("id") Long id) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+		User authUser = userService.getUserById(authUserId);
+		Workflow workflow = workflowService.getById(id);
 		workflowService.setUpdateByAndUpdateDate(workflow, authUser.getEppn());
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getWorkflowById(id);
+	public String getFileFromSource(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getUserById(authUserId);
+		Workflow workflow = workflowService.getById(id);
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, authUser, authUser);
 		if(nbImportedFiles == 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));

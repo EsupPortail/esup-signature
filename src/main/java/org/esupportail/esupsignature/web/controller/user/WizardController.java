@@ -7,15 +7,11 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.LiveWorkflowStepService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.WorkflowStepService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -28,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user/wizard")
 @Controller
-@Transactional
+
 public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
@@ -45,34 +41,38 @@ public class WizardController {
     @Resource
     private WorkflowStepService workflowStepService;
 
+    @Resource
+    private UserService userService;
+
     @GetMapping(value = "/wiz2", produces = "text/html")
-    public String wiz2(@ModelAttribute("user") User user, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        logger.info(user.getEppn() + " init new signBook");
+    public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix des fichiers");
         if (workflowId != null) {
-            Workflow workflow = workflowService.getWorkflowById(workflowId);
+            Workflow workflow = workflowService.getById(workflowId);
             model.addAttribute("workflow", workflow);
         }
         return "user/wizard/wiz2";
     }
 
     @PostMapping(value = "/wiz3", produces = "text/html")
-    public ModelAndView wiz3(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
+    public ModelAndView wiz3(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
+        User user = userService.getUserById(userId);
+        User authUser = userService.getUserById(authUserId);
         logger.debug("Choix d'un workflow");
-        List<SignBook> signBooks = signBookService.getByCreateBy(user);
+        List<SignBook> signBooks = signBookService.getByCreateBy(userId);
         SignBook signBook = signBooks.stream().sorted(Comparator.comparing(SignBook::getCreateDate).reversed()).collect(Collectors.toList()).get(0);
         model.addAttribute("signBook", signBook);
-        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(userId, authUserId));
         ModelAndView modelAndView = new ModelAndView("redirect:/user/wizard/wiz4/" + signBook.getId());
         if (workflowId != null) {
-            Workflow workflow = workflowService.getWorkflowById(workflowId);
+            Workflow workflow = workflowService.getById(workflowId);
             modelAndView.addObject("workflowId", workflow.getId());
         }
         return modelAndView;
     }
 
     @GetMapping(value = "/wiz4Workflow")
-    public String wizWorkflow(@ModelAttribute("user") User user,
+    public String wizWorkflow(@ModelAttribute("userId") Long userId,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        Model model) {
         model.addAttribute("workflowStepForm", true);
@@ -81,17 +81,18 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wizXWorkflow", produces = "text/html")
-    public String wizXWorkflow(@ModelAttribute("user") User user,
+    public String wizXWorkflow(@ModelAttribute("userId") Long userId,
                                @RequestParam(name = "id", required = false) Long id,
                                @RequestParam(name="signType", required = false) SignType signType,
                                @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                @RequestParam(name = "recipientsEmail", required = false) String[] recipientsEmail,
                                @RequestParam(name="addNew", required = false) Boolean addNew,
                                @RequestParam(name="end", required = false) Boolean end,
-                               Model model, RedirectAttributes redirectAttributes) throws EsupSignatureUserException {
+                               Model model) {
+        User user = userService.getUserById(userId);
         Workflow workflow;
         if (id != null) {
-            workflow = workflowService.getWorkflowById(id);
+            workflow = workflowService.getById(id);
         } else {
             workflow = workflowService.createWorkflow(user);
         }
@@ -121,8 +122,9 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wiz5Workflow/{id}")
-    public String wiz5Workflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
-        Workflow workflow = workflowService.getWorkflowById(id);
+    public String wiz5Workflow(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model) {
+        User user = userService.getUserById(userId);
+        Workflow workflow = workflowService.getById(id);
         if(workflow.getCreateBy().equals(user)) {
             model.addAttribute("workflow", workflow);
         }
@@ -130,15 +132,17 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz5Workflow/{id}")
-    public String wiz5Workflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name) {
+    public String wiz5Workflow(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, @RequestParam(name="name") String name) {
+        User user = userService.getUserById(userId);
         Workflow workflow = workflowService.initWorkflow(user, id, name);
         return "redirect:/user/wizard/wizendWorkflow/" + workflow.getId();
     }
 
     @GetMapping(value = "/wiz4/{id}")
-    public String wiz4(@ModelAttribute("user") User user, @PathVariable("id") Long id,
+    public String wiz4(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        Model model) {
+        User user = userService.getUserById(userId);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
@@ -153,13 +157,15 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wizX/{id}", produces = "text/html")
-    public String wizX(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public String wizX(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id,
                        @RequestParam(name="signType", required = false) SignType signType,
                        @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                        @RequestParam(value = "recipientsEmail", required = false) String[] recipientsEmail,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
                        Model model) throws EsupSignatureUserException {
+        User user = userService.getUserById(userId);
+        User authUser = userService.getUserById(authUserId);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
@@ -187,8 +193,8 @@ public class WizardController {
 
 
     @GetMapping(value = "/wiz5/{id}")
-    public String saveForm(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) {
-
+    public String saveForm(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model) {
+        User user = userService.getUserById(userId);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
@@ -197,7 +203,8 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wiz5/{id}")
-    public String saveWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
+    public String saveWorkflow(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
+        User user = userService.getUserById(userId);
         SignBook signBook = signBookService.getById(id);
         try {
             signBookService.saveWorkflow(signBook, name, name, user);
@@ -209,8 +216,10 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wizendWorkflow/{id}")
-    public String wizEndWorkflow(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-        Workflow workflow = workflowService.getWorkflowById(id);        if(workflow.getCreateBy().equals(user)) {
+    public String wizEndWorkflow(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+        User user = userService.getUserById(userId);
+        Workflow workflow = workflowService.getById(id);
+        if(workflow.getCreateBy().equals(user)) {
             model.addAttribute("workflow", workflow);
             return "user/wizard/wizend";
         } else {
@@ -219,7 +228,8 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wizend/{id}")
-    public String wizEnd(@ModelAttribute("user") User user, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+    public String wizEnd(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+        User user = userService.getUserById(userId);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             model.addAttribute("signBook", signBook);
@@ -230,7 +240,8 @@ public class WizardController {
     }
 
     @GetMapping(value = "/wizredirect/{id}")
-    public String wizRedirect(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+    public String wizRedirect(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        User user = userService.getUserById(userId);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
@@ -241,8 +252,9 @@ public class WizardController {
     }
 
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("user") User user, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        Workflow workflow = workflowService.getWorkflowById(id);
+    public String delete(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        User user = userService.getUserById(userId);
+        Workflow workflow = workflowService.getById(id);
         if (!workflow.getCreateBy().equals(user)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {

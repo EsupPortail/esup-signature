@@ -7,13 +7,14 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.*;
-import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.repository.UserRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
-import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -98,16 +99,6 @@ public class WorkflowService {
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
         }
-    }
-
-    public boolean preAuthorizeWorkflowOwner(String name, User user) {
-        Workflow workflow = workflowRepository.findByName(name);
-        return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());
-    }
-
-    public boolean preAuthorizeWorkflowOwner(Long id, User user) {
-        Workflow workflow = workflowRepository.findById(id).get();
-        return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());
     }
 
     @Transactional
@@ -205,15 +196,17 @@ public class WorkflowService {
         }
     }
 
-    public Set<Workflow> getWorkflowsByUser(User user, User authUser) {
-        List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByUser(user);
+    public Set<Workflow> getWorkflowsByUser(Long userId, Long authUserId) {
+        User user = userService.getUserById(userId);
+        User authUser = userService.getUserById(authUserId);
+        List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByRoles(user.getRoles());
         Set<Workflow> workflows = new HashSet<>();
-        if (user.equals(authUser)) {
-            workflows.addAll(workflowRepository.findByCreateBy(user));
+        if (userId.equals(authUserId)) {
+            workflows.addAll(workflowRepository.findByCreateById(userId));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
-            for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(user, authUser, ShareType.create)) {
+            for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userId, authUser, ShareType.create)) {
                 if (userShare.getWorkflow() != null && authorizedWorkflows.contains(userShare.getWorkflow())) {
                     workflows.add(userShare.getWorkflow());
                 }
@@ -333,7 +326,7 @@ public class WorkflowService {
 
     public Set<Workflow> getWorkflowsBySystemUser() {
         User systemUser = userService.getSystemUser();
-        return getWorkflowsByUser(systemUser, systemUser);
+        return getWorkflowsByUser(systemUser.getId(), systemUser.getId());
 
     }
 
@@ -372,7 +365,7 @@ public class WorkflowService {
         return null;
     }
 
-    public Workflow getWorkflowById(Long id) {
+    public Workflow getById(Long id) {
         return workflowRepository.findById(id).get();
     }
 
@@ -381,7 +374,7 @@ public class WorkflowService {
     }
 
     public Workflow initWorkflow(User user, Long id, String name) {
-        Workflow workflow = getWorkflowById(id);
+        Workflow workflow = getById(id);
         workflow.setSourceType(DocumentIOType.none);
         workflow.setTargetType(DocumentIOType.none);
         workflow.setCreateBy(user);
@@ -479,11 +472,11 @@ public class WorkflowService {
     }
 
     public Workflow update(Workflow workflow, User user, String[] types, List<String> managers) {
-        Workflow workflowToUpdate = getWorkflowById(workflow.getId());
+        Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && managers.size() > 0) {
             workflowToUpdate.getManagers().clear();
             for(String manager : managers) {
-                User managerUser = userService.checkUserByEmail(manager);
+                User managerUser = userService.getUserByEmail(manager);
                 if(!workflowToUpdate.getManagers().contains(managerUser.getEmail())) {
                     workflowToUpdate.getManagers().add(managerUser.getEmail());
                 }
@@ -529,8 +522,11 @@ public class WorkflowService {
         List<UserPropertie> userProperties = userPropertieService.getUserProperties(user, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0));
         userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
         if(userProperties.size() > 0 ) {
-            return userProperties.get(0).getTargetEmail().split(",");
+            if(userProperties.get(0).getTargetEmail() != null) {
+                return userProperties.get(0).getTargetEmail().split(",");
+            }
         }
         return null;
     }
+
 }

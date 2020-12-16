@@ -7,5 +7,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface RecipientRepository extends CrudRepository<Recipient, Long> {
-    List<Recipient> findByUser(User user);
+    List<Recipient> findByUserId(Long userId);
 }

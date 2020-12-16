@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -44,6 +46,7 @@ public class Workflow {
     private String role;
 
     @ElementCollection(targetClass= ShareType.class)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean publicUsage = false;

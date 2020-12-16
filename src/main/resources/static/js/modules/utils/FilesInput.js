@@ -171,7 +171,7 @@ export default class FilesInput {
         if ($('#unique :checkbox').is(":checked")){
             console.info('to group mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
             });
         } else {
             console.info('to unique mode');

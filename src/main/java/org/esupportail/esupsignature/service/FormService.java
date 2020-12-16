@@ -55,26 +55,23 @@ public class FormService {
 	@Resource
 	private UserPropertieService userPropertieService;
 
+	@Resource
+	private UserService userService;
+
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
 	}
 
-	public Form getFormByDocument(Document document) {
-		if(formRepository.findByDocument(document).size() > 0) {
-			return formRepository.findByDocument(document).get(0);
-		} else {
-			return null;
-		}
-	}
-	
-	public List<Form> getFormsByUser(User user, User authUser){
-		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
+	public List<Form> getFormsByUser(Long userId, Long authUserId){
+		User user = userService.getById(userId);
+		User authUser = userService.getById(authUserId);
+		List<Form> authorizedForms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		List<Form> forms = new ArrayList<>();
-		if(user.equals(authUser)) {
+		if(userId.equals(authUserId)) {
 			forms = authorizedForms;
 		} else {
-			for(UserShare userShare : userShareService.getUserShares(user, Collections.singletonList(authUser), ShareType.create)) {
+			for(UserShare userShare : userShareService.getUserShares(userId, Collections.singletonList(authUser.getId()), ShareType.create)) {
 				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
 					forms.add(userShare.getForm());
 				}
@@ -341,8 +338,8 @@ public class FormService {
 	}
 
 
-	public List<Form> getFormByManagersContains(User authUser) {
-		return formRepository.findFormByManagersContains(authUser.getEmail());
+	public List<Form> getFormByManagersContains(String email) {
+		return formRepository.findFormByManagersContains(email);
 	}
 
 	public String getHelpMessage(User user, Form form) {

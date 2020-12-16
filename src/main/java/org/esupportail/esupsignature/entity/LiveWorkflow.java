@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -39,9 +41,11 @@ public class LiveWorkflow {
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    private List<LiveWorkflowStep> workflowSteps = new ArrayList<LiveWorkflowStep>();
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<LiveWorkflowStep> workflowSteps = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.REMOVE)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)

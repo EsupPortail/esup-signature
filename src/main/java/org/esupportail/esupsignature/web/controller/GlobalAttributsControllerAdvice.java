@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,14 +21,8 @@ import java.util.List;
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class GlobalAttributsControllerAdvice {
 
-    @Autowired(required = false)
-    private BuildProperties buildProperties;
-
     @Resource
     private GlobalProperties globalProperties;
-
-    @Resource
-    private UserService userService;
 
     @Resource
     private SignRequestService signRequestService;
@@ -43,28 +36,41 @@ public class GlobalAttributsControllerAdvice {
     @Resource
     private UserShareService userShareService;
 
-    @Autowired(required = false)
-    private ValidationService validationService;
-    
-    @Autowired(required = false)
-    private UserKeystoreService userKeystoreService;
+    @Resource
+    private UserService userService;
+
+    private final BuildProperties buildProperties;
+
+    private final ValidationService validationService;
+
+    private final UserKeystoreService userKeystoreService;
 
     private GlobalProperties myGlobalProperties;
 
+    public GlobalAttributsControllerAdvice(@Autowired(required = false) BuildProperties buildProperties,
+                                           @Autowired(required = false) ValidationService validationService,
+                                           @Autowired(required = false) UserKeystoreService userKeystoreService) {
+        this.buildProperties = buildProperties;
+        this.validationService = validationService;
+        this.userKeystoreService = userKeystoreService;
+    }
+
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser, HttpServletRequest request, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        String method = request.getMethod();
-        if (!method.equals("GET")) return;
-        if (authUser != null) {
-            this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-            parseRoles(user);
-            model.addAttribute("suUsers", userShareService.getSuUsers(authUser));
-            model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(user, authUser, ShareType.create));
-            model.addAttribute("isOneSignShare", userShareService.isOneShareByType(user, authUser, ShareType.sign));
-            model.addAttribute("isOneReadShare", userShareService.isOneShareByType(user, authUser, ShareType.read));
-            model.addAttribute("formManaged", formService.getFormByManagersContains(authUser));
-            model.addAttribute("validationToolsEnabled", validationService != null);
-        }
+    public void globalAttributes(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        User user = userService.getUserById(userId);
+        model.addAttribute("user", user);
+        parseRoles(user);
+        User authUser = userService.getUserById(authUserId);
+        model.addAttribute("authUser", authUser);
+        this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
+        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserId));
+        model.addAttribute("userImagesIds", userService.getSignImagesIds(authUserId));
+        model.addAttribute("suUsers", userShareService.getSuUsers(authUserId));
+        model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userId, authUserId, ShareType.create));
+        model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userId, authUserId, ShareType.sign));
+        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userId, authUserId, ShareType.read));
+        model.addAttribute("formManaged", formService.getFormByManagersContains(authUser.getEmail()));
+        model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
@@ -75,15 +81,13 @@ public class GlobalAttributsControllerAdvice {
         	signTypes.remove(SignType.nexuSign);
         }
         model.addAttribute("signTypes", signTypes);
-
-        if (user != null) {
-            model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(user));
-            model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(user));
-            model.addAttribute("nbToSign", signRequestService.getToSignRequests(user).size());
-        }
+        model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(user.getEppn()));
+        model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userId));
+        model.addAttribute("nbToSign", signRequestService.getToSignRequests(userId).size());
+        model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
     }
 
-    private void parseRoles(User user) {
+    public void parseRoles(User user) {
         if (!Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles()))
             myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
         if (!Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles()))

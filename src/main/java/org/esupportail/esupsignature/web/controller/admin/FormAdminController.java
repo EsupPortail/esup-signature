@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -17,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +34,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/forms")
-@Transactional
+
 public class FormAdminController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);

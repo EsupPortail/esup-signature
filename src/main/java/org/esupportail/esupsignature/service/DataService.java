@@ -65,16 +65,11 @@ public class DataService {
     @Resource
     private UserShareService userShareService;
 
+    @Resource
+    private UserService userService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
-    }
-
-    public boolean preAuthorizeUpdate(Long id, User user) {
-        Data data = dataRepository.findById(id).get();
-        if (data.getCreateBy().equals(user.getEppn()) || data.getOwner().equals(user.getEppn())) {
-            return true;
-        }
-        return false;
     }
 
     public void delete(Data data) {
@@ -207,13 +202,14 @@ public class DataService {
         return dataRepository.findBySignBook(signBook);
     }
 
-    public List<Data> getDataDraftByOwner(User user) {
+    public List<Data> getDataDraftByOwner(Long userId) {
+        User user = userService.getUserById(userId);
         return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
     }
 
-    public Page<Data> getDatasPaged(User user, User authUser, Pageable pageable, List<Data> datas) {
+    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, User user, User authUser) {
         Page<Data> datasPage;
-        if(!user.equals(authUser)) {
+        if(!user.getId().equals(authUser.getId())) {
             List<Data> datasOk = new ArrayList<>();
             for(Data data : datas) {
                 if(userShareService.checkFormShare(user, authUser, ShareType.create, data.getForm())) {
@@ -301,8 +297,8 @@ public class DataService {
         if(data != null) data.setSignBook(null);
     }
 
-    public int getNbCreateByAndStatus(User user) {
-        return dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size();
+    public int getNbCreateByAndStatus(String userEppn) {
+        return dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft).size();
     }
 
 }

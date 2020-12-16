@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -40,6 +42,7 @@ public class Form {
 	private String role;
 
 	@ElementCollection(targetClass= ShareType.class)
+	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
 	private Boolean publicUsage = false;
@@ -53,6 +56,7 @@ public class Form {
 
     private String targetUri;
 
+    @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
     private Document document = new Document();
 

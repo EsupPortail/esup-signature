@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,6 +105,7 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, User authUser) throws EsupSignatureException {
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
@@ -122,14 +124,14 @@ public class SignBookService {
     }
 
     public void initSignBook(User user, Long id, SignBook signBook) {
-        Workflow workflow = workflowService.getWorkflowById(id);
+        Workflow workflow = workflowService.getById(id);
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
     }
 
-    public List<SignBook> getByCreateBy(User user) {
-        return signBookRepository.findByCreateBy(user);
+    public List<SignBook> getByCreateBy(Long userId) {
+        return signBookRepository.findByCreateById(userId);
     }
 
     public SignBook getByName(String name) {
@@ -142,13 +144,13 @@ public class SignBookService {
         return signBook;
     }
 
-    public List<SignBook> getSharedSignBooks(User user) {
+    public List<SignBook> getSharedSignBooks(Long userId) {
         List<SignBook> sharedSignBook = new ArrayList<>();
-        for(UserShare userShare : userShareService.getByToUsersInAndShareTypesContains(Collections.singletonList(user), ShareType.sign)) {
+        for(UserShare userShare : userShareService.getByToUsersInAndShareTypesContains(Collections.singletonList(userId), ShareType.sign)) {
             if(userShare.getWorkflow() != null) {
                 sharedSignBook.addAll(signBookRepository.findByWorkflowId(userShare.getWorkflow().getId()));
             } else if(userShare.getForm() != null) {
-                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser());
+                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getId());
                 for (SignRequest signRequest : signRequests) {
                     Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                     if(data.getForm().equals(userShare.getForm())) {
@@ -186,21 +188,6 @@ public class SignBookService {
         } else {
             return false;
         }
-    }
-
-    public boolean preAuthorizeView(Long id, User user) {
-        SignBook signBook = signBookRepository.findById(id).get();
-        return checkUserViewRights(user, signBook);
-    }
-
-    public boolean preAuthorizeManage(Long id, User user) {
-        SignBook signBook = signBookRepository.findById(id).get();
-        return checkUserManageRights(user, signBook);
-    }
-
-    public boolean preAuthorizeManage(String name, User user) {
-        SignBook signBook = getByName(name);
-        return checkUserManageRights(user, signBook);
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow){
@@ -421,7 +408,7 @@ public class SignBookService {
     }
 
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(workflowName, name, authUser, true);
+        SignBook signBook = createSignBook("workflowName", "name", authUser, true);
         addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser);
         return signBook;
     }
@@ -435,7 +422,7 @@ public class SignBookService {
     }
 
     public void addWorkflowToSignBook(SignBook signBook, User authUser, Long workflowSignBookId) {
-        Workflow workflow = workflowService.getWorkflowById(workflowSignBookId);
+        Workflow workflow = workflowService.getById(workflowSignBookId);
         importWorkflow(signBook, workflow);
         nextWorkFlowStep(signBook);
         pendingSignBook(signBook, authUser, authUser);

@@ -500,7 +500,7 @@ public class SignService {
 	}
 
 	public AbstractSignatureForm getAbstractSignatureForm(SignRequest signRequest) throws IOException, EsupSignatureException {
-		return getSignatureDocumentForm(signRequest.getToSignDocuments(), signRequest, true);
+		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, true);
 	}
 
 	public AbstractSignatureParameters<?> getSignatureParameters(SignRequest signRequest, User user, AbstractSignatureForm abstractSignatureForm) throws IOException {
