@@ -137,8 +137,8 @@ public class SignRequestController {
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
         model.addAttribute("attachments", signRequestService.getAttachments(id));
-        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest, userId, authUserId));
-        model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest, userId, authUserId));
+        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userId, authUserId));
+        model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userId, authUserId));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userId));
         try {
             model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(id, userId, authUserId));

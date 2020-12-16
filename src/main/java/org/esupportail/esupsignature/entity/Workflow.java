@@ -34,7 +34,8 @@ public class Workflow {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
+    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -59,6 +60,7 @@ public class Workflow {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> managers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)

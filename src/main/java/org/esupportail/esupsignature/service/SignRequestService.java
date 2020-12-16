@@ -996,14 +996,15 @@ public class SignRequestService {
 		return signBookService.sendSignBook(user, signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, authUser);
 	}
 
-	public SignRequest getNextSignRequest(SignRequest signRequest, Long userid, Long authUserId) {
+	public SignRequest getNextSignRequest(Long signRequestId, Long userid, Long authUserId) {
 		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userid, authUserId, "tosign");
+		SignRequest signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst().get();
 		if(toSignRequests.size() > 0) {
 			if (!toSignRequests.contains(signRequest)) {
 				return toSignRequests.get(0);
 			} else {
 				if(toSignRequests.size() > 1) {
-					int indexOfCurrentSignRequest = toSignRequests.indexOf(toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequest.getId())).findFirst().get());
+					int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest);
 					if (indexOfCurrentSignRequest == 0) {
 						return toSignRequests.get(indexOfCurrentSignRequest + 1);
 					} else if (indexOfCurrentSignRequest == toSignRequests.size() - 1) {
@@ -1017,11 +1018,12 @@ public class SignRequestService {
 		return null;
 	}
 
-	public SignRequest getPreviousSignRequest(SignRequest signRequest, Long userId, Long authUserId) {
+	public SignRequest getPreviousSignRequest(Long signRequestId, Long userId, Long authUserId) {
 		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userId, authUserId, "tosign");
+		SignRequest signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst().get();
 		if(toSignRequests.size() > 0) {
 			if(toSignRequests.size() > 1) {
-				int indexOfCurrentSignRequest = toSignRequests.indexOf(toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequest.getId())).findFirst().get());
+				int indexOfCurrentSignRequest = toSignRequests.indexOf(signRequest);
 				if (indexOfCurrentSignRequest > -1) {
 					if (indexOfCurrentSignRequest == 0) {
 						return toSignRequests.get(toSignRequests.size() - 1);

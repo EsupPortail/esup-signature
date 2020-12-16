@@ -23,6 +23,7 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -78,6 +79,12 @@ public class FormService {
 			}
 		}
 		return forms;
+	}
+
+	@Transactional
+	public Boolean isFormAuthorized(Long userId, Long authUserId, Long id) {
+		Form form = getById(id);
+		return getFormsByUser(userId, authUserId).contains(form) && userShareService.checkFormShare(userId, authUserId, ShareType.create, form);
 	}
 
 	public List<Form> getAllForms(){

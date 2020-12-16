@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -62,7 +61,6 @@ public class UserPropertieService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<User> getFavoritesEmails(Long userId, Long workflowStepId) {
         List<UserPropertie> userProperties = getUserProperties(userId, workflowStepId);
         List<User> favoriteUsers = new ArrayList<>();
@@ -81,6 +79,7 @@ public class UserPropertieService {
         return userPropertieRepository.findByUserIdAndWorkflowStepId(userId, workflowStepId);
     }
 
+    @Transactional
     public List<User> getFavoriteRecipientEmail(int stepNumber, WorkflowStep workflowStep, List<String> recipientEmails, User user) {
         List<User> users = new ArrayList<>();
         if (recipientEmails != null && recipientEmails.size() > 0) {

@@ -172,11 +172,11 @@ public class UserShareService {
         return false;
     }
 
-    public Boolean checkFormShare(User fromUser, User toUser, ShareType shareType, Form form) {
-        if(fromUser.equals(toUser)) {
+    public Boolean checkFormShare(Long fromUserId, Long toUserId, ShareType shareType, Form form) {
+        if(fromUserId.equals(toUserId)) {
             return true;
         }
-        List<UserShare> userShares = getUserShares(fromUser.getId(), Collections.singletonList(toUser.getId()), shareType);
+        List<UserShare> userShares = getUserShares(fromUserId, Collections.singletonList(toUserId), shareType);
         if(shareType.equals(ShareType.sign) && userShares.size() > 0) {
             return true;
         }

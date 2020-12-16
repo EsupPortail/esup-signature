@@ -4,12 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -49,9 +47,6 @@ public class DataController {
 	}
 
 	@Resource
-	private FileService fileService;
-
-	@Resource
 	private DataService dataService;
 
 	@Resource
@@ -83,7 +78,7 @@ public class DataController {
 		List<Data> datas = dataService.getDataDraftByOwner(userId);
 		model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
 		model.addAttribute("workflows", workflowService.getWorkflowsByUser(userId, authUserId));
-		model.addAttribute("datas", dataService.getDatasPaged(datas, pageable, user, authUser));
+		model.addAttribute("datas", dataService.getDatasPaged(datas, pageable, userId, authUserId));
 		return "user/datas/list";
 	}
 
@@ -110,13 +105,11 @@ public class DataController {
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		User user = userService.getById(userId);
-		User authUser = userService.getById(authUserId);
-		List<Form> authorizedForms = formService.getFormsByUser(userId, authUserId);
-		Form form = formService.getById(id);
-		if(authorizedForms.contains(form) && userShareService.checkFormShare(user, authUser, ShareType.create, form)) {
+		if(formService.isFormAuthorized(userId, authUserId, id)) {
 			if (page == null) {
 				page = 1;
 			}
+			Form form = formService.getById(id);
 			model.addAttribute("form", form);
 			model.addAttribute("fields", dataService.getPrefilledFields(user, page, form));
 			model.addAttribute("data", new Data());

@@ -209,12 +209,12 @@ public class DataService {
         return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
     }
 
-    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, User user, User authUser) {
+    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, Long userId, Long authUserId) {
         Page<Data> datasPage;
-        if(!user.getId().equals(authUser.getId())) {
+        if(!userId.equals(authUserId)) {
             List<Data> datasOk = new ArrayList<>();
             for(Data data : datas) {
-                if(userShareService.checkFormShare(user, authUser, ShareType.create, data.getForm())) {
+                if(userShareService.checkFormShare(userId, authUserId, ShareType.create, data.getForm())) {
                     datasOk.add(data);
                 }
             }
