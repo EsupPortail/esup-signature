@@ -18,6 +18,9 @@ public class WorkflowStepService {
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
+    private WorkflowService workflowService;
+
+    @Resource
     private UserService userService;
 
     @Transactional
@@ -87,7 +90,8 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(WorkflowStep workflowStep, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
+        WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
@@ -95,7 +99,8 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Workflow workflow, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+        Workflow workflow = workflowService.getById(workflowId);
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);

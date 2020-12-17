@@ -73,12 +73,6 @@ public class PreAuthorizeService {
         return signRequestService.checkUserSignRights(signRequest, userId, authUserId);
     }
 
-
-    public boolean workflowOwner(String name, User user) {
-        Workflow workflow = workflowService.getWorkflowByName(name);
-        return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());
-    }
-
     public boolean workflowOwner(Long id, User user) {
         Workflow workflow = workflowService.getById(id);
         return user.equals(workflow.getCreateBy()) || workflow.getCreateBy().equals(userService.getSystemUser());

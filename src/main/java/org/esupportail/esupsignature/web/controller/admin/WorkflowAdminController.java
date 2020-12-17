@@ -57,23 +57,13 @@ public class WorkflowAdminController {
 		return "admin/workflows/list";
 	}
 
-	@GetMapping(value = "/{name}", produces = "text/html")
-	public String show(@PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
+	@GetMapping(value = "/{id}", produces = "text/html")
+	public String show(@PathVariable("id") Long id, Model model) {
 		model.addAttribute("fromAdmin", true);
 		model.addAttribute("signTypes", SignType.values());
-		Workflow workflow = workflowService.getWorkflowByName(name);
-		if(workflow != null) {
-			model.addAttribute("workflow", workflow);
-			return "admin/workflows/show";
-		} else {
-			workflow = workflowService.getWorkflowByName(workflowService.getWorkflowClassByName(name).getClass().getSimpleName());
-			if (workflow != null) {
-				model.addAttribute("workflow", workflow);
-				return "admin/workflows/show";
-			}
-		}
-		redirectAttributes.addFlashAttribute("Workflow introuvable");
-		return "redirect:/admin/workflows";
+		Workflow workflow = workflowService.getById(id);
+		model.addAttribute("workflow", workflow);
+		return "admin/workflows/show";
 	}
 
 	@PostMapping(produces = "text/html")
@@ -123,12 +113,11 @@ public class WorkflowAdminController {
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		Workflow workflow = workflowService.getById(id);
-		workflowStepService.addStep(workflow, signType, description, recipientsEmails, changeable, allSignToComplete);
-		return "redirect:/admin/workflows/" + workflow.getName();
+		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete);
+		return "redirect:/admin/workflows/" + id;
 	}
 
-	@GetMapping(value = "/update-step/{id}/{step}")
+	@PostMapping(value = "/update-step/{id}/{step}")
 	public String changeStepSignType(@ModelAttribute("authUserId") Long authUserId,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
@@ -137,8 +126,8 @@ public class WorkflowAdminController {
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step), signType, description, changeable, allSignToComplete);
-		return "redirect:/admin/workflows/" + workflow.getName();
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
+		return "redirect:/admin/workflows/" + workflow.getId();
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")

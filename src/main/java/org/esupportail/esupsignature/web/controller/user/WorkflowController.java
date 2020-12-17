@@ -25,24 +25,14 @@ public class WorkflowController {
     @Resource
     private WorkflowStepService workflowStepService;
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#name, #userId)")
-    @GetMapping(value = "/{name}", produces = "text/html")
-    public String show(@ModelAttribute("userId") Long userId, @PathVariable("name") String name, Model model, RedirectAttributes redirectAttributes) {
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @GetMapping(value = "/{id}", produces = "text/html")
+    public String show(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         model.addAttribute("fromAdmin", false);
         model.addAttribute("signTypes", SignType.values());
-        Workflow workflow = workflowService.getWorkflowByName(name);
-        if(workflow != null) {
-            model.addAttribute("workflow", workflow);
-            return "user/workflows/show";
-        } else {
-            workflow = workflowService.getWorkflowByName(workflowService.getWorkflowClassByName(name).getClass().getSimpleName());
-            if (workflow != null) {
-                model.addAttribute("workflow", workflow);
-                return "user/workflows/show";
-            }
-        }
-        redirectAttributes.addFlashAttribute("Workflow introuvable");
-        return "redirect:/";
+        Workflow workflow = workflowService.getById(id);
+        model.addAttribute("workflow", workflow);
+        return "user/workflows/show";
     }
 
 
@@ -55,12 +45,12 @@ public class WorkflowController {
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.addStep(workflow, signType, description, recipientsEmails, changeable, allSignToComplete);
+        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
-    @GetMapping(value = "/update-step/{id}/{step}")
+    @PostMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("userId") Long userId,
                                      @PathVariable("id") Long id,
                                      @PathVariable("step") Integer step,
@@ -69,8 +59,8 @@ public class WorkflowController {
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step), signType, description, changeable, allSignToComplete);
-        return "redirect:/user/workflows/" + workflow.getName();
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
+        return "redirect:/user/workflows/" + workflow.getId();
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
