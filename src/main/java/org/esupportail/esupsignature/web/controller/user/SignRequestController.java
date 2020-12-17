@@ -130,9 +130,8 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
         User user = userService.getById(userId);
-        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, userId, authUserId);
+        SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
@@ -141,10 +140,12 @@ public class SignRequestController {
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userId, authUserId));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userId));
         try {
-            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(id, userId, authUserId));
+            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userId, authUserId));
         } catch (EsupSignatureUserException e) {
+            logger.error(e.getMessage());
             model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
         }
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, user));

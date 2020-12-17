@@ -1045,8 +1045,9 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<String> getSignImageForSignRequest(Long signRequestId, Long userId, Long authUserId) throws EsupSignatureUserException, IOException {
-		SignRequest signRequest = getById(signRequestId);
+	public List<String> getSignImageForSignRequest(SignRequest signRequestRef, Long userId, Long authUserId) throws EsupSignatureUserException, IOException {
+		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userId, authUserId);
+		signRequestRef.setSignable(signRequest.getSignable());
 		User user = userService.getById(userId);
 		List<String> signImages = new ArrayList<>();
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
@@ -1057,7 +1058,7 @@ public class SignRequestService {
 				} else {
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
 						if (checkUserSignRights(signRequest, userId, authUserId) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
-							signRequest.setSignable(false);
+							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil");
 						}
 						for (Document signImage : user.getSignImages()) {
@@ -1065,7 +1066,7 @@ public class SignRequestService {
 						}
 					} else {
 						if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
-							signRequest.setSignable(false);
+							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>");
 
 						}

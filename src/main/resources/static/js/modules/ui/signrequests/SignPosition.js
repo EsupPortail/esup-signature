@@ -6,6 +6,8 @@ export class SignPosition extends EventFactory {
     constructor(signType, xPos, yPos, signPageNumber, signImages, userName) {
         super();
         console.info("Starting sign positioning tools");
+        this.cross = $('#cross');
+        this.borders = $('#borders');
         this.signType = signType;
         this.currentScale = 1;
         this.signScale = 1;
@@ -14,7 +16,7 @@ export class SignPosition extends EventFactory {
         this.currentSign = 0;
         let signRequestParams = new SignRequestParams();
         this.signImages = signImages;
-        if(this.signImages.length > 0) {
+        if(this.signImages != null && this.signImages.length > 0) {
             let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
             this.sizes = this.getImageDimensions(img);
             signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
@@ -23,10 +25,9 @@ export class SignPosition extends EventFactory {
             signRequestParams.signHeight = this.sizes.h * this.fixRatio;
             signRequestParams.signPageNumber = signPageNumber;
             signRequestParams.signImageNumber = 0;
-            this.changeSignImage(signRequestParams.signImageNumber);
         }
         this.signRequestParamses = [signRequestParams];
-        console.log(this.signRequestParamses);
+        this.changeSignImage(signRequestParams.signImageNumber);
         this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
@@ -34,8 +35,6 @@ export class SignPosition extends EventFactory {
         this.pointItMove = false;
         this.visualActive = true;
         this.displayExtra = false;
-        this.cross = $('#cross');
-        this.borders = $('#borders');
         this.signZoomOutButton = $('#signZoomOut');
         this.signZoomInButton = $('#signZoomIn');
         this.signNextImageButton = $('#signNextImage');
