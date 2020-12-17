@@ -27,7 +27,6 @@ import java.io.Serializable;
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
 @RequestMapping("/user/nexu-sign")
-
 public class NexuProcessController implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);

@@ -220,23 +220,13 @@ public class UserService {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-            	try {
-            		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-            		if (authorities.size() > 0) {
-            			user.getRoles().clear();
-            			Set<String> roles = new HashSet<>();
-            			for (GrantedAuthority authority : authorities) {
-            				if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
-            					// TODO ! 
-            					String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
-            					roles.add(role);
-            				}
-            			}
-            			user.getRoles().addAll(roles);
-            		}
-            	} catch (Exception e) {
-            		logger.warn(String.format("unable to get/update roles for user %s", eppn), e);
-            	}
+                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                if (authorities.size() > 0) {
+                    user.getRoles().clear();
+                    for (GrantedAuthority authority : authorities) {
+                        user.getRoles().add(authority.getAuthority());
+                    }
+                }
             }
         }
         userRepository.save(user);
@@ -335,7 +325,9 @@ public class UserService {
         return null;
     }
 
-    public void disableIntro(User authUser, String name) {
+    @Transactional
+    public void disableIntro(Long authUserId, String name) {
+        User authUser = getById(authUserId);
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
     }
 
@@ -462,5 +454,10 @@ public class UserService {
         authUser.getSignImages().remove(signDocument);
     }
 
+    @Transactional
+    public void setFormMessage(Long authUserId, long formId) {
+        User authUser = getById(authUserId);
+        authUser.setFormMessages(authUser.getFormMessages() + " " + formId);
+    }
 
 }

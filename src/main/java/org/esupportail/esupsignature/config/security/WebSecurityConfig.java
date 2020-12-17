@@ -1,10 +1,5 @@
 package org.esupportail.esupsignature.config.security;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
@@ -32,6 +27,10 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity(debug = false)
@@ -100,8 +99,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").authenticated()
-				.antMatchers("/sse/", "/sse/**").authenticated()
+				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/webjars/**").permitAll();
 

@@ -16,7 +16,9 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
-
+    mapping-groups-roles:
+        for.esup-signature.admin: ROLE_ADMIN
+        for.esup-signature.test: ROLE_USER
 #tomcat:
 #    ajp:
 #        port: 6009
@@ -157,13 +159,11 @@ pdf:
 
 security:
     cas:
-        group-mapping-role-admin: for.esup-signature.admin
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)
         url: https://cas.univ-ville.fr
 #    shib:
 #        credentials-request-header: MEMBER
-#        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville,dc=fr
 #        idp-url: https://idp.univ-ville.fr
 #        principal-request-header: REMOTE_USER
 #        title: Compte d’un autre établissement (Shibboleth)

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @ConfigurationProperties(prefix="global")
@@ -28,6 +29,7 @@ public class GlobalProperties implements Cloneable {
     private Boolean enableSplash = false;
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
+    private Map<String, String> mappingGroupsRoles;
 
     public String getRootUrl() {
         return rootUrl;
@@ -171,5 +173,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setApplicationEmail(String applicationEmail) {
         this.applicationEmail = applicationEmail;
+    }
+
+    public Map<String, String> getMappingGroupsRoles() {
+        return mappingGroupsRoles;
+    }
+
+    public void setMappingGroupsRoles(Map<String, String> mappingGroupsRoles) {
+        this.mappingGroupsRoles = mappingGroupsRoles;
     }
 }

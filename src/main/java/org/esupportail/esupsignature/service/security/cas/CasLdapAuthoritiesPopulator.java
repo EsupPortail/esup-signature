@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service.security.cas;
 
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
-import org.esupportail.esupsignature.service.security.GroupService;
 import org.springframework.ldap.core.ContextSource;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,21 +8,30 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
 
-	protected LdapGroupService ldapGroupService;
+	private LdapGroupService ldapGroupService;
+
+	private String groupPrefixRoleName;
 
 	protected Map<String, String> mappingGroupesRoles;
-	
+
+	public void setLdapGroupService(LdapGroupService ldapGroupService) {
+		this.ldapGroupService = ldapGroupService;
+	}
+
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
 	}
 
-	public void setLdapGroupService(LdapGroupService ldapGroupService) {
-		this.ldapGroupService = ldapGroupService;
+	public void setGroupPrefixRoleName(String groupPrefixRoleName) {
+		this.groupPrefixRoleName = groupPrefixRoleName;
 	}
 
 	public CasLdapAuthoritiesPopulator(ContextSource contextSource, String groupSearchBase) {
@@ -34,17 +42,17 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 	protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
 
 		Set<GrantedAuthority> additionalRoles = new HashSet<>();
-
-		for(String groupName : ldapGroupService.getGroups(username.toLowerCase())) {
+		List<String> ldapGroups = ldapGroupService.getGroups(username.toLowerCase());
+		for(String groupName : ldapGroups) {
 			if(groupName != null) {
+				Matcher m = Pattern.compile(groupPrefixRoleName).matcher(groupName);
 				if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
 					additionalRoles.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
-				} else {
-					additionalRoles.add(new SimpleGrantedAuthority(groupName));
+				} else if (m.matches()) {
+					additionalRoles.add(new SimpleGrantedAuthority("ROLE_" + m.group(1).toUpperCase()));
 				}
 			}
 		}
-
 		return additionalRoles;
 	}
 

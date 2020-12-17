@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
@@ -26,9 +27,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CasSecurityServiceImpl implements SecurityService {
 
@@ -37,6 +36,10 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private CasProperties casProperties;
+
+	@Resource
+	private GlobalProperties globalProperties;
+
 
 	@Resource
 	private LdapProperties ldapProperties;
@@ -125,25 +128,15 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	
 	public LdapUserDetailsService ldapUserDetailsService() {
-
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
-
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
-
-		Map<String, String> mappingGroupesRoles = new HashMap<>();
-		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
-		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
-
+		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(globalProperties.getGroupPrefixRoleName());
+		casLdapAuthoritiesPopulator.setMappingGroupesRoles(globalProperties.getMappingGroupsRoles());
 		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);
-
-		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
-				casLdapAuthoritiesPopulator);
-
+		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch, casLdapAuthoritiesPopulator);
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
 		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
-
 		ldapUserDetailsService.setUserDetailsMapper(ldapUserDetailsMapper);
-
 		return ldapUserDetailsService;
 	}
 

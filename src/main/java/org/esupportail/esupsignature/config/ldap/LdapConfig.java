@@ -31,7 +31,8 @@ public class LdapConfig {
         Map<String, String> ldapFiltersGroups = new HashMap<>();
 
         for(Map.Entry<String, String> entry : ldapProperties.getLdapFiltersGroups().entrySet()) {
-            ldapFiltersGroups.put(entry.getValue(), globalProperties.getGroupPrefixRoleName() + "." + entry.getKey().toUpperCase());
+            String groupName = globalProperties.getGroupPrefixRoleName().replace("(\\w*)", entry.getKey());
+            ldapFiltersGroups.put(entry.getValue(), groupName);
         }
 
         LdapGroupService ldapGroupService = new LdapGroupService();

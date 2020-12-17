@@ -234,26 +234,25 @@ public class UserController {
 	}
 
 	@GetMapping("/mark-intro-as-read/{name}")
-	public String markIntroAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable String name, HttpServletRequest httpServletRequest) {
-		logger.info(authUser.getEppn() + " mark " + name + " as read");
-		userService.disableIntro(authUser, name);
+	public String markIntroAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable String name, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserId + " mark into " + name + " as read");
+		userService.disableIntro(authUserId, name);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
-    	logger.info(authUser.getEppn() + " mark " + id + " as read");
-		messageService.disableMessageForUser(authUser, id);
+	public String markAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable long id, HttpServletRequest httpServletRequest) {
+    	logger.info("user " + authUserId + " mark " + id + " as read");
+		messageService.disableMessageForUser(authUserId, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-help-as-read/{id}")
-	public String markHelpAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
-		logger.info(authUser.getEppn() + " mark " + id + " as read");
-		Form form = formService.getById(id);
-		authUser.setFormMessages(authUser.getFormMessages() + " " + form.getId());
+	public String markHelpAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable long id, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserId + " mark help" + id + " as read");
+		userService.setFormMessage(authUserId, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
