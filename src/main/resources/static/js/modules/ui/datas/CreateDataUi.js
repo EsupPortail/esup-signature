@@ -100,26 +100,26 @@ export class CreateDataUi {
         pdfViewer.savedFields.forEach(function (value, key, map){
             formData[key]= value;
         })
-        let json = JSON.stringify(formData);
-        let command = this.nextCommand;
-        let dataId = $('#dataId');
-        $.ajax({
-            data: {'formData': json},
-            type: 'POST',
-            url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + dataId.val(),
-            success: function (response) {
-                dataId.val(response);
-                if(redirect) {
+        if(redirect) {
+            let json = JSON.stringify(formData);
+            let dataId = $('#dataId');
+            $.ajax({
+                data: {'formData': json},
+                type: 'POST',
+                url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + dataId.val(),
+                success: function (response) {
+                    dataId.val(response);
                     location.href = "/user/datas/" + response + "/update";
-                } else {
-                    if(command === "next") {
-                        pdfViewer.nextPage();
-                    } else if(command === "prev") {
-                        pdfViewer.prevPage()
-                    }
                 }
+            });
+        } else {
+            let command = this.nextCommand;
+            if(command === "next") {
+                pdfViewer.nextPage();
+            } else if(command === "prev") {
+                pdfViewer.prevPage()
             }
-        });
+        }
     }
 
     startRender() {

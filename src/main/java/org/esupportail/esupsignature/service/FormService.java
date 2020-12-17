@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -54,6 +55,9 @@ public class FormService {
 	private DataService dataService;
 
 	@Resource
+	private DocumentService documentService;
+
+	@Resource
 	private UserPropertieService userPropertieService;
 
 	@Resource
@@ -82,6 +86,13 @@ public class FormService {
 	}
 
 	@Transactional
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
+		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		return form;
+	}
+
+	@Transactional
 	public Boolean isFormAuthorized(Long userId, Long authUserId, Long id) {
 		Form form = getById(id);
 		return getFormsByUser(userId, authUserId).contains(form) && userShareService.checkFormShare(userId, authUserId, ShareType.create, form);
@@ -97,6 +108,7 @@ public class FormService {
 		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
 	}
 
+	@Transactional
 	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
@@ -297,7 +309,7 @@ public class FormService {
 		for(Field field : fields) {
 			i++;
 			field.setFillOrder(i);
-			fieldService.updateField(field.getId());
+			fieldService.updateField(field);
 		}
 		return fields;
 	}
@@ -307,7 +319,7 @@ public class FormService {
 		field.setPage(page);
 		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
 		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-		fieldService.updateField(field.getId());
+		fieldService.updateField(field);
 	}
 
 	private void computeActions(Field field, String actionsString) {

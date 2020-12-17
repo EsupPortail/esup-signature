@@ -73,8 +73,6 @@ public class DataController {
 	@GetMapping
 
 	public String list(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-		User user = userService.getById(userId);
-		User authUser = userService.getById(authUserId);
 		List<Data> datas = dataService.getDataDraftByOwner(userId);
 		model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
 		model.addAttribute("workflows", workflowService.getWorkflowsByUser(userId, authUserId));

@@ -18,16 +18,15 @@ public class FieldService {
 		return obj;
 	}
 
-	@Transactional
-	public void updateField(Long fieldId) {
-		Field field = fieldRepository.findById(fieldId).get();
-		if(field != null) {
+	public void updateField(Field field) {
+		if (field.getId() !=null) {
 			updateField(field.getId(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
-		} else {
+		}else {
 			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
 		}
 	}
 
+	@Transactional
 	public Field updateField(Long id, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
 							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers) {
 		Field field = fieldRepository.findById(id).get();

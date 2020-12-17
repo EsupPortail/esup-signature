@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -87,8 +85,7 @@ public class FormAdminController {
 
 	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Model model) throws IOException {
-		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = formService.createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -162,20 +159,18 @@ public class FormAdminController {
 	}
 
 	@ResponseBody
-	@PostMapping("/{formId}/field/{fieldId}/update")
-	public ResponseEntity<String> updateField(@PathVariable("fieldId") Long id,
-							  @PathVariable("formId") Long formId,
-							  @RequestParam(value = "required", required = false) String required,
-							  @RequestParam(value = "readOnly", required = false) String readOnly,
-							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
-							  @RequestParam(value = "extValueType", required = false) String extValueType,
-							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
-							  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
-							  @RequestParam(value = "searchType", required = false) String searchType,
-							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
-							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
-		Field field = fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
-		fieldService.updateField(field.getId());
+	@PostMapping("/field/{id}/update")
+	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
+											  @RequestParam(value = "required", required = false) String required,
+											  @RequestParam(value = "readOnly", required = false) String readOnly,
+											  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
+											  @RequestParam(value = "extValueType", required = false) String extValueType,
+											  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
+											  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
+											  @RequestParam(value = "searchType", required = false) String searchType,
+											  @RequestParam(value = "searchReturn", required = false) String searchReturn,
+											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+		fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

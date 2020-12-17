@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -228,15 +227,13 @@ public class DataService {
     public List<Field> getPrefilledFields(User user, Integer page, Form form) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
-            Integer finalPage = page;
-            List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == null || field.getPage().equals(finalPage)).collect(Collectors.toList());
+            List<Field> fields = new ArrayList<>(form.getFields());
             prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
             for (Field field : prefilledFields) {
                 if(!field.getStepNumbers().contains("0")) {
                     field.setDefaultValue("");
                 }
             }
-
         } else {
             prefilledFields = form.getFields();
         }
