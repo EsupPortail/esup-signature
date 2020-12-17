@@ -83,8 +83,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	public AuthenticationManager shibAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(shibPreauthAuthProvider());
-		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
-		return authenticationManager;
+		return new ProviderManager(authenticatedAuthenticationProviders);
 		
 	}
  

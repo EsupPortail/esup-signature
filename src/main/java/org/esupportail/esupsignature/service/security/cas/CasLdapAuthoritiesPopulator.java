@@ -52,7 +52,7 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 		Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
 		List<String> ldapGroups = ldapGroupService.getGroups(username.toLowerCase());
 		for (String roleFromLdap : group2UserRoleService.getRoles(username.toLowerCase())) {
-			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleFromLdap);
+			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority("ROLE_" + roleFromLdap);
 			grantedAuthorities.add(simpleGrantedAuthority);
 			logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 		}

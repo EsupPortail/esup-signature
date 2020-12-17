@@ -110,8 +110,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public AuthenticationManager casAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
 		authenticatedAuthenticationProviders.add(casAuthenticationProvider());
-		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
-		return authenticationManager;
+		return new ProviderManager(authenticatedAuthenticationProviders);
 	}
 
 	
@@ -140,6 +139,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public LdapUserDetailsService ldapUserDetailsService() {
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
+		casLdapAuthoritiesPopulator.setRolePrefix("");
 		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupPrefixRoleName());
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
 		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);

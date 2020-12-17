@@ -223,13 +223,21 @@ public class UserService {
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if(auth != null && webSecurityProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
-                logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-                if (authorities.size() > 0) {
-                    user.getRoles().clear();
-                    for (GrantedAuthority authority : authorities) {
-                        user.getRoles().add(authority.getAuthority());
+            if (auth != null) {
+                String userName = auth.getName();
+                if (auth.getName().split("@").length == 1) {
+                    userName = auth.getName() + "@" + globalProperties.getDomain();
+                }
+                if (webSecurityProperties.getGroupPrefixRoleName() != null && eppn.equals(userName)) {
+                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                    if (authorities.size() > 0) {
+                        user.getRoles().clear();
+                        for (GrantedAuthority authority : authorities) {
+                            if(authority.getAuthority().startsWith("ROLE_")) {
+                                user.getRoles().add(authority.getAuthority());
+                            }
+                        }
                     }
                 }
             }
