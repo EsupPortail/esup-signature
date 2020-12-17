@@ -79,7 +79,7 @@
                                     <tr>
                                         <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}"
                                               th:method="'delete'">
-                                            <input type="hidden" name="userId" th:value="${user.id}"/>
+                                            <input type="hidden" name="userEppn" th:value="${user.id}"/>
                                             <td class="text-left">
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                             </td>

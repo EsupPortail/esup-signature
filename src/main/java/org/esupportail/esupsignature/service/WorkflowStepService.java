@@ -82,9 +82,9 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public WorkflowStep removeStepRecipient(Long workflowStepId, Long userId) {
+    public WorkflowStep removeStepRecipient(Long workflowStepId, String userEppn) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        User recipientToRemove = userService.getById(userId);
+        User recipientToRemove = userService.getByEppn(userEppn);
         workflowStep.getUsers().remove(recipientToRemove);
         return workflowStep;
     }

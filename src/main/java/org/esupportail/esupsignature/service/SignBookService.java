@@ -103,8 +103,8 @@ public class SignBookService {
     }
 
     @Transactional
-    public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, Long authUserId) throws EsupSignatureException {
-        User authUser = userService.getById(authUserId);
+    public SignBook addFastSignRequestInNewSignBook(User user, MultipartFile[] multipartFiles, SignType signType, String authUserEppn) throws EsupSignatureException {
+        User authUser = userService.getByEppn(authUserEppn);
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
                 SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
@@ -128,8 +128,8 @@ public class SignBookService {
         signBook.getLiveWorkflow().setWorkflow(workflow);
     }
 
-    public List<SignBook> getByCreateBy(Long userId) {
-        return signBookRepository.findByCreateById(userId);
+    public List<SignBook> getByCreateBy(String userEppn) {
+        return signBookRepository.findByCreateByEppn(userEppn);
     }
 
     public SignBook getByName(String name) {
@@ -142,13 +142,13 @@ public class SignBookService {
         return signBook;
     }
 
-    public List<SignBook> getSharedSignBooks(Long userId) {
+    public List<SignBook> getSharedSignBooks(String userEppn) {
         List<SignBook> sharedSignBook = new ArrayList<>();
-        for(UserShare userShare : userShareService.getByToUsersInAndShareTypesContains(Collections.singletonList(userId), ShareType.sign)) {
+        for(UserShare userShare : userShareService.getByToUsersInAndShareTypesContains(Collections.singletonList(userEppn), ShareType.sign)) {
             if(userShare.getWorkflow() != null) {
                 sharedSignBook.addAll(signBookRepository.findByWorkflowId(userShare.getWorkflow().getId()));
             } else if(userShare.getForm() != null) {
-                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getId());
+                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getEppn());
                 for (SignRequest signRequest : signRequests) {
                     Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                     if(data.getForm().equals(userShare.getForm())) {

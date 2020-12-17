@@ -64,8 +64,8 @@ public class UserKeystoreService {
 	}
 
 	@Transactional
-	public String checkKeystore(Long authUserId, String password) throws EsupSignatureKeystoreException {
-		User authUser = userService.getById(authUserId);
+	public String checkKeystore(String authUserEppn, String password) throws EsupSignatureKeystoreException {
+		User authUser = userService.getByEppn(authUserEppn);
 		InputStream keyStoreFile = authUser.getKeystore().getInputStream();
 		String certInfo = "";
 		Pkcs12SignatureToken pkcs12SignatureToken = getPkcs12Token(keyStoreFile, password);

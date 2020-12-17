@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -50,9 +49,6 @@ public class WorkflowService {
     private SignBookService signBookService;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private FsAccessFactory fsAccessFactory;
 
     @Resource
@@ -78,11 +74,9 @@ public class WorkflowService {
 
     @PostConstruct
     public void initCreatorWorkflow() {
-        User creator;
-        if (userRepository.countByEppn("creator") == 0) {
+        User creator= userService.getByEppn("creator");
+        if (creator == null) {
             creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system);
-        } else {
-            creator = userRepository.findByEppn("creator").get(0);
         }
         if (workflowRepository.countByName("Ma signature") == 0) {
             Workflow workflow = new Workflow();
@@ -135,7 +129,7 @@ public class WorkflowService {
                     } else {
                         WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(generatedWorkflowStep.getName(), generatedWorkflowStep.getAllSignToComplete(), generatedWorkflowStep.getSignType());
                         for (User user : generatedWorkflowStep.getUsers()) {
-                            userRepository.save(user);
+                            userService.save(user);
                             newWorkflowStep.getUsers().add(user);
                         }
                         newWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
@@ -193,17 +187,17 @@ public class WorkflowService {
         }
     }
 
-    public Set<Workflow> getWorkflowsByUser(Long userId, Long authUserId) {
-        User user = userService.getById(userId);
-        User authUser = userService.getById(authUserId);
+    public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
+        User user = userService.getByEppn(userEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByRoles(user.getRoles());
         Set<Workflow> workflows = new HashSet<>();
-        if (userId.equals(authUserId)) {
-            workflows.addAll(workflowRepository.findByCreateById(userId));
+        if (userEppn.equals(authUserEppn)) {
+            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn));
             workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
-            for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userId, authUser, ShareType.create)) {
+            for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userEppn, authUser, ShareType.create)) {
                 if (userShare.getWorkflow() != null && authorizedWorkflows.contains(userShare.getWorkflow())) {
                     workflows.add(userShare.getWorkflow());
                 }
@@ -244,8 +238,8 @@ public class WorkflowService {
                             signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
                             signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
                             SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user, authUser);
-                            if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
-                                user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
+                            if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
+                                user = userService.getByEppn(fsFile.getCreateBy());
                                 user.setIp("127.0.0.1");
                             }
                             List<String> workflowRecipientsEmails = new ArrayList<>();
@@ -320,7 +314,7 @@ public class WorkflowService {
 
     public Set<Workflow> getWorkflowsBySystemUser() {
         User systemUser = userService.getSystemUser();
-        return getWorkflowsByUser(systemUser.getId(), systemUser.getId());
+        return getWorkflowsByUser(systemUser.getEppn(), systemUser.getEppn());
 
     }
 
@@ -387,7 +381,7 @@ public class WorkflowService {
             }
             int step = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-                replaceStepSystemUsers(user.getId(), workflowStep.getId());
+                replaceStepSystemUsers(user.getEppn(), workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                     if(!computeForDisplay) {
                         workflowStep.getUsers().clear();
@@ -409,8 +403,8 @@ public class WorkflowService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void replaceStepSystemUsers(Long userId, Long workflowStepId) {
-        User user = userService.getById(userId);
+    public void replaceStepSystemUsers(String userEppn, Long workflowStepId) {
+        User user = userService.getByEppn(userEppn);
         WorkflowStep workflowStep = workflowStepService.getById(workflowStepId);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
             for (User oneUser : workflowStep.getUsers()) {
@@ -515,8 +509,8 @@ public class WorkflowService {
     }
 
 
-    public String[] getTargetEmails(Long userId, Form form) {
-        List<UserPropertie> userProperties = userPropertieService.getUserProperties(userId, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0).getId());
+    public String[] getTargetEmails(String userEppn, Form form) {
+        List<UserPropertie> userProperties = userPropertieService.getUserProperties(userEppn, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0).getId());
         userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
         if(userProperties.size() > 0 ) {
             if(userProperties.get(0).getTargetEmail() != null) {

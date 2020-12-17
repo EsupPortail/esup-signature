@@ -45,8 +45,8 @@ public class MessageService {
     }
 
     @Transactional
-    public void disableMessageForUser(Long authUserId, long id) {
-        User authUser = userService.getById(authUserId);
+    public void disableMessageForUser(String authUserEppn, long id) {
+        User authUser = userService.getByEppn(authUserEppn);
         Message message = messageRepository.findById(id).get();
         message.getUsers().add(authUser);
     }

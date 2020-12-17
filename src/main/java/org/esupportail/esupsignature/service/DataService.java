@@ -201,17 +201,17 @@ public class DataService {
         return dataRepository.findBySignBook(signBook);
     }
 
-    public List<Data> getDataDraftByOwner(Long userId) {
-        User user = userService.getById(userId);
+    public List<Data> getDataDraftByOwner(String userEppn) {
+        User user = userService.getByEppn(userEppn);
         return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
     }
 
-    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, Long userId, Long authUserId) {
+    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, String userEppn, String authUserEppn) {
         Page<Data> datasPage;
-        if(!userId.equals(authUserId)) {
+        if(!userEppn.equals(authUserEppn)) {
             List<Data> datasOk = new ArrayList<>();
             for(Data data : datas) {
-                if(userShareService.checkFormShare(userId, authUserId, ShareType.create, data.getForm())) {
+                if(userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, data.getForm())) {
                     datasOk.add(data);
                 }
             }

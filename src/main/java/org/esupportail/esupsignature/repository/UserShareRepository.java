@@ -9,14 +9,14 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
-	List<UserShare> findByUserId(Long userId);
+	List<UserShare> findByUserEppn(String userEppn);
 	List<UserShare> findByUserEppnAndWorkflow(String userEppn, Workflow workflow);
-	List<UserShare> findByToUsersIdIn(List<Long> toUsers);
-	List<UserShare> findByUserIdAndToUsersIdIn(Long user, List<Long> toUsers);
-	List<UserShare> findByUserIdAndToUsersIdInAndShareTypesContains(Long fromUserId, List<Long> toUsers, ShareType shareType);
+	List<UserShare> findByToUsersEppnIn(List<String> toUsers);
+	List<UserShare> findByUserEppnAndToUsersEppnIn(String userEppn, List<String> toUsers);
+	List<UserShare> findByUserEppnAndToUsersEppnInAndShareTypesContains(String fromUserEppn, List<String> toUsers, ShareType shareType);
 	List<UserShare> findByWorkflowId(Long workflowId);
 	List<UserShare> findByFormId(Long formId);
-	List<UserShare> findByUserIdAndToUsersIdInAndWorkflowAndShareTypesContains(Long userId, List<Long> toUsers, Workflow workflow, ShareType shareType);
-	List<UserShare> findByUserIdAndToUsersIdInAndFormAndShareTypesContains(Long userId, List<Long> toUsers, Form form, ShareType shareType);
-	List<UserShare> findByToUsersIdInAndShareTypesContains(List<Long> toUsers, ShareType shareType);
+	List<UserShare> findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(String userEppn, List<String> toUsers, Workflow workflow, ShareType shareType);
+	List<UserShare> findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(String userEppn, List<String> toUsers, Form form, ShareType shareType);
+	List<UserShare> findByToUsersEppnInAndShareTypesContains(List<String> toUsers, ShareType shareType);
 }

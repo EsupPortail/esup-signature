@@ -25,9 +25,9 @@ public class WorkflowController {
     @Resource
     private WorkflowStepService workflowStepService;
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
-    public String show(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         model.addAttribute("fromAdmin", false);
         model.addAttribute("signTypes", SignType.values());
         Workflow workflow = workflowService.getById(id);
@@ -36,9 +36,9 @@ public class WorkflowController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @PostMapping(value = "/add-step/{id}")
-    public String addStep(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id,
+    public String addStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                           @RequestParam("signType") String signType,
                           @RequestParam(name="description", required = false) String description,
                           @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
@@ -49,9 +49,9 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @PostMapping(value = "/update-step/{id}/{step}")
-    public String changeStepSignType(@ModelAttribute("userId") Long userId,
+    public String changeStepSignType(@ModelAttribute("userEppn") String userEppn,
                                      @PathVariable("id") Long id,
                                      @PathVariable("step") Integer step,
                                      @RequestParam(name="signType") SignType signType,
@@ -63,19 +63,19 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getId();
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
-    public String removeStepRecipient(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id,
+    public String removeStepRecipient(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                                       @PathVariable("workflowStepId") Long workflowStepId, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
-        WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userId);
+        WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
         return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
-    public String addStepRecipient(@ModelAttribute("userId") Long userId,
+    public String addStepRecipient(@ModelAttribute("userEppn") String userEppn,
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
                                    @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
@@ -85,9 +85,9 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
     }
 
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
-    public String addStep(@ModelAttribute("userId") Long userId,
+    public String addStep(@ModelAttribute("userEppn") String userEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("stepNumber") Integer stepNumber) {
         Workflow workflow = workflowService.getById(id);
@@ -98,8 +98,8 @@ public class WorkflowController {
 
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userId)")
-    public String delete(@ModelAttribute("userId") Long userId, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
+    public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
         return "redirect:/";

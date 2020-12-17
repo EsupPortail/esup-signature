@@ -26,51 +26,51 @@ public class PreAuthorizeService {
     @Resource
     private WorkflowService workflowService;
 
-    public boolean notInShare(Long userId, Long authUserId) {
-        User user = userService.getById(userId);
-        User authUser = userService.getById(authUserId);
+    public boolean notInShare(String userEppn, String authUserEppn) {
+        User user = userService.getByEppn(userEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         return user.equals(authUser);
     }
 
-    public boolean dataUpdate(Long id, Long userId) {
-        User user = userService.getById(userId);
+    public boolean dataUpdate(Long id, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         Data data = dataService.getById(id);
         return data.getCreateBy().equals(user.getEppn()) || data.getOwner().equals(user.getEppn());
     }
 
-    public boolean signBookView(Long id, Long userId) {
-        User user = userService.getById(userId);
+    public boolean signBookView(Long id, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
         return signBookService.checkUserViewRights(user, signBook);
     }
 
-    public boolean signBookManage(Long id, Long userId) {
-        User user = userService.getById(userId);
+    public boolean signBookManage(Long id, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
         return signBookService.checkUserManageRights(user, signBook);
     }
 
-    public boolean signBookManage(String name, Long userId) {
-        User user = userService.getById(userId);
+    public boolean signBookManage(String name, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getByName(name);
         return signBookService.checkUserManageRights(user, signBook);
     }
 
-    public boolean signRequestOwner(Long id, Long userId) {
-        User user = userService.getById(userId);
+    public boolean signRequestOwner(Long id, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(id);
         return signRequest.getCreateBy().equals(user);
     }
 
-    public boolean signRequestView(Long id, Long userId, Long authUserId) {
-        User user = userService.getById(userId);
+    public boolean signRequestView(Long id, String userEppn, String authUserEppn) {
+        User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(id);
-        return signRequestService.checkUserViewRights(signRequest, user, authUserId) || signRequestService.checkUserSignRights(signRequest, userId, authUserId);
+        return signRequestService.checkUserViewRights(signRequest, user, authUserEppn) || signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn);
     }
 
-    public boolean signRequestSign(Long id, Long userId, Long authUserId) {
+    public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
-        return signRequestService.checkUserSignRights(signRequest, userId, authUserId);
+        return signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn);
     }
 
     public boolean workflowOwner(Long id, User user) {

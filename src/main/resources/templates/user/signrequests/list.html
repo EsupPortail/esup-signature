@@ -118,7 +118,7 @@
                                                 <a th:if="${signRequest.data != null && signRequest.parentSignBook.createBy == user}" class="btn btn-transparent text-dark text-left col-12" title="Dupliquer" role="button" th:href="'/user/datas/' + ${signRequest.id} +'/clone-from-signrequests'">
                                                     <i class="fas fa-copy pr-2"></i> Dupliquer
                                                 </a>
-                                                <a th:if="${signRequest.parentSignBook.createBy.id == userId}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                                <a th:if="${signRequest.parentSignBook.createBy.id == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>

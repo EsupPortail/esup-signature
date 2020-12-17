@@ -56,19 +56,19 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        User user = userService.getById(userId);
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        User user = userService.getUserByEppn(userEppn);
         model.addAttribute("user", user);
         parseRoles(user);
-        User authUser = userService.getById(authUserId);
+        User authUser = userService.getByEppn(authUserEppn);
         model.addAttribute("authUser", authUser);
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserId));
-        model.addAttribute("userImagesIds", userService.getSignImagesIds(authUserId));
-        model.addAttribute("suUsers", userShareService.getSuUsers(authUserId));
-        model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userId, authUserId, ShareType.create));
-        model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userId, authUserId, ShareType.sign));
-        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userId, authUserId, ShareType.read));
+        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserEppn));
+        model.addAttribute("userImagesIds", userService.getSignImagesIds(authUserEppn));
+        model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
+        model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
+        model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
+        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
         model.addAttribute("formManaged", formService.getFormByManagersContains(authUser.getEmail()));
         model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
@@ -82,9 +82,9 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("signTypes", signTypes);
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(user.getEppn()));
-        model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userId));
-        model.addAttribute("nbToSign", signRequestService.getToSignRequests(userId).size());
-        model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
+        model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userEppn));
+        model.addAttribute("nbToSign", signRequestService.getToSignRequests(userEppn).size());
+        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
     }
 
     public void parseRoles(User user) {

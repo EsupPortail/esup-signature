@@ -79,7 +79,7 @@ public class UserController {
 	private MessageService messageService;
 
     @GetMapping
-    public String createForm(@ModelAttribute("authUserId") Long authUserId, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+    public String createForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
@@ -91,27 +91,27 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(@ModelAttribute("authUserId") Long authUserId, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
-		userService.updateUser(authUserId, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore);
+		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
 		return "redirect:/user/users";
     }
 
 	@GetMapping("/delete-sign/{id}")
-	public String deleteSign(@ModelAttribute("authUserId") Long authUserId, @PathVariable long id, RedirectAttributes redirectAttributes) {
-		userService.deleteSign(authUserId, id);
+	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
 		return "redirect:/user/users";
 	}
 
 	@GetMapping(value = "/view-cert")
-    public String viewCert(@ModelAttribute("authUserId") Long authUserId, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
+    public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
-        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserId, password)));
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
@@ -120,8 +120,8 @@ public class UserController {
     }
 
 	@GetMapping(value = "/remove-keystore")
-	public String removeKeystore(@ModelAttribute("authUserId") Long authUserId, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getById(authUserId);
+	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
 		return "redirect:/user/users";
@@ -135,19 +135,19 @@ public class UserController {
    }
 
 	@GetMapping("/properties")
-	public String properties(@ModelAttribute("authUserId") Long authUserId, Model model) {
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserId(authUserId);
+	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
 		model.addAttribute("userProperties", userProperties);
-		model.addAttribute("forms", formService.getFormsByUser(authUserId, authUserId));
+		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
 	@GetMapping("/shares")
-	public String params(@ModelAttribute("authUserId") Long authUserId, Model model) {
-		User authUser = userService.getById(authUserId);
-		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserId);
+	public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+		User authUser = userService.getByEppn(authUserEppn);
+		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService. getAuthorizedToShareForms());
@@ -158,8 +158,8 @@ public class UserController {
 	}
 
 	@GetMapping("/shares/update/{id}")
-	public String params(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getById(authUserId);
+	public String params(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		model.addAttribute("activeMenu", "shares");
 		UserShare userShare = userShareService.getById(id);
 		if(userShare.getUser().equals(authUser)) {
@@ -173,7 +173,7 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute("authUserId") Long authUserId,
+	public String addShare(@ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(value = "form", required = false) Long[] form,
 						   @RequestParam(value = "workflow", required = false) Long[] workflow,
 						   @RequestParam("types") String[] types,
@@ -181,7 +181,7 @@ public class UserController {
 						   @RequestParam("beginDate") String beginDate,
 						   @RequestParam("endDate") String endDate,
 						   RedirectAttributes redirectAttributes) {
-		User authUser = userService.getById(authUserId);
+		User authUser = userService.getByEppn(authUserEppn);
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		try {
@@ -193,21 +193,21 @@ public class UserController {
 	}
 
 	@PostMapping("/update-share/{id}")
-	public String updateShare(@ModelAttribute("authUserId") Long authUserId,
+	public String updateShare(@ModelAttribute("authUserEppn") String authUserEppn,
 							  @PathVariable("id") Long id,
 							  @RequestParam("types") String[] types,
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
 							  @RequestParam("endDate") String endDate) {
-		User authUser = userService.getById(authUserId);
+		User authUser = userService.getByEppn(authUserEppn);
 		UserShare userShare = userShareService.getById(id);
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String delShare(@ModelAttribute("authUserId") Long authUserId, @PathVariable long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getById(authUserId);
+	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		UserShare userShare = userShareService.getById(id);
 		if (userShare.getUser().equals(authUser)) {
 			userShareService.delete(userShare);
@@ -217,12 +217,12 @@ public class UserController {
 	}
 
 	@GetMapping("/change-share")
-	public String change(@ModelAttribute("authUserId") Long authUserId, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
+	public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
 		if(eppn == null || eppn.isEmpty()) {
 			httpSession.setAttribute("suEppn", null);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 		} else {
-			if(userShareService.checkShare(userService.getUserByEppn(eppn).getId(), authUserId)) {
+			if(userShareService.checkShare(eppn, authUserEppn)) {
 				httpSession.setAttribute("suEppn", eppn);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			} else {
@@ -234,38 +234,38 @@ public class UserController {
 	}
 
 	@GetMapping("/mark-intro-as-read/{name}")
-	public String markIntroAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable String name, HttpServletRequest httpServletRequest) {
-		logger.info("user " + authUserId + " mark into " + name + " as read");
-		userService.disableIntro(authUserId, name);
+	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserEppn + " mark into " + name + " as read");
+		userService.disableIntro(authUserEppn, name);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	public String markAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable long id, HttpServletRequest httpServletRequest) {
-    	logger.info("user " + authUserId + " mark " + id + " as read");
-		messageService.disableMessageForUser(authUserId, id);
+	public String markAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
+    	logger.info("user " + authUserEppn + " mark " + id + " as read");
+		messageService.disableMessageForUser(authUserEppn, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-help-as-read/{id}")
-	public String markHelpAsRead(@ModelAttribute(value = "authUserId") Long authUserId, @PathVariable long id, HttpServletRequest httpServletRequest) {
-		logger.info("user " + authUserId + " mark help" + id + " as read");
-		userService.setFormMessage(authUserId, id);
+	public String markHelpAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserEppn + " mark help" + id + " as read");
+		userService.setFormMessage(authUserEppn, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping(value = "/get-keystore")
-	public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserId") Long authUserId, HttpServletResponse response) throws IOException {
-		Map<String, Object> keystore = userService.getKeystoreByUser(authUserId);
+	public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+		Map<String, Object> keystore = userService.getKeystoreByUser(authUserEppn);
 		return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), (String) keystore.get("fileName"), (String) keystore.get("contentType"));
 	}
 
 	@GetMapping(value = "/get-sign-image/{id}")
-	public ResponseEntity<Void> getSignature(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		Map<String, Object> signature = userService.getSignatureByUserAndId(authUserId, id);
+	public ResponseEntity<Void> getSignature(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		Map<String, Object> signature = userService.getSignatureByUserAndId(authUserEppn, id);
 		return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
 	}
 

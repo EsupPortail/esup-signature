@@ -152,12 +152,12 @@ public class SignRequestService {
 		return signRequestRepository.findByToken(token);
 	}
 
-	public List<SignRequest> getSignRequestsForCurrentUserByStatus(Long userId, Long authUserId, String statusFilter) {
+	public List<SignRequest> getSignRequestsForCurrentUserByStatus(String userEppn, String authUserEppn, String statusFilter) {
 		List<SignRequest> signRequestList = new ArrayList<>();
-		List<SignRequest> signRequests = getSignRequestsByStatus(userId, statusFilter);
-		if(!userId.equals(authUserId)) {
+		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
+		if(!userEppn.equals(authUserEppn)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkShare(userId, authUserId, signRequest)) {
+				if(userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -167,49 +167,49 @@ public class SignRequestService {
 		return signRequestList.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
 	}
 
-	public List<SignRequest> getSignRequestsByStatus(Long userId, String statusFilter) {
+	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
 		Set<SignRequest> signRequests = new HashSet<>();
 		if (statusFilter != null) {
 			switch (statusFilter) {
 				case "tosign":
-					signRequests.addAll(getToSignRequests(userId));
+					signRequests.addAll(getToSignRequests(userEppn));
 					break;
 				case "signedByMe":
-					signRequests.addAll(getSignRequestsSignedByUser(userId));
+					signRequests.addAll(getSignRequestsSignedByUser(userEppn));
 					break;
 				case "refusedByMe":
-					signRequests.addAll(getSignRequestsRefusedByUser(userId));
+					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 					break;
 				case "followByMe":
-					signRequests.addAll(signRequestRepository.findByRecipientUserId(userId));
-					signRequests.removeAll(getToSignRequests(userId));
-					signRequests.removeAll(getSignRequestsSignedByUser(userId));
-					signRequests.removeAll(getSignRequestsRefusedByUser(userId));
+					signRequests.addAll(signRequestRepository.findByRecipientUserEppn(userEppn));
+					signRequests.removeAll(getToSignRequests(userEppn));
+					signRequests.removeAll(getSignRequestsSignedByUser(userEppn));
+					signRequests.removeAll(getSignRequestsRefusedByUser(userEppn));
 					break;
 				case "sharedSign":
-					signRequests.addAll(getSharedSignedSignRequests(userId));
+					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
 				default:
-					signRequests.addAll(signRequestRepository.findByCreateByIdAndStatus(userId, SignRequestStatus.valueOf(statusFilter)));
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
 					break;
 			}
 		} else {
-			signRequests.addAll(signRequestRepository.findByCreateById(userId));
-			signRequests.addAll(getToSignRequests(userId));
-			signRequests.addAll(getSignRequestsSignedByUser(userId));
-			signRequests.addAll(getSignRequestsRefusedByUser(userId));
+			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
+			signRequests.addAll(getToSignRequests(userEppn));
+			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
+			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 		}
 		return new ArrayList<>(signRequests);
 	}
 
-	public List<SignRequest> getToSignRequests(Long userId) {
-		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userId);
+	public List<SignRequest> getToSignRequests(String userEppn) {
+		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userEppn);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
 
-	public List<SignRequest> getSignRequestsSignedByUser(Long userId) {
-		User user = userService.getById(userId);
+	public List<SignRequest> getSignRequestsSignedByUser(String userEppn) {
+		User user = userService.getByEppn(userEppn);
 		List<Log> logs = new ArrayList<>();
 		logs.addAll(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
 		logs.addAll(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
@@ -217,8 +217,8 @@ public class SignRequestService {
 
 	}
 
-	public List<SignRequest> getSignRequestsRefusedByUser(Long userId) {
-		User user = userService.getById(userId);
+	public List<SignRequest> getSignRequestsRefusedByUser(String userEppn) {
+		User user = userService.getByEppn(userEppn);
 		List<Log> logs = new ArrayList<>(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
 		return getSignRequestsFromLogs(logs);
 	}
@@ -231,17 +231,17 @@ public class SignRequestService {
 		return signRequestRepository.findByIdIn(ids);
 	}
 
-	public List<SignRequest> getSharedToSignSignRequests(Long userId) {
+	public List<SignRequest> getSharedToSignSignRequests(String userEppn) {
 		List<SignRequest> sharedSignRequests = new ArrayList<>();
-		List<SignBook> sharedSignBooks = signBookService.getSharedSignBooks(userId);
+		List<SignBook> sharedSignBooks = signBookService.getSharedSignBooks(userEppn);
 		for(SignBook signBook: sharedSignBooks) {
 			sharedSignRequests.addAll(signBook.getSignRequests());
 		}
 		return sharedSignRequests;
 	}
 
-	public List<SignRequest> getSharedSignedSignRequests(Long userId) {
-		User user = userService.getById(userId);
+	public List<SignRequest> getSharedSignedSignRequests(String userEppn) {
+		User user = userService.getByEppn(userEppn);
 		List<Log> logs = logService.getByEppn(user.getEppn()).stream().filter(
 				log -> !log.getEppn().equals(log.getEppnFor())
 						&&
@@ -315,8 +315,8 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userId, Long authUserId) {
-		SignRequest signRequest = getSignRequestsFullById(signRequestId, userId, authUserId);
+	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String userEppn, String authUserEppn) {
+		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
 		if(formData != null) {
@@ -356,8 +356,8 @@ public class SignRequestService {
 			}
 			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
 			signRequest.setComment(comment);
-			User user = userService.getById(userId);
-			User authUser = userService.getById(authUserId);
+			User user = userService.getByEppn(userEppn);
+			User authUser = userService.getByEppn(authUserEppn);
 			sign(signRequest, user, password, visual, signRequestParamses, formDataMap, sseId, authUser);
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
 				public void afterCommit(){
@@ -730,14 +730,14 @@ public class SignRequestService {
 		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), user, authUser);
 	}
 
-	public boolean needToSign(SignRequest signRequest, Long userId) {
-		return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userId);
+	public boolean needToSign(SignRequest signRequest, String userEppn) {
+		return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
 	}
 
-	public boolean checkUserSignRights(SignRequest signRequest, Long userId, Long authUserId) {
-		if(userId.equals(authUserId) || userShareService.checkShare(userId, authUserId, signRequest, ShareType.sign)) {
+	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest, ShareType.sign)) {
 			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getId().equals(userId)).findFirst();
+				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getId().equals(userEppn)).findFirst();
 				if (recipient.isPresent() && (signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
 						&& !signRequest.getRecipientHasSigned().isEmpty() && signRequest.getRecipientHasSigned().get(recipient.get()).getActionType().equals(ActionType.none)) {
 					return true;
@@ -747,8 +747,8 @@ public class SignRequestService {
 		return false;
 	}
 
-	public boolean checkUserViewRights(SignRequest signRequest, User user, Long authUserId) {
-		if(user.getId().equals(authUserId) || userShareService.checkShare(user.getId(), authUserId, signRequest)) {
+	public boolean checkUserViewRights(SignRequest signRequest, User user, String authUserEppn) {
+		if(user.getEppn().equals(authUserEppn) || userShareService.checkShare(user.getEppn(), authUserEppn, signRequest)) {
 			List<Log> log = logService.getByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
 			log.addAll(logService.getByEppnAndSignRequestId(user.getEppn(), signRequest.getId()));
 			if (signRequest.getCreateBy().equals(user) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user) > 0) {
@@ -786,8 +786,8 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Page<SignRequest> getSignRequestsPageGrouped(Long userId, Long authUserId, String statusFilter, Pageable pageable) {
-		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userId, authUserId, statusFilter);
+	public Page<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, Pageable pageable) {
+		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
 		List<SignRequest> signRequestsGrouped = new ArrayList<>();
 		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
 		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
@@ -843,7 +843,7 @@ public class SignRequestService {
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
 		if(data != null) {
-			for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getId())) {
+			for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
 				if (userShare.getShareTypes().contains(ShareType.sign)) {
 					if ((data.getForm().equals(userShare.getForm())) || (workflow != null && workflow.equals(userShare.getWorkflow()))) {
 						for (User toUser : userShare.getToUsers()) {
@@ -859,8 +859,8 @@ public class SignRequestService {
 
 	public void sendEmailAlertSummary(User recipientUser) {
 		Date date = new Date();
-		List<SignRequest> toSignSignRequests = getToSignRequests(recipientUser.getId());
-		toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser.getId()));
+		List<SignRequest> toSignSignRequests = getToSignRequests(recipientUser.getEppn());
+		toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser.getEppn()));
 		if (toSignSignRequests.size() > 0) {
 			recipientUser.setLastSendAlertDate(date);
 			mailService.sendSignRequestSummaryAlert(Arrays.asList(recipientUser.getEmail()), toSignSignRequests);
@@ -868,11 +868,11 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public SignRequest getSignRequestsFullById(long id, Long userId, Long authUserId) {
+	public SignRequest getSignRequestsFullById(long id, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		if (signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& checkUserSignRights(signRequest, userId, authUserId) && signRequest.getOriginalDocuments().size() > 0
-				&& needToSign(signRequest, userId)) {
+				&& checkUserSignRights(signRequest, userEppn, authUserEppn) && signRequest.getOriginalDocuments().size() > 0
+				&& needToSign(signRequest, userEppn)) {
 			signRequest.setSignable(true);
 		}
 		return signRequest;
@@ -904,8 +904,8 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<Field> prefillSignRequestFields(Long signRequestId, Long userId) {
-		User user = userService.getById(userId);
+	public List<Field> prefillSignRequestFields(Long signRequestId, String userEppn) {
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = getById(signRequestId);
 		List<Field> prefilledFields = new ArrayList<>();
 		Data data = dataService.getBySignBook(signRequest.getParentSignBook());
@@ -989,8 +989,8 @@ public class SignRequestService {
 		return signBookService.sendSignBook(user, signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, authUser);
 	}
 
-	public SignRequest getNextSignRequest(Long signRequestId, Long userid, Long authUserId) {
-		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userid, authUserId, "tosign");
+	public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
+		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, "tosign");
 		Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
 		if(signRequest.isPresent()) {
 			if (toSignRequests.size() > 0) {
@@ -1013,8 +1013,8 @@ public class SignRequestService {
 		return null;
 	}
 
-	public SignRequest getPreviousSignRequest(Long signRequestId, Long userId, Long authUserId) {
-		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userId, authUserId, "tosign");
+	public SignRequest getPreviousSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
+		List<SignRequest> toSignRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, "tosign");
 		Optional<SignRequest> signRequest = toSignRequests.stream().filter(signRequest1 -> signRequest1.getId().equals(signRequestId)).findFirst();
 		if(signRequest.isPresent()) {
 			if (toSignRequests.size() > 0) {
@@ -1036,10 +1036,10 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<String> getSignImageForSignRequest(SignRequest signRequestRef, Long userId, Long authUserId) throws EsupSignatureUserException, IOException {
-		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userId, authUserId);
+	public List<String> getSignImageForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn) throws EsupSignatureUserException, IOException {
+		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userEppn, authUserEppn);
 		signRequestRef.setSignable(signRequest.getSignable());
-		User user = userService.getById(userId);
+		User user = userService.getByEppn(userEppn);
 		List<String> signImages = new ArrayList<>();
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
@@ -1048,7 +1048,7 @@ public class SignRequestService {
 					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/sceau.png"), "sceau.png"));
 				} else {
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-						if (checkUserSignRights(signRequest, userId, authUserId) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil");
 						}
@@ -1082,8 +1082,8 @@ public class SignRequestService {
 		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
 	}
 
-	public int getNbByCreateAndStatus(Long userId) {
-		return signRequestRepository.findByCreateByIdAndStatus(userId, SignRequestStatus.pending).size();
+	public int getNbByCreateAndStatus(String userEppn) {
+		return signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending).size();
 	}
 
 	public Map<String, Object> getAttachmentResponse(Long signRequestId, Long attachementId) throws SQLException, IOException {

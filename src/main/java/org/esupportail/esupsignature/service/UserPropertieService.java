@@ -22,7 +22,7 @@ public class UserPropertieService {
     private UserPropertieRepository userPropertieRepository;
 
     public void createUserPropertie(User user, WorkflowStep workflowStep, List<User> users) {
-        List<UserPropertie> userProperties = getUserProperties(user.getId(), workflowStep.getId());
+        List<UserPropertie> userProperties = getUserProperties(user.getEppn(), workflowStep.getId());
         if (userProperties.size() == 0) {
             addPropertie(user, users, workflowStep);
         } else {
@@ -61,8 +61,8 @@ public class UserPropertieService {
         }
     }
 
-    public List<User> getFavoritesEmails(Long userId, Long workflowStepId) {
-        List<UserPropertie> userProperties = getUserProperties(userId, workflowStepId);
+    public List<User> getFavoritesEmails(String userEppn, Long workflowStepId) {
+        List<UserPropertie> userProperties = getUserProperties(userEppn, workflowStepId);
         List<User> favoriteUsers = new ArrayList<>();
         int bestScore = 0;
         for (UserPropertie userPropertie : userProperties) {
@@ -75,8 +75,8 @@ public class UserPropertieService {
         return favoriteUsers;
     }
 
-    public List<UserPropertie> getUserProperties(Long userId, Long workflowStepId) {
-        return userPropertieRepository.findByUserIdAndWorkflowStepId(userId, workflowStepId);
+    public List<UserPropertie> getUserProperties(String userEppn, Long workflowStepId) {
+        return userPropertieRepository.findByUserEppnAndWorkflowStepId(userEppn, workflowStepId);
     }
 
     @Transactional
@@ -89,14 +89,14 @@ public class UserPropertieService {
                 users.add(userService.getUserByEmail(userEmail));
             }
         } else {
-            List<User> favoritesEmail = getFavoritesEmails(user.getId(), workflowStep.getId());
+            List<User> favoritesEmail = getFavoritesEmails(user.getEppn(), workflowStep.getId());
             users.addAll(favoritesEmail);
         }
         return users;
     }
 
-    public List<UserPropertie> getUserPropertiesByUserId(Long userId) {
-        return userPropertieRepository.findByUserId(userId);
+    public List<UserPropertie> getUserPropertiesByUserEppn(String userEppn) {
+        return userPropertieRepository.findByUserEppn(userEppn);
     }
 
     public List<UserPropertie> getByWorkflowStep(WorkflowStep workflowStep) {

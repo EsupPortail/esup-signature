@@ -39,13 +39,13 @@ public class ManageController {
     private UserService userService;
 
     @GetMapping
-    public String index(@ModelAttribute("authUserId") Long authUserId) {
+    public String index(@ModelAttribute("authUserEppn") String authUserEppn) {
         return "user/manage";
     }
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
-    public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserId") Long authUserId, @PathVariable String name, HttpServletResponse response) {
-        User authUser = userService.getById(authUserId);
+    public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
+        User authUser = userService.getByEppn(authUserEppn);
         List<Form> formManaged = formService.getFormByManagersContains(authUser.getEmail());
         List<Form> forms = formService.getFormByName(name);
         if (forms.size() > 0 && formManaged.contains(forms.get(0))) {

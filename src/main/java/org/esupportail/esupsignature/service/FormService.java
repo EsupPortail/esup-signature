@@ -68,15 +68,14 @@ public class FormService {
 		return obj;
 	}
 
-	public List<Form> getFormsByUser(Long userId, Long authUserId){
-		User user = userService.getById(userId);
-		User authUser = userService.getById(authUserId);
+	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
+		User user = userService.getByEppn(userEppn);
 		List<Form> authorizedForms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		List<Form> forms = new ArrayList<>();
-		if(userId.equals(authUserId)) {
+		if(userEppn.equals(authUserEppn)) {
 			forms = authorizedForms;
 		} else {
-			for(UserShare userShare : userShareService.getUserShares(userId, Collections.singletonList(authUser.getId()), ShareType.create)) {
+			for(UserShare userShare : userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create)) {
 				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
 					forms.add(userShare.getForm());
 				}
@@ -93,9 +92,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public Boolean isFormAuthorized(Long userId, Long authUserId, Long id) {
+	public Boolean isFormAuthorized(String userEppn, String authUserEppn, Long id) {
 		Form form = getById(id);
-		return getFormsByUser(userId, authUserId).contains(form) && userShareService.checkFormShare(userId, authUserId, ShareType.create, form);
+		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
 	public List<Form> getAllForms(){

@@ -8,9 +8,9 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface UserPropertieRepository extends CrudRepository<UserPropertie, Long>  {
-	List<UserPropertie> findByUserId(Long userId);
+	List<UserPropertie> findByUserEppn(String userEppn);
 	List<UserPropertie> findByWorkflowStep(WorkflowStep workflowStep);
-	List<UserPropertie> findByUserIdAndWorkflowStepId(Long userId, Long workflowStepId);
+	List<UserPropertie> findByUserEppnAndWorkflowStepId(String userEppn, Long workflowStepId);
 	List<UserPropertie> findByUserAndWorkflowStepAndUsersIn(User user, WorkflowStep workflowStep, List<User> users);
 	List<UserPropertie> findByUserAndTargetEmailAndWorkflowStep(User user, String targetEmail, WorkflowStep workflowStep);
 }

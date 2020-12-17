@@ -69,6 +69,15 @@ public class UserService {
         return userRepository.findById(id).get();
     }
 
+    public User getByEppn(String eppn) {
+        eppn = buildEppn(eppn);
+        List<User> users = userRepository.findByEppn(eppn);
+        if(users.size() > 0) {
+            return userRepository.findByEppn(eppn).get(0);
+        }
+        return null;
+    }
+
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);
     }
@@ -108,16 +117,10 @@ public class UserService {
             return getCreatorUser();
         }
         if (userRepository.countByEppn(eppn) == 0) {
-            if (eppn.split("@").length == 1) {
-                for (SecurityService securityService : this.securityServices) {
-                    if (securityService instanceof CasSecurityServiceImpl) {
-                        eppn = eppn + "@" + globalProperties.getDomain();
-                    }
-                }
-            }
+            eppn = buildEppn(eppn);
         }
         if (userRepository.countByEppn(eppn) > 0) {
-            User user = userRepository.findByEppn(eppn).get(0);
+            User user = getByEppn(eppn);
             user.getRoles();
             return user;
         }
@@ -127,17 +130,13 @@ public class UserService {
         return null;
     }
 
-    private String buildEppn(PersonLdap personLdap) {
-        if (personLdap == null) {
-            return null;
-        }
-        String eppn = null;
+    private String buildEppn(String uid) {
         for (SecurityService securityService : securityServices) {
-            if (securityService instanceof CasSecurityServiceImpl) {
-                eppn = personLdap.getUid() + "@" + globalProperties.getDomain();
+            if (securityService instanceof CasSecurityServiceImpl && uid.split("@").length == 1) {
+                uid = uid + "@" + globalProperties.getDomain();
             }
         }
-        return eppn;
+        return uid;
     }
 
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
@@ -165,7 +164,7 @@ public class UserService {
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
-                    eppn = buildEppn(personLdaps.get(0));
+                    eppn = buildEppn(personLdaps.get(0).getUid());
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -197,7 +196,7 @@ public class UserService {
         List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUid(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
-            eppn = buildEppn(personLdaps.get(0));
+            eppn = buildEppn(personLdaps.get(0).getUid());
         }
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
@@ -209,7 +208,7 @@ public class UserService {
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
-            user = userRepository.findByEppn(eppn).get(0);
+            user = getByEppn(eppn);
         } else if(userRepository.countByEmail(email) > 0) {
             user = userRepository.findByEmail(email).get(0);
         } else {
@@ -226,10 +225,7 @@ public class UserService {
         if(!user.getUserType().equals(UserType.system)) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
-                String userName = auth.getName();
-                if (auth.getName().split("@").length == 1) {
-                    userName = auth.getName() + "@" + globalProperties.getDomain();
-                }
+                String userName = buildEppn(auth.getName());
                 if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
                     logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
                     Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
@@ -249,8 +245,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUser(Long authUserId, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
-        User authUser = getById(authUserId);
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
+        User authUser = getByEppn(authUserEppn);
         if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
@@ -341,8 +337,8 @@ public class UserService {
     }
 
     @Transactional
-    public void disableIntro(Long authUserId, String name) {
-        User authUser = getById(authUserId);
+    public void disableIntro(String authUserEppn, String name) {
+        User authUser = getByEppn(authUserEppn);
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
     }
 
@@ -425,8 +421,8 @@ public class UserService {
     }
 
 
-    public Map<String, Object> getKeystoreByUser(Long authUserId) throws IOException {
-        User authUser = getById(authUserId);
+    public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
+        User authUser = getByEppn(authUserEppn);
         Map<String, Object> keystore = new HashMap<>();
         keystore.put("bytes", authUser.getKeystore().getInputStream().readAllBytes());
         keystore.put("fileName", authUser.getKeystore().getFileName());
@@ -435,9 +431,9 @@ public class UserService {
     }
 
     @Transactional
-    public Map<String, Object> getSignatureByUserAndId(Long authUserId, Long id) throws IOException {
+    public Map<String, Object> getSignatureByUserAndId(String authUserEppn, Long id) throws IOException {
         Map<String, Object> signature = new HashMap<>();
-        User authUser = getById(authUserId);
+        User authUser = getByEppn(authUserEppn);
         Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
         if(signImage.isPresent()) {
             signature.put("bytes", signImage.get().getInputStream().readAllBytes());
@@ -448,14 +444,14 @@ public class UserService {
     }
 
     @Transactional
-    public List<Long> getSignImagesIds(Long userId) {
-        User user = getById(userId);
+    public List<Long> getSignImagesIds(String userEppn) {
+        User user = getByEppn(userEppn);
         return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
     }
 
     @Transactional
-    public String getKeystoreFileName(Long userId) {
-        User user = getById(userId);
+    public String getKeystoreFileName(String userEppn) {
+        User user = getByEppn(userEppn);
         if(user.getKeystore() != null) {
             return user.getKeystore().getFileName();
         }
@@ -463,16 +459,20 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteSign(Long authUserId, long id) {
-        User authUser = getById(authUserId);
+    public void deleteSign(String authUserEppn, long id) {
+        User authUser = getByEppn(authUserEppn);
         Document signDocument = documentService.getById(id);
         authUser.getSignImages().remove(signDocument);
     }
 
     @Transactional
-    public void setFormMessage(Long authUserId, long formId) {
-        User authUser = getById(authUserId);
+    public void setFormMessage(String authUserEppn, long formId) {
+        User authUser = getByEppn(authUserEppn);
         authUser.setFormMessages(authUser.getFormMessages() + " " + formId);
     }
 
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
+    }
 }

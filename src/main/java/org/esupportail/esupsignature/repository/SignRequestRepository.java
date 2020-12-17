@@ -18,12 +18,12 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);
     Long countByToken(String token);
-    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.id = :recipientUserId and r.signed is false")
-    List<SignRequest> findByRecipientUserToSign(@Param("recipientUserId") Long recipientUserId);
-    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.id = :recipientUserId")
-    List<SignRequest> findByRecipientUserId(@Param("recipientUserId") Long recipientUserId);
-    List<SignRequest> findByCreateById(Long createById);
-    List<SignRequest> findByCreateByIdAndStatus(Long createById, SignRequestStatus status);
+    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.eppn = :recipientUserEppn and r.signed is false")
+    List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
+    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.eppn = :recipientUserEppn")
+    List<SignRequest> findByRecipientUserEppn(@Param("recipientUserEppn") String recipientUserEppn);
+    List<SignRequest> findByCreateByEppn(String CreateByEppn);
+    List<SignRequest> findByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
 

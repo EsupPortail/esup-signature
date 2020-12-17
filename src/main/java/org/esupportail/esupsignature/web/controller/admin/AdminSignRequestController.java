@@ -92,7 +92,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/{id}")
-	public String show(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, Model model) {
+	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 			model.addAttribute("signBooks", signBookService.getAllSignBooks());
@@ -130,7 +130,7 @@ public class AdminSignRequestController {
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
-	public void getLastFile(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
+	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response, Model model) {
 		List<Document> documents = signRequestService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {

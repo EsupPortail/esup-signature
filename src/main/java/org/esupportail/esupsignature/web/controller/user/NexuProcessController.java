@@ -46,12 +46,12 @@ public class NexuProcessController implements Serializable {
 	private UserService userService;
 
 	@Scope(value = "session")
-	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userId, #authUserId)")
+	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@GetMapping(value = "/{id}", produces = "text/html")
-	public String showSignatureParameters(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId,
+	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @PathVariable("id") Long id, HttpSession httpSession, Model model) {
-		User user = userService.getById(userId);
-		User authUser = userService.getById(authUserId);
+		User user = userService.getByEppn(userEppn);
+		User authUser = userService.getByEppn(authUserEppn);
 		httpSession.removeAttribute("abstractSignatureForm");
 		httpSession.removeAttribute("abstractSignatureParameters");
 		SignRequest signRequest = signRequestService.getById(id);
@@ -61,14 +61,14 @@ public class NexuProcessController implements Serializable {
 	}
 
 	@Scope(value = "session")
-	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userId, #authUserId)")
+	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute("userId") Long userId,
-											   @ModelAttribute("authUserId") Long authUserId,
+	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
+											   @ModelAttribute("authUserEppn") String authUserEppn,
 											   @RequestBody @Valid DataToSignParams params,
 											   @ModelAttribute("id") Long id, HttpSession httpSession) throws IOException, EsupSignatureException {
-		User user = userService.getById(userId);
+		User user = userService.getByEppn(userEppn);
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("get data to sign for signRequest: " + id);
 		AbstractSignatureForm abstractSignatureForm = signService.getAbstractSignatureForm(signRequest);
@@ -85,14 +85,14 @@ public class NexuProcessController implements Serializable {
 	}
 
 	@Scope(value = "session")
-	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userId, #authUserId)")
+	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/sign-document")
 	@ResponseBody
-	public SignDocumentResponse signDocument(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId,
+	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 											 @RequestBody @Valid SignatureValueAsString signatureValue,
 											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureException {
-		User user = userService.getById(userId);
-		User authUser = userService.getById(authUserId);
+		User user = userService.getByEppn(userEppn);
+		User authUser = userService.getByEppn(authUserEppn);
 		SignRequest signRequest = signRequestService.getById(id);
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
 		AbstractSignatureParameters<?> abstractSignatureParameters = (AbstractSignatureParameters<?>) httpSession.getAttribute("abstractSignatureParameters");

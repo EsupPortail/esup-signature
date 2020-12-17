@@ -65,9 +65,9 @@ public class HomeController {
     private UserService userService;
 
     @GetMapping
-    public String list(@ModelAttribute("userId") Long userId, @ModelAttribute("authUserId") Long authUserId, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        User user = userService.getById(userId);
-        User authUser = userService.getById(authUserId);
+    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        User user = userService.getByEppn(userEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
             if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
@@ -78,15 +78,15 @@ public class HomeController {
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);
                 model.addAttribute("splashMessage", splashMessage);
-            } else if (!authUser.getEppn().equals("system") && userId.equals(authUserId)) {
+            } else if (!authUser.getEppn().equals("system") && userEppn.equals(authUserEppn)) {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userId, authUserId, "tosign", pageable));
+            model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, "tosign", pageable));
             List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
             model.addAttribute("datas", datas);
-            model.addAttribute("forms", formService.getFormsByUser(userId, authUserId));
-            model.addAttribute("workflows", workflowService.getWorkflowsByUser(userId, authUserId));
+            model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+            model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");

@@ -43,8 +43,8 @@ public class ExportController {
 	private FormService formService;
 
 	@GetMapping
-	public String list(@ModelAttribute("userId") Long userId, Model model) {
-		List<Form> forms = formService.getFormsByUser(userId, userId);
+	public String list(@ModelAttribute("userEppn") String userEppn, Model model) {
+		List<Form> forms = formService.getFormsByUser(userEppn, userEppn);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}
