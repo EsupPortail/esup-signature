@@ -226,7 +226,8 @@ export class PdfViewer extends EventFactory {
     }
 
     promizeSaveValues() {
-        this.page.getAnnotations().then(items => this.saveValues(items));
+        console.info("launch save values");
+        return this.page.getAnnotations().then(items => this.saveValues(items));
     }
 
     saveValues(items) {

@@ -159,9 +159,9 @@ public class DataController {
 		User authUser = userService.getById(authUserId);
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
-		Data data = dataService.addData(user, id, dataId, datas, authUser);
+		dataService.addData(id, dataId, datas, user, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
-		return "" + data.getId();
+		return "" + dataId;
 	}
 
 //	@PutMapping("{id}")

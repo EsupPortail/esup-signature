@@ -138,7 +138,7 @@ public class DataService {
         data.setUpdateDate(new Date());
     }
 
-    public void updateDatas(@RequestParam Map<String, String> formDatas, User user, Form form, Data data, User authUser) {
+    public void updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
@@ -274,7 +274,8 @@ public class DataService {
         return fields;
     }
 
-    public Data addData(User user, Long id, Long dataId, Map<String, String> datas, User authUser) {
+    @Transactional
+    public void addData(Long id, Long dataId, Map<String, String> datas, User user, User authUser) {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
@@ -282,8 +283,7 @@ public class DataService {
         } else {
             data = new Data();
         }
-        updateDatas(datas, user, form, data, authUser);
-        return data;
+        updateDatas(form, data, datas, user, authUser);
     }
 
     public void nullifyForm(Form form) {

@@ -1,11 +1,14 @@
 import {PdfViewer} from "../../utils/PdfViewer.js";
+import {SseDispatcher} from "../../utils/SseDispatcher.js";
+import {Message} from "../../../prototypes/Message.js";
 
 export class CreateDataUi {
 
-    constructor(id, action, documentId, fields, csrf) {
+    constructor(id, action, data, fields, csrf) {
         console.info("Starting data UI");
         console.log(fields);
-        if(documentId) {
+        this.data = data;
+        if(data) {
             this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0);
             this.pdfViewer.setDataFields(fields);
             this.pdfViewer.scale = 0.70;
@@ -22,6 +25,7 @@ export class CreateDataUi {
         }
         this.newData = $('#newData');
         this.nextCommand = "none";
+        this.sseDispatcher = new SseDispatcher();
     }
 
     initListeners() {
@@ -90,7 +94,9 @@ export class CreateDataUi {
 
     simulateSave(command) {
         this.nextCommand = command;
-        $('#simulateDataSubmit').click();
+        this.pdfViewer.promizeSaveValues().then(function (){
+            $('#simulateDataSubmit').click();
+        });
     }
 
     pushData(redirect) {
@@ -100,7 +106,8 @@ export class CreateDataUi {
         pdfViewer.savedFields.forEach(function (value, key, map){
             formData[key]= value;
         })
-        if(redirect) {
+        let dispatcher = this.sseDispatcher;
+        if(redirect || this.data.id != null) {
             let json = JSON.stringify(formData);
             let dataId = $('#dataId');
             $.ajax({
@@ -108,17 +115,23 @@ export class CreateDataUi {
                 type: 'POST',
                 url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + dataId.val(),
                 success: function (response) {
+                    let message = new Message();
+                    message.type = "success";
+                    message.text = "Modifications enregistrées";
+                    message.object = null;
+                    dispatcher.dispatchEvent("user", message);
                     dataId.val(response);
-                    location.href = "/user/datas/" + response + "/update";
+                    if(redirect) {
+                       location.href = "/user/datas/" + response + "/update";
+                    }
                 }
             });
-        } else {
-            let command = this.nextCommand;
-            if(command === "next") {
-                pdfViewer.nextPage();
-            } else if(command === "prev") {
-                pdfViewer.prevPage()
-            }
+        }
+        let command = this.nextCommand;
+        if(command === "next") {
+            pdfViewer.nextPage();
+        } else if(command === "prev") {
+            pdfViewer.prevPage()
         }
     }
 
