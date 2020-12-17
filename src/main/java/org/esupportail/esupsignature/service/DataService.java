@@ -99,7 +99,7 @@ public class DataService {
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user, authUser);
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), signBook, user, authUser);
         signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
         if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
@@ -109,11 +109,8 @@ public class DataService {
                 e.printStackTrace();
             }
         }
-
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
-
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        signBookService.addSignRequest(signBook, signRequest);
         workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
@@ -125,7 +122,8 @@ public class DataService {
             }
         }
         data.setSignBook(signBook);
-        signBookService.pendingSignBook(signBook, user, authUser);
+        dataRepository.save(data);
+        signBookService.pendingSignBook(signBook, data, user, authUser);
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }

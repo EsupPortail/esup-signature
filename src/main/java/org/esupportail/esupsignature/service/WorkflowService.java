@@ -213,6 +213,7 @@ public class WorkflowService {
         return workflows;
     }
 
+    @Transactional
     public int importFilesFromSource(Workflow workflow, User user, User authUser) {
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
@@ -242,7 +243,7 @@ public class WorkflowService {
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
                             signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
                             signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                            SignRequest signRequest = signRequestService.createSignRequest(documentName, user, authUser);
+                            SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user, authUser);
                             if (fsFile.getCreateBy() != null && userRepository.countByEppn(fsFile.getCreateBy()) > 0) {
                                 user = userRepository.findByEppn(fsFile.getCreateBy()).get(0);
                                 user.setIp("127.0.0.1");
@@ -250,8 +251,6 @@ public class WorkflowService {
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
                             signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-                            signRequest.setParentSignBook(signBook);
-                            signBook.getSignRequests().add(signRequest);
 
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
@@ -284,9 +283,7 @@ public class WorkflowService {
                             } else {
                                 signBookService.importWorkflow(signBook, workflow);
                             }
-
-                            signBookService.nextWorkFlowStep(signBook);
-                            signBookService.pendingSignBook(signBook, user, authUser);
+                            signBookService.nextStepAndPending(signBook.getId(), null, user, authUser);
                             fsAccessService.remove(fsFile);
                             nbImportedFiles++;
                         }

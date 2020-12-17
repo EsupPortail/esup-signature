@@ -135,7 +135,7 @@ public class SignBookController {
     public String pending(@ModelAttribute("authUserId") Long authUserId, @PathVariable("id") Long id) {
         User authUser = userService.getById(authUserId);
         SignBook signBook = signBookService.getById(id);
-        signBookService.pendingSignBook(signBook, authUser, authUser);
+        signBookService.pendingSignBook(signBook, null, authUser, authUser);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 

@@ -97,7 +97,9 @@ public class WsController {
         User user = userRepository.findByEppn(createBy).get(0);
         user.setIp(httpServletRequest.getRemoteAddr());
         ObjectMapper mapper = new ObjectMapper();
-        SignRequest signRequest = signRequestService.createSignRequest(title, user, user);
+        //TODO create signbook
+        SignBook signBook = null;
+        SignRequest signRequest = signRequestService.createSignRequest(title, signBook, user, user);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         liveWorkflowStepService.addRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), mapper.readValue(recipientsEmail, String[].class));
         signRequestService.pendingSignRequest(signRequest, user);
@@ -125,9 +127,8 @@ public class WsController {
         User systemUser = userService.getSystemUser();
         systemUser.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook(workflowName, name, systemUser, true);
-        SignRequest signRequest = signRequestService.createSignRequest(name, systemUser, systemUser);
+        SignRequest signRequest = signRequestService.createSignRequest(name, signBook, systemUser, systemUser);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
-        signBookService.addSignRequest(signBook, signRequest);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         String[] ok = {"ok"};
         return ok;
@@ -178,8 +179,8 @@ public class WsController {
     @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
     public String pendingSignBook(@RequestParam String name) {
         SignBook signBook = signBookRepository.findByName(name).get(0);
-        signBookService.nextWorkFlowStep(signBook);
-        signBookService.pendingSignBook(signBook, userService.getSystemUser(), userService.getSystemUser());
+        User systemUser = userService.getSystemUser();
+        signBookService.nextStepAndPending(signBook.getId(), null, systemUser, systemUser);
         return signBook.getSignRequests().get(0).getToken();
     }
 
