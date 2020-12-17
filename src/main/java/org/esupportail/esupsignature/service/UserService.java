@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -44,16 +45,19 @@ public class UserService {
     private ObjectProvider<LdapPersonService> ldapPersonService;
 
     @Resource
+    private WebSecurityProperties webSecurityProperties;
+
+    @Resource
     private GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
 
     @Resource
-    List<SecurityService> securityServices;
+    private List<SecurityService> securityServices;
 
-    @Resource
-    LdapOrganizationalUnitService ldapOrganizationalUnitService;
+    @Autowired(required = false)
+    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
     private FileService fileService;
@@ -219,7 +223,7 @@ public class UserService {
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
+            if(auth != null && webSecurityProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
                 Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
                 if (authorities.size() > 0) {

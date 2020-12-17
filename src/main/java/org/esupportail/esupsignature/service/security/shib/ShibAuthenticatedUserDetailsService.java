@@ -71,21 +71,22 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 			String[] splitCredentials = credentials.split(";");
 			try {
 				for (String credential : splitCredentials) {
-					if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
-						grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
-					} else {
-						Matcher m = Pattern.compile(groupPrefixRoleName).matcher(credential);
-						if(m.matches()) {
-							grantedAuthorities.add(new SimpleGrantedAuthority(credential));
+					for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
+						if (credential.contains(mappingGroupesRole)) {
+							grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));
 						}
+					}
+					Matcher m = Pattern.compile(groupPrefixRoleName).matcher(credential);
+					if (m.matches()) {
+						grantedAuthorities.add(new SimpleGrantedAuthority(credential));
 					}
 				}
 			} catch (Exception e) {
 				logger.debug("unable to find credentials", e);
 			}
 			try {
-				for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
-					SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleFromLdap);
+				for (String roleFromSpel : group2UserRoleService.getRoles(token.getName())) {
+					SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleFromSpel);
 					grantedAuthorities.add(simpleGrantedAuthority);
 					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}

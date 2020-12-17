@@ -5,14 +5,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties implements Cloneable {
 
     private String rootUrl;
-    private String groupPrefixRoleName;
     private String domain;
     private String nexuUrl;
     private String nexuVersion;
@@ -29,7 +27,6 @@ public class GlobalProperties implements Cloneable {
     private Boolean enableSplash = false;
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
-    private Map<String, String> mappingGroupsRoles;
 
     public String getRootUrl() {
         return rootUrl;
@@ -37,14 +34,6 @@ public class GlobalProperties implements Cloneable {
 
     public void setRootUrl(String rootUrl) {
         this.rootUrl = rootUrl;
-    }
-
-    public String getGroupPrefixRoleName() {
-        return groupPrefixRoleName;
-    }
-
-    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
-        this.groupPrefixRoleName = groupPrefixRoleName;
     }
 
     public String getDomain() {
@@ -175,11 +164,4 @@ public class GlobalProperties implements Cloneable {
         this.applicationEmail = applicationEmail;
     }
 
-    public Map<String, String> getMappingGroupsRoles() {
-        return mappingGroupsRoles;
-    }
-
-    public void setMappingGroupsRoles(Map<String, String> mappingGroupsRoles) {
-        this.mappingGroupsRoles = mappingGroupsRoles;
-    }
 }
