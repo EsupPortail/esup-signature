@@ -19,7 +19,7 @@ public class SecurityControllerAdvice {
 
     public Long getUserId(HttpSession httpSession) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
+        if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = auth.getName();
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = (String) httpSession.getAttribute("suEppn");
@@ -33,7 +33,7 @@ public class SecurityControllerAdvice {
     @ModelAttribute(value = "authUserId")
     public Long getAuthUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null) {
+        if (auth != null && !auth.getName().equals("anonymousUser")) {
             return userService.getUserByEppn(auth.getName()).getId();
         } else {
             return null;

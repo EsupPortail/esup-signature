@@ -930,19 +930,10 @@ public class SignRequestService {
 		return prefilledFields;
 	}
 
-	public InputStream getLastFileBase64(Long id) throws SQLException, EsupSignatureException {
-		SignRequest signRequest = getById(id);
-		InputStream inputStream = null;
-		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
-			List<Document> documents = getToSignDocuments(id);
-			if (documents.size() == 1) {
-				inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
-			}
-		} else {
-			FsFile fsFile = getLastSignedFsFile(signRequest);
-			inputStream = fsFile.getInputStream();
-		}
-		return inputStream;
+	@Transactional
+	public Document getLastSignedFile(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
 	}
 
 	public void addAttachement(MultipartFile[] multipartFiles, String link, SignRequest signRequest) throws EsupSignatureIOException {
