@@ -13,7 +13,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -21,7 +21,6 @@ export class SignUi {
         this.signModal = $('#signModal');
         this.printDocument = new PrintDocument();
         this.initListeners();
-        this.initDataFileds(fields);
     }
 
     initListeners() {
@@ -34,17 +33,6 @@ export class SignUi {
         });
         $("#copyButton").on('click', e => this.copy());
         document.addEventListener("sign", e => this.updateWaitModal(e));
-    }
-
-    initDataFileds(fields) {
-        if(this.workspace.pdfViewer) {
-            this.workspace.pdfViewer.setDataFields(fields);
-            if (this.workspace.pdfViewer.dataFields.length > 0 && this.workspace.pdfViewer.dataFields[0].defaultValue != null) {
-                for (let i = 0 ; i < signUi.workspace.pdfViewer.dataFields.length ; i++) {
-                    this.workspace.pdfViewer.savedFields.set(this.workspace.pdfViewer.dataFields[i].name, this.workspace.pdfViewer.dataFields[i].defaultValue);
-                }
-            }
-        }
     }
 
     launchSign() {
