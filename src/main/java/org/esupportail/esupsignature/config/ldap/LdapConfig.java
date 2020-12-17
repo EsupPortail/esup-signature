@@ -35,7 +35,7 @@ public class LdapConfig {
         Map<String, String> ldapFiltersGroups = new HashMap<>();
 
         for(Map.Entry<String, String> entry : ldapProperties.getLdapFiltersGroups().entrySet()) {
-            String groupName = webSecurityProperties.getGroupPrefixRoleName().replace("(\\w*)", entry.getKey());
+            String groupName = webSecurityProperties.getGroupToRoleFilterPattern().replace("(\\w*)", entry.getKey());
             ldapFiltersGroups.put(entry.getValue(), groupName);
         }
 

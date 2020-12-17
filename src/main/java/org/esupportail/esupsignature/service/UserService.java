@@ -228,7 +228,7 @@ public class UserService {
                 if (auth.getName().split("@").length == 1) {
                     userName = auth.getName() + "@" + globalProperties.getDomain();
                 }
-                if (webSecurityProperties.getGroupPrefixRoleName() != null && eppn.equals(userName)) {
+                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
                     logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
                     Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
                     if (authorities.size() > 0) {

@@ -140,11 +140,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
 		casLdapAuthoritiesPopulator.setRolePrefix("");
-		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupPrefixRoleName());
+		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
 		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
-		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupPrefixRoleName());
+		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
 		group2UserRoleService.setGroupService(spelGroupService.getIfAvailable());
 		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);

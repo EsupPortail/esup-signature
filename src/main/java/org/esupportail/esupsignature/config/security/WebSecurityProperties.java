@@ -8,7 +8,7 @@ import java.util.Map;
 public class WebSecurityProperties {
 
     private String[] wsAccessAuthorizeIps;
-    private String groupPrefixRoleName;
+    private String groupToRoleFilterPattern;
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
 
@@ -18,12 +18,12 @@ public class WebSecurityProperties {
 
     public void setWsAccessAuthorizeIps(String[] wsAccessAuthorizeIps) { this.wsAccessAuthorizeIps = wsAccessAuthorizeIps; }
 
-    public String getGroupPrefixRoleName() {
-        return groupPrefixRoleName;
+    public String getGroupToRoleFilterPattern() {
+        return groupToRoleFilterPattern;
     }
 
-    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
-        this.groupPrefixRoleName = groupPrefixRoleName;
+    public void setGroupToRoleFilterPattern(String groupToRoleFilterPattern) {
+        this.groupToRoleFilterPattern = groupToRoleFilterPattern;
     }
 
     public Map<String, String> getMappingGroupsRoles() {

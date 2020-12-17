@@ -166,7 +166,7 @@ security:
 #        title: Compte d’un autre établissement (Shibboleth)
 #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
-        group-prefix-role-name: for.esup-signature.role
+        group-to-role-filter-pattern: for.esup-signature.role
         mapping-groups-roles:
             for.esup-signature.admin: ROLE_ADMIN
             for.esup-signature.test: ROLE_USER
