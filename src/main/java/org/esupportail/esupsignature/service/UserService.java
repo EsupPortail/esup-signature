@@ -178,6 +178,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public User createUserWithAuthentication(Authentication authentication) {
         String uid;
         if (authentication.getName().contains("@")) {
@@ -200,6 +201,7 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
+    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
@@ -216,7 +218,6 @@ public class UserService {
         user.setEmail(email);
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
-        	// TODO ! 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);

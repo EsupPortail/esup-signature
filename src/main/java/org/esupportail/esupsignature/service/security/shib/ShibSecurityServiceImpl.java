@@ -95,8 +95,6 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
-		shibAuthenticatedUserDetailsService.setPrefix(globalProperties.getGroupPrefixRoleName());
-
 		SpelGroupService groupService = new SpelGroupService();
 		Map<String, String> groups4eppnSpel = new HashMap<>();
 		if(shibProperties.getGroupMappingSpel() != null) {
@@ -112,6 +110,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		group2UserRoleService.setMappingGroupesRoles(globalProperties.getMappingGroupsRoles());
 		group2UserRoleService.setGroupService(groupService);
 
+		shibAuthenticatedUserDetailsService.setGroupPrefixRoleName(globalProperties.getGroupPrefixRoleName());
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
 		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(globalProperties.getMappingGroupsRoles());
 		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService.getIfAvailable());

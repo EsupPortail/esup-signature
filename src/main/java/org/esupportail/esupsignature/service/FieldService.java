@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.repository.FieldRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -15,10 +16,12 @@ public class FieldService {
 	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
 		return obj;
-	}	
+	}
 
-	public void updateField(Field field) {
-		if(field.getId() != null) {
+	@Transactional
+	public void updateField(Long fieldId) {
+		Field field = fieldRepository.findById(fieldId).get();
+		if(field != null) {
 			updateField(field.getId(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
 		} else {
 			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());

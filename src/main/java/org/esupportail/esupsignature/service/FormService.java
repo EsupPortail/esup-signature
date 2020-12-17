@@ -297,7 +297,7 @@ public class FormService {
 		for(Field field : fields) {
 			i++;
 			field.setFillOrder(i);
-			fieldService.updateField(field);
+			fieldService.updateField(field.getId());
 		}
 		return fields;
 	}
@@ -307,7 +307,7 @@ public class FormService {
 		field.setPage(page);
 		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
 		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
-		fieldService.updateField(field);
+		fieldService.updateField(field.getId());
 	}
 
 	private void computeActions(Field field, String actionsString) {
