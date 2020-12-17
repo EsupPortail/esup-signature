@@ -100,11 +100,11 @@ spring:
 ldap:
 #    search-base: ou=people
 #    group-search-base: ou=groups
-#    search-filter: (uid={0})
 #    group-search-filter: member={0}
+#    user-id-search-filter: (uid={0})
 #    member-search-filter: (&(uid={0})({1}))
-#    affiliation-filter: member
-#    ldap-filters-groups:
+#    affiliation-attribut-name: member
+#    mapping-filters-groups:
 #        student : "eduPersonAffiliation:=student"
 #        staff : "eduPersonAffiliation:=staff"
 #        affiliate : "eduPersonAffiliation:=affiliate"
@@ -166,7 +166,7 @@ security:
 #        title: Compte d’un autre établissement (Shibboleth)
 #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
-        group-to-role-filter-pattern: for.esup-signature.role
+        group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:
             for.esup-signature.admin: ROLE_ADMIN
             for.esup-signature.test: ROLE_USER

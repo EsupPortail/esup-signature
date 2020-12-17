@@ -137,7 +137,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	
 	public LdapUserDetailsService ldapUserDetailsService() {
-		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
+		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
 		casLdapAuthoritiesPopulator.setRolePrefix("");
 		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
