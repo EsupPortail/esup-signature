@@ -103,7 +103,6 @@ ldap:
 #    group-search-filter: member={0}
 #    user-id-search-filter: (uid={0})
 #    member-search-filter: (&(uid={0})({1}))
-#    affiliation-attribut-name: member
 #    mapping-filters-groups:
 #        student : "eduPersonAffiliation:=student"
 #        staff : "eduPersonAffiliation:=staff"

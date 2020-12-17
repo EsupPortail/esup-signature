@@ -53,7 +53,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowStep1.setMaxRecipients(1);
         workflowSteps.add(workflowStep1);
         //STEP 2
-        String step2Recipient =  "demo.esup@univ-rouen.fr";
+        String step2Recipient =  "demo.esup@inv.univ-rouen.fr";
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setName("Président de l’université");
         workflowStep2.setSignType(SignType.pdfImageStamp);

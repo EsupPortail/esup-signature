@@ -13,7 +13,6 @@ public class LdapProperties {
     private String groupSearchFilter;
     private String memberSearchFilter;
     private String userIdSearchFilter;
-    private String affiliationAttributName;
     private Map<String, String> mappingFiltersGroups = new HashMap<>();
 
     public String getSearchBase() {
@@ -54,14 +53,6 @@ public class LdapProperties {
 
     public void setUserIdSearchFilter(String userIdSearchFilter) {
         this.userIdSearchFilter = userIdSearchFilter;
-    }
-
-    public String getAffiliationAttributName() {
-        return affiliationAttributName;
-    }
-
-    public void setAffiliationAttributName(String affiliationAttributName) {
-        this.affiliationAttributName = affiliationAttributName;
     }
 
     public Map<String, String> getMappingFiltersGroups() {

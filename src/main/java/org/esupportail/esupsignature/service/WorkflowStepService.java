@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ public class WorkflowStepService {
     @Resource
     private UserService userService;
 
+    @Transactional
     public WorkflowStep create(User creator, String name, SignType signType) {
         WorkflowStep workflowStep = new WorkflowStep();
         workflowStep.setName(name);
@@ -28,6 +30,7 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
+    @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
@@ -68,12 +71,14 @@ public class WorkflowStepService {
         workflowStep.setSignType(signType);
     }
 
+    @Transactional
     public WorkflowStep addStepRecipients(Long workflowStepId, String recipientsEmails) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
         return workflowStep;
     }
 
+    @Transactional
     public WorkflowStep removeStepRecipient(Long workflowStepId, Long userId) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         User recipientToRemove = userService.getById(userId);
@@ -81,7 +86,7 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
-
+    @Transactional
     public void updateStep(WorkflowStep workflowStep, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
@@ -89,6 +94,7 @@ public class WorkflowStepService {
         workflowStep.setAllSignToComplete(allSignToComplete);
     }
 
+    @Transactional
     public void addStep(Workflow workflow, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
@@ -96,12 +102,14 @@ public class WorkflowStepService {
         workflow.getWorkflowSteps().add(workflowStep);
     }
 
+    @Transactional
     public void removeStep(Workflow workflow, Integer stepNumber) {
         WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
         workflow.getWorkflowSteps().remove(workflowStep);
         delete(workflowStep);
     }
 
+    @Transactional
     public void delete(WorkflowStep workflowStep) {
         workflowStepRepository.delete(workflowStep);
     }

@@ -210,6 +210,8 @@ public class UserService {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
             user = userRepository.findByEppn(eppn).get(0);
+        } else if(userRepository.countByEmail(email) > 0) {
+            user = userRepository.findByEmail(email).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);
             user = new User();
