@@ -2,14 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -22,22 +19,6 @@ public class LiveWorkflow {
 
     @Version
     private Integer version;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date createDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date updateDate;
-
-    private String updateBy;
-
-    @ElementCollection(targetClass= ShareType.class)
-    private List<ShareType> authorizedShareTypes = new ArrayList<>();
-
-    @ElementCollection(targetClass=String.class)
-    private List<String> managers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
@@ -72,38 +53,6 @@ public class LiveWorkflow {
         this.version = version;
     }
 
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public List<String> getManagers() {
-        return managers;
-    }
-
-    public void setManagers(List<String> managers) {
-        this.managers = managers;
-    }
-
     public List<LiveWorkflowStep> getWorkflowSteps() {
         return workflowSteps;
     }
@@ -134,14 +83,6 @@ public class LiveWorkflow {
 
     public void setDocumentsTargetUri(String documentsTargetUri) {
         this.documentsTargetUri = documentsTargetUri;
-    }
-
-    public List<ShareType> getAuthorizedShareTypes() {
-        return authorizedShareTypes;
-    }
-
-    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
-        this.authorizedShareTypes = authorizedShareTypes;
     }
 
     public Workflow getWorkflow() {
