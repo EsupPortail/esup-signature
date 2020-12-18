@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;

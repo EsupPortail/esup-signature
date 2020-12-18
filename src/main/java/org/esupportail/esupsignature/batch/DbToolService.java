@@ -19,7 +19,6 @@ package org.esupportail.esupsignature.batch;
 
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;

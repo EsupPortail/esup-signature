@@ -6,8 +6,8 @@ import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.repository.LogRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -63,7 +63,7 @@ public class AdminSignRequestController {
 	private SignBookService signBookService;
 
 	@Resource
-	private LogRepository logRepository;
+	private LogService logService;
 
 	@Resource
 	private FileService fileService;
@@ -104,7 +104,7 @@ public class AdminSignRequestController {
 				model.addAttribute("documentType", fileService.getExtension(toDisplayDocument.getFileName()));
 				model.addAttribute("documentId", toDisplayDocument.getId());
 			}
-			List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+			List<Log> logs = logService.getBySignRequestId(signRequest.getId());
 			model.addAttribute("logs", logs);
 			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
 			model.addAttribute("signRequest", signRequest);

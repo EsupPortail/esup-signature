@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;

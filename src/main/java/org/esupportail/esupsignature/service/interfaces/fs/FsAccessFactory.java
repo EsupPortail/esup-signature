@@ -1,10 +1,5 @@
 package org.esupportail.esupsignature.service.interfaces.fs;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
@@ -13,6 +8,11 @@ import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class FsAccessFactory {

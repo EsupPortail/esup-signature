@@ -18,7 +18,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.util.List;

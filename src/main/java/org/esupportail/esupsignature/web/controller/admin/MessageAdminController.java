@@ -17,13 +17,10 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import ch.rasc.sse.eventbus.SseEvent;
 import org.esupportail.esupsignature.entity.Message;
-import org.esupportail.esupsignature.repository.MessageRepository;
 import org.esupportail.esupsignature.service.MessageService;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,8 +29,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @RequestMapping("/admin/messages")
 @Controller
