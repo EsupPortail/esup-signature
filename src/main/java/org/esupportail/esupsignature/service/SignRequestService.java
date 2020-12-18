@@ -181,10 +181,7 @@ public class SignRequestService {
 					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 					break;
 				case "followByMe":
-					signRequests.addAll(signRequestRepository.findByRecipientUserEppn(userEppn));
-					signRequests.removeAll(getToSignRequests(userEppn));
-					signRequests.removeAll(getSignRequestsSignedByUser(userEppn));
-					signRequests.removeAll(getSignRequestsRefusedByUser(userEppn));
+					signRequests.addAll(signRequestRepository.findByRecipient(userEppn));
 					break;
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
@@ -206,21 +203,6 @@ public class SignRequestService {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userEppn);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
-	}
-
-	public List<SignRequest> getSignRequestsSignedByUser(String userEppn) {
-		User user = userService.getByEppn(userEppn);
-		List<Log> logs = new ArrayList<>();
-		logs.addAll(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.signed.name()));
-		logs.addAll(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.checked.name()));
-		return getSignRequestsFromLogs(logs);
-
-	}
-
-	public List<SignRequest> getSignRequestsRefusedByUser(String userEppn) {
-		User user = userService.getByEppn(userEppn);
-		List<Log> logs = new ArrayList<>(logService.getByEppnForAndFinalStatus(user.getEppn(), SignRequestStatus.refused.name()));
-		return getSignRequestsFromLogs(logs);
 	}
 
 	private List<SignRequest> getSignRequestsFromLogs(List<Log> logs) {
@@ -727,7 +709,10 @@ public class SignRequestService {
 		logService.create(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
-	public void refuse(SignRequest signRequest, String userEppn, String authUserEppn) {
+	@Transactional
+	public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) {
+		SignRequest signRequest = getById(signRequestId);
+		signRequest.setComment(comment);
 		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), userEppn, authUserEppn);
 	}
 
@@ -738,9 +723,11 @@ public class SignRequestService {
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest, ShareType.sign)) {
 			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getId().equals(userEppn)).findFirst();
-				if (recipient.isPresent() && (signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
-						&& !signRequest.getRecipientHasSigned().isEmpty() && signRequest.getRecipientHasSigned().get(recipient.get()).getActionType().equals(ActionType.none)) {
+				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
+				if (recipient.isPresent()
+					&& (signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
+					&& !signRequest.getRecipientHasSigned().isEmpty()
+					&& signRequest.getRecipientHasSigned().get(recipient.get()).getActionType().equals(ActionType.none)) {
 					return true;
 				}
 			}
@@ -772,7 +759,9 @@ public class SignRequestService {
 		return val;
 	}
 
-	public boolean delete(SignRequest signRequest) {
+	@Transactional
+	public boolean delete(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
 		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
 		for (Log log : logs) {
 			logService.delete(log);
@@ -872,7 +861,8 @@ public class SignRequestService {
 	public SignRequest getSignRequestsFullById(long id, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		if (signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& checkUserSignRights(signRequest, userEppn, authUserEppn) && signRequest.getOriginalDocuments().size() > 0
+				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
+				&& signRequest.getOriginalDocuments().size() > 0
 				&& needToSign(signRequest, userEppn)) {
 			signRequest.setSignable(true);
 		}
@@ -1128,5 +1118,13 @@ public class SignRequestService {
 	public List<Document> getAttachments(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		return new ArrayList<>(signRequest.getAttachments());
+	}
+
+	public List<SignRequest> getSignRequestsSignedByUser(String eppn) {
+		return signRequestRepository.findByRecipientAndActionType(eppn, ActionType.signed);
+	}
+
+	private List<SignRequest> getSignRequestsRefusedByUser(String userEppn) {
+		return signRequestRepository.findByRecipientAndActionType(userEppn, ActionType.refused);
 	}
 }

@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.custom.SignRequestRepositoryCustom;
 import org.springframework.data.domain.Page;
@@ -20,11 +20,12 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     Long countByToken(String token);
     @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.eppn = :recipientUserEppn and r.signed is false")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
-    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where r.user.eppn = :recipientUserEppn")
-    List<SignRequest> findByRecipientUserEppn(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByCreateByEppn(String CreateByEppn);
     List<SignRequest> findByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
-
+    @Query("select s from SignRequest s join s.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType")
+    List<SignRequest> findByRecipientAndActionType(String recipientUserEppn, ActionType actionType);
+    @Query("select s from SignRequest s join s.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn")
+    List<SignRequest> findByRecipient(String recipientUserEppn);
 }

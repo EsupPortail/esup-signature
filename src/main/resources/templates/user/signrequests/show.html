@@ -595,7 +595,7 @@
      aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}">
+            <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

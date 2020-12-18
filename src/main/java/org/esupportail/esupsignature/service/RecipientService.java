@@ -26,7 +26,7 @@ public class RecipientService {
     }
 
     public boolean needSign(List<Recipient> recipients, String userEppn) {
-        List<Recipient> recipients1 = recipients.stream().filter(recipient -> recipient.getUser().getId().equals(userEppn)).collect(Collectors.toList());
+        List<Recipient> recipients1 = recipients.stream().filter(recipient -> recipient.getUser().getEppn().equals(userEppn)).collect(Collectors.toList());
         if(recipients1.size() > 0 && !recipients1.get(0).getSigned()) {
             return true;
         }

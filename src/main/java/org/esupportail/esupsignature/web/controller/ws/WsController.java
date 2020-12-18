@@ -232,7 +232,7 @@ public class WsController {
         user.setIp(httpServletRequest.getRemoteAddr());
         if (signRequestRepository.countByToken(token) > 0) {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-            signRequestService.delete(signRequest);
+            signRequestService.delete(signRequest.getId());
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

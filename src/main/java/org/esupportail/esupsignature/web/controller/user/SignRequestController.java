@@ -297,18 +297,15 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        SignRequest signRequest = signRequestService.getById(id);
-        signRequest.setComment(comment);
-        signRequestService.refuse(signRequest, userEppn, authUserEppn);
+        signRequestService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests/" + signRequest.getId();
+        return "redirect:/user/signrequests/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getById(id);
-        if(signRequestService.delete(signRequest)) {
+        if(signRequestService.delete(id)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
