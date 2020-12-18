@@ -327,7 +327,7 @@ export class SignPosition extends EventFactory {
         textName.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         let textExtra = $('#textExtra');
-        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale + "px");
+        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale / this.fixRatio + "px");
         textExtra.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();
