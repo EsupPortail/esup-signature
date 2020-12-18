@@ -27,6 +27,7 @@ export class CreateDataUi {
         this.nextCommand = "none";
         this.wheelDetector = new WheelDetector();
         this.sseDispatcher = new SseDispatcher();
+        this.changeControl = false;
         this.initListeners();
     }
 
@@ -59,7 +60,8 @@ export class CreateDataUi {
         console.info("init change control")
         let inputs = $("#newData :input");
         $.each(inputs, (index, e) => this.listenForChange(e));
-        if($("#sendModalButton").length) {
+        if($("#sendModalButton").length && !this.changeControl) {
+            this.changeControl = true;
             let saveButton = $('#saveButton');
             saveButton.addClass('disabled');
         }
@@ -99,22 +101,39 @@ export class CreateDataUi {
     }
 
     simulateSave(command) {
-        this.nextCommand = command;
-        this.pdfViewer.promizeSaveValues().then(function (){
-            $('#simulateDataSubmit').click();
-        });
+        if((command === "next" && !this.pdfViewer.isLastpage()) || (command === "prev" && !this.pdfViewer.isFirstPage())) {
+            this.nextCommand = command;
+            this.pdfViewer.promizeSaveValues().then(e => this.afterSimulate());
+        } else {
+            this.nextCommand = "none";
+        }
+    }
+
+    afterSimulate() {
+        //$('#simulateDataSubmit').click();
+        this.excuteNextCommand();
     }
 
     pushData(redirect) {
         let formData  = new Map();
         console.info("check data name");
         let pdfViewer = this.pdfViewer;
-        pdfViewer.savedFields.forEach(function (value, key, map){
-            formData[key]= value;
-            let dataField = pdfViewer.dataFields.filter(obj => {
-                return obj.name === key
-            })[0];
-            if(dataField.required && value === null) {
+        // pdfViewer.savedFields.forEach(function (value, key, map){
+        //     formData[key]= value;
+        //     let dataField = pdfViewer.dataFields.filter(obj => {
+        //         return obj.name === key
+        //     })[0];
+        //     if(dataField.required && value === null) {
+        //         alert("Un champ n'est pas rempli en page " + dataField.page);
+        //         redirect = false;
+        //         pdfViewer.renderPage(dataField.page);
+        //     }
+        // })
+
+        pdfViewer.dataFields.forEach(function(dataField){
+            let savedField = pdfViewer.savedFields.get(dataField.name)
+            formData[dataField.name]= savedField;
+            if(dataField.required && savedField === "") {
                 alert("Un champ n'est pas rempli en page " + dataField.page);
                 redirect = false;
                 pdfViewer.renderPage(dataField.page);
@@ -142,11 +161,14 @@ export class CreateDataUi {
                 }
             });
         }
-        let command = this.nextCommand;
-        if(command === "next") {
-            pdfViewer.nextPage();
-        } else if(command === "prev") {
-            pdfViewer.prevPage()
+        this.excuteNextCommand();
+    }
+
+    excuteNextCommand() {
+        if(this.nextCommand === "next") {
+            this.pdfViewer.nextPage();
+        } else if(this.nextCommand === "prev") {
+            this.pdfViewer.prevPage()
         }
     }
 
