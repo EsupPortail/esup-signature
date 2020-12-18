@@ -28,4 +28,6 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByRecipientAndActionType(String recipientUserEppn, ActionType actionType);
     @Query("select s from SignRequest s join s.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn")
     List<SignRequest> findByRecipient(String recipientUserEppn);
+    @Query("select s from SignRequest s join s.recipientHasSigned rhs where s.id = :id and key(rhs).user.eppn = :recipientUserEppn")
+    List<SignRequest> findByIdAndRecipient(Long id, String recipientUserEppn);
 }

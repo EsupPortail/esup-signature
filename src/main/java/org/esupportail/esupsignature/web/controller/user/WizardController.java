@@ -97,7 +97,7 @@ public class WizardController {
             workflow = workflowService.createWorkflow(user);
         }
         model.addAttribute("workflow", workflow);
-        if(workflow.getCreateBy().equals(user)) {
+        if(workflow.getCreateBy().getEppn().equals(userEppn)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
@@ -125,7 +125,7 @@ public class WizardController {
     public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         User user = userService.getByEppn(userEppn);
         Workflow workflow = workflowService.getById(id);
-        if(workflow.getCreateBy().equals(user)) {
+        if(workflow.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("workflow", workflow);
         }
         return "user/wizard/wiz5Workflow";
@@ -144,7 +144,7 @@ public class WizardController {
                        Model model) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getCreateBy().equals(user)) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 signBookService.initSignBook(user, id, signBook);
@@ -166,7 +166,7 @@ public class WizardController {
                        Model model) throws EsupSignatureUserException {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getCreateBy().equals(user)) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 liveWorkflowStepService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, signBook);
                 if (addNew != null) {
@@ -195,7 +195,7 @@ public class WizardController {
     public String saveForm(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getCreateBy().equals(user)) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
         }
         return "user/wizard/wiz5";
@@ -218,7 +218,7 @@ public class WizardController {
     public String wizEndWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
         User user = userService.getByEppn(userEppn);
         Workflow workflow = workflowService.getById(id);
-        if(workflow.getCreateBy().equals(user)) {
+        if(workflow.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("workflow", workflow);
             return "user/wizard/wizend";
         } else {
@@ -230,7 +230,7 @@ public class WizardController {
     public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getCreateBy().equals(user)) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             return "user/wizard/wizend";
         } else {
@@ -242,7 +242,7 @@ public class WizardController {
     public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getCreateBy().equals(user)) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
         } else {
@@ -254,7 +254,7 @@ public class WizardController {
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         User user = userService.getByEppn(userEppn);
         Workflow workflow = workflowService.getById(id);
-        if (!workflow.getCreateBy().equals(user)) {
+        if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
             workflowService.delete(workflow);

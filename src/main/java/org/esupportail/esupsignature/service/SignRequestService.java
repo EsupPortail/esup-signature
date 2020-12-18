@@ -735,11 +735,10 @@ public class SignRequestService {
 		return false;
 	}
 
-	public boolean checkUserViewRights(SignRequest signRequest, User user, String authUserEppn) {
-		if(user.getEppn().equals(authUserEppn) || userShareService.checkShare(user.getEppn(), authUserEppn, signRequest)) {
-			List<Log> log = logService.getByEppnAndSignRequestId(user.getEppn(), signRequest.getId());
-			log.addAll(logService.getByEppnAndSignRequestId(user.getEppn(), signRequest.getId()));
-			if (signRequest.getCreateBy().equals(user) || log.size() > 0 || recipientService.recipientsContainsUser(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), user) > 0) {
+	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
+			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
+			if (signRequest.getCreateBy().getEppn().equals(userEppn) || signRequests.size() > 0 ) {
 				return true;
 			}
 		}

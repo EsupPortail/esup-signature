@@ -179,8 +179,8 @@ public class SignBookService {
         signBook.getSignRequests().remove(signRequest);
     }
 
-    public boolean checkUserManageRights(User user, SignBook signBook) {
-        if (signBook.getCreateBy().equals(user) || signBook.getCreateBy().getEppn().equals("system")) {
+    public boolean checkUserManageRights(String userEppn, SignBook signBook) {
+        if (signBook.getCreateBy().getEppn().equals(userEppn) || signBook.getCreateBy().getEppn().equals("system")) {
             return true;
         } else {
             return false;
@@ -301,12 +301,12 @@ public class SignBookService {
         return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 2;
     }
 
-    public boolean checkUserViewRights(User user, SignBook signBook) {
+    public boolean checkUserViewRights(String userEppn, SignBook signBook) {
         List<Recipient> recipients = new ArrayList<>();
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(signBook.getCreateBy().equals(user) || recipientService.recipientsContainsUser(recipients, user) > 0) {
+        if(signBook.getCreateBy().getEppn().equals(userEppn) || recipientService.recipientsContainsUser(recipients, userEppn) > 0) {
             return true;
         }
         return false;

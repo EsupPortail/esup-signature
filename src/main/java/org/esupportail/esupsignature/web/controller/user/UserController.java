@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,15 +48,6 @@ public class UserController {
 	public String getActiveMenu() {
 		return "active";
 	}
-
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private BigFileService bigFileService;
-
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private FormService formService;
@@ -161,10 +151,9 @@ public class UserController {
 
 	@GetMapping("/shares/update/{id}")
 	public String params(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
 		model.addAttribute("activeMenu", "shares");
 		UserShare userShare = userShareService.getById(id);
-		if(userShare.getUser().equals(authUser)) {
+		if(userShare.getUser().getEppn().equals(authUserEppn)) {
 			model.addAttribute("shareTypes", ShareType.values());
 			model.addAttribute("userShare", userShare);
 			return "user/users/shares/update";

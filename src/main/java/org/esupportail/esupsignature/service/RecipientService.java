@@ -39,8 +39,8 @@ public class RecipientService {
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
     }
 
-    public long recipientsContainsUser(List<Recipient> recipients, User user) {
-        return recipients.stream().filter(recipient -> recipient.getUser().equals(user)).count();
+    public long recipientsContainsUser(List<Recipient> recipients, String userEppn) {
+        return recipients.stream().filter(recipient -> recipient.getUser().getEppn().equals(userEppn)).count();
     }
 
 }

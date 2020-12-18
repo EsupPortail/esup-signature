@@ -129,7 +129,6 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
-        User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
@@ -153,7 +152,7 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
-        model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, user, authUserEppn));
+        model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
         return "user/signrequests/show";
     }
@@ -168,8 +167,7 @@ public class SignRequestController {
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-        List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
-        model.addAttribute("refuseLogs", refuseLogs);
+        model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
         }
@@ -219,12 +217,11 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws JSONException {
-        User authUser = userService.getByEppn(authUserEppn);
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         Document document = documentService.getById(id);
         SignRequest signRequest = signRequestService.getById(document.getParentId());
-        if(signRequest.getCreateBy().equals(authUser)) {
+        if(signRequest.getCreateBy().getEppn().equals(authUserEppn)) {
             signRequest.getOriginalDocuments().remove(document);
         } else {
             result.put("error", "Non autorisé");
