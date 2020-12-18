@@ -70,13 +70,13 @@ public class FormService {
 
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
 		User user = userService.getByEppn(userEppn);
-		List<Form> authorizedForms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		List<Form> forms = new ArrayList<>();
 		if(userEppn.equals(authUserEppn)) {
-			forms = authorizedForms;
+			forms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		} else {
-			for(UserShare userShare : userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create)) {
-				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
+			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
+			for(UserShare userShare : userShares) {
+				if(userShare.getForm() != null){
 					forms.add(userShare.getForm());
 				}
 			}

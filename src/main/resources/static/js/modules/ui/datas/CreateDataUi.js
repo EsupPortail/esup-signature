@@ -111,7 +111,16 @@ export class CreateDataUi {
         let pdfViewer = this.pdfViewer;
         pdfViewer.savedFields.forEach(function (value, key, map){
             formData[key]= value;
+            let dataField = pdfViewer.dataFields.filter(obj => {
+                return obj.name === key
+            })[0];
+            if(dataField.required && value === null) {
+                alert("Un champ n'est pas rempli en page " + dataField.page);
+                redirect = false;
+                pdfViewer.renderPage(dataField.page);
+            }
         })
+
         let dispatcher = this.sseDispatcher;
         if(redirect || this.data.id != null) {
             let json = JSON.stringify(formData);

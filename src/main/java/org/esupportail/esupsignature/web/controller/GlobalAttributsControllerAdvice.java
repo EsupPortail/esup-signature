@@ -64,7 +64,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("authUser", authUser);
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
         model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserEppn));
-        model.addAttribute("userImagesIds", userService.getSignImagesIds(authUserEppn));
+        model.addAttribute("userImagesIds", userService.getSignImagesIds(userEppn));
         model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));

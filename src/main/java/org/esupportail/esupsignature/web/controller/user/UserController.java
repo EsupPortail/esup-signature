@@ -264,8 +264,8 @@ public class UserController {
 	}
 
 	@GetMapping(value = "/get-sign-image/{id}")
-	public ResponseEntity<Void> getSignature(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		Map<String, Object> signature = userService.getSignatureByUserAndId(authUserEppn, id);
+	public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
 		return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
 	}
 
