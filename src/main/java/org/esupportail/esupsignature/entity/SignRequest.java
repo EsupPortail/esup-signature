@@ -61,7 +61,6 @@ public class SignRequest {
 
     @ManyToOne
     @NotNull
-    @LazyCollection(LazyCollectionOption.FALSE)
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

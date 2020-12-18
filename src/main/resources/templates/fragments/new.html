@@ -62,13 +62,13 @@
                                     <i class="fas fa-project-diagram fa-4x"></i>
                                 </div>
                                 <h6 th:text="'Circuit : ' + ${workflow.description}"></h6>
-                                <form th:id="${'delete' + workflow.id}" th:if="${workflow.createBy == user}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
+                                <form th:id="${'delete' + workflow.id}" th:if="${workflow.createBy.eppn == userEppn}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
                                 </form>
                             </a>
-                            <a role="button" th:if="${workflow.createBy == user}" title="Supprimer" type="button" th:data-id="${workflow.id}" onclick="$('#delete'+this.getAttribute('data-id')).submit();" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -50px; margin-top: 170px">
+                            <a role="button" th:if="${workflow.createBy.eppn == userEppn}" title="Supprimer" type="button" th:data-id="${workflow.id}" onclick="$('#delete'+this.getAttribute('data-id')).submit();" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -50px; margin-top: 170px">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
-                            <a th:if="${workflow.createBy == user}" title="Modifier" th:href="'/user/workflows/' + ${workflow.name}" type="button" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -150px; margin-top: 170px">
+                            <a th:if="${workflow.createBy.eppn == userEppn}" title="Modifier" th:href="'/user/workflows/' + ${workflow.name}" type="button" class="btn btn-sm workflowButton" style="position: absolute; margin-left: -150px; margin-top: 170px">
                                 <i class="fas fa-cog"></i>
                             </a>
                         </th:block>

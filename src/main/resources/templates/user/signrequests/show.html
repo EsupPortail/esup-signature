@@ -43,9 +43,9 @@
         <nav th:insert="fragments/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${signRequest.createBy == user}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
+                <li th:if="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
                     de bord</a></li>
-                <li th:unless="${signRequest.createBy == user}" class="breadcrumb-item"><a
+                <li th:unless="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a
                         href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
@@ -107,11 +107,11 @@
             </div>
             <div id="tools" class="tools">
                 <div class="d-flex mb-1">
-                    <!--                    <a th:if="${signRequest.createBy == user && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
-                    <a th:if="${signRequest.createBy == user}"
+                    <!--                    <a th:if="${signRequest.createBy.eppn == userEppn && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
+                    <a th:if="${signRequest.createBy.eppn == userEppn}"
                        class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Détails"
                        th:href="'/user/signrequests/details/' + ${signRequest.id}"><i class="fas fa-info-circle"></i></a>
-                    <a th:if="${signRequest.parentSignBook.createBy == user}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
+                    <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
                     <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
