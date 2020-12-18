@@ -65,6 +65,7 @@ public class SignRequest {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     private Date endDate;

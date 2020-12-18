@@ -133,7 +133,7 @@ export class CreateDataUi {
         pdfViewer.dataFields.forEach(function(dataField){
             let savedField = pdfViewer.savedFields.get(dataField.name)
             formData[dataField.name]= savedField;
-            if(dataField.required && savedField === "") {
+            if(dataField.required && (savedField === "" || savedField == null)) {
                 alert("Un champ n'est pas rempli en page " + dataField.page);
                 redirect = false;
                 pdfViewer.renderPage(dataField.page);
