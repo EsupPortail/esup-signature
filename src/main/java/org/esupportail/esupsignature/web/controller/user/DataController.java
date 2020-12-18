@@ -86,7 +86,7 @@ public class DataController {
 		User user = userService.getByEppn(userEppn);
 		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
-		if (user.getEppn().equals(data.getOwner())) {
+		if (userEppn.equals(data.getOwner())) {
 			if (page == null) {
 				page = 1;
 			}
@@ -109,7 +109,7 @@ public class DataController {
 			}
 			Form form = formService.getById(id);
 			model.addAttribute("form", form);
-			model.addAttribute("fields", dataService.getPrefilledFields(user, page, form));
+			model.addAttribute("fields", dataService.getPrefilledFields(form, user));
 			model.addAttribute("data", new Data());
 			model.addAttribute("activeForm", form.getName());
 			model.addAttribute("page", page);
@@ -128,17 +128,16 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@GetMapping("{id}/update")
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
-		User user = userService.getByEppn(userEppn);
 		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
 			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form));
-			model.addAttribute("targetEmails", workflowService.getTargetEmails(user.getEppn(), form));
+			model.addAttribute("targetEmails", workflowService.getTargetEmails(userEppn, form));
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
-			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, user, true);
+			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, userEppn, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());
@@ -151,17 +150,24 @@ public class DataController {
 
 	@PostMapping("form/{id}")
 	@ResponseBody
-	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-						  @RequestParam Long dataId,
+	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+						  @PathVariable("id") Long id,
+						  @RequestParam String dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
 		User user = userService.getByEppn(userEppn);
 		User authUser = userService.getByEppn(authUserEppn);
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
-		dataService.addData(id, dataId, datas, user, authUser);
+		Long dataLongId = null;
+		try {
+			dataLongId = Long.valueOf(dataId);
+		} catch (NumberFormatException e) {
+			logger.debug("dataId is null");
+		}
+		Data data = dataService.addData(id, dataLongId , datas, user, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
-		return "" + dataId;
+		return data.getId().toString();
 	}
 
 //	@PutMapping("{id}")
@@ -179,9 +185,9 @@ public class DataController {
 //		dataService.setDatas(name, formData, data);
 //		redirectAttributes.addAttribute("page", page);
 //		if(navPage != null && !navPage.isEmpty()) {
-//			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId() + "/update?page=" + page;
+//			return "redirect:/user/" + userEppn + "/data/" + data.getId() + "/update?page=" + page;
 //		} else {
-//			return "redirect:/user/" + user.getEppn() + "/data/" + data.getId();
+//			return "redirect:/user/" + userEppn + "/data/" + data.getId();
 //		}
 //	}
 
@@ -207,7 +213,7 @@ public class DataController {
 	public String deleteData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		User user = userService.getByEppn(userEppn);
 		Data data = dataService.getById(id);
-		if(user.getEppn().equals(data.getCreateBy()) || user.getEppn().equals(data.getOwner())) {
+		if(userEppn.equals(data.getCreateBy()) || userEppn.equals(data.getOwner())) {
 			dataService.delete(data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		} else {

@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.springframework.stereotype.Service;
@@ -62,14 +61,12 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public Log create(Long id, String status, String action, String returnCode, String comment, User user,  User authUser) {
+    public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(id);
-        if(authUser != null) {
-            log.setEppn(authUser.getEppn());
-            log.setEppnFor(user.getEppn());
-            log.setIp(authUser.getIp());
-        }
+        log.setEppn(authUserEppn);
+        log.setEppnFor(userEppn);
+//        log.setIp(authUser.getIp());
         log.setInitialStatus(status);
         log.setLogDate(new Date());
         log.setAction(action);
@@ -79,15 +76,13 @@ public class LogService {
         return log;
     }
 
-    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, User user, User authUser) {
+    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());
-        if(authUser != null) {
-            log.setEppn(authUser.getEppn());
-            log.setEppnFor(user.getEppn());
-            log.setIp(authUser.getIp());
-        }
+        log.setEppn(authUserEppn);
+        log.setEppnFor(userEppn);
+//        log.setIp(authUser.getIp());
         log.setInitialStatus(signRequest.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);

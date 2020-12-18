@@ -148,7 +148,7 @@ public class SignRequestController {
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, user));
+            model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
         }
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
@@ -251,7 +251,7 @@ public class SignRequestController {
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(user, multipartFiles, signType, authUserEppn);
+                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, user, authUserEppn);
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -297,11 +297,9 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.setComment(comment);
-        signRequestService.refuse(signRequest, user, authUser);
+        signRequestService.refuse(signRequest, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         return "redirect:/user/signrequests/" + signRequest.getId();
     }
@@ -429,9 +427,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/complete/{id}")
     public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-        User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
-        signRequestService.completeSignRequest(id, user, authUser);
+        signRequestService.completeSignRequest(id, userEppn, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
@@ -444,16 +440,14 @@ public class SignRequestController {
                           @RequestParam(value = "firstnames", required = false) String[] firstnames,
                           @RequestParam(value = "phones", required = false) String[] phones,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
-        User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
         if(!signRequestService.checkTempUsers(id, recipientEmails, names, firstnames, phones)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
         SignRequest signRequest = signRequestService.getById(id);
-        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, user, authUser);
+        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, userEppn, authUserEppn);
         if(comment != null && !comment.isEmpty()) {
-            signRequestService.addPostit(signRequest, comment, user, authUser);
+            signRequestService.addPostit(signRequest, comment, userEppn, authUserEppn);
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
@@ -477,8 +471,7 @@ public class SignRequestController {
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        User authUser = userService.getByEppn(authUserEppn);
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, authUser);
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 

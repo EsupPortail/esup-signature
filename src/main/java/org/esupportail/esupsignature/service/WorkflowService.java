@@ -237,10 +237,9 @@ public class WorkflowService {
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
                             signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
                             signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-                            SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user, authUser);
+                            SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
-                                user.setIp("127.0.0.1");
                             }
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
@@ -277,7 +276,7 @@ public class WorkflowService {
                             } else {
                                 signBookService.importWorkflow(signBook, workflow);
                             }
-                            signBookService.nextStepAndPending(signBook.getId(), null, user, authUser);
+                            signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
                             fsAccessService.remove(fsFile);
                             nbImportedFiles++;
                         }
@@ -372,21 +371,21 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow computeWorkflow(Workflow workflow, List<String> recipientEmails, User user, boolean computeForDisplay) throws EsupSignatureException {
+    public Workflow computeWorkflow(Workflow workflow, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
         try {
             Workflow modelWorkflow = (Workflow) BeanUtils.cloneBean(workflow);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) getWorkflowByClassName(modelWorkflow.getName());
-                defaultWorkflow.fillWorkflowSteps(modelWorkflow, user, recipientEmails);
+                defaultWorkflow.fillWorkflowSteps(modelWorkflow, recipientEmails);
             }
             int step = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-                replaceStepSystemUsers(user.getEppn(), workflowStep.getId());
+                replaceStepSystemUsers(userEppn, workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                     if(!computeForDisplay) {
                         workflowStep.getUsers().clear();
                     }
-                    List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, user);
+                    List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, userEppn);
                     if(recipients.size() > 0 ) {
                         workflowStep.getUsers().clear();
                     }
@@ -520,10 +519,10 @@ public class WorkflowService {
         return null;
     }
 
-    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
+    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
+            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;

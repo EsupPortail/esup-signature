@@ -1,6 +1,7 @@
 import {PdfViewer} from "../../utils/PdfViewer.js";
 import {SseDispatcher} from "../../utils/SseDispatcher.js";
 import {Message} from "../../../prototypes/Message.js";
+import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class CreateDataUi {
 
@@ -15,7 +16,6 @@ export class CreateDataUi {
         }
         this.action = action;
         this.actionEnable = 0;
-        this.initListeners();
         this.formId = id;
         this.csrf = csrf;
         if (this.pdfViewer.dataFields[0].defaultValue != null) {
@@ -25,7 +25,9 @@ export class CreateDataUi {
         }
         this.newData = $('#newData');
         this.nextCommand = "none";
+        this.wheelDetector = new WheelDetector();
         this.sseDispatcher = new SseDispatcher();
+        this.initListeners();
     }
 
     initListeners() {
@@ -35,6 +37,10 @@ export class CreateDataUi {
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
             this.pdfViewer.addEventListener('change', e => this.enableSave());
+            this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
+            this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
+            this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
+            this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
         }
         document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
         document.getElementById('newData').addEventListener('submit', e => this.launchSave(e));

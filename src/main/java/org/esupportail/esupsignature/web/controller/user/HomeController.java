@@ -78,12 +78,12 @@ public class HomeController {
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);
                 model.addAttribute("splashMessage", splashMessage);
-            } else if (!authUser.getEppn().equals("system") && userEppn.equals(authUserEppn)) {
+            } else if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, "tosign", pageable));
-            List<Data> datas = dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft);
+            List<Data> datas = dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));

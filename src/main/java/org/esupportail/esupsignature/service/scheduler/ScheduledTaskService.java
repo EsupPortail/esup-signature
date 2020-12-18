@@ -22,7 +22,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -71,9 +70,9 @@ public class ScheduledTaskService {
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook, userService.getSchedulerUser());
+				signBookService.exportFilesToTarget(signBook, "scheduler");
 				if(globalProperties.getArchiveUri() != null) {
-					signBookService.archivesFiles(signBook, userService.getSchedulerUser());
+					signBookService.archivesFiles(signBook, "scheduler");
 				}
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
@@ -88,7 +87,7 @@ public class ScheduledTaskService {
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
-				signBookService.cleanFiles(signBook, userService.getSchedulerUser());
+				signBookService.cleanFiles(signBook, "scheduler");
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");

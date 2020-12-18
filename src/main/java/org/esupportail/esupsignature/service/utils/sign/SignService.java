@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -87,6 +89,9 @@ public class SignService {
 
 	@Resource
 	private PdfService pdfService;
+
+	@Resource
+	private UserService userService;
 
 	@Resource
 	private SignRequestService signRequestService;
@@ -503,7 +508,9 @@ public class SignService {
 		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, true);
 	}
 
-	public AbstractSignatureParameters<?> getSignatureParameters(SignRequest signRequest, User user, AbstractSignatureForm abstractSignatureForm) throws IOException {
+	@Transactional
+	public AbstractSignatureParameters<?> getSignatureParameters(SignRequest signRequest, String userEppn, AbstractSignatureForm abstractSignatureForm) throws IOException {
+		User user = userService.getByEppn(userEppn);
 		AbstractSignatureParameters<?> parameters;
 		if(abstractSignatureForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
 			parameters = fillParameters((SignatureMultipleDocumentsForm) abstractSignatureForm);
@@ -518,16 +525,16 @@ public class SignService {
 		return parameters;
 	}
 
-	public SignDocumentResponse getSignDocumentResponse(SignRequest signRequest, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, User user, User authUser) throws EsupSignatureException {
+	public SignDocumentResponse getSignDocumentResponse(SignRequest signRequest, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, String userEppn, String authUserEppn) throws EsupSignatureException {
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		try {
-			Document signedFile = nexuSign(signRequest, user, abstractSignatureForm, parameters);
+			Document signedFile = nexuSign(signRequest, userEppn, abstractSignatureForm, parameters);
 			if(signedFile != null) {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
-				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user, authUser);
-				signRequestService.applyEndOfSignRules(signRequest, user, authUser);
+				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
+				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn);
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {
@@ -536,8 +543,8 @@ public class SignService {
 		return null;
 	}
 
-	public Document nexuSign(SignRequest signRequest, User user, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters<?> parameters) throws IOException {
-		logger.info(user.getEppn() + " launch nexu signature for signRequest : " + signRequest.getId());
+	public Document nexuSign(SignRequest signRequest, String userEppn, AbstractSignatureForm signatureDocumentForm, AbstractSignatureParameters<?> parameters) throws IOException {
+		logger.info(userEppn + " launch nexu signature for signRequest : " + signRequest.getId());
 		DSSDocument dssDocument;
 
 		if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {

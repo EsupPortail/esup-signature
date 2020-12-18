@@ -70,7 +70,6 @@ public class UserService {
     }
 
     public User getByEppn(String eppn) {
-        eppn = buildEppn(eppn);
         List<User> users = userRepository.findByEppn(eppn);
         if(users.size() > 0) {
             return userRepository.findByEppn(eppn).get(0);
@@ -130,9 +129,11 @@ public class UserService {
         return null;
     }
 
-    private String buildEppn(String uid) {
+    public String buildEppn(String uid) {
         for (SecurityService securityService : securityServices) {
-            if (securityService instanceof CasSecurityServiceImpl && uid.split("@").length == 1) {
+            if (securityService instanceof CasSecurityServiceImpl
+                    && uid.split("@").length == 1
+                    && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
                 uid = uid + "@" + globalProperties.getDomain();
             }
         }

@@ -165,7 +165,6 @@ public class WizardController {
                        @RequestParam(name="end", required = false) Boolean end,
                        Model model) throws EsupSignatureUserException {
         User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().equals(user)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
@@ -178,7 +177,7 @@ public class WizardController {
                 end = true;
             }
             if(end != null) {
-            if (signBookService.startLiveWorkflow(signBook, user, authUser)) {
+            if (signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn)) {
                 return "redirect:/user/wizard/wiz5/" + signBook.getId();
             } else {
                 return "redirect:/user/wizard/wizend/" + signBook.getId();

@@ -88,18 +88,15 @@ public class WsController {
     public String createSignRequest(@RequestParam String title,
                                     @RequestParam String createBy,
                                     @RequestParam("recipientsEmail") String recipientsEmail,
-                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                    HttpServletRequest httpServletRequest) throws EsupSignatureIOException, IOException {
-        User user = userService.getByEppn(createBy);
-        user.setIp(httpServletRequest.getRemoteAddr());
+                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         //TODO create signbook
         SignBook signBook = null;
-        SignRequest signRequest = signRequestService.createSignRequest(title, signBook, user, user);
+        SignRequest signRequest = signRequestService.createSignRequest(title, signBook, createBy, createBy);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         liveWorkflowStepService.addRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), mapper.readValue(recipientsEmail, String[].class));
-        signRequestService.pendingSignRequest(signRequest, user);
-        logger.info("new signRequest created by " + user.getEppn());
+        signRequestService.pendingSignRequest(signRequest, createBy);
+        logger.info("new signRequest created by " + createBy);
         return signRequest.getToken();
     }
 
@@ -123,7 +120,7 @@ public class WsController {
         User systemUser = userService.getSystemUser();
         systemUser.setIp(httpServletRequest.getRemoteAddr());
         SignBook signBook = signBookService.createSignBook(workflowName, name, systemUser, true);
-        SignRequest signRequest = signRequestService.createSignRequest(name, signBook, systemUser, systemUser);
+        SignRequest signRequest = signRequestService.createSignRequest(name, signBook, systemUser.getEppn(), systemUser.getEppn());
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         String[] ok = {"ok"};
@@ -175,8 +172,7 @@ public class WsController {
     @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
     public String pendingSignBook(@RequestParam String name) {
         SignBook signBook = signBookRepository.findByName(name).get(0);
-        User systemUser = userService.getSystemUser();
-        signBookService.nextStepAndPending(signBook.getId(), null, systemUser, systemUser);
+        signBookService.nextStepAndPending(signBook.getId(), null, "system", "system");
         return signBook.getSignRequests().get(0).getToken();
     }
 
@@ -188,7 +184,7 @@ public class WsController {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
             ObjectMapper mapper = new ObjectMapper();
             liveWorkflowStepService.addRecipients(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), mapper.readValue(recipientsEmail, String[].class));
-            signRequestService.pendingSignRequest(signRequest, userService.getSystemUser());
+            signRequestService.pendingSignRequest(signRequest, "system");
         }
     }
 
@@ -474,10 +470,8 @@ public class WsController {
                                                     HttpServletRequest httpServletRequest) {
         try {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
-            User user = userService.getSystemUser();
-            user.setIp(httpServletRequest.getRemoteAddr());
             if (signRequest.getStatus().equals(SignRequestStatus.signed) || signRequest.getStatus().equals(SignRequestStatus.checked)) {
-                signRequestService.completeSignRequests(Arrays.asList(signRequest), user);
+                signRequestService.completeSignRequests(Arrays.asList(signRequest), "system");
             } else {
                 logger.warn("no signed version of signRequest : " + token);
             }

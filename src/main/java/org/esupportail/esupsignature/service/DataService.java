@@ -95,11 +95,11 @@ public class DataService {
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user, false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), signBook, user, authUser);
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
         signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
         if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
@@ -123,7 +123,7 @@ public class DataService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signBookService.pendingSignBook(signBook, data, user, authUser);
+        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }
@@ -136,7 +136,7 @@ public class DataService {
         data.setUpdateDate(new Date());
     }
 
-    public void updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
+    public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
@@ -162,6 +162,7 @@ public class DataService {
         data.setOwner(user.getEppn());
         data.setCreateDate(new Date());
         dataRepository.save(data);
+        return data;
     }
 
     public Data cloneData(Data data, User authUser) {
@@ -222,7 +223,7 @@ public class DataService {
         return datasPage;
     }
 
-    public List<Field> getPrefilledFields(User user, Integer page, Form form) {
+    public List<Field> getPrefilledFields(Form form, User user) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
             List<Field> fields = new ArrayList<>(form.getFields());
@@ -273,7 +274,7 @@ public class DataService {
     }
 
     @Transactional
-    public void addData(Long id, Long dataId, Map<String, String> datas, User user, User authUser) {
+    public Data addData(Long id, Long dataId, Map<String, String> datas, User user, User authUser) {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
@@ -281,7 +282,7 @@ public class DataService {
         } else {
             data = new Data();
         }
-        updateDatas(form, data, datas, user, authUser);
+        return updateDatas(form, data, datas, user, authUser);
     }
 
     public void nullifyForm(Form form) {

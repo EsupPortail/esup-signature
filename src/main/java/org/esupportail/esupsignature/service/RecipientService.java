@@ -33,8 +33,8 @@ public class RecipientService {
         return false;
     }
 
-    public void validateRecipient(SignRequest signRequest, User user) {
-        Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().equals(user)).findFirst().get();
+    public void validateRecipient(SignRequest signRequest, String userEppn) {
+        Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
     }
