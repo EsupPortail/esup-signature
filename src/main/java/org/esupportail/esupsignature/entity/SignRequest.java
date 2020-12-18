@@ -1,9 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.collections.map.HashedMap;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -29,7 +30,8 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
+    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     private String exportedDocumentURI;
@@ -50,7 +52,8 @@ public class SignRequest {
     private List<Document> attachments = new ArrayList<>();
 
     @JsonIgnore
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> links = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -62,6 +65,7 @@ public class SignRequest {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     private Date endDate;
@@ -83,6 +87,7 @@ public class SignRequest {
     transient Data data;
     
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
@@ -286,16 +291,6 @@ public class SignRequest {
         return liteDocuments;
     }
 
-    public List<Document> getToSignDocuments() {
-        List<Document> documents = new ArrayList<>();
-        if(this.getSignedDocuments() != null && this.getSignedDocuments().size() > 0 ) {
-            documents.add(this.getLastSignedDocument());
-        } else {
-            documents.addAll(this.getOriginalDocuments());
-        }
-        return documents;
-    }
-
     public Document getLastSignedDocument() {
         if(this.getSignedDocuments().size() > 0) {
             return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);
@@ -314,7 +309,7 @@ public class SignRequest {
     }
 
     public SignType getCurrentSignType() {
-        if(this.getParentSignBook().getLiveWorkflow().getWorkflowSteps() != null && this.getSignable()) {
+        if(this.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null && this.getSignable()) {
             return this.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         } else {
             return null;

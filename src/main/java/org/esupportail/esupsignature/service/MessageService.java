@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.repository.MessageRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -18,6 +19,9 @@ public class MessageService {
 
     @Resource
     private MessageRepository messageRepository;
+
+    @Resource
+    private UserService userService;
 
     public Message createMessage(String endDate, String text) throws ParseException {
         Message message = new Message();
@@ -40,7 +44,9 @@ public class MessageService {
         return messageRepository.findByUsersNotContainsAndEndDateAfter(user, new Date());
     }
 
-    public void disableMessageForUser(User authUser, long id) {
+    @Transactional
+    public void disableMessageForUser(String authUserEppn, long id) {
+        User authUser = userService.getByEppn(authUserEppn);
         Message message = messageRepository.findById(id).get();
         message.getUsers().add(authUser);
     }

@@ -12,7 +12,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
@@ -33,7 +32,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,7 +52,7 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user/signrequests")
 @Controller
-@Transactional
+
 @EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestController {
 
@@ -103,25 +101,23 @@ public class SignRequestController {
 //    private SedaExportService sedaExportService;
 
     @GetMapping
-    public String list(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
+    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(value = "statusFilter", required = false) String statusFilter,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         model.addAttribute("statusFilter", statusFilter);
-        List<SignRequest> signRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, statusFilter);
-        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(signRequests, pageable));
+        model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, pageable));
         model.addAttribute("statuses", SignRequestStatus.values());
-        model.addAttribute("forms", formService.getFormsByUser(user, authUser));
-        model.addAttribute("workflows", workflowService.getWorkflowsByUser(user, authUser));
+        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+        model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         return "user/signrequests/list";
     }
 
     @GetMapping(value = "/list-ws")
     @ResponseBody
-    public String listWs(@ModelAttribute(name = "user") User user, @ModelAttribute(name = "authUser") User authUser,
+    public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
                                     @RequestParam(value = "statusFilter", required = false) String statusFilter,
                                     @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequestsForCurrentUserByStatus(user, authUser, statusFilter);
-        Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(signRequests, pageable);
+        Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, pageable);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         model.addAttribute("signRequests", signRequestPage);
@@ -130,66 +126,48 @@ public class SignRequestController {
         return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #user)")
-    @GetMapping(value = "/send-otp/{id}/{recipientId}")
-    public String sendOtp(@ModelAttribute("user") User user,
-                          @PathVariable("id") Long id,
-                          @PathVariable("recipientId") Long recipientId,
-                          RedirectAttributes redirectAttributes) throws Exception {
-        User newUser = userService.getUserById(recipientId);
-        if(newUser.getUserType().equals(UserType.external)) {
-            otpService.generateOtpForSignRequest(id, newUser);
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
-        } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
-        }
-        return "redirect:/user/signrequests/" + id;
-    }
-
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
-        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, user, authUser);
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
+        SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signRequest", signRequest);
-        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest, user, authUser));
-        model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest, user, authUser));
-        model.addAttribute("fields", signRequestService.prefillSignRequestFields(signRequest, user));
+        model.addAttribute("currentSignType", signRequest.getCurrentSignType());
+        model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
+        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        model.addAttribute("attachments", signRequestService.getAttachments(id));
+        model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
+        model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         try {
-            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, user, authUser));
+            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
         } catch (EsupSignatureUserException e) {
+            logger.error(e.getMessage());
             model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
         }
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
-        model.addAttribute("steps", getWorkflowStepsFromSignRequest(signRequest, user));
+        if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
+            model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
+        }
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
-        model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, user, authUser));
+        model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
         return "user/signrequests/show";
     }
 
-    public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, User user) throws EsupSignatureException {
-        List<WorkflowStep> workflowSteps = new ArrayList<>();
-        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, user, true);
-            workflowSteps.addAll(workflow.getWorkflowSteps());
-        }
-        return workflowSteps;
-    }
-
-
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/details/{id}")
-    public String details(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model) throws Exception {
+    public String details(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws Exception {
+        User user = userService.getByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logService.getById(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-        List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
-        model.addAttribute("refuseLogs", refuseLogs);
+        model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
             model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
         }
@@ -198,7 +176,7 @@ public class SignRequestController {
         }
         model.addAttribute("signRequest", signRequest);
 
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(signRequest, user, authUser) && signRequest.getOriginalDocuments().size() > 0) {
+        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn) && signRequest.getOriginalDocuments().size() > 0) {
             signRequest.setSignable(true);
         }
         model.addAttribute("signTypes", SignType.values());
@@ -207,29 +185,27 @@ public class SignRequestController {
 
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
-    public ResponseEntity<String> sign(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public ResponseEntity<String> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                @RequestParam(value = "sseId") String sseId,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password) {
-
         if (visual == null) visual = true;
-        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, user, authUser);
-        if(signRequestService.initSign(signRequest, sseId, signRequestParamsJsonString, comment, formData, visual, password, user, authUser)) {
+        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userEppn, authUserEppn)) {
             new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/add-docs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+    public Object addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         SignRequest signRequest = signRequestService.getById(id);
         for (MultipartFile multipartFile : multipartFiles) {
@@ -240,12 +216,12 @@ public class SignRequestController {
 
     @ResponseBody
     @PostMapping(value = "/remove-doc/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String removeDocument(@ModelAttribute("user") User user, @PathVariable("id") Long id) throws JSONException {
+    public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws JSONException {
         logger.info("remove document " + id);
         JSONObject result = new JSONObject();
         Document document = documentService.getById(id);
         SignRequest signRequest = signRequestService.getById(document.getParentId());
-        if(signRequest.getCreateBy().equals(user)) {
+        if(signRequest.getCreateBy().getEppn().equals(authUserEppn)) {
             signRequest.getOriginalDocuments().remove(document);
         } else {
             result.put("error", "Non autorisé");
@@ -254,7 +230,7 @@ public class SignRequestController {
     }
 
 //    @GetMapping("/sign-by-token/{token}")
-//    public String signByToken(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("token") String token) {
+//    public String signByToken(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("token") String token) {
 //        SignRequest signRequest = signRequestService.getSignRequestsByToken(token).get(0);
 //        if (signRequestService.checkUserSignRights(user, authUser, signRequest)) {
 //            return "redirect:/user/signrequests/" + signRequest.getId();
@@ -263,15 +239,16 @@ public class SignRequestController {
 //        }
 //    }
 
-    @PreAuthorize("@userService.preAuthorizeNotInShare(#user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     @PostMapping(value = "/fast-sign-request")
-    public String createSignRequest(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+    public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
                                     HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        User user = userService.getByEppn(userEppn);
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(user, multipartFiles, signType, authUser);
+                SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, user, authUserEppn);
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -283,26 +260,27 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    @PreAuthorize("@userService.preAuthorizeNotInShare(#user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     @PostMapping(value = "/send-sign-request")
-    public String sendSignRequest(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                                  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
-                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                                  @RequestParam(value = "pending", required = false) Boolean pending,
-                                  @RequestParam(value = "comment", required = false) String comment,
-                                  @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+    public String sendSignBook(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                               @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                               @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                               @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
+                               @RequestParam(value = "pending", required = false) Boolean pending,
+                               @RequestParam(value = "comment", required = false) String comment,
+                               @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+        User user = userService.getByEppn(userEppn);
+        User authUser = userService.getByEppn(authUserEppn);
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
-                SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
-                String message = sendSignRequest(user, signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, authUser);
-                if (message != null) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", message));
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
+                if (signBookStringMap.values().iterator().next() != null) {
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.get(0)));
                 } else {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
                 }
-                return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+                return "redirect:/user/signrequests/" + signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
@@ -313,54 +291,18 @@ public class SignRequestController {
         return "redirect:/user/signrequests";
     }
 
-    public String sendSignRequest(User user, SignBook signBook, String[] recipientsEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User authUser) throws EsupSignatureException {
-        String message = null;
-        if (allSignToComplete == null) {
-            allSignToComplete = false;
-        }
-        try {
-            if(userSignFirst != null && userSignFirst) {
-                signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
-            }
-            signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
-            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getWorkflowSteps().get(0));
-        } catch (EsupSignatureUserException e) {
-            logger.error("error with users on create signbook " + signBook.getId());
-            throw new EsupSignatureException("Problème lors de l’envoi");
-        }
-        if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
-            pending = false;
-            message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
-        }
-        if (pending != null && pending) {
-            signBookService.pendingSignBook(signBook, user, authUser);
-            if (comment != null && !comment.isEmpty()) {
-                for (SignRequest signRequest : signBook.getSignRequests()) {
-                    signRequest.setComment(comment);
-                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user, authUser);
-                }
-            }
-        } else {
-            message = "Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
-        }
-        return message;
-    }
-
-    @PreAuthorize("@signRequestService.preAuthorizeSign(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
-        SignRequest signRequest = signRequestService.getById(id);
-        signRequest.setComment(comment);
-        signRequestService.refuse(signRequest, user, authUser);
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        signRequestService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests/" + signRequest.getId();
+        return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getById(id);
-        if(signRequestService.delete(signRequest)) {
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        if(signRequestService.delete(id)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
@@ -370,7 +312,7 @@ public class SignRequestController {
 
 //    @PostMapping(value = "delete-multiple", consumes = {"application/json"})
 //    @ResponseBody
-//    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUser") User authUser, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+//    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
 //        for(Long id : ids) {
 //            SignBook signBook = signBookService.getSignBookById(id);
 //            if(signBook != null) {
@@ -389,9 +331,9 @@ public class SignRequestController {
 //        return new ResponseEntity<>(true, HttpStatus.OK);
 //    }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
-    public String addAttachement(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
@@ -402,9 +344,9 @@ public class SignRequestController {
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/remove-attachment/{id}/{attachementId}")
-    public String removeAttachement(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
+    public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes) {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe a été supprimée"));
@@ -413,60 +355,41 @@ public class SignRequestController {
 
 
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/remove-link/{id}/{linkId}")
-    public String removeLink(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
+    public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes) {
         logger.info("start remove link");
         signRequestService.removeLink(id, linkId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le lien a été supprimé"));
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
-    public void getAttachment(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse response, RedirectAttributes redirectAttributes) {
-        SignRequest signRequest = signRequestService.getById(id);
-        Document attachement = documentService.getById(attachementId);
+    public void getAttachment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) {
         try {
-            if (!attachement.getParentId().equals(signRequest.getId())) {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
-                response.sendRedirect("/user/signsignrequests/" + id);
+            Map<String, Object> attachmentResponse = signRequestService.getAttachmentResponse(id, attachementId);
+            if (attachmentResponse != null) {
+                httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
+                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
             } else {
-                response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachement.getFileName(), StandardCharsets.UTF_8.toString()));
-                response.setContentType(attachement.getContentType());
-                IOUtils.copy(attachement.getInputStream(), response.getOutputStream());
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
+                httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
             }
         } catch (Exception e) {
             logger.error("get file error", e);
         }
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file/{id}")
-    public ResponseEntity<Void> getLastFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-        SignRequest signRequest = signRequestService.getById(id);
+    public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            InputStream inputStream = null;
-            String contentType = "";
-            String fileName = "";
-            if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
-                List<Document> documents = signRequest.getToSignDocuments();
-                if (documents.size() > 1) {
-                    httpServletResponse.sendRedirect("/user/signrequests/" + signRequest.getId());
-                } else {
-                    inputStream = documents.get(0).getBigFile().getBinaryFile().getBinaryStream();
-                    fileName = documents.get(0).getFileName();
-                    contentType = documents.get(0).getContentType();
-                }
-            } else {
-                FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
-                inputStream = fsFile.getInputStream();
-                fileName = fsFile.getName();
-                contentType = fsFile.getContentType();
-            }
-            httpServletResponse.setContentType(contentType);
-            httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
-            IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
+            Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
+            httpServletResponse.setContentType(fileResponse.get("contentType").toString());
+            httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+            IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -474,9 +397,9 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-file/{id}")
-    public ResponseEntity<Void> getFile(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         Document document = documentService.getById(id);
         if(signRequestService.getById(document.getParentId()) != null) {
             httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
@@ -487,24 +410,24 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/update-step/{id}/{step}")
-    public String changeStepSignType(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
+    public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/complete/{id}")
-    public String complete(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id) {
-        signRequestService.completeSignRequest(id, user, authUser);
+    public String complete(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+        signRequestService.completeSignRequest(id, userEppn, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public String pending(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(required = false) List<String> recipientEmails,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "names", required = false) String[] names,
@@ -516,17 +439,17 @@ public class SignRequestController {
             return "redirect:/user/signrequests/" + id;
         }
         SignRequest signRequest = signRequestService.getById(id);
-        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, user, authUser);
+        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, userEppn, authUserEppn);
         if(comment != null && !comment.isEmpty()) {
-            signRequestService.addPostit(signRequest, comment, user, authUser);
+            signRequestService.addPostit(signRequest, comment, userEppn, authUserEppn);
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-step/{id}")
-    public String addRecipients(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                 @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
@@ -535,25 +458,42 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@signRequestService.preAuthorizeView(#id, #user, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/comment/{id}")
-    public String comment(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, authUser);
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 
-    @PreAuthorize("@signRequestService.preAuthorizeOwner(#id, #authUser)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/is-temp-users/{id}")
     @ResponseBody
-    public List<User> isTempUsers(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id,
+    public List<User> isTempUsers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                               @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
         SignRequest signRequest = signRequestService.getById(id);
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
         return userService.getTempUsers(signRequest, recipientList);
     }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @GetMapping(value = "/send-otp/{id}/{recipientId}")
+    public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
+                          @PathVariable("id") Long id,
+                          @PathVariable("recipientId") Long recipientId,
+                          RedirectAttributes redirectAttributes) throws Exception {
+        User newUser = userService.getById(recipientId);
+        if(newUser.getUserType().equals(UserType.external)) {
+            otpService.generateOtpForSignRequest(id, newUser);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande OTP envoyée"));
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
+        }
+        return "redirect:/user/signrequests/" + id;
+    }
+
 }

@@ -8,22 +8,21 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -43,12 +42,7 @@ public class DocumentService {
 	@Resource
 	private FsAccessFactory fsAccessFactory;
 
-	public List<Document> getAllDocuments(){
-		List<Document> list = new ArrayList<Document>();
-		documentRepository.findAll().forEach(e -> list.add(e));
-		return list;
-	}
-
+	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
 		Document document = new Document();
 		document.setCreateDate(new Date());

@@ -1,14 +1,10 @@
 package org.esupportail.esupsignature.config.security;
 
-import java.util.Arrays;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.springframework.beans.factory.ObjectProvider;
@@ -33,13 +29,19 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Configuration
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
+	@Resource
+	private WebSecurityProperties webSecurityProperties;
 
 	@Resource
 	private List<SecurityService> securityServices;
@@ -83,13 +85,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		if(webSecurityProperties.getIfAvailable() == null || webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps() == null) {
+		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
 			hasIpAddresses = "denyAll";
 		} else {
-			for (String ip : webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps()) {
+			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses += "hasIpAddress('"+ ip +"')";
-				if(nbIps < webSecurityProperties.getIfAvailable().getWsAccessAuthorizeIps().length) {
+				if(nbIps < webSecurityProperties.getWsAccessAuthorizeIps().length) {
 					hasIpAddresses += " or ";
 				}
 			}
@@ -100,8 +102,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").authenticated()
-				.antMatchers("/sse/", "/sse/**").authenticated()
+				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/webjars/**").permitAll();
 
@@ -156,6 +158,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public UserDetailsService userDetailsService() {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 		return manager;
+	}
+
+	@Bean
+	public SpelGroupService spelGroupService() {
+		SpelGroupService spelGroupService = new SpelGroupService();
+		Map<String, String> groups4eppnSpel = new HashMap<>();
+		if (webSecurityProperties.getGroupMappingSpel() != null) {
+			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {
+				String spelRule = webSecurityProperties.getGroupMappingSpel().get(groupName);
+				groups4eppnSpel.put(groupName, spelRule);
+			}
+		}
+		spelGroupService.setGroups4eppnSpel(groups4eppnSpel);
+		return spelGroupService;
 	}
 
 }

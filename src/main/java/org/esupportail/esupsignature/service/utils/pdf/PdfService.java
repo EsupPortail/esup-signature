@@ -9,11 +9,14 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -39,7 +42,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
-import org.esupportail.esupsignature.service.SignRequestParamsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,10 +57,12 @@ import org.verapdf.pdfa.results.ValidationResult;
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.*;
 
 
@@ -72,9 +76,6 @@ public class PdfService {
 
     @Resource
     private FileService fileService;
-
-    @Resource
-    private SignRequestParamsService signRequestParamsService;
 
     @Resource
     private GlobalProperties globalProperties;
@@ -133,6 +134,14 @@ public class PdfService {
             PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
             PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, signRequestParams.getSignWidth(), heightAdjusted);
             pdAnnotationLink.setRectangle(position);
+            PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
+            pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
+            pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
+            Color color = new Color(255, 255, 255);
+            float[] components = new float[] {
+                    color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f };
+            PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
+            pdAnnotationLink.setColor(pdColor);
             PDActionURI action = new PDActionURI();
             action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
             pdAnnotationLink.setAction(action);

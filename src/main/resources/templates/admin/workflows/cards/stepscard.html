@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
@@ -79,7 +79,7 @@
                                     <tr>
                                         <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}"
                                               th:method="'delete'">
-                                            <input type="hidden" name="userId" th:value="${user.id}"/>
+                                            <input type="hidden" name="userEppn" th:value="${user.id}"/>
                                             <td class="text-left">
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                             </td>

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.ldap;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -24,14 +25,18 @@ public class LdapConfig {
     private GlobalProperties globalProperties;
 
     @Resource
+    private WebSecurityProperties webSecurityProperties;
+
+    @Resource
     private LdapTemplate ldapTemplate;
     
     @Bean
     public LdapGroupService ldapGroupService() {
         Map<String, String> ldapFiltersGroups = new HashMap<>();
 
-        for(Map.Entry<String, String> entry : ldapProperties.getLdapFiltersGroups().entrySet()) {
-            ldapFiltersGroups.put(entry.getValue(), globalProperties.getGroupPrefixRoleName() + "." + entry.getKey().toUpperCase());
+        for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
+            String groupName = webSecurityProperties.getGroupToRoleFilterPattern().replace("(\\w*)", entry.getKey());
+            ldapFiltersGroups.put(entry.getValue(), groupName);
         }
 
         LdapGroupService ldapGroupService = new LdapGroupService();

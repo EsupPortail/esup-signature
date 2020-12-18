@@ -226,7 +226,8 @@ export class PdfViewer extends EventFactory {
     }
 
     promizeSaveValues() {
-        this.page.getAnnotations().then(items => this.saveValues(items));
+        console.info("launch save values");
+        return this.page.getAnnotations().then(items => this.saveValues(items));
     }
 
     saveValues(items) {
@@ -326,9 +327,6 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
-                console.debug(items[i]);
-                console.debug(inputField);
-                console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -502,7 +500,6 @@ export class PdfViewer extends EventFactory {
                 signField.addClass("d-none");
                 signField.parent().remove();
             }
-            console.debug(items[i]);
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
@@ -522,24 +519,34 @@ export class PdfViewer extends EventFactory {
 
     prevPage() {
         this.fireEvent('beforeChange', ['prev']);
-        if (this.pageNum <= 1) {
-            return;
+        if (this.isFirstPage()) {
+            return false;
         }
         this.pageNum--;
         this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['prev']);
+        return true;
     }
 
     nextPage() {
         this.fireEvent('beforeChange', ['next']);
-        if (this.pageNum >= this.numPages) {
-            return;
+        if (this.isLastpage()) {
+            return false;
         }
         this.pageNum++;
         this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['next']);
+        return true;
+    }
+
+    isFirstPage() {
+        return this.pageNum <= 1;
+    }
+
+    isLastpage() {
+        return this.pageNum >= this.numPages;
     }
 
     zoomIn() {

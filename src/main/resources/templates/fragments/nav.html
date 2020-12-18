@@ -1,11 +1,12 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
+<!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
+<header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
@@ -30,28 +31,28 @@
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                        href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && user == authUser}" class="badge badge-danger mt-1 d-none d-md-inline"
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger mt-1 d-none d-md-inline"
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${user == authUser || isOneCreateShare}">
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneCreateShare}">
                     <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
                         <i class="fab fa-firstdraft"></i> <span
                             class="nav-item-label d-none d-xl-inline">Brouillons</span>
-                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && user == authUser}"
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${user == authUser || isOneSignShare || isOneReadShare}" >
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}" >
                     <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
                         <i class="fas fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item dropdown" th:if="${user == authUser}">
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
@@ -94,7 +95,7 @@
                     </div>
                 </li>
 
-                <li class="nav-item dropdown" th:if="${user == authUser}">
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle"
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
@@ -105,7 +106,7 @@
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
                             <i class="fas fa-users-cog"></i> Gérer mes délégations
                         </a>
-                        <div th:if="${suUsers != null && suUsers.size() > 0 && user == authUser}" class="dropdown-divider"></div>
+                        <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
                             <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                                 <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
@@ -113,12 +114,12 @@
                         </th:block>
                     </div>
                 </li>
-                <li class="nav-item dropdown" th:if="${user != authUser}">
-                    <a th:if="${user != authUser}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
+                <li class="nav-item dropdown" th:if="${userEppn != authUserEppn}">
+                    <a th:if="${userEppn != authUserEppn}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
                         <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && user == authUser}" title="Menu admin">
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
@@ -208,11 +209,11 @@
                 <tr>
                     <th>Mes signatures</th>
                     <td>
-                        <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
+                        <div style="width: 250px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
                             <div class="carousel-inner">
-                                <th:block th:each="signImage, iterator : ${user.signImages}">
+                                <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImage.id}" />
+                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
                                     </div>
                                 </th:block>
                             </div>
@@ -225,7 +226,7 @@
                                 <span class="sr-only">Next</span>
                             </a>
                         </div>
-                        <div th:unless="${user.signImages.size() > 0 && user.signImages.get(0) != null}" class="alert alert-danger">
+                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="alert alert-danger">
                             Pas de signature
                         </div>
                     </td>
@@ -233,14 +234,14 @@
                 <tr>
                     <th>Magasin de certificats</th>
                     <td>
-                        <div th:unless="${user.keystore == null}" class="alert alert-secondary">
+                        <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
                             <a href="/user/users/get-keystore">
-                                <span th:text="${user.keystore.fileName}"></span>
+                                <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
-                        <div th:if="${user.keystore == null}" class="alert alert-danger">
+                        <div th:if="${keystoreFileName == null}" class="alert alert-danger">
                             Pas de magasin de certificats
                         </div>
                     </td>

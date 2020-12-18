@@ -45,13 +45,13 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <th:block th:each="signImage, iterator : ${authUser.signImages}">
+                                        <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${base64UserSignatures.get(iterator.index)}" />
+                                                    <img class="thumbnail" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
                                                 </td>
                                                 <td>
-                                                    <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
+                                                    <a th:href="'/user/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </a>
                                                 </td>
@@ -153,17 +153,17 @@
                                     </div>
                                 </div>
                             </label>
-                            <div th:if="${authUser.keystore != null}" class="alert alert-secondary">
+                            <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
                                 Keystore actuel : <a
                                     href="/user/users/get-keystore"><span
-                                    th:text="${authUser.keystore.fileName}"></span></a>
+                                    th:text="${keystoreFileName}"></span></a>
                                 <br>
-                                <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"
+                                <button type="button"
                                         class="btn btn-sm btn-primary text-left" data-toggle="modal"
                                         data-target="#testKeystore">
                                     <i class="fas fa-certificate"></i> Tester mon certificat
                                 </button>
-                                <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"
+                                <button type="button"
                                         class="btn btn-sm btn-danger text-left" data-toggle="modal"
                                         data-target="#removeKeystore">
                                     <i class="fas fa-trash-alt"></i> Supprimer mon certificat

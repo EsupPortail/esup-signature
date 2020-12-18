@@ -1,19 +1,5 @@
 package org.esupportail.esupsignature.service.utils.mail;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-import javax.annotation.Resource;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
@@ -24,10 +10,10 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.otp.Otp;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -42,6 +28,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
+import javax.annotation.Resource;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)

@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -32,7 +34,8 @@ public class Workflow {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
+    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -44,6 +47,7 @@ public class Workflow {
     private String role;
 
     @ElementCollection(targetClass= ShareType.class)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean publicUsage = false;
@@ -56,10 +60,12 @@ public class Workflow {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> managers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

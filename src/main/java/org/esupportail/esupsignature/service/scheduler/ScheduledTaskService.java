@@ -22,7 +22,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -56,7 +55,7 @@ public class ScheduledTaskService {
 	private ObjectProvider<OJService> oJService;
 
 	@Scheduled(fixedRate = 300000)
-	@Transactional
+
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		for(Workflow workflow : workflows) {
@@ -65,15 +64,15 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
-	@Transactional
+
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook, userService.getSchedulerUser());
+				signBookService.exportFilesToTarget(signBook, "scheduler");
 				if(globalProperties.getArchiveUri() != null) {
-					signBookService.archivesFiles(signBook, userService.getSchedulerUser());
+					signBookService.archivesFiles(signBook, "scheduler");
 				}
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
@@ -82,13 +81,13 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
-	@Transactional
+
 	public void scanAllSignbooksToClean() {
 		logger.trace("scan all signRequest to export");
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
-				signBookService.cleanFiles(signBook, userService.getSchedulerUser());
+				signBookService.cleanFiles(signBook, "scheduler");
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");
@@ -96,7 +95,7 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(fixedRate = 300000)
-	@Transactional
+
 	public void sendAllEmailAlerts() {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {

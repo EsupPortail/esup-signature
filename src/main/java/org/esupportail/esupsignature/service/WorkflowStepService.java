@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -17,17 +18,12 @@ public class WorkflowStepService {
     private WorkflowStepRepository workflowStepRepository;
 
     @Resource
+    private WorkflowService workflowService;
+
+    @Resource
     private UserService userService;
 
-    public WorkflowStep create(User creator, String name, SignType signType) {
-        WorkflowStep workflowStep = new WorkflowStep();
-        workflowStep.setName(name);
-        workflowStep.setSignType(signType);
-        workflowStep.getUsers().add(creator);
-        workflowStepRepository.save(workflowStep);
-        return workflowStep;
-    }
-
+    @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {
@@ -68,42 +64,53 @@ public class WorkflowStepService {
         workflowStep.setSignType(signType);
     }
 
+    @Transactional
     public WorkflowStep addStepRecipients(Long workflowStepId, String recipientsEmails) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
         return workflowStep;
     }
 
-    public WorkflowStep removeStepRecipient(Long workflowStepId, Long userId) {
+    @Transactional
+    public WorkflowStep removeStepRecipient(Long workflowStepId, String userEppn) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
-        User recipientToRemove = userService.getUserById(userId);
+        User recipientToRemove = userService.getByEppn(userEppn);
         workflowStep.getUsers().remove(recipientToRemove);
         return workflowStep;
     }
 
-
-    public void updateStep(WorkflowStep workflowStep, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
+    @Transactional
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
+        WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflowStep.setAllSignToComplete(allSignToComplete);
     }
 
-    public void addStep(Workflow workflow, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+    @Transactional
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+        Workflow workflow = workflowService.getById(workflowId);
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflow.getWorkflowSteps().add(workflowStep);
     }
 
+    @Transactional
     public void removeStep(Workflow workflow, Integer stepNumber) {
         WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
         workflow.getWorkflowSteps().remove(workflowStep);
         delete(workflowStep);
     }
 
+    @Transactional
     public void delete(WorkflowStep workflowStep) {
         workflowStepRepository.delete(workflowStep);
+    }
+
+    public WorkflowStep getById(Long workflowStepId) {
+        return workflowStepRepository.findById(workflowStepId).get();
     }
 
 }

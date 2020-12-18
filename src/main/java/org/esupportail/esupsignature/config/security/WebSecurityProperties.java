@@ -2,13 +2,43 @@ package org.esupportail.esupsignature.config.security;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix="security.ws")
+import java.util.Map;
+
+@ConfigurationProperties(prefix="security.web")
 public class WebSecurityProperties {
 
     private String[] wsAccessAuthorizeIps;
+    private String groupToRoleFilterPattern;
+    private Map<String, String> mappingGroupsRoles;
+    private Map<String, String> groupMappingSpel;
+
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
     }
+
     public void setWsAccessAuthorizeIps(String[] wsAccessAuthorizeIps) { this.wsAccessAuthorizeIps = wsAccessAuthorizeIps; }
 
+    public String getGroupToRoleFilterPattern() {
+        return groupToRoleFilterPattern;
+    }
+
+    public void setGroupToRoleFilterPattern(String groupToRoleFilterPattern) {
+        this.groupToRoleFilterPattern = groupToRoleFilterPattern;
+    }
+
+    public Map<String, String> getMappingGroupsRoles() {
+        return mappingGroupsRoles;
+    }
+
+    public void setMappingGroupsRoles(Map<String, String> mappingGroupsRoles) {
+        this.mappingGroupsRoles = mappingGroupsRoles;
+    }
+
+    public Map<String, String> getGroupMappingSpel() {
+        return groupMappingSpel;
+    }
+
+    public void setGroupMappingSpel(Map<String, String> groupMappingSpel) {
+        this.groupMappingSpel = groupMappingSpel;
+    }
 }

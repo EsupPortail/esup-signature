@@ -7,28 +7,28 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
-import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class DataService {
@@ -65,16 +65,11 @@ public class DataService {
     @Resource
     private UserShareService userShareService;
 
+    @Resource
+    private UserService userService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
-    }
-
-    public boolean preAuthorizeUpdate(Long id, User user) {
-        Data data = dataRepository.findById(id).get();
-        if (data.getCreateBy().equals(user.getEppn()) || data.getOwner().equals(user.getEppn())) {
-            return true;
-        }
-        return false;
     }
 
     public void delete(Data data) {
@@ -99,25 +94,22 @@ public class DataService {
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user, false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user), user, authUser);
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
         signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
-        if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
+        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
-
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        signBookService.addSignRequest(signBook, signRequest);
         workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
@@ -129,20 +121,13 @@ public class DataService {
             }
         }
         data.setSignBook(signBook);
-        signBookService.pendingSignBook(signBook, user, authUser);
+        dataRepository.save(data);
+        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
         return signBook;
     }
 
-    public void setDatas(String name, MultiValueMap<String, String> formData, Data data) {
-        data.setName(name);
-        for(String key : formData.keySet()) {
-            data.getDatas().put(key, formData.get(key).get(0));
-        }
-        data.setUpdateDate(new Date());
-    }
-
-    public void updateDatas(@RequestParam Map<String, String> formDatas, User user, Form form, Data data, User authUser) {
+    public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
@@ -168,6 +153,7 @@ public class DataService {
         data.setOwner(user.getEppn());
         data.setCreateDate(new Date());
         dataRepository.save(data);
+        return data;
     }
 
     public Data cloneData(Data data, User authUser) {
@@ -207,16 +193,17 @@ public class DataService {
         return dataRepository.findBySignBook(signBook);
     }
 
-    public List<Data> getDataDraftByOwner(User user) {
+    public List<Data> getDataDraftByOwner(String userEppn) {
+        User user = userService.getByEppn(userEppn);
         return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
     }
 
-    public Page<Data> getDatasPaged(User user, User authUser, Pageable pageable, List<Data> datas) {
+    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, String userEppn, String authUserEppn) {
         Page<Data> datasPage;
-        if(!user.equals(authUser)) {
+        if(!userEppn.equals(authUserEppn)) {
             List<Data> datasOk = new ArrayList<>();
             for(Data data : datas) {
-                if(userShareService.checkFormShare(user, authUser, ShareType.create, data.getForm())) {
+                if(userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, data.getForm())) {
                     datasOk.add(data);
                 }
             }
@@ -227,25 +214,25 @@ public class DataService {
         return datasPage;
     }
 
-    public List<Field> getPrefilledFields(User user, Integer page, Form form) {
+    public List<Field> getPrefilledFields(Form form, User user) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
-            Integer finalPage = page;
-            List<Field> fields = form.getFields().stream().filter(field -> field.getPage() == null || field.getPage().equals(finalPage)).collect(Collectors.toList());
+            List<Field> fields = new ArrayList<>(form.getFields());
             prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
             for (Field field : prefilledFields) {
                 if(!field.getStepNumbers().contains("0")) {
                     field.setDefaultValue("");
                 }
             }
-
         } else {
             prefilledFields = form.getFields();
         }
         return prefilledFields;
     }
 
-    public SignBook initSendData(User user, List<String> recipientEmails, List<String> targetEmails, Data data, User authUser) throws EsupSignatureIOException, EsupSignatureException {
+    @Transactional
+    public SignBook initSendData(Long dataId, User user, List<String> recipientEmails, List<String> targetEmails, User authUser) throws EsupSignatureIOException, EsupSignatureException {
+        Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user, authUser);
@@ -277,7 +264,8 @@ public class DataService {
         return fields;
     }
 
-    public Data addData(User user, Long id, Long dataId, Map<String, String> datas, User authUser) {
+    @Transactional
+    public Data addData(Long id, Long dataId, Map<String, String> datas, User user, User authUser) {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
@@ -285,8 +273,7 @@ public class DataService {
         } else {
             data = new Data();
         }
-        updateDatas(datas, user, form, data, authUser);
-        return data;
+        return updateDatas(form, data, datas, user, authUser);
     }
 
     public void nullifyForm(Form form) {
@@ -301,8 +288,18 @@ public class DataService {
         if(data != null) data.setSignBook(null);
     }
 
-    public int getNbCreateByAndStatus(User user) {
-        return dataRepository.findByCreateByAndStatus(user.getEppn(), SignRequestStatus.draft).size();
+    public int getNbCreateByAndStatus(String userEppn) {
+        return dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft).size();
+    }
+
+    @Transactional
+    public Map<String, Object> getModelResponse(Long formId) throws SQLException, IOException {
+        Form form = formService.getById(formId);
+        Document model = form.getDocument();
+        if (model != null) {
+            return fileService.getFileResponse(model.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), model.getFileName(), model.getContentType());
+        }
+        return null;
     }
 
 }

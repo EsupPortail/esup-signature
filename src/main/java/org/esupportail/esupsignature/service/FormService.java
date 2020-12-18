@@ -23,6 +23,8 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -53,34 +55,46 @@ public class FormService {
 	private DataService dataService;
 
 	@Resource
+	private DocumentService documentService;
+
+	@Resource
 	private UserPropertieService userPropertieService;
+
+	@Resource
+	private UserService userService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
 	}
 
-	public Form getFormByDocument(Document document) {
-		if(formRepository.findByDocument(document).size() > 0) {
-			return formRepository.findByDocument(document).get(0);
-		} else {
-			return null;
-		}
-	}
-	
-	public List<Form> getFormsByUser(User user, User authUser){
-		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
+	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
+		User user = userService.getByEppn(userEppn);
 		List<Form> forms = new ArrayList<>();
-		if(user.equals(authUser)) {
-			forms = authorizedForms;
+		if(userEppn.equals(authUserEppn)) {
+			forms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		} else {
-			for(UserShare userShare : userShareService.getUserShares(user, Collections.singletonList(authUser), ShareType.create)) {
-				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
+			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
+			for(UserShare userShare : userShares) {
+				if(userShare.getForm() != null){
 					forms.add(userShare.getForm());
 				}
 			}
 		}
 		return forms;
+	}
+
+	@Transactional
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
+		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		return form;
+	}
+
+	@Transactional
+	public Boolean isFormAuthorized(String userEppn, String authUserEppn, Long id) {
+		Form form = getById(id);
+		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
 	public List<Form> getAllForms(){
@@ -93,6 +107,7 @@ public class FormService {
 		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
 	}
 
+	@Transactional
 	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
 		Form form = getById(id);
 		form.setPdfDisplay(updateForm.getPdfDisplay());
@@ -341,8 +356,8 @@ public class FormService {
 	}
 
 
-	public List<Form> getFormByManagersContains(User authUser) {
-		return formRepository.findFormByManagersContains(authUser.getEmail());
+	public List<Form> getFormByManagersContains(String email) {
+		return formRepository.findFormByManagersContains(email);
 	}
 
 	public String getHelpMessage(User user, Form form) {

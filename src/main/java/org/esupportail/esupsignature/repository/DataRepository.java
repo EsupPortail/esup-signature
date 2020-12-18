@@ -21,5 +21,4 @@ public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSor
     List<Data> findByOwnerAndStatus(String createBy, SignRequestStatus status);
     Page<Data> findByCreateByAndStatus(String createBy, SignRequestStatus status, Pageable pageable);
     Data findBySignBook(SignBook signBook);
-    Long countBySignBook(SignBook signBook);
 }

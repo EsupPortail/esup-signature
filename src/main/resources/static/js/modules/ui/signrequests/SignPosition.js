@@ -6,24 +6,28 @@ export class SignPosition extends EventFactory {
     constructor(signType, xPos, yPos, signPageNumber, signImages, userName) {
         super();
         console.info("Starting sign positioning tools");
+        this.cross = $('#cross');
+        this.borders = $('#borders');
         this.signType = signType;
         this.currentScale = 1;
         this.signScale = 1;
         this.fixRatio = .75;
         this.extraWidth = 0;
         this.currentSign = 0;
-        this.signImages = signImages;
-        let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
-        this.sizes = this.getImageDimensions(img);
         let signRequestParams = new SignRequestParams();
-        signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
-        signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
-        signRequestParams.signWidth = this.sizes.w * this.fixRatio;
-        signRequestParams.signHeight = this.sizes.h * this.fixRatio;
-        signRequestParams.signPageNumber = signPageNumber;
-        signRequestParams.signImageNumber = 0;
+        this.signImages = signImages;
+        if(this.signImages != null && this.signImages.length > 0) {
+            let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
+            this.sizes = this.getImageDimensions(img);
+            signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
+            signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
+            signRequestParams.signWidth = this.sizes.w * this.fixRatio;
+            signRequestParams.signHeight = this.sizes.h * this.fixRatio;
+            signRequestParams.signPageNumber = signPageNumber;
+            signRequestParams.signImageNumber = 0;
+        }
         this.signRequestParamses = [signRequestParams];
-        console.log(this.signRequestParamses);
+        this.changeSignImage(signRequestParams.signImageNumber);
         this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
@@ -31,15 +35,12 @@ export class SignPosition extends EventFactory {
         this.pointItMove = false;
         this.visualActive = true;
         this.displayExtra = false;
-        this.cross = $('#cross');
-        this.borders = $('#borders');
         this.signZoomOutButton = $('#signZoomOut');
         this.signZoomInButton = $('#signZoomIn');
         this.signNextImageButton = $('#signNextImage');
         this.signPrevImageButton = $('#signPrevImage');
         this.addSignButton = $('#addSignButton');
         this.removeSignButton = $('#removeSignButton');
-        this.changeSignImage(signRequestParams.signImageNumber);
         this.initListeners();
         if(xPos !== 0 && yPos !== 0) {
             this.updateCrossPosition();
@@ -326,7 +327,7 @@ export class SignPosition extends EventFactory {
         textName.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         let textExtra = $('#textExtra');
-        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale + "px");
+        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale / this.fixRatio + "px");
         textExtra.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();

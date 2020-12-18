@@ -1,13 +1,14 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserPropertie;
+import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +26,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -33,12 +34,12 @@ import java.time.DayOfWeek;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
 @Controller
-@Transactional
 public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
@@ -47,15 +48,6 @@ public class UserController {
 	public String getActiveMenu() {
 		return "active";
 	}
-
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private BigFileService bigFileService;
-
-	@Resource
-	private FileService fileService;
 
 	@Resource
 	private FormService formService;
@@ -79,7 +71,7 @@ public class UserController {
 	private MessageService messageService;
 
     @GetMapping
-    public String createForm(@ModelAttribute("authUser") User authUser, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+    public String createForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
@@ -91,55 +83,40 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(@ModelAttribute("authUser") User authUser, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
     		@RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore, RedirectAttributes redirectAttributes) throws Exception {
-        if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
-
-            if(authUser.getKeystore() != null) {
-            	bigFileService.delete(authUser.getKeystore().getBigFile().getId());
-            	documentService.delete(authUser.getKeystore());
-            }
-            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
-        }
-        if(signImageBase64 != null && !signImageBase64.isEmpty()) {
-        	authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
-        }
-    	authUser.setEmailAlertFrequency(emailAlertFrequency);
-    	authUser.setEmailAlertHour(emailAlertHour);
-    	authUser.setEmailAlertDay(emailAlertDay);
-    	redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
+		userService.updateUser(authUserEppn, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Vos paramètres ont été enregistrés"));
 		return "redirect:/user/users";
     }
 
 	@GetMapping("/delete-sign/{id}")
-	public String deleteSign(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
-    	Document signDocument = documentService.getById(id);
-		authUser.getSignImages().remove(signDocument);
+	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+		userService.deleteSign(authUserEppn, id);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Signature supprimée"));
 		return "redirect:/user/users";
 	}
 
-
 	@GetMapping(value = "/view-cert")
-    public String viewCert(@ModelAttribute("authUser") User authUser, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
+    public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
-			logger.info(authUser.getKeystore().getInputStream().read() + "");
-        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUser.getKeystore().getInputStream(), password)));
+        	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
         	logger.error("open keystore fail", e);
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Mauvais mot de passe"));
 		}
-        return "redirect:/user/users/?form";
+        return "redirect:/user/users";
     }
 
 	@GetMapping(value = "/remove-keystore")
-	public String removeKeystore(@ModelAttribute("authUser") User authUser, RedirectAttributes redirectAttributes) {
+	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
-		return "redirect:/user/users/?form";
+		return "redirect:/user/users";
 	}
 
 	@GetMapping(value="/search-user")
@@ -150,18 +127,19 @@ public class UserController {
    }
 
 	@GetMapping("/properties")
-	public String properties(@ModelAttribute("authUser") User authUser, Model model) {
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUser(authUser);
+	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
 		model.addAttribute("userProperties", userProperties);
-		model.addAttribute("forms", formService.getFormsByUser(authUser, authUser));
+		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
 	@GetMapping("/shares")
-	public String params(@ModelAttribute("authUser") User authUser, Model model) {
-		List<UserShare> userShares = userShareService.getUserSharesByUser(authUser);
+	public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+		User authUser = userService.getByEppn(authUserEppn);
+		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("forms", formService. getAuthorizedToShareForms());
@@ -172,10 +150,10 @@ public class UserController {
 	}
 
 	@GetMapping("/shares/update/{id}")
-	public String params(@ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+	public String params(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		model.addAttribute("activeMenu", "shares");
 		UserShare userShare = userShareService.getById(id);
-		if(userShare.getUser().equals(authUser)) {
+		if(userShare.getUser().getEppn().equals(authUserEppn)) {
 			model.addAttribute("shareTypes", ShareType.values());
 			model.addAttribute("userShare", userShare);
 			return "user/users/shares/update";
@@ -186,7 +164,7 @@ public class UserController {
 	}
 
 	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute("authUser") User authUser,
+	public String addShare(@ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(value = "form", required = false) Long[] form,
 						   @RequestParam(value = "workflow", required = false) Long[] workflow,
 						   @RequestParam("types") String[] types,
@@ -194,6 +172,7 @@ public class UserController {
 						   @RequestParam("beginDate") String beginDate,
 						   @RequestParam("endDate") String endDate,
 						   RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		try {
@@ -205,19 +184,21 @@ public class UserController {
 	}
 
 	@PostMapping("/update-share/{id}")
-	public String updateShare(@ModelAttribute("authUser") User authUser,
+	public String updateShare(@ModelAttribute("authUserEppn") String authUserEppn,
 							  @PathVariable("id") Long id,
 							  @RequestParam("types") String[] types,
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
 							  @RequestParam("endDate") String endDate) {
+		User authUser = userService.getByEppn(authUserEppn);
 		UserShare userShare = userShareService.getById(id);
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String delShare(@ModelAttribute("authUser") User authUser, @PathVariable long id, RedirectAttributes redirectAttributes) {
+	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
+		User authUser = userService.getByEppn(authUserEppn);
 		UserShare userShare = userShareService.getById(id);
 		if (userShare.getUser().equals(authUser)) {
 			userShareService.delete(userShare);
@@ -227,12 +208,12 @@ public class UserController {
 	}
 
 	@GetMapping("/change-share")
-	public String change(@ModelAttribute("authUser") User authUser, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
+	public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
 		if(eppn == null || eppn.isEmpty()) {
 			httpSession.setAttribute("suEppn", null);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 		} else {
-			if(userShareService.checkShare(userService.getUserByEppn(eppn), authUser)) {
+			if(userShareService.checkShare(eppn, authUserEppn)) {
 				httpSession.setAttribute("suEppn", eppn);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			} else {
@@ -244,49 +225,45 @@ public class UserController {
 	}
 
 	@GetMapping("/mark-intro-as-read/{name}")
-	public String markIntroAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable String name, HttpServletRequest httpServletRequest) {
-		logger.info(authUser.getEppn() + " mark " + name + " as read");
-		userService.disableIntro(authUser, name);
+	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserEppn + " mark into " + name + " as read");
+		userService.disableIntro(authUserEppn, name);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")
-	public String markAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
-    	logger.info(authUser.getEppn() + " mark " + id + " as read");
-		messageService.disableMessageForUser(authUser, id);
+	public String markAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
+    	logger.info("user " + authUserEppn + " mark " + id + " as read");
+		messageService.disableMessageForUser(authUserEppn, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping("/mark-help-as-read/{id}")
-	public String markHelpAsRead(@ModelAttribute(value = "authUser" , binding = false) User authUser, @PathVariable long id, HttpServletRequest httpServletRequest) {
-		logger.info(authUser.getEppn() + " mark " + id + " as read");
-		Form form = formService.getById(id);
-		authUser.setFormMessages(authUser.getFormMessages() + " " + form.getId());
+	public String markHelpAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
+		logger.info("user " + authUserEppn + " mark help" + id + " as read");
+		userService.setFormMessage(authUserEppn, id);
 		String referer = httpServletRequest.getHeader("Referer");
 		return "redirect:"+ referer;
 	}
 
 	@GetMapping(value = "/get-keystore")
-	public ResponseEntity<Void> getKeystore(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		return getDocumentResponseEntity(response, user.getKeystore());
+	public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
+		Map<String, Object> keystore = userService.getKeystoreByUser(authUserEppn);
+		return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), (String) keystore.get("fileName"), (String) keystore.get("contentType"));
 	}
 
 	@GetMapping(value = "/get-sign-image/{id}")
-	public ResponseEntity<Void> getSignature(@ModelAttribute("user") User user, @ModelAttribute("authUser") User authUser, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		for (Document document : user.getSignImages()) {
-			if(document.getId().equals(id)) {
-				return getDocumentResponseEntity(response, document);
-			}
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+		Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
+		return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
 	}
 
-	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, Document document) throws IOException {
-		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-		response.setContentType(document.getContentType());
-		IOUtils.copy(document.getInputStream(), response.getOutputStream());
+	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
+		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
+		response.setContentType(contentType);
+		IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

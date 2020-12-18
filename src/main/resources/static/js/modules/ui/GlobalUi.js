@@ -343,19 +343,18 @@ export class GlobalUi {
                         }
                         break;
                 }
-            } else {
                 switch (event.which) {
                     case 39:
-                        event.preventDefault();
                         let nextSignRequestButton = $("#nextSignRequestButton");
-                        if(nextSignRequestButton) {
+                        if(nextSignRequestButton.length) {
+                            event.preventDefault();
                             location.href = nextSignRequestButton.attr('href');
                         }
                         break;
                     case 37:
                         event.preventDefault();
                         let prevSignRequestButton = $("#prevSignRequestButton");
-                        if(prevSignRequestButton) {
+                        if(prevSignRequestButton.length) {
                             location.href = prevSignRequestButton.attr('href');
                         }
                         break;

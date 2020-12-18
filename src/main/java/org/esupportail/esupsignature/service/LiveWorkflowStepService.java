@@ -62,7 +62,7 @@ public class LiveWorkflowStepService {
     public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, SignBook signBook) throws EsupSignatureUserException {
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createWorkflowStep(allSignToComplete, signType, recipientsEmail);
-        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
     }
 
     public void addRecipients(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {

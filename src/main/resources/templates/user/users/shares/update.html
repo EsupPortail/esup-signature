@@ -15,8 +15,8 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.description}"></li>
-                <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.description}"></li>
+                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
+                <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
             </ol>
         </nav>
         <div id="content" class="content">
@@ -30,8 +30,10 @@
                 <div class="card-body text-center">
                     <form id="shareForm" th:action="'/user/users/update-share/' + ${userShare.id}" method="post">
                             <div id="selectFormDiv" class="form-group" th:if="${userShare.form}">
-                                <label>Formulaires délégué</label>
+                                <h5>
+                                <label>Formulaires délégué : </label>
                                 <span th:text="${userShare.form.title}"></span>
+                                </h5>
                             </div>
 
                             <div id="selectWorkflowDiv" class="form-group" th:if="${userShare.workflow}">

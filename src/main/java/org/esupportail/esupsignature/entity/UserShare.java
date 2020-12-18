@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ public class UserShare {
     private User user;
 
     @ManyToMany
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> toUsers = new ArrayList<>();
 
     @ManyToOne
@@ -32,7 +35,8 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @ElementCollection(targetClass= ShareType.class)
+    @ElementCollection(targetClass = ShareType.class)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {

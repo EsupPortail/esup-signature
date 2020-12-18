@@ -1,16 +1,21 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
+import org.esupportail.esupsignature.service.security.GroupService;
+import org.springframework.ldap.core.ContextMapper;
+import org.springframework.ldap.core.DirContextAdapter;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.esupportail.esupsignature.service.security.GroupService;
-import org.springframework.ldap.core.ContextMapper;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.LdapTemplate;
+import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 public class LdapGroupService implements GroupService {
 
@@ -105,6 +110,20 @@ public class LdapGroupService implements GroupService {
 
         }
         return groups;
+    }
+
+
+    public void addLdapRoles(Set<GrantedAuthority> grantedAuthorities, List<String> ldapGroups, String groupPrefixRoleName, Map<String, String> mappingGroupesRoles) {
+        for(String groupName : ldapGroups) {
+            if(groupName != null) {
+                Matcher m = Pattern.compile(groupPrefixRoleName).matcher(groupName);
+                if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
+                    grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
+                } else if (m.matches()) {
+                    grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + m.group(1).toUpperCase()));
+                }
+            }
+        }
     }
 
     @Override

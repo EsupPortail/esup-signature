@@ -67,7 +67,7 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 	}
 
 	@Override
-	public void fillWorkflowSteps(Workflow workflow, User user, List<String> recipentEmailsStep) {
+	public void fillWorkflowSteps(Workflow workflow, List<String> recipentEmailsStep) {
 		workflow.getWorkflowSteps().get(1).getUsers().clear();
 	}
 }

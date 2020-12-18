@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -31,7 +30,7 @@ import static org.springframework.security.web.context.HttpSessionSecurityContex
 @ConditionalOnProperty(value = "sms.enable-sms", havingValue = "true")
 @RequestMapping("/otp")
 @Controller
-@Transactional
+
 public class WsOtpSignController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsOtpSignController.class);
@@ -71,7 +70,7 @@ public class WsOtpSignController {
             if (testOtp) {
                 Otp otp = otpService.getOtp(urlId);
                 logger.info("otp success for : " + urlId);
-                User user = userService.checkUserByEmail(otp.getEmail());
+                User user = userService.getUserByEmail(otp.getEmail());
                 UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(otp.getPhoneNumber(), "");
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
                 SecurityContext securityContext = SecurityContextHolder.getContext();

@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields) {
         console.info("Starting workspace UI ");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
@@ -28,6 +28,7 @@ export class WorkspacePdf {
         this.xmlHttpMain = new XMLHttpRequest();
         this.wheelDetector = new WheelDetector();
         this.initListeners();
+        this.initDataFields(fields);
     }
 
     initListeners() {
@@ -74,12 +75,23 @@ export class WorkspacePdf {
                 postitButton.on('click', e => this.focusComment(postit));
             });
         }
-        $("#visaLaunchButton").on('click', e => this.launchSignModal(e));
-        $("#signLaunchButton").on('click', e => this.launchSignModal(e));
+        $("#visaLaunchButton").on('click', e => this.launchSignModal());
+        $("#signLaunchButton").on('click', e => this.launchSignModal());
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
-    launchSignModal(e) {
+    initDataFields(fields) {
+        if(this.pdfViewer) {
+            this.pdfViewer.setDataFields(fields);
+            if (this.pdfViewer.dataFields.length > 0 && this.pdfViewer.dataFields[0].defaultValue != null) {
+                for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
+                    this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
+                }
+            }
+        }
+    }
+
+    launchSignModal() {
         console.info("launch sign modal");
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');

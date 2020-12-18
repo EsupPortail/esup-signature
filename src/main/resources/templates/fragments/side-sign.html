@@ -1,6 +1,6 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
     <div class="ml-1 mt-3">
         <div class="hr sidebar-label">Statut</div>
@@ -11,7 +11,7 @@
         <th:block th:unless="${signRequest != null}">
             <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
         </th:block>
-        <div class="hr sidebar-label" th:if="${signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}">Changer de mode</div>
+        <div class="hr sidebar-label" th:if="${toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>
         <!--
         <select id="select-innerHTML" name="changeMode" class="mb-2 select-mode"></select>
 <script language="JavaScript">
@@ -31,13 +31,13 @@
 
         <button data-toggle="modal" data-target="#signAllModal"
                 class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"
-                th:classappend="${signable != 'ok' || signRequest.parentSignBook .signRequests.size() < 2} ? 'd-none' ">
+                th:classappend="${signable != 'ok' || nbSignRequestInSignBookParent < 2} ? 'd-none' ">
             <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
         </button>
-        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signRequest.signable}">
+        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signable}">
             <i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success"></i> <span class="sidebar-label">Remplir et signer</span>
         </button>
-        <button th:if="${signRequest.toSignDocuments.size() > 0 && signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
+        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
             <i class="fas fa-comment text-warning"></i> <span class="sidebar-label">Commentaires</span>
             <span th:if="${comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${comments.size()}"></span>
         </button>

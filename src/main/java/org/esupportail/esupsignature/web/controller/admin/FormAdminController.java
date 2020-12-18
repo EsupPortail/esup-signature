@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.DocumentService;
@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +32,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/admin/forms")
-@Transactional
+
 public class FormAdminController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
@@ -86,8 +85,7 @@ public class FormAdminController {
 
 	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Model model) throws IOException {
-		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = formService.createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -161,20 +159,18 @@ public class FormAdminController {
 	}
 
 	@ResponseBody
-	@PostMapping("/{formId}/field/{fieldId}/update")
-	public ResponseEntity<String> updateField(@PathVariable("fieldId") Long id,
-							  @PathVariable("formId") Long formId,
-							  @RequestParam(value = "required", required = false) String required,
-							  @RequestParam(value = "readOnly", required = false) String readOnly,
-							  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
-							  @RequestParam(value = "extValueType", required = false) String extValueType,
-							  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
-							  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
-							  @RequestParam(value = "searchType", required = false) String searchType,
-							  @RequestParam(value = "searchReturn", required = false) String searchReturn,
-							  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
-		Field field = fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
-		fieldService.updateField(field);
+	@PostMapping("/field/{id}/update")
+	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
+											  @RequestParam(value = "required", required = false) String required,
+											  @RequestParam(value = "readOnly", required = false) String readOnly,
+											  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
+											  @RequestParam(value = "extValueType", required = false) String extValueType,
+											  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
+											  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
+											  @RequestParam(value = "searchType", required = false) String searchType,
+											  @RequestParam(value = "searchReturn", required = false) String searchReturn,
+											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+		fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

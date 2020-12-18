@@ -31,7 +31,7 @@
             </div>
             <div th:if="${user == signBook.createBy}">
                 <div th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-                    <div class="fixed-action-simple-btn" th:if="${signBook.signRequests.size() > 0 && signBook.liveWorkflow.workflowSteps.size() > 0 && signBook.liveWorkflow.workflowSteps.get(0).recipients.size() > 0}">
+                    <div class="fixed-action-simple-btn" th:if="${signBook.signRequests.size() > 0 && signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.liveWorkflowSteps.get(0).recipients.size() > 0}">
                         <a title="Lancer la procédure de signature" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#sendModal">
                             <i class="fas fa-paper-plane"></i>
                         </a>
@@ -66,10 +66,10 @@
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                                                     <i class="fas fa-eye pr-2"></i>Consulter
                                                 </a>
-                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
+                                                <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" role="button" title="Détails" th:href="'/user/signrequests/' + ${signRequest.id} + '?form'">
                                                     <i class="fas fa-info-circle pr-2"></i>Détails
                                                 </a>
-                                                <a th:if="${signRequest.createBy == user}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                                <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>

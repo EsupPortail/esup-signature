@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
@@ -53,13 +54,13 @@ public class VisaAndSignWorkflowTest extends DefaultWorkflow {
         workflowStep1.setMaxRecipients(1);
         workflowSteps.add(workflowStep1);
         //STEP 2
-        String step2Recipient = "demo.esup@univ-rouen.fr";
+        String step2Recipient = "demo.esup@inv.univ-rouen.fr";
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setName("Président de l’université");
         workflowStep2.setSignType(SignType.pdfImageStamp);
         workflowStep2.setDescription("Signature du Président de l’université");
         List<User> recipientsStep2 = new ArrayList<>();
-        recipientsStep2.add(userService.checkUserByEmail(step2Recipient));
+        recipientsStep2.add(userService.getUserByEmail(step2Recipient));
         workflowStep2.setUsers(recipientsStep2);
         workflowStep2.setAllSignToComplete(false);
         workflowSteps.add(workflowStep2);

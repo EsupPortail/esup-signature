@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository.impl;
 
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.custom.FormRepositoryCustom;
 import org.springframework.stereotype.Repository;
 
@@ -20,16 +19,16 @@ public class FormRepositoryImpl implements FormRepositoryCustom {
 	private EntityManager entityManager;
 
 	@Override
-	public List<Form> findAuthorizedFormByUser(User user) {
+	public List<Form> findAuthorizedFormByRoles(List<String> roles) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Form> query = criteriaBuilder.createQuery(Form.class);
         Root<Form> queryRoot = query.from(Form.class);
         query.select(queryRoot);
 		Expression<Boolean> activeExpression = queryRoot.get("activeVersion");
 		Expression<Boolean> publicUsageExpression = queryRoot.get("publicUsage");
-		if(user.getRoles().size() >0 ) {
+		if(roles.size() >0 ) {
 			Expression<String> roleExpression = queryRoot.get("role");
-			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(user.getRoles())), activeExpression.in(true)));
+			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(roles)), activeExpression.in(true)));
 		} else {
 			query.where(criteriaBuilder.and(activeExpression.in(true), publicUsageExpression.in(true)));
 		}

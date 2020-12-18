@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <div th:fragment="status">
 	<div th:switch="${signRequest.status}">
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="alert alert-secondary text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">

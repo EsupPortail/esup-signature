@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -8,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -25,6 +26,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -43,19 +45,37 @@ public class UserService {
     private ObjectProvider<LdapPersonService> ldapPersonService;
 
     @Resource
+    private WebSecurityProperties webSecurityProperties;
+
+    @Resource
     private GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
 
     @Resource
-    List<SecurityService> securityServices;
+    private List<SecurityService> securityServices;
 
-    @Resource
-    LdapOrganizationalUnitService ldapOrganizationalUnitService;
+    @Autowired(required = false)
+    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private DocumentService documentService;
+
+    public User getById(Long id) {
+        return userRepository.findById(id).get();
+    }
+
+    public User getByEppn(String eppn) {
+        List<User> users = userRepository.findByEppn(eppn);
+        if(users.size() > 0) {
+            return userRepository.findByEppn(eppn).get(0);
+        }
+        return null;
+    }
 
     public User getSystemUser() {
         return createUser("system", "", "", "system", UserType.system);
@@ -79,18 +99,6 @@ public class UserService {
         return list;
     }
 
-    public boolean preAuthorizeNotInShare(User user, User authUser) {
-        return user.equals(authUser);
-    }
-
-    public User checkUserByEmail(String email) {
-        if (userRepository.countByEmail(email) > 0) {
-            return userRepository.findByEmail(email).get(0);
-        } else {
-            return createUserWithEmail(email);
-        }
-    }
-
     public User getUserByEmail(String email) {
         if (userRepository.countByEmail(email) > 0) {
             return userRepository.findByEmail(email).get(0);
@@ -99,6 +107,7 @@ public class UserService {
         }
     }
 
+    @Transactional
     public User getUserByEppn(String eppn) {
         if (eppn.equals("scheduler")) {
             return getSchedulerUser();
@@ -107,16 +116,12 @@ public class UserService {
             return getCreatorUser();
         }
         if (userRepository.countByEppn(eppn) == 0) {
-            if (eppn.split("@").length == 1) {
-                for (SecurityService securityService : this.securityServices) {
-                    if (securityService instanceof CasSecurityServiceImpl) {
-                        eppn = eppn + "@" + globalProperties.getDomain();
-                    }
-                }
-            }
+            eppn = buildEppn(eppn);
         }
         if (userRepository.countByEppn(eppn) > 0) {
-            return userRepository.findByEppn(eppn).get(0);
+            User user = getByEppn(eppn);
+            user.getRoles();
+            return user;
         }
 		if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
@@ -124,17 +129,15 @@ public class UserService {
         return null;
     }
 
-    private String buildEppn(PersonLdap personLdap) {
-        if (personLdap == null) {
-            return null;
-        }
-        String eppn = null;
+    public String buildEppn(String uid) {
         for (SecurityService securityService : securityServices) {
-            if (securityService instanceof CasSecurityServiceImpl) {
-                eppn = personLdap.getUid() + "@" + globalProperties.getDomain();
+            if (securityService instanceof CasSecurityServiceImpl
+                    && uid.split("@").length == 1
+                    && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
+                uid = uid + "@" + globalProperties.getDomain();
             }
         }
-        return eppn;
+        return uid;
     }
 
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
@@ -162,7 +165,7 @@ public class UserService {
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
-                    eppn = buildEppn(personLdaps.get(0));
+                    eppn = buildEppn(personLdaps.get(0).getUid());
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -179,6 +182,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public User createUserWithAuthentication(Authentication authentication) {
         String uid;
         if (authentication.getName().contains("@")) {
@@ -193,7 +197,7 @@ public class UserService {
         List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUid(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
-            eppn = buildEppn(personLdaps.get(0));
+            eppn = buildEppn(personLdaps.get(0).getUid());
         }
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
@@ -201,10 +205,13 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
+    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
-            user = userRepository.findByEppn(eppn).get(0);
+            user = getByEppn(eppn);
+        } else if(userRepository.countByEmail(email) > 0) {
+            user = userRepository.findByEmail(email).get(0);
         } else {
             logger.info("creation de l'utilisateur " + eppn);
             user = new User();
@@ -217,31 +224,42 @@ public class UserService {
         user.setEmail(email);
         user.setUserType(userType);
         if(!user.getUserType().equals(UserType.system)) {
-        	// TODO ! 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if(auth != null && globalProperties.getGroupPrefixRoleName() != null && eppn.equals(auth.getName())) {
-                logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-            	try {
-            		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-            		if (authorities.size() > 0) {
-            			user.getRoles().clear();
-            			Set<String> roles = new HashSet<>();
-            			for (GrantedAuthority authority : authorities) {
-            				if (authority.getAuthority().toLowerCase().contains(globalProperties.getGroupPrefixRoleName())) {
-            					// TODO ! 
-            					String role = authority.getAuthority().toLowerCase().split(globalProperties.getGroupPrefixRoleName() + ".")[1].split(",")[0];
-            					roles.add(role);
-            				}
-            			}
-            			user.getRoles().addAll(roles);
-            		}
-            	} catch (Exception e) {
-            		logger.warn(String.format("unable to get/update roles for user %s", eppn), e);
-            	}
+            if (auth != null) {
+                String userName = buildEppn(auth.getName());
+                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
+                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                    if (authorities.size() > 0) {
+                        user.getRoles().clear();
+                        for (GrantedAuthority authority : authorities) {
+                            if(authority.getAuthority().startsWith("ROLE_")) {
+                                user.getRoles().add(authority.getAuthority());
+                            }
+                        }
+                    }
+                }
             }
         }
         userRepository.save(user);
         return user;
+    }
+
+    @Transactional
+    public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
+        User authUser = getByEppn(authUserEppn);
+        if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+            if(authUser.getKeystore() != null) {
+                documentService.delete(authUser.getKeystore());
+            }
+            authUser.setKeystore(documentService.createDocument(multipartKeystore.getInputStream(), authUser.getEppn() + "_" + multipartKeystore.getOriginalFilename().split("\\.")[0] + ".p12", multipartKeystore.getContentType()));
+        }
+        if(signImageBase64 != null && !signImageBase64.isEmpty()) {
+            authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
+        }
+        authUser.setEmailAlertFrequency(emailAlertFrequency);
+        authUser.setEmailAlertHour(emailAlertHour);
+        authUser.setEmailAlertDay(emailAlertDay);
     }
 
     public boolean checkEmailAlert(User user) {
@@ -319,7 +337,9 @@ public class UserService {
         return null;
     }
 
-    public void disableIntro(User authUser, String name) {
+    @Transactional
+    public void disableIntro(String authUserEppn, String name) {
+        User authUser = getByEppn(authUserEppn);
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
     }
 
@@ -340,23 +360,6 @@ public class UserService {
             }
         }
         return UserType.external;
-    }
-
-    @Transactional
-    public List<String> getBase64UserSignatures(User user) {
-        List<String> base64UserSignatures = new ArrayList<>();
-        for (Document signature : user.getSignImages()) {
-            try {
-                base64UserSignatures.add(fileService.getBase64Image(signature));
-            } catch (IOException e) {
-                logger.error("error on convert sign image document : " + signature.getId() + " for " + user.getEppn());
-            }
-        }
-        return base64UserSignatures;
-    }
-
-    public User getUserById(Long id) {
-        return userRepository.findById(id).get();
     }
 
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
@@ -392,8 +395,8 @@ public class UserService {
 
     public List<User> getTempUsers(SignRequest signRequest) {
         Set<User> users = new HashSet<>();
-        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
-            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+        if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
@@ -402,5 +405,61 @@ public class UserService {
             }
         }
         return new ArrayList<>(users);
+    }
+
+
+    public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
+        User authUser = getByEppn(authUserEppn);
+        Map<String, Object> keystore = new HashMap<>();
+        keystore.put("bytes", authUser.getKeystore().getInputStream().readAllBytes());
+        keystore.put("fileName", authUser.getKeystore().getFileName());
+        keystore.put("contentType", authUser.getKeystore().getContentType());
+        return keystore;
+    }
+
+    @Transactional
+    public Map<String, Object> getSignatureByUserAndId(String authUserEppn, Long id) throws IOException {
+        Map<String, Object> signature = new HashMap<>();
+        User authUser = getByEppn(authUserEppn);
+        Optional<Document> signImage = authUser.getSignImages().stream().filter(document -> document.getId().equals(id)).findFirst();
+        if(signImage.isPresent()) {
+            signature.put("bytes", signImage.get().getInputStream().readAllBytes());
+            signature.put("fileName", signImage.get().getFileName());
+            signature.put("contentType", signImage.get().getContentType());
+        }
+        return signature;
+    }
+
+    @Transactional
+    public List<Long> getSignImagesIds(String userEppn) {
+        User user = getByEppn(userEppn);
+        return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public String getKeystoreFileName(String userEppn) {
+        User user = getByEppn(userEppn);
+        if(user.getKeystore() != null) {
+            return user.getKeystore().getFileName();
+        }
+        return null;
+    }
+
+    @Transactional
+    public void deleteSign(String authUserEppn, long id) {
+        User authUser = getByEppn(authUserEppn);
+        Document signDocument = documentService.getById(id);
+        authUser.getSignImages().remove(signDocument);
+    }
+
+    @Transactional
+    public void setFormMessage(String authUserEppn, long formId) {
+        User authUser = getByEppn(authUserEppn);
+        authUser.setFormMessages(authUser.getFormMessages() + " " + formId);
+    }
+
+    @Transactional
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

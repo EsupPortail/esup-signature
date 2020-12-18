@@ -11,7 +11,6 @@ import java.util.List;
 public class GlobalProperties implements Cloneable {
 
     private String rootUrl;
-    private String groupPrefixRoleName;
     private String domain;
     private String nexuUrl;
     private String nexuVersion;
@@ -35,14 +34,6 @@ public class GlobalProperties implements Cloneable {
 
     public void setRootUrl(String rootUrl) {
         this.rootUrl = rootUrl;
-    }
-
-    public String getGroupPrefixRoleName() {
-        return groupPrefixRoleName;
-    }
-
-    public void setGroupPrefixRoleName(String groupPrefixRoleName) {
-        this.groupPrefixRoleName = groupPrefixRoleName;
     }
 
     public String getDomain() {
@@ -172,4 +163,5 @@ public class GlobalProperties implements Cloneable {
     public void setApplicationEmail(String applicationEmail) {
         this.applicationEmail = applicationEmail;
     }
+
 }

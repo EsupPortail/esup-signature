@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
 <div th:fragment="workspace" id="workspace" class="alert alert-secondary justify-content-center"
-     th:classappend="${signRequest.parentSignBook.signRequests.size() > 1} ? 'workspace-sign' : 'workspace-pdf'">
+     th:classappend="${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf'">
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
-            <th:block th:if="${signRequest.signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
+            <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
                 <button type="button" id="signZoomIn"
                         class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
                         style="z-index: 3;">
@@ -59,7 +59,7 @@
         </div>
     </form>
 
-    <div id="commentsTools" th:if="${signRequest.toSignDocuments.get(0).contentType == 'application/pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
+    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
         <div th:unless="${comments.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
             cliquant sur l’endroit concerné du document
         </div>
