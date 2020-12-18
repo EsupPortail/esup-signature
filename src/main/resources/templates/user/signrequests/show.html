@@ -30,7 +30,7 @@
         signable,
         [[${comments}]],
         [[${toSignDocument.contentType == 'application/pdf'}]],
-        [[${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}]],
+        [[${signRequest.parentSignBook.liveWorkflow.currentStepNumber}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${_csrf}]],
