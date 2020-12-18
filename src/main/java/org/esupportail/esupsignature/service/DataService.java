@@ -17,7 +17,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -126,14 +125,6 @@ public class DataService {
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
         return signBook;
-    }
-
-    public void setDatas(String name, MultiValueMap<String, String> formData, Data data) {
-        data.setName(name);
-        for(String key : formData.keySet()) {
-            data.getDatas().put(key, formData.get(key).get(0));
-        }
-        data.setUpdateDate(new Date());
     }
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {

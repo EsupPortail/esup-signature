@@ -22,9 +22,7 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -43,12 +41,6 @@ public class DocumentService {
 
 	@Resource
 	private FsAccessFactory fsAccessFactory;
-
-	public List<Document> getAllDocuments(){
-		List<Document> list = new ArrayList<Document>();
-		documentRepository.findAll().forEach(e -> list.add(e));
-		return list;
-	}
 
 	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {

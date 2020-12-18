@@ -24,16 +24,6 @@ public class WorkflowStepService {
     private UserService userService;
 
     @Transactional
-    public WorkflowStep create(User creator, String name, SignType signType) {
-        WorkflowStep workflowStep = new WorkflowStep();
-        workflowStep.setName(name);
-        workflowStep.setSignType(signType);
-        workflowStep.getUsers().add(creator);
-        workflowStepRepository.save(workflowStep);
-        return workflowStep;
-    }
-
-    @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         WorkflowStep workflowStep = new WorkflowStep();
         if (name != null) {

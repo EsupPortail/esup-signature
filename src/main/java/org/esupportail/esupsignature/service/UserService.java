@@ -362,20 +362,6 @@ public class UserService {
         return UserType.external;
     }
 
-    @Transactional
-    public List<String> getBase64UserSignatures(User user) {
-        List<String> base64UserSignatures = new ArrayList<>();
-        for (Document signature : user.getSignImages()) {
-            try {
-                base64UserSignatures.add(fileService.getBase64Image(signature));
-            } catch (IOException e) {
-                logger.error("error on convert sign image document : " + signature.getId() + " for " + user.getEppn());
-            }
-        }
-        return base64UserSignatures;
-    }
-
-
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {
         List<User> tempUsers = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {

@@ -32,10 +32,6 @@ public class LogService {
         return logRepository.findByEppn(eppn);
     }
 
-    public List<Log> getByEppnForAndFinalStatus(String eppn, String finalStatus) {
-        return logRepository.findByEppnAndFinalStatus(eppn, finalStatus);
-    }
-
     public List<Log> getBySignRequestId(Long id) {
         return logRepository.findBySignRequestId(id);
     }

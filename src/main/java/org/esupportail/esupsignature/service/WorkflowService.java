@@ -343,15 +343,6 @@ public class WorkflowService {
         return null;
     }
 
-    public Workflow getWorkflowClassByName(String name) {
-        for (Workflow workflow : workflows) {
-            if (workflow.getName().equals(name)) {
-                return workflow;
-            }
-        }
-        return null;
-    }
-
     public Workflow getById(Long id) {
         return workflowRepository.findById(id).get();
     }
