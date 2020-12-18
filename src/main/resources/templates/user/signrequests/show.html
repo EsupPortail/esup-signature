@@ -393,7 +393,7 @@
                             </p>
                             <th:block th:each="step,iterator : ${steps}">
                                 <!--                            <div class="form-group">-->
-                                <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+                                <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
                                 <div th:if="${step.changeable == true}" class="form-group">
                                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
@@ -412,16 +412,16 @@
                             </th:block>
                             <hr>
                             <th:block
-                                    th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps}">
-                                <div th:if="${step.changeable == true}" class="form-group">
+                                    th:each="workFlowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps}">
+                                <div th:if="${workFlowStep.changeable == true}" class="form-group">
                                     <label><span
                                             th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
-                                            th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
+                                            th:if="${workFlowStep.name}" th:text="' : ' + ${workFlowStep.name}"></span></label>
                                     <select class="select-users"
                                             th:data-signrequest-id="${signRequest.id}"
                                             th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                             multiple="multiple" name="recipientEmails" required="required">
-                                        <th:block th:each="user : ${step.users}">
+                                        <th:block th:each="user : ${workFlowStep.users}">
                                             <option th:if="${user.email != null}" selected="selected"
                                                     th:text="${user.email}"
                                                     th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
@@ -437,12 +437,12 @@
                             <p>
                                 La procédure comporte une étape
                             </p>
-                            <th:block th:each="step,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                            <th:block th:each="liveWorkflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                 <!--                            <div class="form-group">-->
-                                <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+                                <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                                <th:block th:if="${step.recipients.size() > 0}" th:each="recipient, iterator : ${step.recipients}">
+                                <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
                                     <span th:if="${iterator.index > 0}"> ou </span>
                                     <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
                                 </th:block>
@@ -451,8 +451,8 @@
                         <th:block th:if="${isTempUsers}">
                             <hr>
                             <p>Certains destinataires sont externes à l'établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
-                            <th:block th:each="workflow : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                                <th:block th:each="recipient : ${workflow.recipients}">
+                            <th:block th:each="liveWorkflowStep : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
@@ -503,18 +503,18 @@
 <!--            <form th:action="'/user/signrequests/pending/' + ${signRequest.id}" id="send">-->
 <!--                <div class="modal-body">-->
 <!--                    <p>-->
-<!--                        La procédure "<span th:text="${workflow.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>-->
+<!--                        La procédure "<span th:text="${liveWorkflowStep.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>-->
 <!--                    </p>-->
-<!--                    <th:block th:each="step,iterator : ${workflow.workflowSteps}">-->
+<!--                    <th:block th:each="liveWorkflowStep,iterator : ${liveWorkflowStep.workflowSteps}">-->
 <!--                        <div class="form-group">-->
-<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
 <!--                        </div>-->
-<!--                        &lt;!&ndash;                        <div th:if="${step.changeable == true}" class="form-group">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                        <div th:if="${liveWorkflowStep.changeable == true}" class="form-group">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>&ndash;&gt;-->
 <!--                        &lt;!&ndash;                        </div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                        <div th:unless="${step.changeable == true}" class="form-group d-inline">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description} + ' ('"></span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <th:block th:if="${step.recipients.size() > 0}" th:each="recipient,iterator : ${step.recipients}">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                        <div th:unless="${liveWorkflowStep.changeable == true}" class="form-group d-inline">&ndash;&gt;-->
+<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description} + ' ('"></span>&ndash;&gt;-->
+<!--                        &lt;!&ndash;                            <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient,iterator : ${liveWorkflowStep.recipients}">&ndash;&gt;-->
 <!--                        &lt;!&ndash;                                <span th:if="${iterator.index > 0}"> ou </span>&ndash;&gt;-->
 <!--                        &lt;!&ndash;                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>&ndash;&gt;-->
 <!--                        &lt;!&ndash;                            </th:block>&ndash;&gt;-->
@@ -523,12 +523,12 @@
 <!--                        <br/>-->
 <!--                    </th:block>-->
 <!--                    <hr>-->
-<!--                    <th:block th:each="step,iterator : ${steps}">-->
-<!--                        <div th:if="${step.changeable == true}" class="form-group">-->
-<!--                            <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>-->
-<!--                            <select class="select-users" th:id="'recipientEmailsSelect_' + ${step.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >-->
-<!--                                <th:block th:each="recipient : ${step.recipients}">-->
-<!--                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${step.stepNumber} + '*' + ${recipient.user.email}"></option>-->
+<!--                    <th:block th:each="liveWorkflowStep,iterator : ${steps}">-->
+<!--                        <div th:if="${liveWorkflowStep.changeable == true}" class="form-group">-->
+<!--                            <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${liveWorkflowStep.name}" th:text="' : ' + ${liveWorkflowStep.name}"></span></label>-->
+<!--                            <select class="select-users" th:id="'recipientEmailsSelect_' + ${liveWorkflowStep.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >-->
+<!--                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">-->
+<!--                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${liveWorkflowStep.stepNumber} + '*' + ${recipient.user.email}"></option>-->
 <!--                                </th:block>-->
 <!--                            </select>-->
 <!--                            <p class="small">-->

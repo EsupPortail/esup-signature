@@ -8,7 +8,7 @@
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
-                        <th:block th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                        <th:block th:each="liveWorkflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step border border-dark bg-white rounded" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber} ? 'div-disable'">
                                     <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                     <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
@@ -23,20 +23,20 @@
                                         <i class="fas fa-clock"></i>
                                     </span>
                                     <th:block th:unless="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                        <span title="Document visé" th:if="${workflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
+                                        <span title="Document visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
                                             <i class="fas fa-check"></i>
                                         </span>
-                                        <span title="Document signé" th:unless="${workflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
+                                        <span title="Document signé" th:unless="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
                                             <i class="fas fa-signature"></i>
                                         </span>
                                     </th:block>
                                     <div class="bs-stepper-label">
-                                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
-                                        <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger"><i class="fas fa-users"></i></span>
-                                        <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fas fa-user"></i></span>
+                                        <span  th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                        <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger"><i class="fas fa-users"></i></span>
+                                        <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}"><i class="fas fa-user"></i></span>
                                         <br/>
                                         <table class="table table-sm table-hover table-borderless">
-                                        <th:block th:each="recipient : ${workflowStep.recipients}">
+                                        <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                             <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                                 <td th:if="${(iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">

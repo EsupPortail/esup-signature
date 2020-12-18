@@ -64,7 +64,6 @@ public class SignRequest {
     private SignBook parentSignBook;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE)
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
