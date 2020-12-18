@@ -31,7 +31,7 @@
             </div>
             <div th:if="${user == signBook.createBy}">
                 <div th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-                    <div class="fixed-action-simple-btn" th:if="${signBook.signRequests.size() > 0 && signBook.liveWorkflow.workflowSteps.size() > 0 && signBook.liveWorkflow.workflowSteps.get(0).recipients.size() > 0}">
+                    <div class="fixed-action-simple-btn" th:if="${signBook.signRequests.size() > 0 && signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.liveWorkflowSteps.get(0).recipients.size() > 0}">
                         <a title="Lancer la procédure de signature" type="button" class="btn-floating btn-lg bg-success wave-effect" data-toggle="modal" data-target="#sendModal">
                             <i class="fas fa-paper-plane"></i>
                         </a>

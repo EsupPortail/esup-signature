@@ -4,13 +4,13 @@
 <div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
     <div class="hr">Etapes du circuit</div>
     <div class="card card-body bg-light mb-1">
-            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps != null}">
+            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
                     <div class="bs-stepper-header" role="tablist">
-                        <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0}">
+                        <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
                             Le circuit n'est pas démarré
                         </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0}" th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.workflowSteps}">
+                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
                                         <span title="Étape à venir" class="bs-stepper-circle">
@@ -74,7 +74,7 @@
                                     </table>
                                 </div>
                             </div>
-                            <div th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+                            <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.documentsTargetUri != null}">
                             <div class="bs-stepper-line"></div>

@@ -24,7 +24,7 @@
 
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-            <th:block th:each="workflowStep : ${signBook.liveWorkflow.workflowSteps}" style="box-sizing:border-box;" >
+            <th:block th:each="workflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}" style="box-sizing:border-box;" >
                 <th:block th:each="recipient : ${workflowStep.recipients}" style="box-sizing:border-box;" >
                 <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
                     <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>

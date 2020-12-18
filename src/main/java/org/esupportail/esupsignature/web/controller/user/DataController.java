@@ -83,7 +83,6 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@GetMapping("{id}")
 	public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
-		User user = userService.getByEppn(userEppn);
 		Data data = dataService.getById(id);
 		model.addAttribute("data", data);
 		if (userEppn.equals(data.getOwner())) {

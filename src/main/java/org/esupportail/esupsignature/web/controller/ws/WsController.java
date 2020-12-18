@@ -150,7 +150,7 @@ public class WsController {
         int level = jsonWorkflowStep.getSignLevel();
         SignType signType = signRequestService.getSignTypeByLevel(level);
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
-        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -413,7 +413,7 @@ public class WsController {
                 SignRequest signRequest = signRequestRepository.findByToken(fileToken).get(0);
                 JsonSignRequestStatus jsonSignRequestStatus = new JsonSignRequestStatus();
                 jsonSignRequestStatus.setStatus(signRequest.getStatus().toString());
-                if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0 ) {
+                if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0 ) {
                     for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                         User user = recipient.getUser();
                         jsonSignRequestStatus.getNextRecipientNames().add(user.getName());

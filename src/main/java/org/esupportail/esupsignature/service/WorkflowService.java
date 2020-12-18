@@ -261,7 +261,7 @@ public class WorkflowService {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
                                         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
-                                        signBook.getLiveWorkflow().getWorkflowSteps().add(liveWorkflowStep);
+                                        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                         String target = metadatas.get(metadataKey);
@@ -422,8 +422,8 @@ public class WorkflowService {
 
     public void delete(Workflow workflow) {
         List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
-        List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
-        List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getWorkflowSteps().isEmpty()).collect(Collectors.toList());
+        List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
+        List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
         for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
             List<SignBook> signBooks = signBookService.getByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
             signBooks.forEach(s -> signBookService.delete(s));

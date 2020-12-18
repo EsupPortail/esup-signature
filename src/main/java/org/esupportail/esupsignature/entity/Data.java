@@ -17,7 +17,6 @@ public class Data {
     private Long id;
 
     @ManyToOne(cascade = CascadeType.REMOVE)
-	@LazyCollection(LazyCollectionOption.FALSE)
     private Form form;
 
 	private String formName;

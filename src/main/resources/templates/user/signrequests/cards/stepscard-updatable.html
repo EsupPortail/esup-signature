@@ -4,10 +4,10 @@
     <div class="card mb-1 col-lg-10 mx-auto">
         <div class="card-body">
             <h5 class="text-center"><b>Circuit de signature</b></h5>
-            <th:block th:if="${signBook.liveWorkflow.workflowSteps != null}">
+            <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header container" role="tablist">
-                        <th:block th:each="workflowStep,iterator : ${signBook.liveWorkflow.workflowSteps}">
+                        <th:block th:each="workflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 1px solid #555555;">
                                     <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.getCurrentStepNumber()}" class="bs-stepper-circle bg-warning"><i class="fas fa-hourglass-half"></i></span>
@@ -36,7 +36,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div th:if="${signBook.liveWorkflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+                            <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
                         <th:block th:if="${signBook.liveWorkflow.documentsTargetUri != null}">
                             <div class="bs-stepper-line"></div>

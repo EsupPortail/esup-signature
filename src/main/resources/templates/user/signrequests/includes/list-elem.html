@@ -9,7 +9,7 @@
     </td>
     <td class="clickable-td d-none d-lg-table-cell">
         <table class="table table-sm">
-            <tbody th:if="${signRequest.parentSignBook.liveWorkflow.workflowSteps.size() > 0 && signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() > 0}">
+            <tbody th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() > 0}">
             <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
                 <tr>
                     <td class="w-100" th:title="${recipient.user.email}"

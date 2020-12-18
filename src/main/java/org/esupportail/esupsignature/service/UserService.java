@@ -395,8 +395,8 @@ public class UserService {
 
     public List<User> getTempUsers(SignRequest signRequest) {
         Set<User> users = new HashSet<>();
-        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps().size() > 0) {
-            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflowSteps()) {
+        if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+            for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());

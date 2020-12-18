@@ -101,7 +101,7 @@ public class DataService {
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
         signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
-        if(signBook.getLiveWorkflow().getWorkflowSteps().size() == 0) {
+        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {

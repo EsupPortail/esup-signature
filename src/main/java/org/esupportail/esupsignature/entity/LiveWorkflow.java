@@ -23,7 +23,7 @@ public class LiveWorkflow {
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     @LazyCollection(LazyCollectionOption.FALSE)
-    private List<LiveWorkflowStep> workflowSteps = new ArrayList<>();
+    private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.REMOVE)
     @LazyCollection(LazyCollectionOption.FALSE)
@@ -53,12 +53,12 @@ public class LiveWorkflow {
         this.version = version;
     }
 
-    public List<LiveWorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
+    public List<LiveWorkflowStep> getLiveWorkflowSteps() {
+        return liveWorkflowSteps;
     }
 
-    public void setWorkflowSteps(List<LiveWorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
+    public void setLiveWorkflowSteps(List<LiveWorkflowStep> workflowSteps) {
+        this.liveWorkflowSteps = workflowSteps;
     }
 
     public LiveWorkflowStep getCurrentStep() {
@@ -94,18 +94,18 @@ public class LiveWorkflow {
     }
 
     public Integer getCurrentStepNumber() {
-        if (this.getWorkflowSteps().isEmpty()) {
+        if (this.getLiveWorkflowSteps().isEmpty()) {
             return -1;
         }
-        if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getAllSignToComplete()) {
-            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
-                return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;
+        if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getAllSignToComplete()) {
+            if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
+                return this.liveWorkflowSteps.indexOf(this.getCurrentStep()) + 2;
             }
         } else {
-            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
-                return this.getWorkflowSteps().size();
+            if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
+                return this.getLiveWorkflowSteps().size();
             }
         }
-        return this.workflowSteps.indexOf(this.getCurrentStep()) + 1;
+        return this.liveWorkflowSteps.indexOf(this.getCurrentStep()) + 1;
     }
 }
