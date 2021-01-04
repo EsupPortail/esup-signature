@@ -66,7 +66,6 @@ public class HomeController {
 
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        User user = userService.getByEppn(userEppn);
         User authUser = userService.getByEppn(authUserEppn);
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();

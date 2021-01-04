@@ -22,6 +22,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByCreateByEppn(String CreateByEppn);
     List<SignRequest> findByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
+    Long countByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
     @Query("select s from SignRequest s join s.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType")

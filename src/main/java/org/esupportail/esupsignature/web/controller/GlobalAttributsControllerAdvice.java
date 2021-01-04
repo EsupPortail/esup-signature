@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -56,6 +57,7 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
+    @Transactional
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         User user = userService.getUserByEppn(userEppn);
         model.addAttribute("user", user);
@@ -63,7 +65,7 @@ public class GlobalAttributsControllerAdvice {
         User authUser = userService.getByEppn(authUserEppn);
         model.addAttribute("authUser", authUser);
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUserEppn));
+        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUser));
         model.addAttribute("userImagesIds", userService.getSignImagesIds(userEppn));
         model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
@@ -88,30 +90,31 @@ public class GlobalAttributsControllerAdvice {
     }
 
     public void parseRoles(User user) {
-        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideSendSignExceptRoles()))
+        List<String> roles = user.getRoles();
+        if (!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
             myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());
-        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideWizardExceptRoles()))
+        if (!Collections.disjoint(roles, globalProperties.getHideWizardExceptRoles()))
             myGlobalProperties.setHideWizard(!globalProperties.getHideWizard());
-        if (!Collections.disjoint(user.getRoles(), globalProperties.getHideAutoSignExceptRoles()))
+        if (!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
             myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
 
-        if (user.getRoles().contains("create_signrequest")) {
+        if (roles.contains("create_signrequest")) {
             myGlobalProperties.setHideSendSignRequest(false);
         }
-        if (user.getRoles().contains("create_wizard")) {
+        if (roles.contains("create_wizard")) {
             myGlobalProperties.setHideWizard(false);
         }
-        if (user.getRoles().contains("create_autosign")) {
+        if (roles.contains("create_autosign")) {
             myGlobalProperties.setHideAutoSign(false);
         }
 
-        if (user.getRoles().contains("no_create_signrequest")) {
+        if (roles.contains("no_create_signrequest")) {
             myGlobalProperties.setHideSendSignRequest(true);
         }
-        if (user.getRoles().contains("no_create_wizard")) {
+        if (roles.contains("no_create_wizard")) {
             myGlobalProperties.setHideWizard(true);
         }
-        if (user.getRoles().contains("no_create_autosign")) {
+        if (roles.contains("no_create_autosign")) {
             myGlobalProperties.setHideAutoSign(true);
         }
     }

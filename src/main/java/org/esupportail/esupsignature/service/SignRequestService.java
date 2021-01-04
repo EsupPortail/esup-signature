@@ -1072,8 +1072,8 @@ public class SignRequestService {
 		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
 	}
 
-	public int getNbByCreateAndStatus(String userEppn) {
-		return signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending).size();
+	public Long getNbByCreateAndStatus(String userEppn) {
+		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
 	}
 
 	public Map<String, Object> getAttachmentResponse(Long signRequestId, Long attachementId) throws SQLException, IOException {
