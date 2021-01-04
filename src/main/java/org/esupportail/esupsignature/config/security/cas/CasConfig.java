@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.config.security.cas;
 
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

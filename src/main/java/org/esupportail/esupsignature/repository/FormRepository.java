@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.custom.FormRepositoryCustom;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

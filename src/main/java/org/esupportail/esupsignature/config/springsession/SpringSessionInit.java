@@ -1,18 +1,17 @@
 package org.esupportail.esupsignature.config.springsession;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.sql.DataSource;
+import java.io.File;
+import java.nio.file.Files;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 
 @Service
 public class SpringSessionInit {

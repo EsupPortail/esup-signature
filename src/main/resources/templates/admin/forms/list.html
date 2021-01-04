@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.prefill.PreFill>"*/-->
-<!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.workflow.DefaultWorkflow>"*/-->
+<!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
+<!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -26,7 +26,8 @@
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <table th:if="${forms.size() > 0}" class="table table-striped table-hover table-borderless table-responsive">
+                    <div class="">
+                        <table class="table table-sm table-striped table-hover table-borderless">
                             <thead class="thead-dark">
                             <tr>
                                 <th class="w-50">Titre</th>
@@ -34,10 +35,7 @@
                                 <th>Version</th>
                                 <th>Actif</th>
                                 <th>Rôle</th>
-                                <th class="text-center">Liste des champs</th>
-                                <th class="text-center">Modifier</th>
-                                <th class="text-center">Exporter les données</th>
-                                <th class="text-center">Supprimer</th>
+                                <th class="text-center">Action</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -50,22 +48,36 @@
                                     <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
                                 </td>
                                 <td th:text="${form.role}"></td>
-                                <td class="show text-center">
-                                    <a type="button" th:href="'/admin/forms/' + ${form.id}" class="btn btn-sm btn-primary"><i class="fas fa-align-justify"></i></a>
-                                </td>
-                                <td class="edit text-center">
-                                    <a type="button" th:href="'/admin/forms/update/' + ${form.id}" class="btn btn-sm btn-warning text-white">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                </td>
-                                <td class="show text-center">
-                                    <a type="button" th:href="'/admin/forms/' + ${form.name} + '/datas/csv'" class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a>
-                                </td>
-                                <td class="delete text-center">
-                                    <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${form.id }" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                    <div class="modal modal-warning fade in" th:id="modal-warning+${form.id}">
+
+                                <td class="text-center">
+                                    <div class="position-relative">
+                                        <button type="button" th:id="'menu-toggle-' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
+                                                th:data-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-toggle="collapse">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
+                                            <div class=" card-body">
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/forms/update/' + ${form.id}">
+                                                    <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/forms/' + ${form.id}">
+                                                    <i class="fas fa-align-justify pr-2"></i> Modifier les champs
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                                                   th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
+                                                    <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
+                                                   data-toggle="modal" th:data-target="'#modal-warning-' + ${form.id}">
+                                                    <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
@@ -77,7 +89,7 @@
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="alert alert-danger text-center">Confirmez-vous la
-                                                            suppression ?
+                                                            suppression du formulaire ?
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
@@ -93,10 +105,12 @@
                                             </div>
                                         </div>
                                     </div>
+
                                 </td>
                             </tr>
                             </tbody>
                         </table>
+                    </div>
                     <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
                         Aucun formulaire pour le moment
                     </div>

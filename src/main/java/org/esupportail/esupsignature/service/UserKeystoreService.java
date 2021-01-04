@@ -1,32 +1,24 @@
 package org.esupportail.esupsignature.service;
 
 import eu.europa.esig.dss.model.x509.CertificateToken;
-import eu.europa.esig.dss.spi.DSSUtils;
-import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.token.KSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
-import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.CertificateVerifier;
-import eu.europa.esig.dss.validation.executor.certificate.CertificateProcessExecutor;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
-import org.esupportail.esupsignature.dss.DssUtils;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore.PasswordProtection;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.Date;
 
 @Service
@@ -35,23 +27,11 @@ public class UserKeystoreService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	private static String keystoreType = "PKCS12";
-
 	@Resource
 	private CertificateVerifier certificateVerifier;
 
-	public String getPemCertificat(Pkcs12SignatureToken pkcs12SignatureToken)  {
-		try {
-			CertificateToken certificateToken = getCertificateToken(pkcs12SignatureToken);
-			X509Certificate cert = certificateToken.getCertificate();
-			byte[] prvkey = cert.getEncoded();
-			String encoded = Base64.getEncoder().encodeToString(prvkey);
-			return "-----BEGIN PRIVATE KEY-----" + encoded + "-----END PRIVATE KEY-----";
-		} catch (CertificateException | EsupSignatureException e) {
-			logger.error("error en get pem cert from keystore", e);
-		}
-		return null;
-	}
+	@Resource
+	private UserService userService;
 	
 	public Pkcs12SignatureToken getPkcs12Token(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		try {
@@ -83,7 +63,10 @@ public class UserKeystoreService {
 			return certificateTokens;
 	}
 
-	public String checkKeystore(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
+	@Transactional
+	public String checkKeystore(String authUserEppn, String password) throws EsupSignatureKeystoreException {
+		User authUser = userService.getByEppn(authUserEppn);
+		InputStream keyStoreFile = authUser.getKeystore().getInputStream();
 		String certInfo = "";
 		Pkcs12SignatureToken pkcs12SignatureToken = getPkcs12Token(keyStoreFile, password);
 		CertificateToken certificateToken = getCertificateToken(pkcs12SignatureToken);
@@ -108,20 +91,5 @@ public class UserKeystoreService {
 		pkcs12SignatureToken.close();
 		return certInfo;
 	}
-	
-	public KeyStoreCertificateSource getKeyStoreCertificateSource(File keyStoreFile, String password) throws IOException  {
-		return new KeyStoreCertificateSource(keyStoreFile, keystoreType, password);
 
-	}
-	
-	public String pemToBase64String(String pemCert) {
-		 return pemCert.replaceAll("-----(BEGIN|END) CERTIFICATE-----", "").replaceAll("-----(BEGIN|END) PRIVATE KEY-----", "").replaceAll("\r\n", "").replaceAll(" ", "").trim();
-	}
-	
-	public String getBase64PemCertificat(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
-		 return pemToBase64String(getPemCertificat(getPkcs12Token(keyStoreFile, password)));
-	}
-	
-
-	
 }

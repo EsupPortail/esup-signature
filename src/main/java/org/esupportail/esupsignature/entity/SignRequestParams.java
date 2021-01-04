@@ -27,6 +27,8 @@ public class SignRequestParams {
 
 	private int yPos = 0;
 
+    private Boolean addExtra = false;
+
 	private Boolean addDate = false;
 
 	private Boolean addName = false;
@@ -101,6 +103,14 @@ public class SignRequestParams {
 
 	public void setyPos(int yPos) {
         this.yPos = yPos;
+    }
+
+    public Boolean isAddExtra() {
+        return addExtra;
+    }
+
+    public void setAddExtra(Boolean addExtra) {
+        this.addExtra = addExtra;
     }
 
     public Boolean isAddDate() {

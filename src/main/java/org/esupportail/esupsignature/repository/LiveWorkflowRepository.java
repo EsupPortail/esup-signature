@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.LiveWorkflow;
-import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.repository.CrudRepository;
 

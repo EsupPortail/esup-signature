@@ -2,12 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -21,27 +20,13 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date createDate;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
-    private Date updateDate;
-
-    private String updateBy;
-
-    @ElementCollection(targetClass= ShareType.class)
-    private List<ShareType> authorizedShareTypes = new ArrayList<>();
-
-    @ElementCollection(targetClass=String.class)
-    private List<String> managers = new ArrayList<>();
-
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    private List<LiveWorkflowStep> workflowSteps = new ArrayList<LiveWorkflowStep>();
+    @LazyCollection(LazyCollectionOption.FALSE)
+    private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.REMOVE)
+    @LazyCollection(LazyCollectionOption.FALSE)
     private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)
@@ -68,44 +53,12 @@ public class LiveWorkflow {
         this.version = version;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public List<LiveWorkflowStep> getLiveWorkflowSteps() {
+        return liveWorkflowSteps;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(Date updateDate) {
-        this.updateDate = updateDate;
-    }
-
-    public String getUpdateBy() {
-        return updateBy;
-    }
-
-    public void setUpdateBy(String updateBy) {
-        this.updateBy = updateBy;
-    }
-
-    public List<String> getManagers() {
-        return managers;
-    }
-
-    public void setManagers(List<String> managers) {
-        this.managers = managers;
-    }
-
-    public List<LiveWorkflowStep> getWorkflowSteps() {
-        return workflowSteps;
-    }
-
-    public void setWorkflowSteps(List<LiveWorkflowStep> workflowSteps) {
-        this.workflowSteps = workflowSteps;
+    public void setLiveWorkflowSteps(List<LiveWorkflowStep> workflowSteps) {
+        this.liveWorkflowSteps = workflowSteps;
     }
 
     public LiveWorkflowStep getCurrentStep() {
@@ -132,14 +85,6 @@ public class LiveWorkflow {
         this.documentsTargetUri = documentsTargetUri;
     }
 
-    public List<ShareType> getAuthorizedShareTypes() {
-        return authorizedShareTypes;
-    }
-
-    public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
-        this.authorizedShareTypes = authorizedShareTypes;
-    }
-
     public Workflow getWorkflow() {
         return workflow;
     }
@@ -149,18 +94,18 @@ public class LiveWorkflow {
     }
 
     public Integer getCurrentStepNumber() {
-        if (this.getWorkflowSteps().isEmpty()) {
+        if (this.getLiveWorkflowSteps().isEmpty()) {
             return -1;
         }
-        if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getAllSignToComplete()) {
-            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
-                return this.workflowSteps.indexOf(this.getCurrentStep()) + 2;
+        if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getAllSignToComplete()) {
+            if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getRecipients().stream().allMatch(Recipient::getSigned)) {
+                return this.liveWorkflowSteps.indexOf(this.getCurrentStep()) + 2;
             }
         } else {
-            if (this.getWorkflowSteps().get(this.getWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
-                return this.getWorkflowSteps().size();
+            if (this.getLiveWorkflowSteps().get(this.getLiveWorkflowSteps().size() - 1).getRecipients().stream().anyMatch(Recipient::getSigned)) {
+                return this.getLiveWorkflowSteps().size();
             }
         }
-        return this.workflowSteps.indexOf(this.getCurrentStep()) + 1;
+        return this.liveWorkflowSteps.indexOf(this.getCurrentStep()) + 1;
     }
 }

@@ -1,10 +1,16 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
+import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -26,17 +32,24 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CasSecurityServiceImpl implements SecurityService {
+
+	@Autowired
+	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
+
+	@Autowired
+	private ObjectProvider<SpelGroupService> spelGroupService;
 
 	@Resource
 	private LdapGroupService ldapGroupService;
 
 	@Resource
 	private CasProperties casProperties;
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private LdapProperties ldapProperties;
@@ -97,8 +110,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public AuthenticationManager casAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<AuthenticationProvider>();
 		authenticatedAuthenticationProviders.add(casAuthenticationProvider());
-		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
-		return authenticationManager;
+		return new ProviderManager(authenticatedAuthenticationProviders);
 	}
 
 	
@@ -125,25 +137,21 @@ public class CasSecurityServiceImpl implements SecurityService {
 	
 	
 	public LdapUserDetailsService ldapUserDetailsService() {
-
-		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getSearchFilter(), ldapContextSource);
-
+		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
-
-		Map<String, String> mappingGroupesRoles = new HashMap<>();
-		mappingGroupesRoles.put(casProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
-		casLdapAuthoritiesPopulator.setMappingGroupesRoles(mappingGroupesRoles);
-
+		casLdapAuthoritiesPopulator.setRolePrefix("");
+		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
+		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
 		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);
-
-		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch,
-				casLdapAuthoritiesPopulator);
-
+		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
+		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
+		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
+		group2UserRoleService.setGroupService(spelGroupService.getIfAvailable());
+		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);
+		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch, casLdapAuthoritiesPopulator);
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();
 		ldapUserDetailsMapper.setRoleAttributes(new String[] {});
-
 		ldapUserDetailsService.setUserDetailsMapper(ldapUserDetailsMapper);
-
 		return ldapUserDetailsService;
 	}
 

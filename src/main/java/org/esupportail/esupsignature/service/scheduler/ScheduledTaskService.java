@@ -1,10 +1,5 @@
 package org.esupportail.esupsignature.service.scheduler;
 
-import java.io.IOException;
-import java.util.List;
-
-import javax.annotation.Resource;
-
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -28,6 +23,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 @ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
@@ -62,7 +60,7 @@ public class ScheduledTaskService {
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		for(Workflow workflow : workflows) {
-			workflowService.importFilesFromSource(workflow, userService.getSchedulerUser());
+			workflowService.importFilesFromSource(workflow, userService.getSchedulerUser(), userService.getSchedulerUser());
 		}
 	}
 
@@ -73,9 +71,9 @@ public class ScheduledTaskService {
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook);
+				signBookService.exportFilesToTarget(signBook, "scheduler");
 				if(globalProperties.getArchiveUri() != null) {
-					signBookService.archivesFiles(signBook);
+					signBookService.archivesFiles(signBook, "scheduler");
 				}
 			} catch (EsupSignatureException e) {
 				logger.error(e.getMessage());
@@ -90,7 +88,7 @@ public class ScheduledTaskService {
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
-				signBookService.cleanFiles(signBook);
+				signBookService.cleanFiles(signBook, "scheduler");
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");
@@ -116,8 +114,7 @@ public class ScheduledTaskService {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws EsupSignatureException {
-		signRequestService.init();
-		workflowService.init();
+		workflowService.copyClassWorkflowsIntoDatabase();
 		oJService.ifAvailable(OJService::getCertificats);
 	}
 

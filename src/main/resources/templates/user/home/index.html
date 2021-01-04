@@ -2,13 +2,12 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {HomeUi} from "/static/js/modules/ui/HomeUi.js";
     import {HomeHelp} from "/static/js/modules/help/HomeHelp.js";
-
     new HomeUi();
-
     let help = new HomeHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();
 

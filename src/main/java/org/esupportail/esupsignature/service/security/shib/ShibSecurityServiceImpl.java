@@ -1,21 +1,12 @@
 package org.esupportail.esupsignature.service.security.shib;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.service.file.FileService;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,13 +16,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ShibSecurityServiceImpl implements SecurityService {
 
 	@Autowired
 	private ObjectProvider<LdapGroupService> ldapGroupService;
 
-	@Resource
-	private GlobalProperties globalProperties;
+	@Autowired
+	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
+
+	@Autowired
+	private ObjectProvider<SpelGroupService> spelGroupService;
 
 	@Resource
 	private ShibProperties shibProperties;
@@ -83,8 +83,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	public AuthenticationManager shibAuthenticationManager() {
 		List<AuthenticationProvider> authenticatedAuthenticationProviders = new ArrayList<>();
 		authenticatedAuthenticationProviders.add(shibPreauthAuthProvider());
-		AuthenticationManager authenticationManager = new ProviderManager(authenticatedAuthenticationProviders);
-		return authenticationManager;
+		return new ProviderManager(authenticatedAuthenticationProviders);
 		
 	}
  
@@ -96,29 +95,13 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	public ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService() {
 		ShibAuthenticatedUserDetailsService shibAuthenticatedUserDetailsService = new ShibAuthenticatedUserDetailsService();
-		shibAuthenticatedUserDetailsService.setPrefix(globalProperties.getGroupPrefixRoleName());
-		Map<String, String> mappingGroupesRoles = new HashMap<>();
-		if(shibProperties.getGroupMappingRoleAdmin() != null) {
-			mappingGroupesRoles.put(shibProperties.getGroupMappingRoleAdmin(), "ROLE_ADMIN");
-		}
-
-		SpelGroupService groupService = new SpelGroupService();
-		Map<String, String> groups4eppnSpel = new HashMap<>();
-		if(shibProperties.getGroupMappingSpel() != null) {
-			for(String groupName: shibProperties.getGroupMappingSpel().keySet()) {
-				String spelRule = shibProperties.getGroupMappingSpel().get(groupName);
-				groups4eppnSpel.put(groupName, spelRule);
-			}
-		}
-		groupService.setGroups4eppnSpel(groups4eppnSpel);
-
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
-		group2UserRoleService.setPrefix(globalProperties.getGroupPrefixRoleName());
-		group2UserRoleService.setMappingGroupesRoles(mappingGroupesRoles);
-		group2UserRoleService.setGroupService(groupService);
-
+		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
+		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
+		group2UserRoleService.setGroupService(spelGroupService.getIfAvailable());
+		shibAuthenticatedUserDetailsService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);
-		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(mappingGroupesRoles);
+		shibAuthenticatedUserDetailsService.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
 		shibAuthenticatedUserDetailsService.setLdapGroupService(ldapGroupService.getIfAvailable());
 		return shibAuthenticatedUserDetailsService;
 	}

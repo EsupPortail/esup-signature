@@ -3,14 +3,14 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,21 +30,24 @@ public class ManageController {
     private static final Logger logger = LoggerFactory.getLogger(ManageController.class);
 
     @Resource
-    private FormRepository formRepository;
-
-    @Resource
     private DataExportService dataExportService;
 
-    @GetMapping
-    public String index(@ModelAttribute("authUser") User authUser, Model model) {
-        return "user/manage";
+    @Resource
+    private FormService formService;
 
+    @Resource
+    private UserService userService;
+
+    @GetMapping
+    public String index(@ModelAttribute("authUserEppn") String authUserEppn) {
+        return "user/manage";
     }
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
-    public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUser") User authUser, @PathVariable String name, HttpServletResponse response) {
-        List<Form> formManaged = formRepository.findFormByManagersContains(authUser.getEmail());
-        List<Form> forms = formRepository.findFormByName(name);
+    public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
+        User authUser = userService.getByEppn(authUserEppn);
+        List<Form> formManaged = formService.getFormByManagersContains(authUser.getEmail());
+        List<Form> forms = formService.getFormByName(name);
         if (forms.size() > 0 && formManaged.contains(forms.get(0))) {
             try {
                 response.setContentType("text/csv; charset=utf-8");

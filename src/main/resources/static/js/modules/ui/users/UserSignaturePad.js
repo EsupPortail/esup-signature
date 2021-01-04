@@ -25,7 +25,7 @@ export class UserSignaturePad {
         // $('#validate').click(e => this.saveSignaturePad());
         // $('#reset').click(e => this.resetSignaturePad());
         window.addEventListener("resize", e => this.resizeCanvas());
-        $("#userParamsFormSubmit").on('click', e => this.checkSignatureUpdate());
+        $("#saveButton").on('click', e => this.checkSignatureUpdate());
     }
 
     checkSignatureUpdate() {

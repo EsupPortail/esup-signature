@@ -8,7 +8,7 @@ export default class FormUi {
         this.formId = formId;
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
-        this.btnSaveFields = $('#btn-save-fields');
+        this.btnSaveFields = $('#saveButton');
         this.sseDispatcher = new SseDispatcher();
         this.initListeners();
     }
@@ -43,7 +43,7 @@ export default class FormUi {
             console.log(fd.get("_csrf"));
             $.ajax({
                 type: "POST",
-                url: "/admin/forms/" + formId + "/field/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
+                url: "/admin/forms/field/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
                 data: fd,
                 processData: false,
                 contentType: false,

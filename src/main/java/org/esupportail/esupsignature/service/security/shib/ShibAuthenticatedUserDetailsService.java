@@ -29,25 +29,30 @@ import org.springframework.security.core.userdetails.AuthenticationUserDetailsSe
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShibAuthenticatedUserDetailsService.class);
 
-	private Map<String, String> mappingGroupesRoles;
-	
-	private Group2UserRoleService group2UserRoleService;
-
 	private LdapGroupService ldapGroupService;
 
-	private String prefix;
+	private String groupPrefixRoleName;
+
+	private Map<String, String> mappingGroupesRoles;
+
+	private Group2UserRoleService group2UserRoleService;
+
+	public void setLdapGroupService(LdapGroupService ldapGroupService) {
+		this.ldapGroupService = ldapGroupService;
+	}
+
+	public void setGroupPrefixRoleName(String groupPrefixRoleName) {
+		this.groupPrefixRoleName = groupPrefixRoleName;
+	}
 
 	public void setMappingGroupesRoles(Map<String, String> mappingGroupesRoles) {
 		this.mappingGroupesRoles = mappingGroupesRoles;
@@ -57,16 +62,8 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		this.group2UserRoleService = group2UserRoleService;
 	}
 
-	public void setLdapGroupService(LdapGroupService ldapGroupService) {
-		this.ldapGroupService = ldapGroupService;
-	}
-
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
-
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
-		List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+		Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
 		if(!token.getCredentials().equals("")) {
 			logger.debug("load user details from : " + token.getName());
 			String credentials = (String) token.getCredentials();
@@ -74,47 +71,38 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 			String[] splitCredentials = credentials.split(";");
 			try {
 				for (String credential : splitCredentials) {
-					if(mappingGroupesRoles != null && mappingGroupesRoles.containsKey(credential)) {
-						authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(credential)));
-					} else {
-						if(credential.contains(prefix)) {
-							authorities.add(new SimpleGrantedAuthority(credential));
+					for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
+						if (credential.contains(mappingGroupesRole)) {
+							grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));
 						}
+					}
+					Matcher m = Pattern.compile(groupPrefixRoleName).matcher(credential);
+					if (m.matches()) {
+						grantedAuthorities.add(new SimpleGrantedAuthority(credential));
 					}
 				}
 			} catch (Exception e) {
 				logger.debug("unable to find credentials", e);
 			}
 			try {
-				for (String roleFromLdap : group2UserRoleService.getRoles(token.getName())) {
-					authorities.add(new SimpleGrantedAuthority(roleFromLdap));
-					logger.debug("loading authorities : " + authorities.get(0).getAuthority());
+				for (String roleFromSpel : group2UserRoleService.getRoles(token.getName())) {
+					SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(roleFromSpel);
+					grantedAuthorities.add(simpleGrantedAuthority);
+					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}
-
 				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-					for (String groupName : ldapGroupService.getGroups(token.getName())) {
-						if (groupName != null) {
-							if (mappingGroupesRoles != null && mappingGroupesRoles.containsKey(groupName)) {
-								authorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(groupName)));
-							} else {
-								authorities.add(new SimpleGrantedAuthority(groupName));
-							}
-						}
-					}
+					List<String> ldapGroups = ldapGroupService.getGroups(token.getName());
+					ldapGroupService.addLdapRoles(grantedAuthorities, ldapGroups, groupPrefixRoleName, mappingGroupesRoles);
 				}
 			} catch (Exception e) {
 				logger.warn("unable to find authorities", e);
 			}
+			return createUserDetails(token, grantedAuthorities);
 		}
-		return createUserDetails(token, authorities);
-
+		return new User("anonymousUser", "N/A", false, false, false, false, grantedAuthorities);
 	}
 
-	protected UserDetails createUserDetails(Authentication token, Collection<? extends GrantedAuthority> authorities) {
-		if(!token.getCredentials().equals("")) {
-			return new User(token.getName(), "N/A", true, true, true, true, authorities);
-		} else {
-			return new User("anonymousUser", "N/A", false, false, false, false, authorities);
-		}
+	protected UserDetails createUserDetails(Authentication token, Collection<? extends GrantedAuthority> grantedAuthorities) {
+		return new User(token.getName(), "N/A", true, true, true, true, grantedAuthorities);
 	}
 }

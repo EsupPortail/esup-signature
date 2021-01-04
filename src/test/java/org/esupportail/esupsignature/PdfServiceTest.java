@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature;
 
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

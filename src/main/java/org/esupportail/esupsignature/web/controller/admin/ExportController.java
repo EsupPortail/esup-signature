@@ -5,8 +5,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +40,11 @@ public class ExportController {
 	private DataExportService dataExportService;
 
 	@Resource
-	private FormRepository formRepository;
+	private FormService formService;
 
 	@GetMapping
-	public String list(@ModelAttribute("user") User user, Model model) {
-		List<Form> forms = formRepository.findAuthorizedFormByUser(user);
+	public String list(@ModelAttribute("userEppn") String userEppn, Model model) {
+		List<Form> forms = formService.getFormsByUser(userEppn, userEppn);
 		model.addAttribute("forms", forms);
 		return "admin/export/list";
 	}
@@ -55,7 +54,7 @@ public class ExportController {
 	})
 	@GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-		List<Form> forms = formRepository.findFormByNameAndActiveVersion(name, true);
+		List<Form> forms = formService.getFormByNameAndActiveVersion(name, true);
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
@@ -76,7 +75,7 @@ public class ExportController {
 	@ResponseBody
 	@GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<Map<String, String>> getFormDatasJson(@PathVariable String name) {
-		List<Form> forms = formRepository.findFormByName(name);
+		List<Form> forms = formService.getFormByName(name);
 		if (forms.size() > 0) {
 			try {
 				return dataExportService.getDatasToExport(forms);

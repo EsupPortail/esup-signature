@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="fragments/head"></head>
-<script th:src="${nexuUrl} + '/nexu.js'"></script>
+<script th:src="${globalProperties.nexuUrl} + '/nexu.js'"></script>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
-
-    let nexu = new Nexu([[${nexuUrl}]], [[${nexuVersion}]], [[${rootUrl}]], [[${addDate}]], [[${addName}]]);
+    let nexu = new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], [[${globalProperties.rootUrl}]], [[${addExtra}]], [[${id}]]);
     nexu.getCertificates();
 </script>
 <body>
@@ -46,7 +46,7 @@
                      id="success">
                     <strong>Signature effectuée</strong>
                     <br/>
-                    <a th:href="'/user/signrequests/' + ${signRequestId}" class="btn btn-success btnSeccion" id="return2">
+                    <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success btnSeccion" id="return2">
                         <i class="fas fa-flag-checkered fa-2x"></i><br/> Retour
                     </a>
                 </div>

@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.config.sms;
 
-import org.esupportail.esupsignature.service.sms.SmsService;
+import org.esupportail.esupsignature.service.utils.sms.SmsService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

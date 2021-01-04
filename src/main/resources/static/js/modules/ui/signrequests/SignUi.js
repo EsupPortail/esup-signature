@@ -4,7 +4,7 @@ import {PrintDocument} from "../../utils/PrintDocument.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -13,7 +13,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -32,12 +32,7 @@ export class SignUi {
             }
         });
         $("#copyButton").on('click', e => this.copy());
-        $("#print").on('click', e => this.launchPrint());
         document.addEventListener("sign", e => this.updateWaitModal(e));
-    }
-
-    launchPrint() {
-        this.printDocument.launchPrint("/user/signrequests/get-last-file-base-64/" + this.signRequestId)
     }
 
     launchSign() {
@@ -91,7 +86,7 @@ export class SignUi {
                 "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
-                "&formData=" + JSON.stringify(formData) +
+                // "&formData=" + JSON.stringify(formData) +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token
             ;
         } else {
@@ -126,7 +121,7 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
         } else if(message.type === "initNexu") {
             console.info("redirect to NexU sign proccess");
-            document.location.href="/user/nexu-sign/" + this.signRequestId + "?" + this.signRequestUrlParams;
+            document.location.href="/user/nexu-sign/" + this.signRequestId;
         }else if(message.type === "end") {
             console.info("sign end");
             document.getElementById("bar-text").innerHTML = "";

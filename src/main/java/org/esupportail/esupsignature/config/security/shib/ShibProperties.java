@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.config.security.shib;
 
-import java.util.Map;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "security.shib")
@@ -11,9 +9,11 @@ public class ShibProperties {
     private String idpUrl;
     private String principalRequestHeader;
     private String credentialsRequestHeader;
-    private String groupMappingRoleAdmin;
     private String domainsWhiteListUrl;
-    private Map<String, String> groupMappingSpel;
+
+	/**
+	 * Properties to set for development/test purposes .
+	 */
     private DevShibProperties dev;
 
     public String getTitle() {
@@ -48,14 +48,6 @@ public class ShibProperties {
         this.credentialsRequestHeader = credentialsRequestHeader;
     }
 
-    public String getGroupMappingRoleAdmin() {
-        return groupMappingRoleAdmin;
-    }
-
-    public void setGroupMappingRoleAdmin(String groupMappingRoleAdmin) {
-        this.groupMappingRoleAdmin = groupMappingRoleAdmin;
-    }
-
     public String getDomainsWhiteListUrl() {
         return domainsWhiteListUrl;
     }
@@ -63,14 +55,6 @@ public class ShibProperties {
     public void setDomainsWhiteListUrl(String domainsWhiteListUrl) {
         this.domainsWhiteListUrl = domainsWhiteListUrl;
     }
-
-	public Map<String, String> getGroupMappingSpel() {
-		return groupMappingSpel;
-	}
-
-	public void setGroupMappingSpel(Map<String, String> groupMappingSpel) {
-		this.groupMappingSpel = groupMappingSpel;
-	}
 
 	public DevShibProperties getDev() {
 		return dev;

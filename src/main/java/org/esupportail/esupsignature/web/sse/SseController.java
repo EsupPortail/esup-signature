@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.sse;
 
 import ch.rasc.sse.eventbus.SseEvent;
 import ch.rasc.sse.eventbus.SseEventBus;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.Resource;
-import javax.ws.rs.Path;
 
 @RequestMapping("sse")
 @Controller
@@ -32,7 +30,7 @@ public class SseController {
     public SseEmitter globalSseEmitter(@PathVariable("sseId") String sseId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         eventService.getSseClientIds().put(auth.getName().split("@")[0], sseId);
-        return this.eventBus.createSseEmitter(sseId, 5_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign");
+        return this.eventBus.createSseEmitter(sseId, 150_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign");
     }
 
 }
