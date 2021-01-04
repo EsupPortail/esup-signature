@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -57,7 +56,6 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
-    @Transactional
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         User user = userService.getUserByEppn(userEppn);
         model.addAttribute("user", user);
@@ -65,8 +63,8 @@ public class GlobalAttributsControllerAdvice {
         User authUser = userService.getByEppn(authUserEppn);
         model.addAttribute("authUser", authUser);
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-        model.addAttribute("keystoreFileName", userService.getKeystoreFileName(authUser));
-        model.addAttribute("userImagesIds", userService.getSignImagesIds(userEppn));
+        model.addAttribute("keystoreFileName", user.getKeystoreFileName());
+        model.addAttribute("userImagesIds", user.getSignImagesIds());
         model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));

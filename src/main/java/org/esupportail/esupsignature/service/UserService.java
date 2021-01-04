@@ -118,6 +118,8 @@ public class UserService {
         eppn = buildEppn(eppn);
         User user = getByEppn(eppn);
         if (user != null) {
+            user.setKeystoreFileName(this.getKeystoreFileName(user));
+            user.setSignImagesIds(this.getSignImagesIds(user));
             return user;
         }
 		if(!eppn.startsWith("anonymousUser")) {
@@ -427,26 +429,11 @@ public class UserService {
         return signature;
     }
 
-    @Transactional
-    public List<Long> getSignImagesIds(String userEppn) {
-        User user = getByEppn(userEppn);
+    private List<Long> getSignImagesIds(User user) {
         return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
     }
 
-    public List<Long> getSignImagesIds(User user) {
-        return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
-    }
-
-    @Transactional
-    public String getKeystoreFileName(String userEppn) {
-        User user = getByEppn(userEppn);
-        if(user.getKeystore() != null) {
-            return user.getKeystore().getFileName();
-        }
-        return null;
-    }
-
-    public String getKeystoreFileName(User user) {
+    private String getKeystoreFileName(User user) {
         if(user.getKeystore() != null) {
             return user.getKeystore().getFileName();
         }
