@@ -72,7 +72,7 @@ public class UserService {
     public User getByEppn(String eppn) {
         List<User> users = userRepository.findByEppn(eppn);
         if(users.size() > 0) {
-            return userRepository.findByEppn(eppn).get(0);
+            return users.get(0);
         }
         return null;
     }
@@ -115,12 +115,11 @@ public class UserService {
         if (eppn.equals("creator")) {
             return getCreatorUser();
         }
-        if (userRepository.countByEppn(eppn) == 0) {
-            eppn = buildEppn(eppn);
-        }
-        if (userRepository.countByEppn(eppn) > 0) {
-            User user = getByEppn(eppn);
-            user.getRoles();
+        eppn = buildEppn(eppn);
+        User user = getByEppn(eppn);
+        if (user != null) {
+            user.setKeystoreFileName(this.getKeystoreFileName(user));
+            user.setSignImagesIds(this.getSignImagesIds(user));
             return user;
         }
 		if(!eppn.startsWith("anonymousUser")) {
@@ -430,15 +429,11 @@ public class UserService {
         return signature;
     }
 
-    @Transactional
-    public List<Long> getSignImagesIds(String userEppn) {
-        User user = getByEppn(userEppn);
+    private List<Long> getSignImagesIds(User user) {
         return user.getSignImages().stream().map(Document::getId).collect(Collectors.toList());
     }
 
-    @Transactional
-    public String getKeystoreFileName(String userEppn) {
-        User user = getByEppn(userEppn);
+    private String getKeystoreFileName(User user) {
         if(user.getKeystore() != null) {
             return user.getKeystore().getFileName();
         }

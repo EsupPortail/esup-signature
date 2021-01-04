@@ -48,7 +48,13 @@ public class User {
 
     @Transient
     private String ip;
-    
+
+    @Transient
+    private String keystoreFileName;
+
+    @Transient
+    private List<Long> signImagesIds;
+
     @Transient
     private String signImageBase64;
 
@@ -167,7 +173,23 @@ public class User {
         this.ip = ip;
     }
 
-	public String getSignImageBase64() {
+    public String getKeystoreFileName() {
+        return keystoreFileName;
+    }
+
+    public void setKeystoreFileName(String keystoreFileName) {
+        this.keystoreFileName = keystoreFileName;
+    }
+
+    public List<Long> getSignImagesIds() {
+        return signImagesIds;
+    }
+
+    public void setSignImagesIds(List<Long> signImagesIds) {
+        this.signImagesIds = signImagesIds;
+    }
+
+    public String getSignImageBase64() {
         return this.signImageBase64;
     }
 

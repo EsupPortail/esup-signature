@@ -288,8 +288,8 @@ public class DataService {
         if(data != null) data.setSignBook(null);
     }
 
-    public int getNbCreateByAndStatus(String userEppn) {
-        return dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft).size();
+    public long getNbCreateByAndStatus(String userEppn) {
+        return dataRepository.countByCreateByAndStatus(userEppn, SignRequestStatus.draft);
     }
 
     @Transactional
