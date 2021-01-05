@@ -70,4 +70,17 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return commonsMultipartResolver;
 	}
 
+//	@Bean
+//	public FilterRegistrationBean registerOpenEntityManagerInViewFilterBean() {
+//		FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+//		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
+//		registrationBean.setFilter(filter);
+//		registrationBean.setOrder(5);
+//		registrationBean.addUrlPatterns("/user/", "/user/*",
+//				"/admin/", "/admin/*",
+//				"/public/", "/public/*"
+//		);
+//		return registrationBean;
+//	}
+
 }
