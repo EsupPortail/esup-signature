@@ -4,9 +4,9 @@ global:
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle.zip
-    hide-wizard: true
-    hide-auto-sign: true
-    hide-send-sign-request: true
+    hide-wizard: false
+    hide-auto-sign: false
+    hide-send-sign-request: false
     hide-wizard-except-roles:
     hide-auto-sign-except-roles:
     hide-send-sign-except-roles:
