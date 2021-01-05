@@ -926,7 +926,9 @@ public class SignRequestService {
 		return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
 	}
 
-	public void addAttachement(MultipartFile[] multipartFiles, String link, SignRequest signRequest) throws EsupSignatureIOException {
+	@Transactional
+	public void addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
+		SignRequest signRequest = getById(signRequestId);
 		if(multipartFiles != null && multipartFiles.length > 0) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
