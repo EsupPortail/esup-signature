@@ -1079,6 +1079,7 @@ public class SignRequestService {
 		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
 	}
 
+	@Transactional
 	public Map<String, Object> getAttachmentResponse(Long signRequestId, Long attachementId) throws SQLException, IOException {
 		SignRequest signRequest = getById(signRequestId);
 		Document attachement = documentService.getById(attachementId);
