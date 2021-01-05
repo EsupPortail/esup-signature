@@ -437,10 +437,9 @@ public class SignRequestController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
-        SignRequest signRequest = signRequestService.getById(id);
-        signBookService.initWorkflowAndPendingSignBook(signRequest.getParentSignBook(), recipientEmails, userEppn, authUserEppn);
+        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, userEppn, authUserEppn);
         if(comment != null && !comment.isEmpty()) {
-            signRequestService.addPostit(signRequest, comment, userEppn, authUserEppn);
+            signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;

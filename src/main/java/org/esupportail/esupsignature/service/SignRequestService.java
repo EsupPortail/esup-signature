@@ -632,8 +632,9 @@ public class SignRequestService {
 		}
 	}
 
-	public void addPostit(SignRequest signRequest, String comment, String userEppn, String authUserEppn) {
-		if(comment != null && !comment.isEmpty()) {
+	public void addPostit(Long signRequestId, String comment, String userEppn, String authUserEppn) {
+		SignRequest signRequest = getById(signRequestId);
+				if(comment != null && !comment.isEmpty()) {
 			signRequest.setComment(comment);
 			updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, userEppn, authUserEppn);
 		}
