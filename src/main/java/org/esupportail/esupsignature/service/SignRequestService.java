@@ -199,6 +199,10 @@ public class SignRequestService {
 		return new ArrayList<>(signRequests);
 	}
 
+	public Long nbToSignRequests(String userEppn) {
+		return signRequestRepository.countByRecipientUserToSign(userEppn);
+	}
+
 	public List<SignRequest> getToSignRequests(String userEppn) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userEppn);
 		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());

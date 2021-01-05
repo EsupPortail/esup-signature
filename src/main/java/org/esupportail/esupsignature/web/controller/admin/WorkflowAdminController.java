@@ -93,8 +93,8 @@ public class WorkflowAdminController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
-						 @RequestParam(required = false) List<String> managers) {
-		User authUser = userService.getByEppn(authUserEppn);
+						 @RequestParam(required = false) List<String> managers, Model model) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
         return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
     }
@@ -162,16 +162,16 @@ public class WorkflowAdminController {
 
 	@PostMapping(value = "/add-params/{id}")
 	public String addParams(@ModelAttribute("authUserEppn") String authUserEppn,
-							@PathVariable("id") Long id) {
-		User authUser = userService.getByEppn(authUserEppn);
+							@PathVariable("id") Long id, Model model) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow workflow = workflowService.getById(id);
 		workflowService.setUpdateByAndUpdateDate(workflow, authUser.getEppn());
 		return "redirect:/admin/workflows/" + workflow.getName();
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow workflow = workflowService.getById(id);
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, authUser, authUser);
 		if(nbImportedFiles == 0) {

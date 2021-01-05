@@ -39,9 +39,6 @@ public class SignBookController {
     @Resource
     private LogService logService;
 
-    @Resource
-    private UserService userService;
-
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {
@@ -152,8 +149,8 @@ public class SignBookController {
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
-                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        User authUser = userService.getByEppn(authUserEppn);
+                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
+        User authUser = (User) model.getAttribute("authUser");
         logger.info("start add documents in " + name);
         signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
         String[] ok = {"ok"};
