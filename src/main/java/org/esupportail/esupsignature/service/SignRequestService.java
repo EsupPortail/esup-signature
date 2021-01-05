@@ -632,8 +632,9 @@ public class SignRequestService {
 		}
 	}
 
-	public void addPostit(SignRequest signRequest, String comment, String userEppn, String authUserEppn) {
-		if(comment != null && !comment.isEmpty()) {
+	public void addPostit(Long signRequestId, String comment, String userEppn, String authUserEppn) {
+		SignRequest signRequest = getById(signRequestId);
+				if(comment != null && !comment.isEmpty()) {
 			signRequest.setComment(comment);
 			updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, userEppn, authUserEppn);
 		}
@@ -926,7 +927,9 @@ public class SignRequestService {
 		return signRequest.getSignedDocuments().get(signRequest.getSignedDocuments().size() - 1);
 	}
 
-	public void addAttachement(MultipartFile[] multipartFiles, String link, SignRequest signRequest) throws EsupSignatureIOException {
+	@Transactional
+	public void addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId) throws EsupSignatureIOException {
+		SignRequest signRequest = getById(signRequestId);
 		if(multipartFiles != null && multipartFiles.length > 0) {
 			for (MultipartFile multipartFile : multipartFiles) {
 				if(multipartFile.getSize() > 0) {
