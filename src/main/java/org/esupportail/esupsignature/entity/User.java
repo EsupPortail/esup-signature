@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
@@ -33,7 +31,6 @@ public class User {
     private String email;
 
     @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
@@ -82,7 +79,6 @@ public class User {
     }
 
     @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {

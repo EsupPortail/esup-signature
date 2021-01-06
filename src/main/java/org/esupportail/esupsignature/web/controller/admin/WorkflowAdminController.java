@@ -93,8 +93,8 @@ public class WorkflowAdminController {
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
 						 @Valid Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
-						 @RequestParam(required = false) List<String> managers) {
-		User authUser = userService.getByEppn(authUserEppn);
+						 @RequestParam(required = false) List<String> managers, Model model) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
         return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
     }
@@ -127,17 +127,16 @@ public class WorkflowAdminController {
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getById(id);
 		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
-		return "redirect:/admin/workflows/" + workflow.getId();
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userEppn") String userEppn, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getById(id);
 		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userEppn);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
-		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
+		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}
 
 	@PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
@@ -145,10 +144,9 @@ public class WorkflowAdminController {
 								   @PathVariable("id") Long id,
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
-		Workflow workflow = workflowService.getById(id);
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
-		return "redirect:/admin/workflows/" + workflow.getName() + "#" + workflowStep.getId();
+		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}
 
 	@DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
@@ -157,21 +155,21 @@ public class WorkflowAdminController {
 						  @PathVariable("stepNumber") Integer stepNumber) {
 		Workflow workflow = workflowService.getById(id);
 		workflowStepService.removeStep(workflow, stepNumber);
-		return "redirect:/admin/workflows/" + workflow.getName();
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@PostMapping(value = "/add-params/{id}")
 	public String addParams(@ModelAttribute("authUserEppn") String authUserEppn,
-							@PathVariable("id") Long id) {
-		User authUser = userService.getByEppn(authUserEppn);
+							@PathVariable("id") Long id, Model model) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow workflow = workflowService.getById(id);
 		workflowService.setUpdateByAndUpdateDate(workflow, authUser.getEppn());
-		return "redirect:/admin/workflows/" + workflow.getName();
+		return "redirect:/admin/workflows/" + id;
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = (User) model.getAttribute("authUser");
 		Workflow workflow = workflowService.getById(id);
 		int nbImportedFiles = workflowService.importFilesFromSource(workflow, authUser, authUser);
 		if(nbImportedFiles == 0) {
@@ -179,7 +177,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
-		return "redirect:/admin/workflows/" + workflow.getName();
+		return "redirect:/admin/workflows/" + id;
 	}
 
 }

@@ -2,8 +2,6 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,13 +18,11 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.REMOVE)
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)

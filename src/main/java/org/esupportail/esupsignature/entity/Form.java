@@ -33,7 +33,6 @@ public class Form {
 	private Integer version;
 
 	@ElementCollection(targetClass=String.class)
-	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<String> managers = new ArrayList<>();
 	
 	private String workflowType;
@@ -43,7 +42,6 @@ public class Form {
 	private String role;
 
 	@ElementCollection(targetClass= ShareType.class)
-	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
 	private Boolean publicUsage = false;
@@ -63,7 +61,6 @@ public class Form {
 
 	@ManyToMany(cascade = {CascadeType.ALL})
 	@OrderColumn
-	@LazyCollection(LazyCollectionOption.FALSE)
 	private List<Field> fields = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")

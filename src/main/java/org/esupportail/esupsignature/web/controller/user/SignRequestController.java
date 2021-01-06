@@ -93,9 +93,6 @@ public class SignRequestController {
     @Resource
     private TemplateEngine templateEngine;
 
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -138,11 +135,13 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        try {
-            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
-        } catch (EsupSignatureUserException e) {
-            logger.error(e.getMessage());
-            model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
+            try {
+                model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
+            } catch (EsupSignatureUserException e) {
+                logger.error(e.getMessage());
+                model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+            }
         }
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
@@ -160,7 +159,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/details/{id}")
     public String details(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws Exception {
-        User user = userService.getByEppn(userEppn);
+        User user = (User) model.getAttribute("user");
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
         List<Log> logs = logService.getById(signRequest.getId());
@@ -243,8 +242,8 @@ public class SignRequestController {
     @PostMapping(value = "/fast-sign-request")
     public String createSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                     @RequestParam("signType") SignType signType,
-                                    HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        User user = userService.getByEppn(userEppn);
+                                    HttpServletRequest request, Model model, RedirectAttributes redirectAttributes) {
+        User user = (User) model.getAttribute("user");
         logger.info("création rapide demande de signature par " + user.getFirstname() + " " + user.getName());
         if (multipartFiles != null) {
             try {
@@ -268,9 +267,9 @@ public class SignRequestController {
                                @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                @RequestParam(value = "pending", required = false) Boolean pending,
                                @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
-        User user = userService.getByEppn(userEppn);
-        User authUser = userService.getByEppn(authUserEppn);
+                               @RequestParam("signType") SignType signType, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+        User user = (User) model.getAttribute("user");
+        User authUser = (User) model.getAttribute("authUser");
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {

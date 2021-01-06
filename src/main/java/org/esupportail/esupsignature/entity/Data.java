@@ -37,7 +37,6 @@ public class Data {
 
     @OrderColumn
     @ElementCollection
-	@LazyCollection(LazyCollectionOption.FALSE)
 	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)

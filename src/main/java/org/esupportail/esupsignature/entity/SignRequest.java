@@ -31,7 +31,6 @@ public class SignRequest {
     private Date createDate;
 
     @OneToOne
-    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     private String exportedDocumentURI;
@@ -53,7 +52,6 @@ public class SignRequest {
 
     @JsonIgnore
     @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> links = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -65,7 +63,6 @@ public class SignRequest {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     private Date endDate;
@@ -87,7 +84,6 @@ public class SignRequest {
     transient Data data;
     
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
