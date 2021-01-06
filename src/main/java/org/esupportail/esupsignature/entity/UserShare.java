@@ -20,7 +20,6 @@ public class UserShare {
     private User user;
 
     @ManyToMany
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> toUsers = new ArrayList<>();
 
     @ManyToOne
@@ -36,7 +35,6 @@ public class UserShare {
     private Date endDate;
 
     @ElementCollection(targetClass = ShareType.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {

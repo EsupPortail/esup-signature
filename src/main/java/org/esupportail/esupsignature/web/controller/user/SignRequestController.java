@@ -135,11 +135,13 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        try {
-            model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
-        } catch (EsupSignatureUserException e) {
-            logger.error(e.getMessage());
-            model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
+            try {
+                model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
+            } catch (EsupSignatureUserException e) {
+                logger.error(e.getMessage());
+                model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
+            }
         }
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));

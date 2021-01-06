@@ -35,7 +35,6 @@ public class Workflow {
     private Date createDate;
 
     @OneToOne
-    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -47,7 +46,6 @@ public class Workflow {
     private String role;
 
     @ElementCollection(targetClass= ShareType.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean publicUsage = false;
@@ -60,12 +58,10 @@ public class Workflow {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> managers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

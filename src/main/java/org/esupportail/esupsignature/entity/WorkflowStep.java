@@ -25,7 +25,6 @@ public class WorkflowStep {
     private Integer maxRecipients = 99;
 
     @ManyToMany
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> users = new ArrayList<>();
 
     private Boolean changeable = false;
