@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -56,10 +54,10 @@ public class Form {
     private String targetUri;
 
     @JsonIgnore
-	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
 
-	@ManyToMany(cascade = {CascadeType.ALL})
+	@ManyToMany(cascade = CascadeType.REMOVE)
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
 

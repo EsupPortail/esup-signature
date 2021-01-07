@@ -2,10 +2,13 @@ package org.esupportail.esupsignature.config;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -20,6 +23,7 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 @EnableAsync
 @EnableAutoConfiguration
 @EnableConfigurationProperties
+@EnableTransactionManagement
 public class WebAppConfig implements WebMvcConfigurer {
 
     @Override
@@ -68,6 +72,19 @@ public class WebAppConfig implements WebMvcConfigurer {
 		commonsMultipartResolver.setMaxInMemorySize(52428800);
 		commonsMultipartResolver.setMaxUploadSize(52428800);
 		return commonsMultipartResolver;
+	}
+
+	@Bean
+	public FilterRegistrationBean registerOpenEntityManagerInViewFilterBean() {
+		FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
+		registrationBean.setFilter(filter);
+		registrationBean.setOrder(5);
+		registrationBean.addUrlPatterns("/user/", "/user/*",
+				"/admin/", "/admin/*",
+				"/public/", "/public/*"
+		);
+		return registrationBean;
 	}
 
 }

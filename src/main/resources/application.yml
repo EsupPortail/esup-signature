@@ -47,12 +47,12 @@ spring:
             repositories:
                 enabled: true
     datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5432/esupsignature
+        password: esup
+        username: esupsignature
         hikari:
             auto-commit: false
-            jdbc-url: jdbc:postgresql://localhost:5432/esupsignature
-            password: esup
-            username: esupsignature
-            driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:
             ddl-auto: none

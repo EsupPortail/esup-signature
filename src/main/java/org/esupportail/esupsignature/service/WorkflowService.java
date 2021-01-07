@@ -13,15 +13,17 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -31,6 +33,9 @@ import java.util.stream.Collectors;
 public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Resource
     private List<Workflow> workflows;
@@ -362,8 +367,10 @@ public class WorkflowService {
         return workflow;
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
+        Session session = entityManager.unwrap(Session.class);
+        System.err.println(session.getFlushMode());
+        System.err.println(session.getHibernateFlushMode());
         try {
             Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
@@ -374,15 +381,12 @@ public class WorkflowService {
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
                 replaceStepSystemUsers(userEppn, workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                    if(!computeForDisplay) {
-                        workflowStep.getUsers().clear();
-                    }
                     List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, userEppn);
-                    if(recipients.size() > 0 ) {
+                    if(recipients.size() > 0 && !computeForDisplay) {
                         workflowStep.getUsers().clear();
-                    }
-                    for (User oneUser : recipients) {
-                        workflowStep.getUsers().add(oneUser);
+                        for (User oneUser : recipients) {
+                            workflowStep.getUsers().add(oneUser);
+                        }
                     }
                 }
                 step++;
@@ -520,3 +524,4 @@ public class WorkflowService {
     }
 
 }
+

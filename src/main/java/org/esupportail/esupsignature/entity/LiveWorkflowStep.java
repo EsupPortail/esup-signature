@@ -16,7 +16,7 @@ public class LiveWorkflowStep {
     @Version
     private Integer version;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean allSignToComplete = false;

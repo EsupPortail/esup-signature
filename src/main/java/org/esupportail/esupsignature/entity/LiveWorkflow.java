@@ -18,11 +18,11 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)
@@ -30,7 +30,7 @@ public class LiveWorkflow {
 
     private String documentsTargetUri;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
 
     public Long getId() {

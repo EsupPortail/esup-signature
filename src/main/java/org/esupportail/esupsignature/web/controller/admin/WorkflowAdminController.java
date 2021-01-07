@@ -75,7 +75,7 @@ public class WorkflowAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
 			return "redirect:/admin/workflows/";
 		}
-		return "redirect:/admin/workflows/" + workflow.getName();
+		return "redirect:/admin/workflows/" + workflow.getId();
 	}
 
     @GetMapping(value = "/update/{id}")

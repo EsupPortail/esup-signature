@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -16,7 +14,7 @@ public class Data {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
 	private String formName;
@@ -42,7 +40,7 @@ public class Data {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private SignBook signBook = null;
 
 	public Long getId() {

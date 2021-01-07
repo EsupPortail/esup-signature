@@ -16,10 +16,10 @@ public class UserPropertie {
 
     private Integer score = 0;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private WorkflowStep workflowStep;
 
     @ManyToMany
