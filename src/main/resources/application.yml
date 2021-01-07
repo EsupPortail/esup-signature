@@ -41,24 +41,25 @@ management:
 
 spring:
     session:
-        store-type: jdbc
+      jdbc:
+          initialize-schema: always
+
     data:
         ldap:
             repositories:
                 enabled: true
-    datasource:
-        driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://localhost:5432/esupsignature
-        password: esup
-        username: esupsignature
-        hikari:
-            auto-commit: false
+#    datasource:
+#        driver-class-name: org.postgresql.Driver
+#        url: jdbc:postgresql://localhost:5432/esupsignature
+#        password: esup
+#        username: esupsignature
+#        hikari:
+#            auto-commit: false
     jpa:
         hibernate:
-            ddl-auto: none
+            ddl-auto: update
         properties:
             hibernate:
-                flushMode: MANUAL
                 jdbc:
                     lob:
                         non_contextual_creation: true
@@ -193,3 +194,11 @@ sign:
 logging:
     file:
         name: logs/esup-signature.log
+
+db:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        jdbc-url: jdbc:postgresql://localhost:5432/esupsignature
+        password: esup
+        username: esupsignature
+
