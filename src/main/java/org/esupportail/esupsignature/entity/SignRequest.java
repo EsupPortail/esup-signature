@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -31,41 +29,38 @@ public class SignRequest {
     private Date createDate;
 
     @OneToOne
-    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     private String exportedDocumentURI;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
     @JsonIgnore
     @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> links = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private SignBook parentSignBook;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     private Date endDate;
@@ -86,8 +81,7 @@ public class SignRequest {
     @Transient
     transient Data data;
     
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {

@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
@@ -16,7 +14,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workflow {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
@@ -35,7 +33,6 @@ public class Workflow {
     private Date createDate;
 
     @OneToOne
-    @LazyCollection(LazyCollectionOption.FALSE)
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -47,7 +44,6 @@ public class Workflow {
     private String role;
 
     @ElementCollection(targetClass= ShareType.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
 
     private Boolean publicUsage = false;
@@ -60,12 +56,10 @@ public class Workflow {
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<String> managers = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

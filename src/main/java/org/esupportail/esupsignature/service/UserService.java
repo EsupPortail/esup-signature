@@ -204,7 +204,6 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
-    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {

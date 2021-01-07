@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -24,8 +22,7 @@ public class WorkflowStep {
 
     private Integer maxRecipients = 99;
 
-    @ManyToMany
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     private List<User> users = new ArrayList<>();
 
     private Boolean changeable = false;

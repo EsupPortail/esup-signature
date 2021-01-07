@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -18,8 +16,7 @@ public class LiveWorkflowStep {
     @Version
     private Integer version;
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean allSignToComplete = false;

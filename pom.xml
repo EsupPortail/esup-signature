@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.5.RELEASE</version>
+		<version>2.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.esupportail</groupId>
@@ -709,6 +709,11 @@
 			<groupId>org.webjars</groupId>
 			<artifactId>intro.js</artifactId>
 			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>5.3.2</version>
 		</dependency>
 
 

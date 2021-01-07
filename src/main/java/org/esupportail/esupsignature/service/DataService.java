@@ -94,7 +94,7 @@ public class DataService {
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, recipientEmails, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();

@@ -48,7 +48,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
@@ -197,6 +196,10 @@ public class SignRequestService {
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 		}
 		return new ArrayList<>(signRequests);
+	}
+
+	public Long nbToSignRequests(String userEppn) {
+		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
@@ -351,7 +354,7 @@ public class SignRequestService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", sseId);
-			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 		}
 		return false;
 	}

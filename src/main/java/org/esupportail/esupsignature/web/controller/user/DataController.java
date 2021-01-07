@@ -59,16 +59,10 @@ public class DataController {
 	private SignRequestService signRequestService;
 
 	@Resource
-	private UserShareService userShareService;
-
-	@Resource
 	private RecipientService recipientService;
 
 	@Resource
 	private PdfService pdfService;
-
-	@Resource
-	private UserService userService;
 
 	@GetMapping
 
@@ -101,7 +95,7 @@ public class DataController {
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(userEppn);
+		User user = (User) model.getAttribute("user");
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			if (page == null) {
 				page = 1;
@@ -136,7 +130,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
-			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()), null, userEppn, true);
+			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()).getId(), null, userEppn, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());
@@ -152,10 +146,10 @@ public class DataController {
 	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						  @PathVariable("id") Long id,
 						  @RequestParam String dataId,
-						  @RequestParam MultiValueMap<String, String> formData,
+						  @RequestParam MultiValueMap<String, String> formData, Model model,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		User user = userService.getByEppn(userEppn);
-		User authUser = userService.getByEppn(authUserEppn);
+		User user = (User) model.getAttribute("user");
+		User authUser = (User) model.getAttribute("authUser");
 		ObjectMapper objectMapper = new ObjectMapper();
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
 		Long dataLongId = null;
@@ -193,9 +187,9 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@PostMapping("{id}/send")
 	public String sendDataById(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
-		User user = userService.getByEppn(userEppn);
-		User authUser = userService.getByEppn(authUserEppn);
+                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
+		User user = (User) model.getAttribute("user");
+		User authUser = (User) model.getAttribute("authUser");
 		try {
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
@@ -210,7 +204,6 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(userEppn);
 		Data data = dataService.getById(id);
 		if(userEppn.equals(data.getCreateBy()) || userEppn.equals(data.getOwner())) {
 			dataService.delete(data);
@@ -238,8 +231,8 @@ public class DataController {
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@GetMapping("{id}/clone")
-	public String cloneData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User user = userService.getByEppn(userEppn);
+	public String cloneData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User user = (User) model.getAttribute("user");
 		Data data = dataService.getById(id);
 		Data cloneData = dataService.cloneData(data, user);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
@@ -248,8 +241,8 @@ public class DataController {
 
 	@PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
 	@GetMapping("{id}/clone-from-signrequests")
-	public String cloneDataFromSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+	public String cloneDataFromSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = (User) model.getAttribute("authUser");
 		SignRequest signRequest = signRequestService.getById(id);
 		Data cloneData = dataService.cloneFromSignRequest(signRequest, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));

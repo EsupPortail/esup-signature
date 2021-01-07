@@ -83,8 +83,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("signTypes", signTypes);
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userEppn));
-        model.addAttribute("nbToSign", signRequestService.getToSignRequests(userEppn).size());
-        model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+        model.addAttribute("nbToSign", signRequestService.nbToSignRequests(userEppn));
     }
 
     public void parseRoles(User user) {

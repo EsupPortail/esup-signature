@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -17,12 +16,13 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
@@ -32,6 +32,9 @@ import java.util.stream.Collectors;
 public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Resource
     private List<Workflow> workflows;
@@ -351,6 +354,7 @@ public class WorkflowService {
         return workflowRepository.findByName(name);
     }
 
+    @Transactional
     public Workflow initWorkflow(User user, Long id, String name) {
         Workflow workflow = getById(id);
         workflow.setSourceType(DocumentIOType.none);
@@ -362,9 +366,9 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow computeWorkflow(Workflow workflow, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
+    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
         try {
-            Workflow modelWorkflow = (Workflow) BeanUtils.cloneBean(workflow);
+            Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
                 DefaultWorkflow defaultWorkflow = (DefaultWorkflow) getWorkflowByClassName(modelWorkflow.getName());
                 defaultWorkflow.fillWorkflowSteps(modelWorkflow, recipientEmails);
@@ -373,26 +377,23 @@ public class WorkflowService {
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
                 replaceStepSystemUsers(userEppn, workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                    if(!computeForDisplay) {
-                        workflowStep.getUsers().clear();
-                    }
                     List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, userEppn);
-                    if(recipients.size() > 0 ) {
+                    if(recipients.size() > 0 && !computeForDisplay) {
                         workflowStep.getUsers().clear();
-                    }
-                    for (User oneUser : recipients) {
-                        workflowStep.getUsers().add(oneUser);
+                        for (User oneUser : recipients) {
+                            workflowStep.getUsers().add(oneUser);
+                        }
                     }
                 }
                 step++;
             }
+            entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
             throw new EsupSignatureException("compute workflow error", e);
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void replaceStepSystemUsers(String userEppn, Long workflowStepId) {
         User user = userService.getByEppn(userEppn);
         WorkflowStep workflowStep = workflowStepService.getById(workflowStepId);
@@ -513,10 +514,11 @@ public class WorkflowService {
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()), null, userEppn, true);
+            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()).getId(), null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;
     }
 
 }
+

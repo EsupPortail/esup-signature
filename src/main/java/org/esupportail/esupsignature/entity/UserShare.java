@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -16,17 +14,16 @@ public class UserShare {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @ManyToMany
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<User> toUsers = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -36,7 +33,6 @@ public class UserShare {
     private Date endDate;
 
     @ElementCollection(targetClass = ShareType.class)
-    @LazyCollection(LazyCollectionOption.FALSE)
     private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {
