@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -71,7 +72,7 @@ public class UserController {
 	private MessageService messageService;
 
     @GetMapping
-    public String createForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
@@ -83,7 +84,7 @@ public class UserController {
     }
     
     @PostMapping
-    public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
+    public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
     		@RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
@@ -112,8 +113,8 @@ public class UserController {
     }
 
 	@GetMapping(value = "/remove-keystore")
-	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = (User) model.getAttribute("authUser");
 		authUser.setKeystore(null);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le magasin de clés à bien été supprimé"));
 		return "redirect:/user/users";
@@ -138,7 +139,7 @@ public class UserController {
 
 	@GetMapping("/shares")
 	public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		User authUser = userService.getByEppn(authUserEppn);
+		User authUser = (User) model.getAttribute("authUser");
 		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
@@ -170,9 +171,9 @@ public class UserController {
 						   @RequestParam("types") String[] types,
 						   @RequestParam("userIds") String[] userEmails,
 						   @RequestParam("beginDate") String beginDate,
-						   @RequestParam("endDate") String endDate,
+						   @RequestParam("endDate") String endDate, Model model,
 						   RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+		User authUser = (User) model.getAttribute("authUser");
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		try {
@@ -189,16 +190,16 @@ public class UserController {
 							  @RequestParam("types") String[] types,
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
-							  @RequestParam("endDate") String endDate) {
-		User authUser = userService.getByEppn(authUserEppn);
+							  @RequestParam("endDate") String endDate, Model model) {
+		User authUser = (User) model.getAttribute("authUser");
 		UserShare userShare = userShareService.getById(id);
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
-	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes) {
-		User authUser = userService.getByEppn(authUserEppn);
+	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, Model model, RedirectAttributes redirectAttributes) {
+		User authUser = (User) model.getAttribute("authUser");
 		UserShare userShare = userShareService.getById(id);
 		if (userShare.getUser().equals(authUser)) {
 			userShareService.delete(userShare);

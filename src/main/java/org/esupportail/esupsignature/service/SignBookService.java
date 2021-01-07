@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -112,7 +111,7 @@ public class SignBookService {
                 pendingSignBook(signBook, null, user.getEppn(), authUserEppn);
                 return signBook;
             } catch (EsupSignatureUserException | EsupSignatureIOException e) {
-                TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
+//                TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
                 throw new EsupSignaturePdfException("Impossible de charger le document : documents corrompu", e);
             }
         } else {
@@ -120,7 +119,8 @@ public class SignBookService {
         }
     }
 
-    public void initSignBook(User user, Long id, SignBook signBook) {
+    @Transactional
+    public void initSignBook(SignBook signBook, Long id, User user) {
         Workflow workflow = workflowService.getById(id);
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
@@ -165,6 +165,7 @@ public class SignBookService {
 //        signRequest.setParentSignBook(signBook);
 //    }
 
+    @Transactional
     public boolean delete(SignBook signBook) {
         //TODO critères de suppresion ou en conf
 //        if(signBook.getCurrentWorkflowStepNumber() > 0) {
@@ -318,7 +319,7 @@ public class SignBookService {
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
             if (signBook.getLiveWorkflow().getWorkflow() != null) {
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), recipientEmails, userEppn, false);
+                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientEmails, userEppn, false);
                 importWorkflow(signBook, workflow);
                 nextWorkFlowStep(signBook);
             }

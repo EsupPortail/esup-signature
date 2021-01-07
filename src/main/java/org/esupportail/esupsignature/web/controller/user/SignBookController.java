@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -16,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,9 +38,6 @@ public class SignBookController {
 
     @Resource
     private LogService logService;
-
-    @Resource
-    private UserService userService;
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
     @GetMapping(value = "/{id}")
@@ -148,12 +145,13 @@ public class SignBookController {
     }
 
     @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
-                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
-        User authUser = userService.getByEppn(authUserEppn);
+                                                    @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
+        User authUser = (User) model.getAttribute("authUser");
         logger.info("start add documents in " + name);
         signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
         String[] ok = {"ok"};

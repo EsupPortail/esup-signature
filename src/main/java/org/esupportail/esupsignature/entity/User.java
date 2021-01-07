@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
@@ -32,8 +30,7 @@ public class User {
     @Column(unique=true)
     private String email;
 
-    @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @ElementCollection(fetch = FetchType.EAGER)
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
@@ -42,7 +39,7 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
@@ -59,7 +56,7 @@ public class User {
     private String signImageBase64;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)
@@ -81,8 +78,7 @@ public class User {
         this.emailAlertFrequency = emailAlertFrequency;
     }
 
-    @ElementCollection
-    @LazyCollection(LazyCollectionOption.FALSE)
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {

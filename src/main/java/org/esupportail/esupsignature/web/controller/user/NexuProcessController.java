@@ -4,10 +4,8 @@ import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.model.ToBeSigned;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,16 +40,11 @@ public class NexuProcessController implements Serializable {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Resource
-	private UserService userService;
-
 	@Scope(value = "session")
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@GetMapping(value = "/{id}", produces = "text/html")
 	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @PathVariable("id") Long id, HttpSession httpSession, Model model) {
-		User user = userService.getByEppn(userEppn);
-		User authUser = userService.getByEppn(authUserEppn);
 		httpSession.removeAttribute("abstractSignatureForm");
 		httpSession.removeAttribute("abstractSignatureParameters");
 		SignRequest signRequest = signRequestService.getById(id);

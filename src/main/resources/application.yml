@@ -48,24 +48,23 @@ spring:
                 enabled: true
     datasource:
         driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5432/esupsignature
+        password: esup
+        username: esupsignature
         hikari:
             auto-commit: false
-        password: esup
-        url: jdbc:postgresql://localhost:5432/esupsignature
-        username: esupsignature
-        data: classpath:org/springframework/session/jdbc/schema-postgresql.sql
     jpa:
         hibernate:
-            ddl-auto: update
+            ddl-auto: none
         properties:
             hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-                format_sql: true
+                flushMode: MANUAL
                 jdbc:
                     lob:
                         non_contextual_creation: true
         show-sql: false
         open-in-view: false
+        database: postgresql
     ldap:
 #        base: dc=univ-ville,dc=fr
 #        password: ldap-password
