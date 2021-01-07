@@ -13,7 +13,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
-import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -368,9 +367,6 @@ public class WorkflowService {
     }
 
     public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
-        Session session = entityManager.unwrap(Session.class);
-        System.err.println(session.getFlushMode());
-        System.err.println(session.getHibernateFlushMode());
         try {
             Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
@@ -391,6 +387,7 @@ public class WorkflowService {
                 }
                 step++;
             }
+            entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
             throw new EsupSignatureException("compute workflow error", e);
