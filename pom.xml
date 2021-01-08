@@ -219,6 +219,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.cosium.jai-imageio</groupId>
+			<artifactId>jai-imageio-core</artifactId>
+			<version>1.3.0.1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>${bouncycastle.version}</version>
