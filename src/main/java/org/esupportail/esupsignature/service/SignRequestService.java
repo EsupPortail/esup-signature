@@ -204,7 +204,7 @@ public class SignRequestService {
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
 		List<SignRequest> signRequestsToSign = signRequestRepository.findByRecipientUserToSign(userEppn);
-		signRequestsToSign = signRequestsToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
+		signRequestsToSign = signRequestsToSign.stream().sorted(Comparator.comparing(SignRequest::getCreateDate).reversed()).collect(Collectors.toList());
 		return  signRequestsToSign;
 	}
 
