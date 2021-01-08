@@ -173,6 +173,7 @@ public class FormService {
 		return pageNrByAnnotDict;
 	}
 
+	@Transactional
 	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
@@ -181,11 +182,7 @@ public class FormService {
 		form.setActiveVersion(true);
 		if (document == null && fieldNames.length > 0) {
 			for(String fieldName : fieldNames) {
-				Field field = new Field();
-				field.setName(fieldName);
-				field.setLabel(fieldName);
-				field.setType(FieldType.text);
-				form.getFields().add(field);
+				form.getFields().add(fieldService.createField(fieldName));
 			}
 		} else {
 			if (testForms.size() == 1) {
@@ -204,7 +201,6 @@ public class FormService {
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
-		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
 			List<UserShare> userShares = userShareService.getUserSharesByForm(testForms.get(0));
@@ -212,6 +208,7 @@ public class FormService {
 				userShare.setForm(form);
 			}
 		}
+		formRepository.save(form);
 		return form;
 	}
 
@@ -232,7 +229,7 @@ public class FormService {
 				}
 			}
 			if(pdField instanceof PDTextField){
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
@@ -272,7 +269,7 @@ public class FormService {
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox) {
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
 				field.setType(FieldType.checkbox);
@@ -283,7 +280,7 @@ public class FormService {
 			} else if(pdField instanceof PDRadioButton){
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
-					Field field = new Field();
+					Field field = fieldService.createField(pdField.getPartialName());
 					field.setType(FieldType.radio);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
@@ -293,7 +290,7 @@ public class FormService {
 					fields.add(field);
 				}
 			} else if(pdField instanceof PDChoice) {
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setType(FieldType.select);
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
@@ -314,7 +311,6 @@ public class FormService {
 	}
 
 	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
-		field.setName(pdField.getPartialName());
 		field.setPage(page);
 		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
 		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
