@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.repository.FieldRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,16 @@ public class FieldService {
 	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
 		return obj;
+	}
+
+	@Transactional
+	public Field createField(String fieldName) {
+		Field field = new Field();
+		field.setName(fieldName);
+		field.setLabel(fieldName);
+		field.setType(FieldType.text);
+		fieldRepository.save(field);
+		return field;
 	}
 
 	public void updateField(Field field) {
