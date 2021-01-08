@@ -22,7 +22,7 @@ public class LiveWorkflow {
     @OrderColumn
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
-    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY)
     private LiveWorkflowStep currentStep;
 
     @Enumerated(EnumType.STRING)
