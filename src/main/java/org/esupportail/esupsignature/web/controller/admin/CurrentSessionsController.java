@@ -24,6 +24,7 @@ import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 @RequestMapping("/admin/currentsessions")
-//@Controller
+@Controller
 public class CurrentSessionsController {
 	
 	@ModelAttribute("adminMenu")

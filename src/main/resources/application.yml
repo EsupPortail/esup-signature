@@ -41,7 +41,9 @@ management:
 
 spring:
     session:
-        store-type: jdbc
+      jdbc:
+          initialize-schema: always
+
     data:
         ldap:
             repositories:
@@ -51,11 +53,12 @@ spring:
         url: jdbc:postgresql://localhost:5432/esupsignature
         password: esup
         username: esupsignature
+        jdbc-url: ${spring.datasource.url}
         hikari:
             auto-commit: false
     jpa:
         hibernate:
-            ddl-auto: none
+            ddl-auto: update
         properties:
             hibernate:
                 flushMode: MANUAL
