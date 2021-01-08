@@ -23,7 +23,6 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 @EnableAsync
 @EnableAutoConfiguration
 @EnableConfigurationProperties
-@EnableTransactionManagement
 public class WebAppConfig implements WebMvcConfigurer {
 
     @Override

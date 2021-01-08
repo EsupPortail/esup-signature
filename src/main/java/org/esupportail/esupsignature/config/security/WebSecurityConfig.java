@@ -69,11 +69,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.addLogoutHandler(logoutHandler())
 				.logoutSuccessUrl("/login").permitAll();
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
-		http.csrf().ignoringAntMatchers("/ws/**");
-		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
-		http.csrf().ignoringAntMatchers("/otp/**");
-		http.csrf().ignoringAntMatchers("/log/**");
-		http.csrf().ignoringAntMatchers("/actuator/**");
+		http.csrf()
+			.ignoringAntMatchers("/ws/**")
+			.ignoringAntMatchers("/user/nexu-sign/**")
+			.ignoringAntMatchers("/otp/**")
+			.ignoringAntMatchers("/log/**")
+			.ignoringAntMatchers("/actuator/**")
+			.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
@@ -105,6 +107,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/public/", "/public/**").permitAll()
+				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();
 
 	}
