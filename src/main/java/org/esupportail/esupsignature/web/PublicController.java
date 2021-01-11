@@ -5,6 +5,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +28,18 @@ public class PublicController {
     @Resource
     SignRequestService signRequestService;
 
+    private final BuildProperties buildProperties;
+
+
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties) {
+        this.buildProperties = buildProperties;
+    }
+
     @GetMapping(value = "/control/{token}")
     public String control(@PathVariable String token, Model model) {
+        if (buildProperties != null) {
+            model.addAttribute("version", buildProperties.getVersion());
+        }
         List<SignRequest> signRequestOptional = signRequestService.getSignRequestsByToken(token);
         if(signRequestOptional.size() > 0) {
             SignRequest signRequest = signRequestOptional.get(0);
