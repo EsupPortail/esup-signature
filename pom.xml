@@ -127,25 +127,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.twelvemonkeys.servlet</groupId>
-			<artifactId>servlet</artifactId>
-			<version>3.6.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.twelvemonkeys.imageio</groupId>
-			<artifactId>imageio-core</artifactId>
-			<version>3.6.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.twelvemonkeys.imageio</groupId>
-			<artifactId>imageio</artifactId>
-			<version>3.6.1</version>
-			<type>pom</type>
-		</dependency>
-
-		<dependency>
 			<groupId>io.github.jpenren</groupId>
 			<artifactId>thymeleaf-spring-data-dialect</artifactId>
 			<version>3.4.0</version>
