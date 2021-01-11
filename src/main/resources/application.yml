@@ -43,7 +43,6 @@ spring:
     session:
       jdbc:
           initialize-schema: always
-
     data:
         ldap:
             repositories:

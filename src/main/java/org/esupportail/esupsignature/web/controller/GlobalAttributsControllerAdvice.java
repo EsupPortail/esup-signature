@@ -95,23 +95,23 @@ public class GlobalAttributsControllerAdvice {
         if (!Collections.disjoint(roles, globalProperties.getHideAutoSignExceptRoles()))
             myGlobalProperties.setHideAutoSign(!globalProperties.getHideAutoSign());
 
-        if (roles.contains("create_signrequest")) {
+        if (roles.contains("ROLE_CREATE_SIGNREQUEST")) {
             myGlobalProperties.setHideSendSignRequest(false);
         }
-        if (roles.contains("create_wizard")) {
+        if (roles.contains("ROLE_CREATE_WIZARD")) {
             myGlobalProperties.setHideWizard(false);
         }
-        if (roles.contains("create_autosign")) {
+        if (roles.contains("ROLE_CREATE_AUTOSIGN")) {
             myGlobalProperties.setHideAutoSign(false);
         }
 
-        if (roles.contains("no_create_signrequest")) {
+        if (roles.contains("ROLE_NO_CREATE_SIGNREQUEST")) {
             myGlobalProperties.setHideSendSignRequest(true);
         }
-        if (roles.contains("no_create_wizard")) {
+        if (roles.contains("ROLE_NO_CREATE_WIZARD")) {
             myGlobalProperties.setHideWizard(true);
         }
-        if (roles.contains("no_create_autosign")) {
+        if (roles.contains("ROLE_NO_CREATE_AUTOSIGN")) {
             myGlobalProperties.setHideAutoSign(true);
         }
     }
