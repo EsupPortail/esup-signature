@@ -331,21 +331,19 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
-                    // inputField.prop('disabled', true);
+                    inputField.prop('disabled', true);
                 }
 
-                //TODO Repair currentStep enable input
-
+                console.log(dataField);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
-                    if(dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
                     inputField.prop('required', false);
                     inputField.prop('disabled', true);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
                 } else {
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
                         inputField.val(dataField.defaultValue);
