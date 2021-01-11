@@ -281,7 +281,7 @@ public class SignRequestController {
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.get(0)));
                 } else {
-                    if(!userSignFirst) {
+                    if(userSignFirst == null || !userSignFirst) {
                         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
                     }
                 }
