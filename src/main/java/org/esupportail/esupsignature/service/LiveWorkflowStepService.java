@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -28,7 +29,10 @@ public class LiveWorkflowStepService {
     @Resource
     private UserService userService;
 
-    public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) throws EsupSignatureUserException {
+    @Resource
+    private SignBookService signBookService;
+
+    public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         if(allSignToComplete ==null) {
             liveWorkflowStep.setAllSignToComplete(false);
@@ -36,10 +40,10 @@ public class LiveWorkflowStepService {
             liveWorkflowStep.setAllSignToComplete(allSignToComplete);
         }
         liveWorkflowStep.setSignType(signType);
-        liveWorkflowStepRepository.save(liveWorkflowStep);
         if(recipientEmails != null && recipientEmails.length > 0) {
             addRecipientsToWorkflowStep(liveWorkflowStep, recipientEmails);
         }
+        liveWorkflowStepRepository.save(liveWorkflowStep);
         return liveWorkflowStep;
     }
 
@@ -59,7 +63,9 @@ public class LiveWorkflowStepService {
         }
     }
 
-    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, SignBook signBook) throws EsupSignatureUserException {
+    @Transactional
+    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, Long signBookId) throws EsupSignatureUserException {
+        SignBook signBook = signBookService.getById(signBookId);
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createWorkflowStep(allSignToComplete, signType, recipientsEmail);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);

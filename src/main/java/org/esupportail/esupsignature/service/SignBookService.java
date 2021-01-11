@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
@@ -110,8 +109,7 @@ public class SignBookService {
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
                 pendingSignBook(signBook, null, user.getEppn(), authUserEppn);
                 return signBook;
-            } catch (EsupSignatureUserException | EsupSignatureIOException e) {
-//                TransactionInterceptor.currentTransactionStatus().setRollbackOnly();
+            } catch (EsupSignatureIOException e) {
                 throw new EsupSignaturePdfException("Impossible de charger le document : documents corrompu", e);
             }
         } else {
@@ -200,12 +198,7 @@ public class SignBookService {
                     recipientEmails.add(user.getEmail());
                 }
             }
-            LiveWorkflowStep newWorkflowStep = null;
-            try {
-                newWorkflowStep = liveWorkflowStepService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
-            } catch (EsupSignatureUserException e) {
-                logger.error("error on import workflow", e);
-            }
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createWorkflowStep(workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails.toArray(String[]::new));
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
         }
         if(!(workflow instanceof DefaultWorkflow)) {
@@ -407,16 +400,13 @@ public class SignBookService {
         if (allSignToComplete == null) {
             allSignToComplete = false;
         }
-        try {
-            if(userSignFirst != null && userSignFirst) {
-                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
-            }
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
-            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-        } catch (EsupSignatureUserException e) {
-            logger.error("error with users on create signbook " + signBook.getId());
-            throw new EsupSignatureException("Problème lors de l’envoi");
+
+        if(userSignFirst != null && userSignFirst) {
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, SignType.pdfImageStamp, user.getEmail()));
         }
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(allSignToComplete, signType, recipientsEmails));
+        signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+
         if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
             pending = false;
             message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
@@ -491,19 +481,15 @@ public class SignBookService {
     public void addLiveStep(SignBook signBook, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType, String authUserEppn) throws EsupSignatureException {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber + 1 >= currentSetNumber) {
-            try {
-                LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
-                if (stepNumber == -1) {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-                } else {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
-                }
-                signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentSetNumber - 1));
-                pendingSignBook(signBook, null, authUserEppn, authUserEppn);
-            } catch (EsupSignatureUserException e) {
-                logger.error("error on add step", e);
-                throw new EsupSignatureException("Erreur lors de l'ajout des participants");
+            LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+            if (stepNumber == -1) {
+                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+            } else {
+                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
             }
+            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentSetNumber - 1));
+            pendingSignBook(signBook, null, authUserEppn, authUserEppn);
+
         } else {
             throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
         }
