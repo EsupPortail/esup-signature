@@ -122,10 +122,9 @@ public class AdminSignRequestController {
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@PathVariable("id") Long id, Model model) {
+	public String delete(@PathVariable("id") Long id) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signBookService.delete(signRequest.getParentSignBook());
-
+		signBookService.delete(signRequest.getParentSignBook().getId());
 		return "redirect:/admin/signrequests/";
 	}
 

@@ -62,7 +62,7 @@
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" name="ids[]" th:value="${signRequest.id}"></td>
+                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" name="ids[]" th:value="${signRequest.parentSignBook.id}"></td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                 <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
