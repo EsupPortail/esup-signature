@@ -159,7 +159,7 @@ public class WizardController {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
-                liveWorkflowStepService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, signBook);
+                liveWorkflowStepService.addNewStepToSignBook(signType, allSignToComplete, recipientsEmail, id);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());
