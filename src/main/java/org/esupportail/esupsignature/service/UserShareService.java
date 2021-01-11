@@ -7,8 +7,6 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -213,7 +211,6 @@ public class UserShareService {
         return false;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<UserShare> getUserSharesByUser(String authUserEppn) {
         return userShareRepository.findByUserEppn(authUserEppn);
     }

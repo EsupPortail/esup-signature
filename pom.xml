@@ -17,7 +17,7 @@
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.66</bouncycastle.version>
-		<jva.version>13</jva.version>
+		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
 		<dss.framework.version>5.7</dss.framework.version>
@@ -216,18 +216,6 @@
 		    <groupId>org.imgscalr</groupId>
 		    <artifactId>imgscalr-lib</artifactId>
 		    <version>4.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.jai-imageio</groupId>
-			<artifactId>jai-imageio-core</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.jai-imageio</groupId>
-			<artifactId>jai-imageio-jpeg2000</artifactId>
-			<version>1.4.0</version>
 		</dependency>
 
 		<dependency>

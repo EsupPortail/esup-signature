@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -139,7 +138,6 @@ public class UserController {
 
 	@GetMapping("/shares")
 	public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		User authUser = (User) model.getAttribute("authUser");
 		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
 		model.addAttribute("userShares", userShares);
 		model.addAttribute("shareTypes", ShareType.values());
