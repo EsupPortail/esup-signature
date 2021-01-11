@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ public class Data {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+	@JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 

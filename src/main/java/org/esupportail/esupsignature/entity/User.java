@@ -30,7 +30,7 @@ public class User {
     @Column(unique=true)
     private String email;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
@@ -39,7 +39,7 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
@@ -78,7 +78,7 @@ public class User {
         this.emailAlertFrequency = emailAlertFrequency;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {

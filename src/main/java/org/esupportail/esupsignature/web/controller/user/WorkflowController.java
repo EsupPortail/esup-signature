@@ -27,7 +27,7 @@ public class WorkflowController {
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
-    public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+    public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         model.addAttribute("fromAdmin", false);
         model.addAttribute("signTypes", SignType.values());
         Workflow workflow = workflowService.getById(id);
