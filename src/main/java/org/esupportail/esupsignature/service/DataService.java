@@ -74,7 +74,7 @@ public class DataService {
 
     public void delete(Data data) {
         if (data.getSignBook() != null) {
-            signBookService.delete(data.getSignBook());
+            signBookService.delete(data.getSignBook().getId());
         }
         data.setForm(null);
         dataRepository.delete(data);

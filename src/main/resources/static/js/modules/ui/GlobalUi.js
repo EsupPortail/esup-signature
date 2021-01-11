@@ -83,22 +83,21 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
 
-        $("#sendPendingButton").on('click', e => this.showSendPendingModal());
-        $("#submitSendPending").on('click', e => this.submitSendPending());
+        $("#sendPendingButton").on('click', e => this.submitSendPending());
+        // $("#submitSendPending").on('click', e => this.submitSendPending());
 
         this.bindKeyboardKeys();
     }
 
     submitSendPending() {
         $("#pending").val(true);
-        $("#comment").val($("#submitComment").val());
-        $("#sendSignRequestForm").submit();
+        $("#sendButton").click();
     }
 
-    showSendPendingModal() {
-        $('#sendPending').modal('toggle');
-        $('#sendSignRequestModal').modal('toggle');
-    }
+    // showSendPendingModal() {
+    //     $('#sendPending').modal('toggle');
+    //     $('#sendSignRequestModal').modal('toggle');
+    // }
 
     checkCurrentPage() {
         let url = window.location.pathname;
