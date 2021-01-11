@@ -1,12 +1,12 @@
 build:
-  script: /bin/systemctl stop tomcat-dematag.service && export JAVA_HOME='/opt/jdk-13.0.2/' && mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war && /bin/systemctl start tomcat-dematag.service
+  script: export JAVA_HOME='/opt/jdk-13.0.2/' && mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
   only:
     - test
   tags:
     - test
 
 build2:
-  script: systemctl stop tomcat-dematag.service && mvn -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war && systemctl start tomcat-dematag.service
+  script: mvn -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war
   only:
     - tags
   tags:
