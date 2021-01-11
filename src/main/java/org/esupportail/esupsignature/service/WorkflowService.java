@@ -427,7 +427,7 @@ public class WorkflowService {
         List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
         for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
             List<SignBook> signBooks = signBookService.getByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
-            signBooks.forEach(s -> signBookService.delete(s));
+            signBooks.forEach(s -> signBookService.delete(s.getId()));
         }
         deleteLiveWorkflows.forEach(l -> liveWorkflowService.delete(l));
         noneDeleteLiveWorkflows.forEach(l -> l.setWorkflow(null));

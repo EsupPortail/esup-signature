@@ -166,11 +166,12 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public boolean delete(SignBook signBook) {
+    public boolean delete(Long signBookId) {
         //TODO critères de suppresion ou en conf
 //        if(signBook.getCurrentWorkflowStepNumber() > 0) {
 //            return false;
 //        }
+        SignBook signBook = getById(signBookId);
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
         return true;

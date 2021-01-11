@@ -219,7 +219,7 @@ public class WsController {
         if (signBookRepository.countByName(name) > 0) {
             SignBook signBook = signBookRepository.findByName(name).get(0);
             if(signBook.getExternal()) {
-                signBookService.delete(signBook);
+                signBookService.delete(signBook.getId());
             }
         }
         return new ResponseEntity<>(HttpStatus.OK);

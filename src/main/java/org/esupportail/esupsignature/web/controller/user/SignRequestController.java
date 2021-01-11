@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
@@ -65,6 +66,9 @@ public class SignRequestController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private PreAuthorizeService preAuthorizeService;
 
     @Resource
     private SignRequestService signRequestService;
@@ -311,26 +315,17 @@ public class SignRequestController {
         return "redirect:" + request.getHeader("referer");
     }
 
-//    @PostMapping(value = "delete-multiple", consumes = {"application/json"})
-//    @ResponseBody
-//    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
-//        for(Long id : ids) {
-//            SignBook signBook = signBookService.getSignBookById(id);
-//            if(signBook != null) {
-//                if(signBookService.preAuthorizeManage(id, authUser)) {
-//                    signBookService.delete(signBook);
-//                }
-//            } else if(signRequestService.getSignRequestsById(id) != null) {
-//                SignRequest signRequest = signRequestService.getSignRequestsById(id);
-//                if (signRequestService.preAuthorizeOwner(id, authUser)) {
-//                    signRequestService.delete(signRequest);
-//                }
-//            }
-//        }
-//        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppressions effectuées"));
-//        redirectAttributes.addAttribute("messageInfo", "Suppressions effectuées");
-//        return new ResponseEntity<>(true, HttpStatus.OK);
-//    }
+    @PostMapping(value = "delete-multiple", consumes = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+        for(Long id : ids) {
+            if(preAuthorizeService.signBookManage(id, authUserEppn)) {
+                signBookService.delete(id);
+            }
+        }
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        return new ResponseEntity<>(true, HttpStatus.OK);
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
