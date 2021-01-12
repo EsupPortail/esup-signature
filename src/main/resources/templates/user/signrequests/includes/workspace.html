@@ -9,31 +9,48 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                <button type="button" id="signZoomIn"
-                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                        style="z-index: 3;">
-                    <i class="fas fas fa-search-plus"></i>
-                </button>
-                <button type="button" id="signZoomOut"
-                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                        style="z-index: 3;">
-                    <i class="fas fas fa-search-minus"></i>
-                </button>
-                <button type="button" id="signPrevImage"
-                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                        style="z-index: 3;">
-                    <i class="fas fas fa-chevron-up"></i>
-                </button>
-                <button type="button" id="signNextImage"
-                        class="btn btn-sm btn-transparent btn-outline-dark text-dark position-absolute d-none"
-                        style="z-index: 3;">
-                    <i class="fas fas fa-chevron-down"></i>
-                </button>
-                <div id="cross" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
                      th:style="'display: none;background-repeat: no-repeat; background-position: left top; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
-                    <div id="borders" class="anim-border"
+                    <div id="crossTools_0" class="badge badge-success position-absolute d-none" style="
+                        z-index: 3; opacity: .9;user-select: none;
+                        -moz-user-select: none;
+                        -khtml-user-select: none;
+                        -webkit-user-select: none;
+                        -o-user-select: none;">
+                        <button type="button" id="signZoomOut_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <span style="font-size:1em; line-height: 1em;" class="">A</span>
+                        </button>
+                        <button type="button" id="signZoomIn_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <span style="font-size:1.6666em; line-height: 1em;">A</span>
+                        </button>
+                        <button type="button" id="signPrevImage_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button type="button" id="signNextImage_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <button type="button" id="signExtra_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <i class="fas fa-receipt"></i>
+                        </button>
+                        <button type="button" id="signDrop_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div id="borders_0" class="anim-border"
                          th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                 </div>
             </th:block>
