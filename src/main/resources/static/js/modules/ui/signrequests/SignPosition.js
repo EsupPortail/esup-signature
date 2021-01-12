@@ -17,17 +17,12 @@ export class SignPosition extends EventFactory {
         let signRequestParams = new SignRequestParams();
         this.signImages = signImages;
         if(this.signImages != null && this.signImages.length > 0) {
-            let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
-            this.sizes = this.getImageDimensions(img);
             signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
             signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
-            signRequestParams.signWidth = this.sizes.w * this.fixRatio;
-            signRequestParams.signHeight = this.sizes.h * this.fixRatio;
             signRequestParams.signPageNumber = signPageNumber;
             signRequestParams.signImageNumber = 0;
         }
         this.signRequestParamses = [signRequestParams];
-        this.changeSignImage(signRequestParams.signImageNumber);
         this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
@@ -166,19 +161,17 @@ export class SignPosition extends EventFactory {
 
     changeSignImage(imageNum) {
         if(this.signImages != null) {
-            let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
             console.debug("change sign image to " + imageNum);
+            let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
             this.cross.css("background-image", "url('" + img + "')");
-            this.getCurrentSignParams().signImageNumber = imageNum;
             let sizes = this.getImageDimensions(img);
             sizes.then(result => this.changeSignSize(result));
         }
     }
 
     changeSignSize(result) {
-        this.getCurrentSignParams().signWidth = Math.round((result.w) * this.signScale * this.currentScale * this.fixRatio);
+        this.getCurrentSignParams().signWidth = Math.round((result.w + this.extraWidth) * this.signScale * this.currentScale * this.fixRatio);
         this.getCurrentSignParams().signHeight = Math.round((result.h) * this.signScale * this.currentScale * this.fixRatio);
-        this.cross.css('background-size', this.getCurrentSignParams().signWidth + 'px');
         this.updateSignSize();
     }
 
@@ -314,11 +307,11 @@ export class SignPosition extends EventFactory {
 
     updateSignSize() {
         console.debug("update sign size " + this.getCurrentSignParams().signWidth);
-        this.cross.css('width', (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio));
-        this.cross.css('height', (this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio));
-        this.borders.css('width', (this.getCurrentSignParams().signWidth * this.currentScale / this.fixRatio));
-        this.borders.css('height', (this.getCurrentSignParams().signHeight * this.currentScale / this.fixRatio));
-        this.cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale / this.fixRatio);
+        this.cross.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
+        this.cross.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
+        this.borders.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
+        this.borders.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
+        this.cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale * this.fixRatio)) * this.currentScale / this.fixRatio);
         $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         let textDate = $('#textDate');
         textDate.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
@@ -327,7 +320,7 @@ export class SignPosition extends EventFactory {
         textName.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         let textExtra = $('#textExtra');
-        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale)) * this.currentScale / this.fixRatio + "px");
+        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.extraWidth * this.signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
         textExtra.css('font-size', this.fontSize * this.currentScale * this.signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.signScale + "px");
         this.updateSignButtons();
@@ -397,9 +390,9 @@ export class SignPosition extends EventFactory {
     addText() {
         console.log("toggle date");
         $('#dateButton').toggleClass('btn-outline-success btn-outline-dark');
-        this.borders.append("<span id='textName' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
+        this.borders.append("<span id='textName' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 3 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>" +
             "Visé par " + this.userName + "</span>");
-        this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 2.5 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
+        this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.signScale * 3 + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
     }
 
     toggleExtraInfos() {
@@ -428,7 +421,7 @@ export class SignPosition extends EventFactory {
                 "Le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT] Z') +
                 "</span>");
         }
-        this.updateSignSize();
+        this.changeSignImage(this.currentSign);
     }
 
 }
