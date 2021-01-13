@@ -153,10 +153,10 @@ pdf:
     pdf-to-image-dpi: 72
 
 security:
-    cas:
-        service: https://esup-signature.univ-ville.fr/login/cas
-        title: Compte Université (CAS)
-        url: https://cas.univ-ville.fr
+#    cas:
+#        service: https://esup-signature.univ-ville.fr/login/cas
+#        title: Compte Université (CAS)
+#        url: https://cas.univ-ville.fr
     shib:
         credentials-request-header: MEMBER
         idp-url: https://idp.univ-ville.fr
