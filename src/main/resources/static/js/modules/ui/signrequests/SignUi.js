@@ -83,7 +83,7 @@ export class SignUi {
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&sseId=" + sessionStorage.getItem("sseId") +
-                "&signRequestParams=" + JSON.stringify(this.workspace.signPosition.signRequestParamses) +
+                "&signRequestParams=" + JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())) +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
                 // "&formData=" + JSON.stringify(formData) +
