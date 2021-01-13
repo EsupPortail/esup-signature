@@ -9,6 +9,7 @@ export class SignRequestParams {
         this.xPos;
         this.yPos;
         this.addExtra = false;
+        this.extraWidth = 0;
         this.addName;
         this.addDate;
         this.signScale = 1;
