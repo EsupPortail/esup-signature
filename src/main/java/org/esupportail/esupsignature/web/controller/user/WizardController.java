@@ -94,7 +94,7 @@ public class WizardController {
             if(recipientsEmail != null && recipientsEmail.length > 0) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
-                workflow.getWorkflowSteps().add(workflowStep);
+                workflowService.addWorkflowStep(workflow.getId(), workflowStep);
                 if (addNew != null) {
                     model.addAttribute("workflowStepForm", true);
                     model.addAttribute("signTypes", SignType.values());
