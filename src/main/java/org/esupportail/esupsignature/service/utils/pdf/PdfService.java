@@ -109,8 +109,8 @@ public class PdfService {
             float ty = 0;
             float xAdjusted = signRequestParams.getxPos();
             float yAdjusted;
-            int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
-            int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+            int widthAdjusted = Math.round((float) signRequestParams.getSignWidth());
+            int heightAdjusted = Math.round((float) signRequestParams.getSignHeight());
 
             if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
                 yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() - signRequestParams.getSignHeight() + pdPage.getCropBox().getLowerLeftY();

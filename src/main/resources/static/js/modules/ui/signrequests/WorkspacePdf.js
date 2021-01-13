@@ -51,7 +51,6 @@ export class WorkspacePdf {
                         visualButton.classList.remove("d-none");
                         visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
                     }
-                    document.getElementById('extraButton').addEventListener('click', e => this.signPosition.toggleExtraInfos());
                 }
                 document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
             }
@@ -369,10 +368,11 @@ export class WorkspacePdf {
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
         $('#signButtons').addClass('d-none');
-        $('#signZoomIn').addClass('d-none');
-        $('#signZoomOut').addClass('d-none');
-        $('#signNextImage').addClass('d-none');
-        $('#signPrevImage').addClass('d-none');
+        this.signPosition.crossTools.addClass('d-none');
+        // $('#signZoomIn').addClass('d-none');
+        // $('#signZoomOut').addClass('d-none');
+        // $('#signNextImage').addClass('d-none');
+        // $('#signPrevImage').addClass('d-none');
         $('#commentsTools').hide();
 
         $('#signTools').hide();
