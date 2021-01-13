@@ -195,3 +195,16 @@ sign:
 logging:
     file:
         name: logs/esup-signature.log
+
+extdb:
+    datasources:
+        listDataSource:
+            driver-class-name: org.mariadb.jdbc.Driver
+            password: password
+            url: jdbc:mariadb://localhost:3306/sympa
+            username: username
+        secondDataSource:
+            driver-class-name: org.mariadb.jdbc.Driver
+            password: password
+            url: jdbc:mariadb://localhost:3306/dbname
+            username: username

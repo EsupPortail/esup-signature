@@ -5,16 +5,17 @@ export default class SelectUser {
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         this.signRequestId = signRequestId;
-        let valuePrefix = "";
+        this.valuePrefix = "";
         this.limit = 99;
+        this.flag = false;
         let selectNameSplit = selectName.split("_");
         if(selectNameSplit.length === 2) {
-            valuePrefix = selectNameSplit[1] + "*";
+            this.valuePrefix = selectNameSplit[1] + "*";
         }
         if(limit != null) {
             this.limit = limit;
         }
-        this.createUserSelect(selectName, valuePrefix);
+        this.createUserSelect(selectName,  this.valuePrefix);
         this.selectField.addClass("slim-select-hack");
         this.initListeners();
     }
@@ -23,7 +24,7 @@ export default class SelectUser {
     }
 
     displayTempUsers(e) {
-        if(this.signRequestId != null) {
+        if (this.signRequestId != null) {
             let recipientEmails = this.slimSelect.selected()
             $.ajax({
                 url: "/user/signrequests/is-temp-users/" + this.signRequestId,
@@ -34,6 +35,35 @@ export default class SelectUser {
                 success: data => this.displayTempUsersSuccess(data)
             });
         }
+        if (this.flag === true) {
+            if (!e[e.length - 1].text.includes('(')) {
+                $.ajax({
+                    url: "/user/users/search-user-list?searchString=" + e[e.length - 1].text,
+                    type: 'GET',
+                    dataType: 'json',
+                    contentType: "application/json",
+                    success: response => this.addListMembers(response, e[e.length - 1].text)
+                });
+            }
+        }
+    }
+
+    addListMembers(data, selectValue) {
+        this.flag = false;
+        let array = [];
+        let array2 = [];
+        for (let i = 0; i < this.slimSelect.data.data.length ; i++) {
+            if (this.slimSelect.data.data[i].text !== selectValue && this.slimSelect.data.data[i].value !== "undefined") {
+                array.push({text: this.slimSelect.data.data[i].text, value: this.slimSelect.data.data[i].value, display: true});
+                array2.push(this.slimSelect.data.data[i].value);
+            }
+        }
+        for(let i = 0; i < data.length; i++) {
+            array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
+            array2.push(data[i]);
+        }
+        this.slimSelect.setData(array);
+        this.slimSelect.set(array2);
     }
 
     displayTempUsersSuccess(data) {
@@ -77,7 +107,7 @@ export default class SelectUser {
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
             searchHighlight: false,
-            hideSelectedOption: false,
+            hideSelectedOption: true,
             closeOnSelect: true,
             limit: this.limit,
             onChange : e => this.displayTempUsers(e),
@@ -85,7 +115,7 @@ export default class SelectUser {
             searchFilter: (option, search) => {
                 return true;
             },
-            ajax: function (search, callback) {
+            ajax: (search, callback) => {
                 callback('Recherche en cours');
                 controller.abort();
                 controller = new AbortController()
@@ -97,15 +127,36 @@ export default class SelectUser {
                         method: 'get',
                         signal: signal,
                     })
-                        .then(function (response) {
+                        .then((response) => {
                             return response.json()
                         })
-                        .then(function (json) {
-                            let data = []
-                            for (let i = 0; i < json.length; i++) {
-                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                        .then((json) => {
+                            if (json.length > 0) {
+                                let data = []
+                                for (let i = 0; i < json.length; i++) {
+                                    data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                                }
+                                callback(data);
+                            } else {
+                                this.flag = true;
+                                controller.abort();
+                                controller = new AbortController()
+                                signal = controller.signal
+                                fetch('/user/users/search-list?searchString=' + search, {
+                                    method: 'get',
+                                    signal: signal,
+                                })
+                                    .then(function (response){
+                                        return response.json()
+                                    })
+                                    .then(function (json) {
+                                        let data = []
+                                        for (let i = 0; i < json.length; i++) {
+                                            data.push({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
+                                        }
+                                        callback(data);
+                                    })
                             }
-                            callback(data);
                         })
                         .catch(function () {
                             callback("Recherche en cours");
