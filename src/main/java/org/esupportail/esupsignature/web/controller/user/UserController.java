@@ -9,7 +9,10 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.ldap.AliasLdap;
+import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.list.UserListService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +73,12 @@ public class UserController {
 	@Resource
 	private MessageService messageService;
 
+	@Resource
+	private LdapAliasService ldapAliasService;
+
+	@Resource
+	UserListService userListService;
+
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
@@ -125,6 +134,19 @@ public class UserController {
 		logger.debug("ldap search for : " + searchString);
 		return userService.getPersonLdaps(searchString).stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
    }
+
+   	@GetMapping(value = "/search-list")
+	@ResponseBody
+	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
+    	logger.debug("ldap search for : " + searchString);
+		return ldapAliasService.searchAlias(searchString);
+	}
+
+	@GetMapping(value = "/search-user-list")
+	@ResponseBody
+	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
+    	return userListService.getUsersEmailFromList(searchString);
+	}
 
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
