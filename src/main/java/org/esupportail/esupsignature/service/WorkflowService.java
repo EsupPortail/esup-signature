@@ -152,6 +152,7 @@ public class WorkflowService {
         return workflowRepository.countByName(name) > 0;
     }
 
+    @Transactional
     public Workflow createWorkflow(User user) {
         Workflow workflow;
         workflow = new Workflow();
@@ -518,6 +519,12 @@ public class WorkflowService {
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;
+    }
+
+    @Transactional
+    public void addWorkflowStep(Long id, WorkflowStep workflowStep) {
+        Workflow workflow = workflowRepository.findById(id).get();
+        workflow.getWorkflowSteps().add(workflowStep);
     }
 
 }
