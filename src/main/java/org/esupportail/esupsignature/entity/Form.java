@@ -46,8 +46,6 @@ public class Form {
 
 	private Boolean pdfDisplay = true;
 
-	private Boolean needName = false;
-
 	private Boolean activeVersion = false;
 
     @Enumerated(EnumType.STRING)
@@ -55,11 +53,12 @@ public class Form {
 
     private String targetUri;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @JsonIgnore
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
 
+	@ManyToMany(cascade = CascadeType.REMOVE)
 	@OrderColumn
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
 	private List<Field> fields = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")
@@ -207,14 +206,6 @@ public class Form {
 
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
-	}
-
-	public Boolean getNeedName() {
-		return needName;
-	}
-
-	public void setNeedName(Boolean needName) {
-		this.needName = needName;
 	}
 
 	public String getAction() {

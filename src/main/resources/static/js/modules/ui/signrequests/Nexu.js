@@ -1,11 +1,11 @@
 export class Nexu {
 
-    constructor(nexuUrl, nexuVersion, rootUrl, addDate, addName) {
+    constructor(nexuUrl, nexuVersion, rootUrl, addExtra, id) {
         this.nexuUrl = nexuUrl;
         this.nexuVersion = nexuVersion;
         Nexu.rootUrl = rootUrl;
-        Nexu.addDate = addDate;
-        Nexu.addName = addName;
+        Nexu.addExtra = addExtra;
+        Nexu.id = id;
         this.tokenId = null;
         this.keyId = null;
         this.checkNexuClient();
@@ -43,7 +43,7 @@ export class Nexu {
             Nexu.keyId = certificateData.response.keyId;
             console.log("init tokenId : " + this.tokenId + "," + this.keyId);
             let toSend = { signingCertificate: signingCertificate, certificateChain: certificateChain, encryptionAlgorithm: encryptionAlgorithm };
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addDate=" + Nexu.addDate + "&addName=" + Nexu.addName, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
+            callUrl(Nexu.rootUrl + "/user/nexu-sign/get-data-to-sign?addExtra=" + Nexu.addExtra + "&id=" + Nexu.id, "POST",  JSON.stringify(toSend), Nexu.sign, Nexu.error);
         }
     }
 
@@ -66,7 +66,7 @@ export class Nexu {
         if(signatureData.response != null) {
             let signatureValue = signatureData.response.signatureValue;
             let toSend = {signatureValue: signatureValue};
-            callUrl(Nexu.rootUrl + "/user/nexu-sign/sign-document", "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
+            callUrl(Nexu.rootUrl + "/user/nexu-sign/sign-document?id=" + Nexu.id, "POST", JSON.stringify(toSend), Nexu.downloadSignedDocument, Nexu.error);
         } else {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"

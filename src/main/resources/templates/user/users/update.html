@@ -4,7 +4,11 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/static/js/modules/ui/users/UserUi.js";
+    import {UserParamsHelp} from "/static/js/modules/help/UserParamsHelp.js";
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
+
+    let help = new UserParamsHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
+    help.autoStart();
 </script>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -19,7 +23,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn-simple">
-                <a id="userParamsFormSubmit"
+                <a id="saveButton"
                    class="btn-floating btn-lg bg-success wave-effect">
                     <i class="fas fa-save"></i>
                 </a>
@@ -31,7 +35,7 @@
                         <h5 class="text-center"><b>Paramètres de signature calligraphique</b></h5>
                         <div id="signImageForm">
                             <div class="row">
-                                <div class="col-12 col-xl-4 mb-2 text-center">
+                                <div id="mySigns" class="col-12 col-xl-4 mb-2 text-center">
                                     <label><strong>Mes signatures</strong></label>
                                     <table class="table table-borderless table-striped">
                                         <thead class="thead-dark">
@@ -41,13 +45,13 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <th:block th:each="signImage : ${authUser.signImages}">
+                                        <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                                    <img class="thumbnail" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
                                                 </td>
                                                 <td>
-                                                    <a th:href="'/user/users/delete-sign/' + ${signImage.id}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
+                                                    <a th:href="'/user/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </a>
                                                 </td>
@@ -87,7 +91,7 @@
                                         </label>
                                     </div>
                                     <br/>
-                                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessinez une signature dans le rectangle ci dessous</strong></label>
+                                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
                                     <div id="signPad">
                                         <canvas id="canvas" style="border: 1px solid black;"></canvas>
                                             <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
@@ -130,9 +134,9 @@
                     </div>
                 </div>
 
-                <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled}">
                     <div class="card-body">
-                        <h5 class="text-center"><b>Paramètres de signature électronique</b>(Facultatif)</h5>
+                        <h5 class="text-center"><b>Paramètres de signature électronique</b> (Facultatif)</h5>
                         <div id="keyForm" class="form-group col-10 mx-auto">
                             <label class="col-form-label"><strong>Magasin de certificats</strong>
                                 <button data-target="#collapseHelpKeyStore" data-toggle="collapse" type="button"
@@ -149,15 +153,20 @@
                                     </div>
                                 </div>
                             </label>
-                            <div th:if="${authUser.keystore != null}" class="alert alert-secondary">
+                            <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
                                 Keystore actuel : <a
-                                    th:href="'/user/documents/getfile/' + ${authUser.keystore.id}"><span
-                                    th:text="${authUser.keystore.fileName}"></span></a>
+                                    href="/user/users/get-keystore"><span
+                                    th:text="${keystoreFileName}"></span></a>
                                 <br>
-                                <button type="button" th:if="${authUser.getKeystore() != null && referer == null  }"
+                                <button type="button"
                                         class="btn btn-sm btn-primary text-left" data-toggle="modal"
                                         data-target="#testKeystore">
                                     <i class="fas fa-certificate"></i> Tester mon certificat
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-danger text-left" data-toggle="modal"
+                                        data-target="#removeKeystore">
+                                    <i class="fas fa-trash-alt"></i> Supprimer mon certificat
                                 </button>
                             </div>
                             <div class="form-group">
@@ -253,6 +262,23 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
                     <input class="btn btn-primary" type="submit" value="Afficher le certificat"/>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeKeystore" tabindex="-1" role="dialog" aria-labelledby="testKeystore" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form action="/user/users/remove-keystore" method="get">
+                <div class="modal-header">
+                    <h3 class="modal-title">Confirmer la suppression du certificat</h3>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Annuler</button>
+                    <input class="btn btn-danger" type="submit" value="Confirmer"/>
 
                 </div>
             </form>

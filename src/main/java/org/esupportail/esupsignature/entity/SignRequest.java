@@ -1,12 +1,12 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.collections.map.HashedMap;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
@@ -28,38 +28,42 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     private User createBy;
 
     private String exportedDocumentURI;
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> originalDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signedDocuments = new ArrayList<>();
 
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
 
     @JsonIgnore
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     private List<String> links = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull
     private SignBook parentSignBook;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    private Date endDate;
 
     @JsonIgnore
     @Transient
@@ -71,17 +75,13 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
-    transient Date endDate;
-
-    @JsonIgnore
-    @Transient
     transient Boolean signable = false;
 
     @JsonIgnore
     @Transient
     transient Data data;
     
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
@@ -244,12 +244,21 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
-    public SignRequestParams getCurrentSignRequestParams() {
-        if(parentSignBook.getLiveWorkflow().getCurrentStepNumber() > 0 && getSignRequestParams().size() > parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1) {
-            if(parentSignBook == null || (signedDocuments.size() < 1 || !parentSignBook.getLiveWorkflow().getCurrentStep().getAllSignToComplete())) {
-                return getSignRequestParams().get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
-            }
+    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
+        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
         }
+    }
+
+    public SignRequestParams getCurrentSignRequestParams() {
+        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
+        } else {
+            return getEmptySignRequestParams();
+        }
+    }
+
+    public static SignRequestParams getEmptySignRequestParams() {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setSignPageNumber(1);
@@ -275,4 +284,30 @@ public class SignRequest {
         }
         return liteDocuments;
     }
+
+    public Document getLastSignedDocument() {
+        if(this.getSignedDocuments().size() > 0) {
+            return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);
+        } else {
+            return getLastOriginalDocument();
+        }
+    }
+
+    public Document getLastOriginalDocument() {
+        List<Document> documents = this.getOriginalDocuments();
+        if (documents.size() != 1) {
+            return null;
+        } else {
+            return documents.get(0);
+        }
+    }
+
+    public SignType getCurrentSignType() {
+        if(this.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps() != null && this.getSignable()) {
+            return this.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
+        } else {
+            return null;
+        }
+    }
+
 }

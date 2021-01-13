@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div th:fragment="recipientscard" th:if="${signRequest.parentSignBook == null}">
     <div class="card mb-1 col-lg-10 mx-auto">
@@ -40,7 +40,7 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <form th:action="'/user/signrequests/add-recipients/' + ${signRequest.id}" method="post">
+                <form th:action="'/user/signrequests/add-step/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
                         <div class="form-group" id="_signType_div_id">
                             <label for="recipientsEmails">Choisir les participants</label>

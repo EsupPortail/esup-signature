@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="help" id="help">
+    <h5>Bienvenue sur l'application Esup-Signature.</h5>
+    <br>
+    <div th:if="${#httpServletRequest == null || (#httpServletRequest.requestURI == '/user/' || (signRequest != null &&#httpServletRequest.requestURI == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
+        <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-primary mx-auto" id="helpStartButton">Lancer le didacticiel</button>
+    </div>
+    <br>
+    <ul>
+        <li class="mb-2">
+            Pour effectuer des signatures calligraphiques sur un PDF il faut au préalable déposer un fichier image de votre
+            signature dans vos paramètres : <a href='user/users' target='_blank'>Mes paramètres</a>
+        </li>
+        <li>
+            <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur#Documentationutilisateur-Lessignatures%C3%A9lectroniques" target="_blank">Cliquez ici pour en savoir plus sur les autres types de signature</a>
+            <div class="collapse">
+        <ul>
+                <li class="mb-2">
+                    Pour utiliser un certificat électronique pour signer, vous pouvez importer un certificat au format PKCS12 dans votre profil.
+                </li>
+                <li class="mb-2">
+                    Enfin, il est possible de signer électroniquement des documents à l'aide d'un support cryptographique USB (agréé eIDAS, ex RGS **).
+                    <br>
+                    Pour cela vous devez installer l'application
+                    NexU disponible ici : <a target="_blank" href="https://github.com/nowina-solutions/nexu/releases/download/nexu-1.22/nexu-bundle-1.22.zip">NexU</a>
+                    <br>
+                    Cette application se lancera automatiquement lors du processus de "signature avec clé matérielle"
+                </li>
+            </div>
+
+        </li>
+
+    </ul>
+    <p>
+
+    </p>
+    <hr>
+    <p>
+        Un guide utilisateur est accessible sur le portail de la communauté ESUP : <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur" target="_blank">Documentation utilisateur</a>
+    </p>
+    <p>
+        Pour toutes questions merci d'utiliser ce contact : <a th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
+    </p>
+</div>
+</html>

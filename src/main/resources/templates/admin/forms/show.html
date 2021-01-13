@@ -22,14 +22,8 @@
             <div class="fixed-action-btns active" >
                 <ul class="list-unstyled">
                     <li>
-                        <a id="btn-save-fields" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
+                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
                             <i class="fas fa-save"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a title="Modifier les paramètres du formulaire" type="button" th:href="'/admin/forms/update/' + ${form.id}"
-                           class="btn-floating btn-lg bg-warning">
-                            <i class="fas fa-pencil-alt"></i>
                         </a>
                     </li>
                 </ul>
@@ -55,7 +49,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/field/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><span th:text="${field.type}" /></td>
                             <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>

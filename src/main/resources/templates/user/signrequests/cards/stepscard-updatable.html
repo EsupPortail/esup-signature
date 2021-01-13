@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<div th:fragment="stepscard-updatable">
+    <div class="card mb-1 col-lg-10 mx-auto">
+        <div class="card-body">
+            <h5 class="text-center"><b>Circuit de signature</b></h5>
+            <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
+                <div id="stepper" class="bs-stepper">
+                    <div class="bs-stepper-header container" role="tablist">
+                        <th:block th:each="liveWorkflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
+                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
+                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 1px solid #555555;">
+                                    <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fas fa-hourglass-half"></i></span>
+                                    <span title="Etape à venir" th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle"><i class="fas fa-pause"></i></span>
+                                    <span title="Etape terminée" th:unless="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-success"><i class="fas fa-check"></i></span>
+                                    <div class="bs-stepper-label">
+                                        <span  th:text="'Etape ' + ${iterator.index + 1}"></span>
+                                        <table class="table table-sm table-hover table-borderless">
+                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                                <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
+                                                    <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                                    <td th:if="${(iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber) && signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
+                                                        <i title="a signé le document" th:case="true" class="fas fa-check-circle text-success"></i>
+                                                        <i title="En attente de signature" th:case="false" class="fas fa-clock text-warning"></i>
+                                                    </td>
+                                                </tr>
+                                            </th:block>
+                                        </table>
+                                    </div>
+                                    <div class="bs-stepper-bottom">
+                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                            <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-right">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+                        </th:block>
+                        <th:block th:if="${signBook.liveWorkflow.documentsTargetUri != null}">
+                            <div class="bs-stepper-line"></div>
+                            <div class="step" name="target" data-target="#target">
+                                <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
+                                    <span th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
+                                    <span class="bs-stepper-label"><p>Export</p></span>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+</html>

@@ -1,6 +1,5 @@
 global:
     root-url: https://esup-signature.univ-ville.fr
-    group-prefix-role-name: for.esup-signature.role
     domain: univ-ville.fr
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
@@ -15,6 +14,7 @@ global:
     #   delay-before-cleaning : 0
     enable-su: false
     enable-splash: true
+    application-email: esup.signature@univ-ville.fr
 
 #tomcat:
 #    ajp:
@@ -40,25 +40,26 @@ management:
             show-details: always
 
 spring:
-
+    session:
+      jdbc:
+          initialize-schema: always
     data:
         ldap:
             repositories:
                 enabled: true
     datasource:
         driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5432/esupsignature
+        password: esup
+        username: esupsignature
+        jdbc-url: ${spring.datasource.url}
         hikari:
             auto-commit: false
-        password: esup
-        url: jdbc:postgresql://localhost:5432/esupsignature
-        username: esupsignature
     jpa:
         hibernate:
             ddl-auto: update
         properties:
             hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-                format_sql: true
                 jdbc:
                     lob:
                         non_contextual_creation: true
@@ -98,11 +99,10 @@ spring:
 ldap:
     search-base: ou=people
     group-search-base: ou=groups
-    search-filter: (uid={0})
     group-search-filter: member={0}
+    user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
-    affiliation-filter: member
-    ldap-filters-groups:
+    mapping-filters-groups:
         student : "eduPersonAffiliation:=student"
         staff : "eduPersonAffiliation:=staff"
         affiliate : "eduPersonAffiliation:=affiliate"
@@ -127,7 +127,7 @@ dss:
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
     tsp-server: http://tsa.belgium.be/connect
-    ks-filename: oj_keystore.p12
+    ks-filename: /path/toyour/keystore/oj_keystore.p12
     ks-password: dss-password
     ks-type: PKCS12
     lotl-country-code: EU
@@ -148,27 +148,26 @@ fs:
 
 pdf:
     convert-to-pdf-a: true
-    height: 842
-    path-to-g-s: /usr/bin/gs
     pdf-a-level: 2
+    path-to-g-s: /usr/bin/gs
     pdf-to-image-dpi: 72
-    sign-width-threshold: 150
-    width: 595
 
 security:
     cas:
-        group-mapping-role-admin: for.esup-signature.admin
         service: https://esup-signature.univ-ville.fr/login/cas
         title: Compte Université (CAS)
         url: https://cas.univ-ville.fr
     shib:
         credentials-request-header: MEMBER
-        group-mapping-role-admin: cn=for.esup-signature.admin,ou=groups,dc=univ-ville
         idp-url: https://idp.univ-ville.fr
         principal-request-header: REMOTE_USER
         title: Compte d’un autre établissement (Shibboleth)
         domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
-    ws:
+    web:
+        group-to-role-filter-pattern: for.esup-signature.role.(\w*)
+        mapping-groups-roles:
+            for.esup-signature.admin: ROLE_ADMIN
+            for.esup-signature.test: ROLE_USER
         ws-access-authorize-ips: 127.0.0.1
 
 server:
@@ -194,4 +193,3 @@ sign:
 logging:
     file:
         name: logs/esup-signature.log
-

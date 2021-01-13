@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,7 +15,8 @@ public class Data {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
+	@JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
 	private String formName;
@@ -35,13 +36,13 @@ public class Data {
     private Date updateDate;
 
     @OrderColumn
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
 	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
 	private SignBook signBook = null;
 
 	public Long getId() {

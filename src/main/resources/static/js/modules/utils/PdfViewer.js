@@ -10,7 +10,7 @@ export class PdfViewer extends EventFactory {
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
-        this.scale = 0.6;
+        this.scale = 1;
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -27,8 +27,6 @@ export class PdfViewer extends EventFactory {
     }
 
     initListeners() {
-        document.getElementById('prev').addEventListener('click', e => this.prevPage());
-        document.getElementById('next').addEventListener('click', e => this.nextPage());
         document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
         document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
         document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
@@ -70,6 +68,12 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    annotationLinkTargetBlank() {
+        $('.linkAnnotation').each(function (){
+            $(this).children().attr('target', '_blank');
+        });
+    }
+
     fullWidth() {
         console.info("full width " + window.innerWidth);
         let newScale = (Math.round(window.innerWidth / 100) / 10);
@@ -92,9 +96,16 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    isFloat(n){
+        return Number(n) === n && n % 1 !== 0;
+    }
+
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
+        if(this.isFloat(localStorage.getItem('scale'))) {
+            newScale = localStorage.getItem('scale');
+        }
         if (window.innerWidth < 1200) {
             newScale = 0.9;
         }
@@ -149,6 +160,7 @@ export class PdfViewer extends EventFactory {
         console.info("launch render task");
         this.page = page;
         let scale = this.scale;
+        localStorage.setItem('scale', this.scale);
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -183,10 +195,10 @@ export class PdfViewer extends EventFactory {
                 if (isField) {
                     if (this.dataFields != null) {
                         console.info("render fields");
-                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items));
+                        this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
                     }
                 } else {
-                    this.page.getAnnotations().then(items => this.renderPdfForm(items));
+                    this.page.getAnnotations().then(items => this.renderPdfForm(items)).then(this.annotationLinkTargetBlank());
                 }
                 resolve("Réussite");
             }
@@ -214,7 +226,8 @@ export class PdfViewer extends EventFactory {
     }
 
     promizeSaveValues() {
-        this.page.getAnnotations().then(items => this.saveValues(items));
+        console.info("launch save values");
+        return this.page.getAnnotations().then(items => this.saveValues(items));
     }
 
     saveValues(items) {
@@ -314,25 +327,23 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
-                console.debug(items[i]);
-                console.debug(inputField);
-                console.debug(dataField);
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
-                    // inputField.prop('disabled', true);
+                    inputField.prop('disabled', true);
                 }
+
+                console.log(dataField);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
-                    if(dataField.defaultValue != null) {
-                        inputField.val(dataField.defaultValue);
-                    }
                     inputField.prop('required', false);
                     inputField.prop('disabled', true);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
                 } else {
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
                         inputField.val(dataField.defaultValue);
@@ -487,7 +498,6 @@ export class PdfViewer extends EventFactory {
                 signField.addClass("d-none");
                 signField.parent().remove();
             }
-            console.debug(items[i]);
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
@@ -506,24 +516,35 @@ export class PdfViewer extends EventFactory {
     }
 
     prevPage() {
-        if (this.pageNum <= 1) {
-            return;
+        this.fireEvent('beforeChange', ['prev']);
+        if (this.isFirstPage()) {
+            return false;
         }
         this.pageNum--;
         this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['prev']);
-
+        return true;
     }
 
     nextPage() {
-        if (this.pageNum >= this.numPages) {
-            return;
+        this.fireEvent('beforeChange', ['next']);
+        if (this.isLastpage()) {
+            return false;
         }
         this.pageNum++;
         this.renderPage(this.pageNum);
         window.scrollTo(0, 0);
         this.fireEvent('pageChange', ['next']);
+        return true;
+    }
+
+    isFirstPage() {
+        return this.pageNum <= 1;
+    }
+
+    isLastpage() {
+        return this.pageNum >= this.numPages;
     }
 
     zoomIn() {

@@ -9,13 +9,13 @@ import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
-import org.esupportail.esupsignature.service.file.FileService;
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +32,7 @@ import java.util.Arrays;
 @Controller
 @SessionAttributes({ "simpleReportXml", "detailedReportXml" })
 @RequestMapping("/user/validation")
+@ConditionalOnBean(ValidationService.class)
 public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
@@ -56,9 +57,6 @@ public class ValidationController {
 	@Resource
 	private PdfService pdfService;
 
-	@Resource
-	private SignRequestRepository signRequestRepository;
-	
 	@Resource
 	private SignRequestService signRequestService;
 	
@@ -94,12 +92,11 @@ public class ValidationController {
 		return "user/validation/result";
 	}
 	
-//	@Transactional
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
+		SignRequest signRequest = signRequestService.getById(id);
 
-		Document toValideDocument = signRequestService.getLastSignedDocument(signRequest);
+		Document toValideDocument = signRequest.getLastSignedDocument();
 
 		File file = fileService.getTempFile(toValideDocument.getFileName());
 		OutputStream outputStream = new FileOutputStream(file);

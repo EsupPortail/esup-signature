@@ -24,7 +24,7 @@ import java.util.Set;
 public class JpaTest {
 
     @PersistenceContext
-    transient EntityManager entityManager;
+    private EntityManager entityManager;
 
     private StandardServiceRegistry serviceRegistry;
 

@@ -28,9 +28,9 @@ public class Field {
 
 	private Integer page;
 
-	private Boolean required;
+	private Boolean required = false;
 
-	private Boolean readOnly;
+	private Boolean readOnly = false;
 
 	private String stepNumbers = "0";
 

@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,8 @@ public class OtpService {
         });
     }
 
-    public void generateOtpForSignRequest(SignRequest signRequest, User extUser) throws MessagingException {
+    public void generateOtpForSignRequest(Long id, User extUser) throws MessagingException {
+        SignRequest signRequest = signRequestService.getById(id);
         Otp otp = new Otp();
         otp.setCreateDate(new Data());
         otp.setPhoneNumber(extUser.getEppn());
@@ -63,7 +64,7 @@ public class OtpService {
         otp.setSignRequestId(signRequest.getId());
         String urlId = UUID.randomUUID().toString();
         mailService.sendOtp(otp, urlId);
-        signRequestService.addRecipients(signRequest, extUser);
+//        signRequestService.addRecipients(signRequest, extUser);
         removeOtpFromCache(extUser.getEppn());
         removeOtpFromCache(extUser.getEmail());
         otpCache.put(urlId, otp);

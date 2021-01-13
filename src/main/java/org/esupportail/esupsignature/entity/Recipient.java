@@ -12,7 +12,7 @@ public class Recipient {
     @Version
     private Integer version;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     private Boolean signed = false;

@@ -5,8 +5,8 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signWidth, signHeight, signable, postits, currentStepNumber, signImages, userName) {
-        console.info("Starting workspace UI");
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields) {
+        console.info("Starting workspace UI ");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
@@ -14,10 +14,9 @@ export class WorkspacePdf {
         this.signable = signable;
         this.signRequestId = id;
         this.signPosition = new SignPosition(
+            signType,
             this.currentSignRequestParams[0].xPos,
             this.currentSignRequestParams[0].yPos,
-            signWidth,
-            signHeight,
             this.currentSignRequestParams[0].signPageNumber,
             signImages,
             userName);
@@ -29,10 +28,13 @@ export class WorkspacePdf {
         this.xmlHttpMain = new XMLHttpRequest();
         this.wheelDetector = new WheelDetector();
         this.initListeners();
+        this.initDataFields(fields);
     }
 
     initListeners() {
-	if(this.isPdf) {
+        if(this.isPdf) {
+            document.getElementById('prev').addEventListener('click', e => this.pdfViewer.prevPage());
+            document.getElementById('next').addEventListener('click', e => this.pdfViewer.nextPage());
             document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
             this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
@@ -49,8 +51,7 @@ export class WorkspacePdf {
                         visualButton.classList.remove("d-none");
                         visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
                     }
-                    document.getElementById('dateButton').addEventListener('click', e => this.signPosition.toggleDate());
-                    document.getElementById('nameButton').addEventListener('click', e => this.signPosition.toggleName());
+                    document.getElementById('extraButton').addEventListener('click', e => this.signPosition.toggleExtraInfos());
                 }
                 document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
             }
@@ -74,12 +75,23 @@ export class WorkspacePdf {
                 postitButton.on('click', e => this.focusComment(postit));
             });
         }
-        $("#visaLaunchButton").on('click', e => this.launchSignModal(e));
-        $("#signLaunchButton").on('click', e => this.launchSignModal(e));
+        $("#visaLaunchButton").on('click', e => this.launchSignModal());
+        $("#signLaunchButton").on('click', e => this.launchSignModal());
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
-    launchSignModal(e) {
+    initDataFields(fields) {
+        if(this.pdfViewer) {
+            this.pdfViewer.setDataFields(fields);
+            if (this.pdfViewer.dataFields.length > 0 && this.pdfViewer.dataFields[0].defaultValue != null) {
+                for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
+                    this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
+                }
+            }
+        }
+    }
+
+    launchSignModal() {
         console.info("launch sign modal");
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
@@ -147,6 +159,7 @@ export class WorkspacePdf {
 
     }
 
+
     static launchValidate() {
         if(!WorkspacePdf.validateForm()) {
             $("#visaLaunchButton").attr('disabled', true);
@@ -182,7 +195,7 @@ export class WorkspacePdf {
 
     saveComment() {
         let csrf = document.getElementsByName("_csrf")[0];
-        let commentUrlParams = "comment=" + document.getElementById("comment").value +
+        let commentUrlParams = "comment=" + document.getElementById("postitComment").value +
             "&commentPosX=" + document.getElementById("commentPosX").value +
             "&commentPosY=" + document.getElementById("commentPosY").value +
             "&commentPageNumber=" + document.getElementById("commentPageNumber").value +
@@ -257,8 +270,8 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         document.getElementById("postit").style.left = $('#commentPosX').val() + "px";
         document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
+        $("#postitComment").removeAttr("disabled");
         $("#postit").show();
-        $("#comment").removeAttr('disabled');
     }
 
     hideComment() {
@@ -275,13 +288,20 @@ export class WorkspacePdf {
         this.mode = 'read';
         localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
-        this.pdfViewer.scale = 1;
+        this.pdfViewer.scale = 0.5;
+        if(this.isFloat(localStorage.getItem('scale'))) {
+            this.pdfViewer.scale = localStorage.getItem('scale');
+        }
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
         this.pdfViewer.renderForm = false;
         this.pdfViewer.renderPage(1);
         this.showAllPostits();
+    }
+
+    isFloat(n){
+        return Number(n) === n && n % 1 !== 0;
     }
 
     toggleCommentMode() {

@@ -19,7 +19,6 @@ package org.esupportail.esupsignature.batch;
 
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -35,7 +34,7 @@ public class DbToolService {
 	@Resource
 	private DataSource dataSource;
 	
-	@Transactional
+
 	public void upgrade() {
 		AppliVersion appliVersion = null;
 		List<AppliVersion> appliVersions = AppliVersion.findAllAppliVersions();

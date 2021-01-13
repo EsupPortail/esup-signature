@@ -5,29 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "pdf")
 public class PdfProperties {
 
-    private int width = 595;
-    private int height = 842;
     private int pdfToImageDpi = 72;
-    private int signWidthThreshold = 150;
     private String pathToGS = "/usr/bin/gs";
     private boolean convertToPdfA = true;
     private int pdfALevel = 2;
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
 
     public int getPdfToImageDpi() {
         return pdfToImageDpi;
@@ -35,14 +16,6 @@ public class PdfProperties {
 
     public void setPdfToImageDpi(int pdfToImageDpi) {
         this.pdfToImageDpi = pdfToImageDpi;
-    }
-
-    public int getSignWidthThreshold() {
-        return signWidthThreshold;
-    }
-
-    public void setSignWidthThreshold(int signWidthThreshold) {
-        this.signWidthThreshold = signWidthThreshold;
     }
 
     public String getPathToGS() {

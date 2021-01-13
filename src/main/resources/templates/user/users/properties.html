@@ -18,30 +18,28 @@
                     <table class="table table-hover table-borderless table-striped">
                         <thead class="thead-dark">
                         <tr>
-                            <th>Service</th>
-                            <th>Etape</th>
+                            <th>Workflow</th>
                             <th>Score</th>
                             <th>Signataire</th>
                             <th>Destinataire</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="userProperties : ${userProperties}">
+                        <th:block th:each="userPropertie : ${userProperties}">
                             <tr>
                                 <td>
-                                    <span th:text="${userProperties.form.name}"></span>
+                                    <span th:text="${userPropertie.workflowStep.description}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.step}"></span>
+                                    <span th:text="${userPropertie.score}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.score}"></span>
+                                    <ul th:each="user : ${userPropertie.users}">
+                                       <li th:text="${user.eppn}"></li>
+                                    </ul>
                                 </td>
                                 <td>
-                                    <span th:text="${userProperties.recipients}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${userProperties.targetEmail}"></span>
+                                    <span th:text="${userPropertie.targetEmail}"></span>
                                 </td>
                             </tr>
                         </th:block>

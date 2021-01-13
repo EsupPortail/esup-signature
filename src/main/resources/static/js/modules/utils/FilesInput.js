@@ -3,10 +3,13 @@ import {CsrfToken} from "../../prototypes/CsrfToken.js";
 
 export default class FilesInput {
 
-    constructor(input, workflowName, name, document, readOnly, csrf, signRequestId) {
+    constructor(input, workflowName, name, documents, readOnly, csrf, signRequestId) {
         console.info("enable complete file input for : " + name);
         this.input = input;
         this.name = name;
+        if(this.name == null) {
+            this.name = "Demande personnalisée"
+        }
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
         this.async = true;
@@ -18,7 +21,7 @@ export default class FilesInput {
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
         }
         this.initListeners();
-        this.initFileInput(document, readOnly);
+        this.initFileInput(documents, readOnly);
     }
 
     initListeners() {
@@ -45,7 +48,7 @@ export default class FilesInput {
         let csrfToken = this.csrf.token;
         if (documents != null) {
             documents.forEach(function (document) {
-                urls.push("/user/documents/getfile/" + document.id);
+                urls.push("/user/signrequests/get-file/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :
                         type = "pdf";
@@ -67,7 +70,7 @@ export default class FilesInput {
                     document.fileName,
                     "/user/signrequests/remove-doc/" + document.id + "/?" + csrfParameterName + "=" + csrfToken,
                     document.id,
-                    "/user/documents/getfile/" + document.id,
+                    "/user/signrequests/get-file/" + document.id,
                     document.fileName
                     );
                 previews.push(preview);
@@ -168,7 +171,7 @@ export default class FilesInput {
         if ($('#unique :checkbox').is(":checked")){
             console.info('to group mode');
             this.input.fileinput('refresh', {
-                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
+                uploadUrl: '/user/signbooks/add-docs-in-sign-book-group/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token
             });
         } else {
             console.info('to unique mode');

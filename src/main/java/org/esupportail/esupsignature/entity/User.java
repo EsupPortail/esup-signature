@@ -2,13 +2,12 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "user_account")
@@ -31,7 +30,8 @@ public class User {
     @Column(unique=true)
     private String email;
 
-    private Boolean splash = false;
+    @ElementCollection
+    private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
 
@@ -39,18 +39,24 @@ public class User {
     private UserType userType;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
     @Transient
     private String ip;
-    
+
+    @Transient
+    private String keystoreFileName;
+
+    @Transient
+    private List<Long> signImagesIds;
+
     @Transient
     private String signImageBase64;
 
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.ALL}, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Document keystore = new Document();
 
     @Enumerated(EnumType.STRING)
@@ -72,7 +78,7 @@ public class User {
         this.emailAlertFrequency = emailAlertFrequency;
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {
@@ -123,12 +129,12 @@ public class User {
         this.email = email;
     }
 
-    public Boolean getSplash() {
-        return splash;
+    public Map<UiParams, String> getUiParams() {
+        return uiParams;
     }
 
-    public void setSplash(Boolean splash) {
-        this.splash = splash;
+    public void setUiParams(Map<UiParams, String> uiParams) {
+        this.uiParams = uiParams;
     }
 
     public String getFormMessages() {
@@ -163,7 +169,23 @@ public class User {
         this.ip = ip;
     }
 
-	public String getSignImageBase64() {
+    public String getKeystoreFileName() {
+        return keystoreFileName;
+    }
+
+    public void setKeystoreFileName(String keystoreFileName) {
+        this.keystoreFileName = keystoreFileName;
+    }
+
+    public List<Long> getSignImagesIds() {
+        return signImagesIds;
+    }
+
+    public void setSignImagesIds(List<Long> signImagesIds) {
+        this.signImagesIds = signImagesIds;
+    }
+
+    public String getSignImageBase64() {
         return this.signImageBase64;
     }
 

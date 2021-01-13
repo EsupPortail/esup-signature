@@ -1,10 +1,14 @@
 package org.esupportail.esupsignature.config.security;
 
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
+import org.esupportail.esupsignature.service.security.DevSecurityFilter;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.SecurityService;
+import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,26 +31,29 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity(debug = false)
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+	@Resource
 	private WebSecurityProperties webSecurityProperties;
 
-	public WebSecurityConfig(WebSecurityProperties webSecurityProperties) {
-		this.webSecurityProperties = webSecurityProperties;
-	}
-
 	@Resource
-	List<SecurityService> securityServices;
-
+	private List<SecurityService> securityServices;
+	
+	@Autowired
+	private ObjectProvider<DevSecurityFilter> devSecurityFilters;
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
+		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
@@ -62,11 +69,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.addLogoutHandler(logoutHandler())
 				.logoutSuccessUrl("/login").permitAll();
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
-		http.csrf().ignoringAntMatchers("/ws/**");
-		http.csrf().ignoringAntMatchers("/user/nexu-sign/**");
-		http.csrf().ignoringAntMatchers("/otp/**");
-		http.csrf().ignoringAntMatchers("/log/**");
-		http.csrf().ignoringAntMatchers("/actuator/**");
+		http.csrf()
+			.ignoringAntMatchers("/ws/**")
+			.ignoringAntMatchers("/user/nexu-sign/**")
+			.ignoringAntMatchers("/otp/**")
+			.ignoringAntMatchers("/log/**")
+			.ignoringAntMatchers("/actuator/**")
+			.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
@@ -95,9 +104,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").authenticated()
-				.antMatchers("/sse/", "/sse/**").authenticated()
+				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
+				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/public/", "/public/**").permitAll()
+				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();
 
 	}
@@ -151,6 +161,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public UserDetailsService userDetailsService() {
 		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
 		return manager;
+	}
+
+	@Bean
+	public SpelGroupService spelGroupService() {
+		SpelGroupService spelGroupService = new SpelGroupService();
+		Map<String, String> groups4eppnSpel = new HashMap<>();
+		if (webSecurityProperties.getGroupMappingSpel() != null) {
+			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {
+				String spelRule = webSecurityProperties.getGroupMappingSpel().get(groupName);
+				groups4eppnSpel.put(groupName, spelRule);
+			}
+		}
+		spelGroupService.setGroups4eppnSpel(groups4eppnSpel);
+		return spelGroupService;
 	}
 
 }

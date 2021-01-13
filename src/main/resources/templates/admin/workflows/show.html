@@ -19,109 +19,21 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btn"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a class="btn-floating btn-lg bg-primary waves-effect">
-                    <i class="fas fa-ellipsis-v"></i>
+            <div class="fixed-action-btn">
+                <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn-floating btn-lg bg-primary waves-effect" data-toggle="modal" data-target="#addStep">
+                <span class="fa-stack">
+                    <i class="fas fa-shoe-prints fa-stack-1x mr-1 text-white-50"></i>
+                    <i class="fas fa-plus fa-stack-1x ml-3 mt-1 text-white"></i>
+                </span>
                 </a>
-                <ul id="collapseExample" class="list-unstyled">
-                    <li>
-                        <a th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}" class="btn-floating bg-success waves-effect">
-                            <i class="fas fa-binoculars"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a title="Modifier les paramètres" type="button" th:href="'/admin/workflows/' + ${workflow.id} + '?form'" class="btn-floating bg-warning waves-effect">
-                            <i class="fas fa-pencil-alt"></i>
-                        </a>
-                    </li>
-                    <li>
-                    <a role="button" title="Ajouter une étape" class="btn-floating bg-dark waves-effect" data-toggle="modal" data-target="#addStep">
-                        <i class="fas fa-shoe-prints"></i>
-                    </a>
-                    </li>
-                    <li>
-                        <form id="delete" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete" onsubmit="return confirm('Voulez-vous vraiment supprimer ce circuit ?')">
-                        <a role="button" title="Supprimer" type="submit" onclick="$('#delete').submit();" class="btn-floating bg-danger waves-effect">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                        </form>
-                    </li>
-                </ul>
             </div>
             <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Titre</dt>
-                        <dd th:text="${workflow.title}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Description</dt>
-                        <dd th:text="${workflow.description}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Scanner les metadonnées des PDF</dt>
-                        <dd th:text="${workflow.scanPdfMetadatas}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Visibilité publique</dt>
-                        <dd th:text="${workflow.publicUsage}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Rôle</dt>
-                        <dd th:text="${workflow.role}"></dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Types de délégation autorisés</dt>
-                        <dd>
-                            <ul class="text-left">
-                                <th:block th:each="shareType : ${workflow.authorizedShareTypes}">
-                                    <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
-                                </th:block>
-                            </ul>
-                        </dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Gestionnaire(s) du circuit</dt>
-                        <dd>
-                            <div class="alert alert-secondary">
-                                <th:block th:if="${workflow.managers.size() > 0}" th:each="manager : ${workflow.managers}">
-                                    <i class="fas fa-users-cog"></i> <span th:text="${manager}"></span>
-                                    <br/>
-                                </th:block>
-                                <span th:unless="${workflow.managers.size() > 0}">Pas de gestionnaires</span>
-                            </div>
-                        </dd>
-                    </dl>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Protocole pour la source des documents</dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.sourceType}}"></dd>
-                    </dl>
-                    <div th:if="${workflow.sourceType.name() != 'none'}">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Lien pour la source des documents</dt>
-                            <dd th:text="${workflow.documentsSourceUri}"></dd>
-                        </dl>
+                <div class="card-body text-center">
+                    <h5>Circuit de signatures</h5>
+                    <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
+                    <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
+                        Vous pouvez ajouter des étapes
                     </div>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Protocole pour la destination des documents
-                        </dt>
-                        <dd th:text="#{'signbook.documentiotype.' + ${workflow.targetType}}"></dd>
-                    </dl>
-                    <div th:if="${workflow.targetType.name() != 'none'}">
-                        <dl class="row border-bottom m-0">
-                            <dt class="col-lg-5">Lien pour la destination des documents</dt>
-                            <dd th:text="${workflow.documentsTargetUri}"></dd>
-                        </dl>
-                    </div>
-                    <dl class="row border-bottom m-0">
-                        <dt class="col-lg-5">Circuit de signatures</dt>
-                        <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="admin/workflows/cards/stepscard"></div>
-                            <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
-                                Vous pouvez ajouter des étapes
-                            </div>
-                        </dd>
-                    </dl>
                 </div>
             </div>
             <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">

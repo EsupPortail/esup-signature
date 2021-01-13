@@ -3,13 +3,16 @@ package org.esupportail.esupsignature.dss.service;
 import eu.europa.esig.dss.enumerations.DigestAlgorithm;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.utils.Utils;
+import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.model.CertificateDTO;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@ConditionalOnBean(DSSBeanConfig.class)
 public class KeystoreService {
 
 	public List<CertificateDTO> getCertificatesDTOFromKeyStore(List<CertificateToken> certificatesFromKeyStore) {

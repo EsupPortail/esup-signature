@@ -14,7 +14,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Workflow {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
@@ -32,7 +32,7 @@ public class Workflow {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -58,14 +58,16 @@ public class Workflow {
     @ElementCollection(targetClass=String.class)
     private List<String> managers = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType targetType;
     
     private String documentsTargetUri;
+
+    private Boolean fromCode;
 
     public Long getId() {
         return id;
@@ -217,5 +219,13 @@ public class Workflow {
 
     public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
         this.scanPdfMetadatas = scanPdfMetadatas;
+    }
+
+    public Boolean getFromCode() {
+        return fromCode;
+    }
+
+    public void setFromCode(Boolean fromCode) {
+        this.fromCode = fromCode;
     }
 }

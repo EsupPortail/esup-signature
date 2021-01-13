@@ -3,16 +3,11 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
-    new FilesInput($("#multipartFiles"), [[${workflow != null ? workflow.name : name}]], [[${name}]], null, false, [[${_csrf}]]);
+    new FilesInput($("#multipartFiles"), [[${workflow != null ? workflow.name : name}]], [[${workflow != null ? workflow.name : name}]], null, false, [[${_csrf}]]);
 </script>
 <body>
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
-        <div class="step" data-target="#test-l-1">
-            <span class="bs-stepper-circle bg-success"><i class="fas fa-magic"></i></span>
-            <span class="bs-stepper-label">Nom</span>
-        </div>
-        <div class="bs-stepper-line"></div>
         <div class="step active" data-target="#test-l-2">
             <span class="bs-stepper-circle"><i class="fas fa-copy"></i></span>
             <span class="bs-stepper-label">Copie des fichiers</span>

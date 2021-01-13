@@ -20,7 +20,9 @@ export class GlobalUi {
         this.initListeners();
         this.initSideBar();
         this.checkCurrentPage();
-        this.sseSubscribe = new SseSubscribe();
+        this.sseId = this.uuidv4();
+        sessionStorage.setItem("sseId", this.sseId);
+        this.sseSubscribe = new SseSubscribe(this.sseId);
     }
 
     initListeners() {
@@ -81,38 +83,25 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
 
-        $("#sendPendingButton").on('click', e => this.showSendPendingModal());
-        $("#submitSendPending").on('click', e => this.submitSendPending());
+        $("#sendPendingButton").on('click', e => this.submitSendPending());
+        // $("#submitSendPending").on('click', e => this.submitSendPending());
 
-        $(window).bind('keydown', function(event) {
-            if (event.ctrlKey || event.metaKey) {
-                switch (String.fromCharCode(event.which).toLowerCase()) {
-                    case 's':
-                        event.preventDefault();
-                        let saveButton = $("#saveButton");
-                        if(saveButton) {
-                            saveButton.click();
-                        }
-                        break;
-                }
-            }
-        });
+        this.bindKeyboardKeys();
     }
 
     submitSendPending() {
         $("#pending").val(true);
-        $("#comment").val($("#submitComment").val());
-        $("#sendSignRequestForm").submit();
+        $("#sendButton").click();
     }
 
-    showSendPendingModal() {
-        $('#sendPending').modal('toggle');
-        $('#sendSignRequestModal').modal('toggle');
-    }
+    // showSendPendingModal() {
+    //     $('#sendPending').modal('toggle');
+    //     $('#sendSignRequestModal').modal('toggle');
+    // }
 
     checkCurrentPage() {
         let url = window.location.pathname;
-        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
+        if(!url.match("/user/signrequests/+[\\w\\W]+") || !url.match("/user/signbooks/+[\\w\\W]+")) {
             this.resetMode();
         }
     }
@@ -173,12 +162,20 @@ export class GlobalUi {
             } else {
                 this.hideSideBar();
             }
-            if(!url.match("/user/users+[\\w\\W]+") && !url.match("/admin/+[\\w\\W]+") && !url.match("^/user/$") && !url.match("^/user/signrequests$") && !url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(!url.match("/user/users+[\\w\\W]+")
+                && !url.match("/admin/+[\\w\\W]+")
+                && !url.match("^/user/$")
+                && !url.match("^/user/signrequests$")
+                && !url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : show");
                 this.hideSideBar();
                 this.disableSideBarButton();
             }
-            if(url.match("^/user/signrequests$") || url.match("^/user/signrequests/$") || url.match("/user/signrequests/+[\\w\\W]+")) {
+            if(url.match("^/user/workflows/+[\\w\\W]+")
+                || url.match("^/user/signbooks/+[\\w\\W]+")
+                || url.match("^/user/signrequests$")
+                || url.match("^/user/signrequests/$")
+                || url.match("/user/signrequests/+[\\w\\W]+")) {
                 console.info("auto display side bar : hide");
                 this.showSideBar();
                 this.disableSideBarButton();
@@ -268,7 +265,7 @@ export class GlobalUi {
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId);
+            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'));
         });
     }
 
@@ -318,12 +315,51 @@ export class GlobalUi {
         });
     }
 
+    uuidv4() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        );
+    }
+
     onDocumentLoad() {
         console.info("global on load");
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
         this.adjustUi();
+    }
+
+    bindKeyboardKeys() {
+        $(window).bind('keydown', function(event) {
+            console.info('push ' + event.which + ' key');
+            if (event.ctrlKey || event.metaKey) {
+                switch (String.fromCharCode(event.which).toLowerCase()) {
+                    case 's':
+                        event.preventDefault();
+                        let saveButton = $("#saveButton");
+                        if(saveButton) {
+                            saveButton.click();
+                        }
+                        break;
+                }
+                switch (event.which) {
+                    case 39:
+                        let nextSignRequestButton = $("#nextSignRequestButton");
+                        if(nextSignRequestButton.length) {
+                            event.preventDefault();
+                            location.href = nextSignRequestButton.attr('href');
+                        }
+                        break;
+                    case 37:
+                        event.preventDefault();
+                        let prevSignRequestButton = $("#prevSignRequestButton");
+                        if(prevSignRequestButton.length) {
+                            location.href = prevSignRequestButton.attr('href');
+                        }
+                        break;
+                }
+            }
+        });
     }
 
 }

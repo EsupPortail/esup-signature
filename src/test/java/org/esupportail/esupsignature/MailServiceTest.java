@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature;
 
-import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;

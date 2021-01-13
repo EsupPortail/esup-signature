@@ -8,6 +8,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +18,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 @Service
+@ConditionalOnBean(CertificateVerifier.class)
 public class ValidationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ValidationService.class);

@@ -14,16 +14,16 @@ public class UserShare {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @ManyToMany
     private List<User> toUsers = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -32,7 +32,7 @@ public class UserShare {
     @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @ElementCollection(targetClass= ShareType.class)
+    @ElementCollection(targetClass = ShareType.class)
     private List<ShareType> shareTypes = new ArrayList<>();
 
     public Long getId() {

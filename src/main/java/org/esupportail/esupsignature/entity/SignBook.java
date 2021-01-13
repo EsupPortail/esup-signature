@@ -2,12 +2,10 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -32,7 +30,7 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -46,13 +44,17 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    private LiveWorkflow liveWorkflow = new LiveWorkflow();
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
-	@OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @Transient
+    transient List<Log> logs;
 
     @JsonIgnore
     @Transient
@@ -154,6 +156,14 @@ public class SignBook {
         this.signRequests = signRequests;
     }
 
+    public List<Log> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Log> logs) {
+        this.logs = logs;
+    }
+
     public String getComment() {
         return comment;
     }
@@ -161,5 +171,7 @@ public class SignBook {
     public void setComment(String comment) {
         this.comment = comment;
     }
+
+
 
 }

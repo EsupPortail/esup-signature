@@ -18,14 +18,13 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
-import org.esupportail.esupsignature.repository.UserPropertieRepository;
-import org.esupportail.esupsignature.repository.UserShareRepository;
-import org.esupportail.esupsignature.service.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -44,43 +43,58 @@ public class FormService {
 	private PdfService pdfService;
 
 	@Resource
-	private UserShareRepository userShareRepository;
+	private UserShareService userShareService;
 
 	@Resource
 	private FieldService fieldService;
+	
+	@Resource
+	private WorkflowService workflowService;
 
 	@Resource
-	private UserPropertieRepository userPropertiesRepository;
+	private DataService dataService;
 
 	@Resource
-	private DataRepository dataRepository;
+	private DocumentService documentService;
 
-	public Form getFormById(Long formId) {
+	@Resource
+	private UserPropertieService userPropertieService;
+
+	@Resource
+	private UserService userService;
+
+	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
 	}
 
-	public Form getFormByDocument(Document document) {
-		if(formRepository.findByDocument(document).size() > 0) {
-			return formRepository.findByDocument(document).get(0);
-		} else {
-			return null;
-		}
-	}
-	
-	public List<Form> getFormsByUser(User user, User authUser){
-		List<Form> authorizedForms = formRepository.findAuthorizedFormByUser(user);
+	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
+		User user = userService.getByEppn(userEppn);
 		List<Form> forms = new ArrayList<>();
-		if(user.equals(authUser)) {
-			forms = authorizedForms;
+		if(userEppn.equals(authUserEppn)) {
+			forms = formRepository.findAuthorizedFormByRoles(user.getRoles());
 		} else {
-			for(UserShare userShare : userShareRepository.findByUserAndToUsersInAndShareTypesContains(user, Arrays.asList(authUser), ShareType.create)) {
-				if(userShare.getForm() != null && authorizedForms.contains(userShare.getForm())){
+			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
+			for(UserShare userShare : userShares) {
+				if(userShare.getForm() != null){
 					forms.add(userShare.getForm());
 				}
 			}
 		}
 		return forms;
+	}
+
+	@Transactional
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
+		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		return form;
+	}
+
+	@Transactional
+	public Boolean isFormAuthorized(String userEppn, String authUserEppn, Long id) {
+		Form form = getById(id);
+		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
 	public List<Form> getAllForms(){
@@ -93,20 +107,54 @@ public class FormService {
 		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
 	}
 
-	public void updateForm(Form form) {
+	@Transactional
+	public void updateForm(Long id, Form updateForm, List<String> managers, String[] types) {
+		Form form = getById(id);
+		form.setPdfDisplay(updateForm.getPdfDisplay());
+		form.getManagers().clear();
+		if(managers != null) {
+			form.getManagers().addAll(managers);
+		}
+		form.setName(updateForm.getName());
+		form.setTitle(updateForm.getTitle());
+		form.setRole(updateForm.getRole());
+		form.setPreFillType(updateForm.getPreFillType());
+		form.setWorkflowType(updateForm.getWorkflowType());
+		form.setTargetUri(updateForm.getTargetUri());
+		form.setTargetType(updateForm.getTargetType());
+		form.setDescription(updateForm.getDescription());
+		form.setMessage(updateForm.getMessage());
+		form.setPublicUsage(updateForm.getPublicUsage());
+		form.setAction(updateForm.getAction());
+		form.getAuthorizedShareTypes().clear();
+		List<ShareType> shareTypes = new ArrayList<>();
+		if(types != null) {
+			for (String type : types) {
+				ShareType shareType = ShareType.valueOf(type);
+				form.getAuthorizedShareTypes().add(shareType);
+				shareTypes.add(shareType);
+			}
+		}
+		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
+		for(UserShare userShare : userShares) {
+			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
+		}
 		formRepository.save(form);
 	}
-	
+
+
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
-		List<Data> datas = dataRepository.findByForm(form);
-		for(Data data : datas) {
-			data.setForm(null);
-			dataRepository.save(data);
+		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
+		for(UserShare userShare : userShares) {
+			userShareService.delete(userShare);
 		}
-		List<UserPropertie> userProperties = userPropertiesRepository.findByForm(form);
-		for(UserPropertie userPropertie : userProperties) {
-			userPropertiesRepository.delete(userPropertie);
+		dataService.nullifyForm(form);
+		for (WorkflowStep workflowStep : workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps()) {
+			List<UserPropertie> userProperties = userPropertieService.getByWorkflowStep(workflowStep);
+			for(UserPropertie userPropertie : userProperties) {
+				userPropertieService.delete(userPropertie);
+			}
 		}
 		formRepository.delete(form);
 	}
@@ -125,20 +173,27 @@ public class FormService {
 		return pageNrByAnnotDict;
 	}
 
-	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
+	@Transactional
+	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
-		if(testForms.size() == 1) {
-			testForms.get(0).setActiveVersion(false);
-			formRepository.save(testForms.get(0));
-			form.setVersion(testForms.get(0).getVersion() + 1);
-			form.getFields().addAll(testForms.get(0).getFields());
+		if (document == null && fieldNames.length > 0) {
+			for(String fieldName : fieldNames) {
+				form.getFields().add(fieldService.createField(fieldName));
+			}
 		} else {
-			form.setVersion(1);
-			form.setFields(getFields(document));
+			if (testForms.size() == 1) {
+				testForms.get(0).setActiveVersion(false);
+				formRepository.save(testForms.get(0));
+				form.setVersion(testForms.get(0).getVersion() + 1);
+				form.getFields().addAll(testForms.get(0).getFields());
+			} else {
+				form.setVersion(1);
+				form.setFields(getFields(document));
+			}
 		}
 		form.setDocument(document);
 		form.setTargetType(targetType);
@@ -146,14 +201,14 @@ public class FormService {
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
-		formRepository.save(form);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareRepository.findByForm(testForms.get(0));
+			List<UserShare> userShares = userShareService.getUserSharesByForm(testForms.get(0));
 			for (UserShare userShare : userShares) {
 				userShare.setForm(form);
 			}
 		}
+		formRepository.save(form);
 		return form;
 	}
 
@@ -174,7 +229,7 @@ public class FormService {
 				}
 			}
 			if(pdField instanceof PDTextField){
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setLabel(pdField.getAlternateFieldName());
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
@@ -214,7 +269,7 @@ public class FormService {
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
 	        } else if(pdField instanceof PDCheckBox) {
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
 				field.setType(FieldType.checkbox);
@@ -225,7 +280,7 @@ public class FormService {
 			} else if(pdField instanceof PDRadioButton){
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
-					Field field = new Field();
+					Field field = fieldService.createField(pdField.getPartialName());
 					field.setType(FieldType.radio);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
@@ -235,7 +290,7 @@ public class FormService {
 					fields.add(field);
 				}
 			} else if(pdField instanceof PDChoice) {
-				Field field = new Field();
+				Field field = fieldService.createField(pdField.getPartialName());
 				field.setType(FieldType.select);
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
@@ -256,7 +311,6 @@ public class FormService {
 	}
 
 	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
-		field.setName(pdField.getPartialName());
 		field.setPage(page);
 		field.setTopPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftY() + pdField.getWidgets().get(0).getRectangle().getHeight()));
 		field.setLeftPos((int) (pdAnnotationWidget.getRectangle().getLowerLeftX()));
@@ -288,4 +342,33 @@ public class FormService {
 			}
 		}
 	}
+
+	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
+		return formRepository.findFormByNameAndActiveVersion(name, activeVersion);
+	}
+
+	public List<Form> getFormByName(String name) {
+		return formRepository.findFormByName(name);
+	}
+
+
+	public List<Form> getFormByManagersContains(String email) {
+		return formRepository.findFormByManagersContains(email);
+	}
+
+	public String getHelpMessage(User user, Form form) {
+		String messsage = null;
+		boolean sendMessage = true;
+		if(user.getFormMessages() != null) {
+			String[] formMessages = user.getFormMessages().split(" ");
+			if(Arrays.asList(formMessages).contains(form.getId().toString())) {
+				sendMessage = false;
+			}
+		}
+		if(sendMessage && form.getMessage() != null && !form.getMessage().isEmpty()) {
+			messsage = form.getMessage();
+		}
+		return messsage;
+	}
+
 }

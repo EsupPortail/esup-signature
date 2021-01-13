@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -35,19 +36,24 @@ public class Document {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = {javax.persistence.CascadeType.REMOVE, javax.persistence.CascadeType.PERSIST}, orphanRemoval = true)
     private BigFile bigFile = new BigFile();
 
     public InputStream getInputStream() {
         try {
             if(this.bigFile != null) {
-                return this.bigFile.getBinaryFile().getBinaryStream();
+                InputStream inputStream = this.bigFile.getBinaryFile().getBinaryStream();
+                return inputStream;
             }
         } catch (SQLException e) {
             logger.error("unable to get inputStream", e);
         }
         return null;
     }
+
+    @Transient
+    transient InputStream transientInputStream;
 
 	public String getFileName() {
         return this.fileName;
@@ -113,4 +119,11 @@ public class Document {
         this.version = version;
     }
 
+    public InputStream getTransientInputStream() {
+        return transientInputStream;
+    }
+
+    public void setTransientInputStream(InputStream transientInputStream) {
+        this.transientInputStream = transientInputStream;
+    }
 }

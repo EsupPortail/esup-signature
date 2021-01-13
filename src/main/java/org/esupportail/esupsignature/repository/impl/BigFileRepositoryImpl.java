@@ -3,8 +3,7 @@ package org.esupportail.esupsignature.repository.impl;
 import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.repository.custom.BigFileRepositoryCustom;
 import org.hibernate.Hibernate;
-import org.hibernate.LobHelper;
-import org.hibernate.Session;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -20,10 +19,9 @@ public class BigFileRepositoryImpl implements BigFileRepositoryCustom {
 	
 	@Override
 	public void addBinaryFileStream(BigFile bigFile, InputStream inputStream, long length) {
-		Blob blob = Hibernate.getLobCreator(entityManager.unwrap(Session.class)).createBlob(inputStream, length);
+		Blob blob = Hibernate.getLobCreator(entityManager.unwrap(SessionImplementor.class)).createBlob(inputStream, length);
         bigFile.setBinaryFile(blob);
         entityManager.persist(bigFile);
 	}
 
-	
 }

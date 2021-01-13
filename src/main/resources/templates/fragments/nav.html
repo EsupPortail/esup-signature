@@ -1,11 +1,12 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<header th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${user != authUser}">
+<!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
+<header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
@@ -24,36 +25,34 @@
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
-            <ul class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
+            <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
-                    <a th:with="nbToSign=${@signRequestService.getToSignRequests(user).size()}"
+                    <a
                        th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                        href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && user == authUser}" class="badge badge-danger mt-1 d-none d-md-inline"
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger mt-1 d-none d-md-inline"
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${user == authUser || isOneCreateShare}">
-                    <a th:with="nbDatas=${@dataRepository.findByCreateByAndStatus(user.eppn, T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft).size()}"
-                       th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneCreateShare}">
+                    <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
                        href="/user/datas" class="btn btn-transparent text-left">
                         <i class="fab fa-firstdraft"></i> <span
                             class="nav-item-label d-none d-xl-inline">Brouillons</span>
-                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && user == authUser}"
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
 
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${user == authUser || isOneSignShare || isOneReadShare}" >
-                    <a th:with="nbSignRequests=${@signRequestRepository.findByCreateByAndStatus(user, T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending).size()}"
-                       th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}" >
+                    <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        href="/user/signrequests" class="btn btn-transparent text-left">
                         <i class="fas fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item dropdown" th:if="${user == authUser}">
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
@@ -66,10 +65,10 @@
                         </a>
                         <div th:if="${formManaged.size() > 0}" class="dropdown-divider"></div>
                         <a th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
-                           data-target="#wizardModal"
-                           title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"
-                           onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">
-                                <i class="fas fa-magic"></i> Assistant de création de demande
+                           data-target="#wizardWorkflowModal"
+                           title="Créez un nouveau circuit à l'aide de l'assistant"
+                           onclick="$('#wizIframe').attr('src', '/user/wizard/wiz4Workflow');">
+                                <i class="fas fa-magic"></i> Assistant de création de circuit
                         </a>
 <!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
 <!--                           data-toggle="modal"-->
@@ -96,7 +95,7 @@
                     </div>
                 </li>
 
-                <li class="nav-item dropdown" th:if="${user == authUser}">
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle"
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
@@ -107,7 +106,7 @@
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
                             <i class="fas fa-users-cog"></i> Gérer mes délégations
                         </a>
-                        <div th:if="${suUsers != null && suUsers.size() > 0 && user == authUser}" class="dropdown-divider"></div>
+                        <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
                             <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                                 <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
@@ -115,19 +114,19 @@
                         </th:block>
                     </div>
                 </li>
-                <li class="nav-item dropdown" th:if="${user != authUser}">
-                    <a th:if="${user != authUser}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
+                <li class="nav-item dropdown" th:if="${userEppn != authUserEppn}">
+                    <a th:if="${userEppn != authUserEppn}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
                         <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && user == authUser}" title="Menu admin">
+                <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
                     </a>
                 </li>
             </ul>
-            <ul class="navbar-nav" th:if="${user.name != null}">
+            <ul id="user-buttons" class="navbar-nav" th:if="${user.name != null}">
                 <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
                     <form th:action="'/su-logout'" method="POST">
                         <button type="submit" class="btn bg-dark text-white"><i class="fas fa-user-secret"></i></button>
@@ -142,12 +141,14 @@
 <!--                </li>-->
                 <li class="nav-item text-white">
                     <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
-                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle"
+                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle mr-2"
                        aria-controls="user-infos" data-toggle="collapse">
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
+                    <a rel="noreferrer" data-toggle="modal"
+                       data-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
@@ -208,11 +209,11 @@
                 <tr>
                     <th>Mes signatures</th>
                     <td>
-                        <div style="width: 250px;" th:if="${user.signImages.size() > 0 && user.signImages.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
+                        <div style="width: 250px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-ride="carousel">
                             <div class="carousel-inner">
-                                <th:block th:each="signImage, iterator : ${user.signImages}">
+                                <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'data:image/png;base64,' + ${@fileService.getBase64Image(signImage)}" />
+                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
                                     </div>
                                 </th:block>
                             </div>
@@ -225,7 +226,7 @@
                                 <span class="sr-only">Next</span>
                             </a>
                         </div>
-                        <div th:unless="${user.signImages.size() > 0 && user.signImages.get(0) != null}" class="alert alert-danger">
+                        <div th:unless="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" class="alert alert-danger">
                             Pas de signature
                         </div>
                     </td>
@@ -233,14 +234,14 @@
                 <tr>
                     <th>Magasin de certificats</th>
                     <td>
-                        <div th:unless="${user.keystore == null}" class="alert alert-secondary">
+                        <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
-                            <a th:href="'/user/documents/getfile/' + ${user.keystore.id}">
-                                <span th:text="${user.keystore.fileName}"></span>
+                            <a href="/user/users/get-keystore">
+                                <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
-                        <div th:if="${user.keystore == null}" class="alert alert-danger">
+                        <div th:if="${keystoreFileName == null}" class="alert alert-danger">
                             Pas de magasin de certificats
                         </div>
                     </td>
@@ -290,7 +291,7 @@
                         <br>
                         <label for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="form-control">
-                            <th:block th:each="signType : ${@signService.getSignTypes()}">
+                            <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
@@ -306,12 +307,12 @@
     </div>
 </div>
 
-<div class="modal fade" id="wizardModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+<div class="modal fade" id="wizardWorkflowModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Assistant de création de demande</h3>
+                <h3 class="modal-title">Assistant de création de circuit</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -331,14 +332,14 @@
                 <input type="hidden" id="pending" name="pending" value="false" />
                 <input type="hidden" id="comment" name="comment" />
                 <div class="modal-header">
-                    <h3 class="modal-title" id="exampleModalLabel">Créer une demande de signature</h3>
+                    <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <input required id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
+                        <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
                             import {default as FilesInputSimple} from "/static/js/modules/utils/FilesInputSimple.js";
                             new FilesInputSimple($("#inputGroupFile02"));
@@ -347,7 +348,7 @@
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
                         <select name="signType" id="signType2" class="form-control">
-                            <th:block th:each="signType : ${@signService.getSignTypes()}">
+                            <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
                             </th:block>
@@ -355,8 +356,7 @@
                         <br>
                         <label for="recipientsEmails">Choisir les participants</label>
                         <div class="form-group">
-                            <select class="select-users" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
-                                    required="required">
+                            <select class="select-users" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
                             </select>
                         </div>
                         <div class="form-group" id="_allSignToComplete_div_id">
@@ -368,6 +368,16 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
+                        <div class="form-group" id="_userSignFirst_div_id">
+                            <label for="_userSignFirst">
+                                Je dois signer ce document avent l'envoi ?
+                            </label>
+                            <label class="switch">
+                                <input type="checkbox" name="userSignFirst" id="_userSignFirst"/>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
 <!--                        <div class="form-group">-->
 <!--                        <textarea placeholder="Commentaire" class="form-control" name="comment"></textarea>-->
 <!--                        </div>-->
@@ -375,7 +385,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" id="sendButton" class="btn btn-success">
                         <i class="fas fa-eye"></i> Vérifier avant envoi
                     </button>
                     <button type="button" id="sendPendingButton" class="btn btn-success">
@@ -390,7 +400,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                Envoyer immédiatement
+                <h3 class="modal-title" id="exampleModalLabel">Envoyer immédiatement</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
@@ -400,6 +410,22 @@
                 <button type="button" id="submitSendPending" class="btn btn-success mt-2 pull-right">
                     Valider l'envoi
                 </button>
+            </div>
+            <div class="modal-header"></div>
+        </div>
+    </div>
+</div>
+<div id="helpModal" class="modal fade">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Aide</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div th:include="fragments/help"></div>
             </div>
             <div class="modal-header"></div>
         </div>

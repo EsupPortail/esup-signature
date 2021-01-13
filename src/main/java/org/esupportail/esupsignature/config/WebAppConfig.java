@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -78,9 +79,12 @@ public class WebAppConfig implements WebMvcConfigurer {
 		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
 		registrationBean.setFilter(filter);
 		registrationBean.setOrder(5);
-		registrationBean.addUrlPatterns("/user/", "/user/*",
-										"/admin/", "/admin/*"
+		registrationBean.addUrlPatterns(
+				"/user/", "/user/*",
+				"/admin/", "/admin/*",
+				"/public/", "/public/*"
 		);
 		return registrationBean;
 	}
+
 }

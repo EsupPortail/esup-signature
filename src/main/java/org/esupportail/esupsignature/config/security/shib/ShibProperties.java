@@ -9,8 +9,12 @@ public class ShibProperties {
     private String idpUrl;
     private String principalRequestHeader;
     private String credentialsRequestHeader;
-    private String groupMappingRoleAdmin;
     private String domainsWhiteListUrl;
+
+	/**
+	 * Properties to set for development/test purposes .
+	 */
+    private DevShibProperties dev;
 
     public String getTitle() {
         return title;
@@ -44,14 +48,6 @@ public class ShibProperties {
         this.credentialsRequestHeader = credentialsRequestHeader;
     }
 
-    public String getGroupMappingRoleAdmin() {
-        return groupMappingRoleAdmin;
-    }
-
-    public void setGroupMappingRoleAdmin(String groupMappingRoleAdmin) {
-        this.groupMappingRoleAdmin = groupMappingRoleAdmin;
-    }
-
     public String getDomainsWhiteListUrl() {
         return domainsWhiteListUrl;
     }
@@ -59,4 +55,13 @@ public class ShibProperties {
     public void setDomainsWhiteListUrl(String domainsWhiteListUrl) {
         this.domainsWhiteListUrl = domainsWhiteListUrl;
     }
+
+	public DevShibProperties getDev() {
+		return dev;
+	}
+
+	public void setDev(DevShibProperties dev) {
+		this.dev = dev;
+	}
+  
 }

@@ -12,9 +12,8 @@ public class LdapProperties {
     private String groupSearchBase;
     private String groupSearchFilter;
     private String memberSearchFilter;
-    private String searchFilter;
-    private String affiliationFilter;
-    private Map<String, String> ldapFiltersGroups = new HashMap<>();
+    private String userIdSearchFilter;
+    private Map<String, String> mappingFiltersGroups = new HashMap<>();
 
     public String getSearchBase() {
         return searchBase;
@@ -48,27 +47,19 @@ public class LdapProperties {
         this.memberSearchFilter = memberSearchFilter;
     }
 
-    public String getSearchFilter() {
-        return searchFilter;
+    public String getUserIdSearchFilter() {
+        return userIdSearchFilter;
     }
 
-    public void setSearchFilter(String searchFilter) {
-        this.searchFilter = searchFilter;
+    public void setUserIdSearchFilter(String userIdSearchFilter) {
+        this.userIdSearchFilter = userIdSearchFilter;
     }
 
-    public String getAffiliationFilter() {
-        return affiliationFilter;
+    public Map<String, String> getMappingFiltersGroups() {
+        return mappingFiltersGroups;
     }
 
-    public void setAffiliationFilter(String affiliationFilter) {
-        this.affiliationFilter = affiliationFilter;
-    }
-
-    public Map<String, String> getLdapFiltersGroups() {
-        return ldapFiltersGroups;
-    }
-
-    public void setLdapFiltersGroups(Map<String, String> ldapFiltersGroups) {
-        this.ldapFiltersGroups = ldapFiltersGroups;
+    public void setMappingFiltersGroups(Map<String, String> mappingFiltersGroups) {
+        this.mappingFiltersGroups = mappingFiltersGroups;
     }
 }

@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -29,7 +28,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/ws/export/")
-@Transactional
+
 public class WsExportController {
 
     private static final Logger logger = LoggerFactory.getLogger(WsExportController.class);
