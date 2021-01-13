@@ -22,7 +22,7 @@ BEGIN
         LOOP
             lw = nextval('hibernate_sequence');
             insert into live_workflow(id, create_date, documents_target_uri, target_type, update_by, update_date, version, current_step_id, workflow_id)
-            values (lw, sbr.create_date, sbr.documents_target_uri, sbr.target_type, null, null, 1, null, sbr.workflow_id);
+                values (lw, sbr.create_date, sbr.documents_target_uri, sbr.target_type, null, null, 1, null, sbr.workflow_id);
             FOR ws IN select * from workflow_step inner join sign_book_workflow_steps sbws2 on workflow_step.id = sbws2.workflow_steps_id and sbws2.sign_book_id = sbr.id
                 LOOP
                     For sbws in select * from sign_book_workflow_steps where sign_book_workflow_steps.workflow_steps_id = ws.id
@@ -63,11 +63,11 @@ BEGIN
             insert into live_workflow_step_recipients(live_workflow_step_id, recipients_id) values (lws, r);
             lw = nextval('hibernate_sequence');
             insert into live_workflow(id, create_date, documents_target_uri, target_type, update_by, update_date, version, current_step_id, workflow_id)
-            values (lw, sr.create_date, null, null, null, null, 1, lws, null);
+                values (lw, sr.create_date, null, null, null, null, 1, lws, null);
             insert into live_workflow_workflow_steps(live_workflow_id, workflow_steps_id, workflow_steps_order) values (lw, lws, 0);
             sb = nextval('hibernate_sequence');
             insert into sign_book(id, create_date, current_workflow_step_number, description, documents_target_uri, exported_documenturi, external, name, status, target_type, update_by, update_date, version, create_by_eppn, create_by_id, workflow_id, title, workflow_name, live_workflow_id)
-            values (sb, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, 1, null, sr.create_by_id, lw, sr.title, null, lw);
+                values (sb, sr.create_date, null, null, null, null, false, concat('Signature_simple_', sr.title, '_', sr.id), sr.status, null, null, null, 1, null, sr.create_by_id, lw, sr.title, null, lw);
             insert into sign_book_sign_requests(sign_book_id, sign_requests_id, sign_requests_order) values (sb, sr.id, 0);
             update sign_request set parent_sign_book_id = sb where id = sr.id;
         END LOOP;

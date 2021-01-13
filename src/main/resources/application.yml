@@ -60,13 +60,11 @@ spring:
             ddl-auto: update
         properties:
             hibernate:
-                flushMode: MANUAL
                 jdbc:
                     lob:
                         non_contextual_creation: true
         show-sql: false
         open-in-view: false
-        database: postgresql
     ldap:
 #        base: dc=univ-ville,dc=fr
 #        password: ldap-password
@@ -129,7 +127,7 @@ dss:
     server-signing-keystore-password: password
     server-signing-keystore-type: PKCS12
     tsp-server: http://tsa.belgium.be/connect
-    ks-filename: /path/toyour/keystore/oj_keystore.p12
+    ks-filename: /tmp/oj_keystore.p12
     ks-password: dss-password
     ks-type: PKCS12
     lotl-country-code: EU
@@ -155,16 +153,16 @@ pdf:
     pdf-to-image-dpi: 72
 
 security:
-    cas:
-        service: https://esup-signature.univ-ville.fr/login/cas
-        title: Compte Université (CAS)
-        url: https://cas.univ-ville.fr
-#    shib:
-#        credentials-request-header: MEMBER
-#        idp-url: https://idp.univ-ville.fr
-#        principal-request-header: REMOTE_USER
-#        title: Compte d’un autre établissement (Shibboleth)
-#        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+#    cas:
+#        service: https://esup-signature.univ-ville.fr/login/cas
+#        title: Compte Université (CAS)
+#        url: https://cas.univ-ville.fr
+    shib:
+        credentials-request-header: MEMBER
+        idp-url: https://idp.univ-ville.fr
+        principal-request-header: REMOTE_USER
+        title: Compte d’un autre établissement (Shibboleth)
+        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
         group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:

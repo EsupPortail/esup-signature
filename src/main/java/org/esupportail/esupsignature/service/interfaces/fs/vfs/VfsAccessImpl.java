@@ -24,13 +24,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.FileCopyUtils;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,9 +39,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(VfsAccessImpl.class);
 
-	@Resource
-	private FileService fileService;
-	
 	protected FileSystemManager fsManager;
 
 	protected FileObject root;
