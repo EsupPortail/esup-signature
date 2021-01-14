@@ -70,7 +70,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 			authenticationFilter.setCredentialsRequestHeader(shibProperties.getCredentialsRequestHeader());
 		}
 		authenticationFilter.setAuthenticationManager(shibAuthenticationManager());
-		authenticationFilter.setExceptionIfHeaderMissing(true);
+		authenticationFilter.setExceptionIfHeaderMissing(false);
 		authenticationFilter.setAuthenticationSuccessHandler(shibAuthenticationSuccessHandler);
 		return authenticationFilter;
 	}
