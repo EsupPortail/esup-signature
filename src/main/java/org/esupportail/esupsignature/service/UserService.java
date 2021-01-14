@@ -193,7 +193,7 @@ public class UserService {
         	throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
         }
         logger.info("controle de l'utilisateur " + uid);
-        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUid(uid);
+        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUidOrEduPersonPrincipalNameOrSupannAliasLogin(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(personLdaps.get(0).getUid());
@@ -204,6 +204,7 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
+    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
