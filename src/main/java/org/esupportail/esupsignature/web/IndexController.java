@@ -79,7 +79,6 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				userService.createUserWithAuthentication(SecurityContextHolder.getContext().getAuthentication());
 				return "redirect:/user/";
 			}
 		}
