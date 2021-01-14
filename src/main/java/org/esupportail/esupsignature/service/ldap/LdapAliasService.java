@@ -1,15 +1,15 @@
 package org.esupportail.esupsignature.service.ldap;
 
 import org.esupportail.esupsignature.repository.ldap.AliasLdapRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 @Service
 public class LdapAliasService {
 
-    @Resource
+    @Autowired(required = false)
     private AliasLdapRepository aliasLdapRepository;
 
 
