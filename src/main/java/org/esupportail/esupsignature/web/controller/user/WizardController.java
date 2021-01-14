@@ -189,14 +189,13 @@ public class WizardController {
     @PostMapping(value = "/wiz5/{id}")
     public String saveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
         User user = (User) model.getAttribute("user");
-        SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.saveWorkflow(signBook, name, name, user);
+            signBookService.saveWorkflow(id, name, name, user);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit de signature porte déjà ce nom"));
-            return "redirect:/user/wizard/wiz5/" + signBook.getId();
+            return "redirect:/user/wizard/wiz5/" + id;
         }
-        return "redirect:/user/wizard/wizend/" + signBook.getId();
+        return "redirect:/user/wizard/wizend/" + id;
     }
 
     @GetMapping(value = "/wizendWorkflow/{id}")
