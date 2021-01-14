@@ -418,7 +418,7 @@ export class SignPosition extends EventFactory {
             this.getCurrentSignParams().addExtra = false;
             this.getCurrentSignParams().extraWidth = 0;
             this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
-            document.getElementById("textExtra_" + this.currentSign).remove();
+            $("#textExtra_" + this.currentSign).remove();
         } else {
             this.getCurrentSignParams().addExtra = true;
             this.getCurrentSignParams().extraWidth = 200;
