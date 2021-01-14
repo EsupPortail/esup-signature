@@ -59,8 +59,9 @@ public class ScheduledTaskService {
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
+		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			workflowService.importFilesFromSource(workflow, userService.getSchedulerUser(), userService.getSchedulerUser());
+			workflowService.importFilesFromSource(workflow, userScheduler, userScheduler);
 		}
 	}
 

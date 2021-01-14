@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -204,7 +202,6 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
-    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
@@ -222,24 +219,24 @@ public class UserService {
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-        if(!user.getUserType().equals(UserType.system)) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
-                String userName = buildEppn(auth.getName());
-                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
-                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-                    if (authorities.size() > 0) {
-                        user.getRoles().clear();
-                        for (GrantedAuthority authority : authorities) {
-                            if(authority.getAuthority().startsWith("ROLE_")) {
-                                user.getRoles().add(authority.getAuthority());
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        if(!user.getUserType().equals(UserType.system)) {
+//            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//            if (auth != null) {
+//                String userName = buildEppn(auth.getName());
+//                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
+//                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+//                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+//                    if (authorities.size() > 0) {
+//                        user.getRoles().clear();
+//                        for (GrantedAuthority authority : authorities) {
+//                            if(authority.getAuthority().startsWith("ROLE_")) {
+//                                user.getRoles().add(authority.getAuthority());
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         userRepository.save(user);
         return user;
     }
