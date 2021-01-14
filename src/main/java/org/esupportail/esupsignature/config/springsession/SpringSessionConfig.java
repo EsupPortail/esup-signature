@@ -25,9 +25,4 @@ public class SpringSessionConfig {
                 .addScript("org/springframework/session/jdbc/schema-h2.sql").build();
     }
 
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        return new DataSourceTransactionManager(sessionDataSource());
-    }
-
 }
