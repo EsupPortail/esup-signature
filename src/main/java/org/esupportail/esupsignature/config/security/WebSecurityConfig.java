@@ -103,6 +103,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests().antMatchers("/otp/**").permitAll();
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
+				.antMatchers("/", "/**").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
 				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
