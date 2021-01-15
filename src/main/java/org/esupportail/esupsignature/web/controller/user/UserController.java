@@ -34,10 +34,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -109,7 +106,7 @@ public class UserController {
 		return "redirect:/user/users";
 	}
 
-	@GetMapping(value = "/view-cert")
+	@PostMapping(value = "/view-cert")
     public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
@@ -286,6 +283,12 @@ public class UserController {
 		response.setContentType(contentType);
 		IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@ResponseBody
+	@PostMapping(value ="/check-user-certificate")
+	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
+    	return userService.getUserWithoutCertificate(userEmails);
 	}
 
 }

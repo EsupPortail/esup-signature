@@ -15,6 +15,7 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
+    hours-before-refresh-notif: 24
 
 #tomcat:
 #    ajp:

@@ -134,7 +134,7 @@ public class WizardController {
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
-                signBookService.initSignBook(signBook, workflowId, user);
+                signBookService.initSignBook(id, workflowId, user);
                 return "redirect:/user/wizard/wizend/" + signBook.getId();
             }
             model.addAttribute("workflowStepForm", true);

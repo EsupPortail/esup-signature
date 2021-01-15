@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,6 +133,11 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest.getLastNotifDate() == null) {
+            model.addAttribute("notifTime", 0);
+        } else {
+            model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
+        }
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
@@ -487,6 +494,14 @@ public class SignRequestController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
         }
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PostMapping(value = "replay-notif/{id}")
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) {
+        signRequestService.replayNotif(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;
     }
 

@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -50,9 +49,6 @@ public class UserService {
 
     @Resource
     private GlobalProperties globalProperties;
-
-    @Resource
-    private LdapProperties ldapProperties;
 
     @Resource
     private UserRepository userRepository;
@@ -459,5 +455,12 @@ public class UserService {
     @Transactional
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    @Transactional
+    public List<User> getUserWithoutCertificate(List<String> userEmails) {
+        List<User> users = new ArrayList<>();
+        userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
+        return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
     }
 }
