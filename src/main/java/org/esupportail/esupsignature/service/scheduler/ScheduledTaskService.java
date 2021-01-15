@@ -65,7 +65,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 300000)
+	@Scheduled(fixedRate = 10000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -110,7 +110,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
-		oJService.ifAvailable(oJ -> oJ.refresh());
+		oJService.ifAvailable(OJService::refresh);
 	}
 
 	@EventListener(ApplicationReadyEvent.class)

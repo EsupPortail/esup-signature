@@ -628,6 +628,12 @@ public class SignRequestService {
 			} else {
 				for (SignRequest signRequest : signRequests) {
 					Document signedFile = signRequest.getLastSignedDocument();
+					if(signRequest.getAttachments().size() > 0) {
+						targetUrl += "/" + signRequest.getTitle();
+						for(Document attachment : signRequest.getAttachments()) {
+							documentService.exportDocument(documentIOType, targetUrl, attachment);
+						}
+					}
 					documentService.exportDocument(documentIOType, targetUrl, signedFile);
 					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 				}

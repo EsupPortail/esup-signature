@@ -118,11 +118,14 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initSignBook(SignBook signBook, Long id, User user) {
+    public void initSignBook(Long signBookId, Long id, User user) {
+        SignBook signBook = getById(signBookId);
         Workflow workflow = workflowService.getById(id);
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
+        signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
+        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
     }
 
     public List<SignBook> getByCreateBy(String userEppn) {
