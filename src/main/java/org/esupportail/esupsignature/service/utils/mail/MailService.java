@@ -37,6 +37,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -151,6 +152,7 @@ public class MailService {
             message.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.getIfAvailable().send(mimeMessage);
+            signRequest.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send email", e);
         }

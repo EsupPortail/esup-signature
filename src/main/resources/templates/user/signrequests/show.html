@@ -69,7 +69,7 @@
                            th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                <th:block id="signButtons"
+            <th:block id="signButtons"
                  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
                  th:unless="${signable}" class="fixed-action-btns active">
                     <li><a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
@@ -146,6 +146,12 @@
                                  th:text="${attachments.size() + signRequest.links.size()}"
                                  class="badge badge-primary"></div>
                         </button>
+                        <div class="border ml-3 mr-3"></div>
+                        <form th:if="${notifTime} >= ${hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                            <button type="submit" class="btn btn-light btn-outline-dark ml-1">
+                                <i class="fas fa-bullhorn"></i> <span class="d-none d-xl-inline">Relancer</span>
+                            </button>
+                        </form>
                         <div class="border ml-3 mr-3"></div>
                         <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}">
                             <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"

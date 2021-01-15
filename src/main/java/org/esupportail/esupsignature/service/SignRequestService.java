@@ -1133,4 +1133,11 @@ public class SignRequestService {
 	private List<SignRequest> getSignRequestsRefusedByUser(String userEppn) {
 		return signRequestRepository.findByRecipientAndActionType(userEppn, ActionType.refused);
 	}
+
+	public void replayNotif(Long id) {
+		SignRequest signRequest = this.getById(id);
+		List<String> recipientEmails = new ArrayList<>();
+		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
+		mailService.sendSignRequestAlert(recipientEmails, signRequest);
+	}
 }
