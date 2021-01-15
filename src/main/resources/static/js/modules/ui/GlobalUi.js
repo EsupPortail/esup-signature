@@ -1,10 +1,12 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
 import {SseSubscribe} from "../utils/SseSubscribe.js";
+import {CsrfToken} from "../../prototypes/CsrfToken.js";
 
 export class GlobalUi {
 
-    constructor() {
+    constructor(csrf) {
         console.info("Starting global UI");
+        this.csrf = new CsrfToken(csrf);
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -83,15 +85,39 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
 
-        $("#sendPendingButton").on('click', e => this.submitSendPending());
+        $("#sendPendingButton").on('click', e => this.checkUserCertificate());
         // $("#submitSendPending").on('click', e => this.submitSendPending());
 
         this.bindKeyboardKeys();
     }
 
-    submitSendPending() {
-        $("#pending").val(true);
-        $("#sendButton").click();
+    checkUserCertificate() {
+        if ($('#signType2').val() === 'certSign') {
+            let csrf = this.csrf;
+            $.ajax({
+                url: "/user/users/check-user-certificate?" + csrf.parameterName + "=" + csrf.token,
+                type: 'POST',
+                contentType: "application/json",
+                dataType: 'json',
+                data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
+                success: response => this.submitSendPending(response)
+            });
+        } else {
+            $("#pending").val(true);
+            $("#sendButton").click();
+        }
+    }
+
+    submitSendPending(data) {
+        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : ";
+        for (let i = 0; i < data.length ; i++) {
+            stringChain += data[i].firstname + " " + data[i].name + " ";
+        }
+        stringChain += "Confirmez-vous l'envoie de la demande ? "
+        if (data.length < 1 || window.confirm(stringChain)) {
+            $("#pending").val(true);
+            $("#sendButton").click();
+        }
     }
 
     // showSendPendingModal() {

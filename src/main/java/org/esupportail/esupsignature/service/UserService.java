@@ -456,4 +456,11 @@ public class UserService {
     public void save(User user) {
         userRepository.save(user);
     }
+
+    @Transactional
+    public List<User> getUserWithoutCertificate(List<String> userEmails) {
+        List<User> users = new ArrayList<>();
+        userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
+        return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+    }
 }
