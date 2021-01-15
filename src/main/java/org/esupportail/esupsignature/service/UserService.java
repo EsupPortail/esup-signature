@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -49,6 +50,9 @@ public class UserService {
 
     @Resource
     private GlobalProperties globalProperties;
+
+    @Resource
+    private LdapProperties ldapProperties;
 
     @Resource
     private UserRepository userRepository;
@@ -193,7 +197,7 @@ public class UserService {
         	throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
         }
         logger.info("controle de l'utilisateur " + uid);
-        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUidOrEduPersonPrincipalNameOrSupannAliasLogin(uid);
+        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdap(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(personLdaps.get(0).getUid());
@@ -204,7 +208,6 @@ public class UserService {
         return createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
-    @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
