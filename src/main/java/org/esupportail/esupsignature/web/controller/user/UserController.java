@@ -106,7 +106,7 @@ public class UserController {
 		return "redirect:/user/users";
 	}
 
-	@GetMapping(value = "/view-cert")
+	@PostMapping(value = "/view-cert")
     public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
         	redirectAttributes.addFlashAttribute("message", new JsonMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
