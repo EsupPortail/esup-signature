@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.time.DayOfWeek;
@@ -31,6 +33,7 @@ public class User {
     private String email;
 
     @ElementCollection
+    @Fetch(FetchMode.JOIN)
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";
@@ -79,6 +82,7 @@ public class User {
     }
 
     @ElementCollection
+    @Fetch(FetchMode.JOIN)
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {
