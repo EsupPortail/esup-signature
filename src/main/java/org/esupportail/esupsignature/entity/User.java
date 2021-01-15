@@ -82,6 +82,7 @@ public class User {
     }
 
     @ElementCollection
+    @Fetch(FetchMode.JOIN)
     private List<String> roles = new ArrayList<>();
 
 	public Long getId() {

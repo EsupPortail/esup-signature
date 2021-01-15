@@ -152,13 +152,30 @@ public class WorkflowService {
         return workflowRepository.countByName(name) > 0;
     }
 
-    @Transactional
     public Workflow createWorkflow(User user) {
         Workflow workflow;
         workflow = new Workflow();
         workflow.setCreateDate(new Date());
         workflow.setCreateBy(user);
         workflowRepository.save(workflow);
+        return workflow;
+    }
+
+    @Transactional
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmail, User user) {
+        Workflow workflow;
+        if (id != null) {
+            workflow = getById(id);
+        } else {
+            workflow = createWorkflow(user);
+        }
+        if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
+            if(recipientsEmail != null && recipientsEmail.length > 0) {
+                logger.info("add new workflow step to Workflow " + workflow.getId());
+                WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
+                workflow.getWorkflowSteps().add(workflowStep);
+            }
+        }
         return workflow;
     }
 
@@ -520,12 +537,5 @@ public class WorkflowService {
         }
         return workflowSteps;
     }
-
-    @Transactional
-    public void addWorkflowStep(Long id, WorkflowStep workflowStep) {
-        Workflow workflow = workflowRepository.findById(id).get();
-        workflow.getWorkflowSteps().add(workflowStep);
-    }
-
 }
 
