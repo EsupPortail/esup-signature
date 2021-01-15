@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
@@ -47,9 +46,6 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private CasProperties casProperties;
-
-	@Resource
-	private GlobalProperties globalProperties;
 
 	@Resource
 	private LdapProperties ldapProperties;

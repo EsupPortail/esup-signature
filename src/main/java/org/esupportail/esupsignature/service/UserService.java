@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -22,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,6 +50,9 @@ public class UserService {
 
     @Resource
     private GlobalProperties globalProperties;
+
+    @Resource
+    private LdapProperties ldapProperties;
 
     @Resource
     private UserRepository userRepository;
@@ -191,7 +197,7 @@ public class UserService {
         	throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
         }
         logger.info("controle de l'utilisateur " + uid);
-        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByUidOrEduPersonPrincipalNameOrSupannAliasLogin(uid);
+        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdap(uid);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(personLdaps.get(0).getUid());
@@ -219,24 +225,24 @@ public class UserService {
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-//        if(!user.getUserType().equals(UserType.system)) {
-//            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//            if (auth != null) {
-//                String userName = buildEppn(auth.getName());
-//                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
-//                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-//                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-//                    if (authorities.size() > 0) {
-//                        user.getRoles().clear();
-//                        for (GrantedAuthority authority : authorities) {
-//                            if(authority.getAuthority().startsWith("ROLE_")) {
-//                                user.getRoles().add(authority.getAuthority());
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
+        if(!user.getUserType().equals(UserType.system)) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                String userName = buildEppn(auth.getName());
+                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
+                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                    if (authorities.size() > 0) {
+                        user.getRoles().clear();
+                        for (GrantedAuthority authority : authorities) {
+                            if(authority.getAuthority().startsWith("ROLE_")) {
+                                user.getRoles().add(authority.getAuthority());
+                            }
+                        }
+                    }
+                }
+            }
+        }
         userRepository.save(user);
         return user;
     }
