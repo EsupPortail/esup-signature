@@ -43,7 +43,7 @@ public class DataExportService {
                 LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
                 toExportDatas.put("form_name", form.getName());
                 toExportDatas.put("form_create_date", data.getCreateDate().toString());
-                toExportDatas.put("form_create_by", data.getCreateBy());
+                toExportDatas.put("form_create_by", data.getCreateBy().getEppn());
                 toExportDatas.put("form_current_status", signBook.getStatus().name());
                 Map<Recipient, Action> recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
                 if(recipientHasSigned != null && recipientHasSigned.size() > 0 && signBook.getStatus().equals(SignRequestStatus.completed) ||signBook.getStatus().equals(SignRequestStatus.exported) ||signBook.getStatus().equals(SignRequestStatus.archived)) {
