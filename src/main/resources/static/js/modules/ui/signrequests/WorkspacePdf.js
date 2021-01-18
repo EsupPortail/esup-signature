@@ -76,6 +76,9 @@ export class WorkspacePdf {
         }
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
         $("#signLaunchButton").on('click', e => this.launchSignModal());
+        $("#refuseLaunchButton").on('click', function (){
+            window.onbeforeunload = null;
+        });
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
@@ -92,6 +95,7 @@ export class WorkspacePdf {
 
     launchSignModal() {
         console.info("launch sign modal");
+        window.onbeforeunload = null;
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
         }

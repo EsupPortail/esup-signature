@@ -58,8 +58,10 @@ public class LiveWorkflowStepService {
                     }
                 }
             }
-            Recipient recipient = recipientService.createRecipient(recipientUser);
-            liveWorkflowStep.getRecipients().add(recipient);
+            if(recipientUser != null) {
+                Recipient recipient = recipientService.createRecipient(recipientUser);
+                liveWorkflowStep.getRecipients().add(recipient);
+            }
         }
     }
 

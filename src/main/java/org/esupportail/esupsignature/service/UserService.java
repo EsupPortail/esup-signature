@@ -158,6 +158,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public User createUserWithEmail(String mail) {
         if (ldapPersonService.getIfAvailable() != null) {
             List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByMail(mail);

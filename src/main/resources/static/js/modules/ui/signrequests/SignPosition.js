@@ -427,10 +427,9 @@ export class SignPosition extends EventFactory {
 
 
     enableConfirmLeaveSign() {
-        // window.onbeforeunload = function(){
-        //     return "Une signature est en cours sur ce document, voulez abandonner les modifications ?";
-        // };
-
+        window.onbeforeunload = function(){
+            return "Une signature est en cours sur ce document, voulez abandonner les modifications ?";
+        };
     }
 
     toggleExtraInfos() {
