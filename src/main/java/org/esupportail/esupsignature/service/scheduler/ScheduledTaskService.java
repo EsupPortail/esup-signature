@@ -61,7 +61,7 @@ public class ScheduledTaskService {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			workflowService.importFilesFromSource(workflow, userScheduler, userScheduler);
+			workflowService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
