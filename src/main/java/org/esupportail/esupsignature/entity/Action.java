@@ -31,6 +31,8 @@ public class Action {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date date;
 
+    private String userIp;
+
     public Long getId() {
         return id;
     }
@@ -61,5 +63,13 @@ public class Action {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public String getUserIp() {
+        return userIp;
+    }
+
+    public void setUserIp(String userIp) {
+        this.userIp = userIp;
     }
 }
