@@ -45,6 +45,7 @@ export class SignPosition extends EventFactory {
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
         }
+        this.confirmEnabled = false;
         this.events = {};
         if(this.signType === "visa") {
             this.addText();
@@ -61,6 +62,10 @@ export class SignPosition extends EventFactory {
         this.initCrossListeners();
         this.initCrossToolsListeners();
         this.addSignButton.on('click', e => this.addSign(e));
+        if(this.getCurrentSignParams().xPos !== 0 || this.getCurrentSignParams().yPos !== 0) {
+            this.enableConfirmLeaveSign();
+            this.confirmEnabled = true;
+        }
     }
 
     initCrossListeners() {
@@ -362,6 +367,10 @@ export class SignPosition extends EventFactory {
         this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
+        if(!this.confirmEnabled) {
+            this.enableConfirmLeaveSign();
+            this.confirmEnabled = true;
+        }
     }
 
     dragSignature() {
@@ -409,6 +418,14 @@ export class SignPosition extends EventFactory {
         this.borders.append("<span id='textName' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale * 3 + "px; font-size:" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px;'>" +
             "Visé par " + this.userName + "</span>");
         this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale * 3 + "px; font-size:" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
+    }
+
+
+    enableConfirmLeaveSign() {
+        window.onbeforeunload = function(){
+            return "Une signature est en cours sur ce document, voulez abandonner les modifications ?";
+        };
+
     }
 
     toggleExtraInfos() {
