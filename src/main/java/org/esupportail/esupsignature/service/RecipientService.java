@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.RecipientRepository;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +18,9 @@ public class RecipientService {
 
     @Resource
     private RecipientRepository recipientRepository;
+
+    @Resource
+    private WebUtilsService webUtilsService;
 
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
@@ -36,6 +40,7 @@ public class RecipientService {
     public void validateRecipient(SignRequest signRequest, String userEppn) {
         Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
+        signRequest.getRecipientHasSigned().get(validateRecipient).setUserIp(webUtilsService.getClientIp());
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
     }
 

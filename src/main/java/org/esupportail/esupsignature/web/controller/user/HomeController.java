@@ -79,7 +79,7 @@ public class HomeController {
             }
             model.addAttribute("messageNews", messages);
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, "tosign", pageable));
-            List<Data> datas = dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft);
+            List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));

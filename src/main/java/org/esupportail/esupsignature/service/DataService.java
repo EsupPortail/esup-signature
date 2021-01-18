@@ -149,8 +149,8 @@ public class DataService {
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
-        data.setCreateBy(authUser.getEppn());
-        data.setOwner(user.getEppn());
+        data.setCreateBy(authUser);
+        data.setOwner(user);
         data.setCreateDate(new Date());
         dataRepository.save(data);
         return data;
@@ -162,7 +162,7 @@ public class DataService {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
         cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
         cloneData.setStatus(SignRequestStatus.draft);
-        cloneData.setCreateBy(authUser.getEppn());
+        cloneData.setCreateBy(authUser);
         cloneData.setCreateDate(new Date());
         cloneData.setOwner(data.getOwner());
         cloneData.getDatas().putAll(data.getDatas());
@@ -195,7 +195,7 @@ public class DataService {
 
     public List<Data> getDataDraftByOwner(String userEppn) {
         User user = userService.getByEppn(userEppn);
-        return dataRepository.findByOwnerAndStatus(user.getEppn(), SignRequestStatus.draft);
+        return dataRepository.findByOwnerAndStatus(user, SignRequestStatus.draft);
     }
 
     public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, String userEppn, String authUserEppn) {
@@ -289,7 +289,8 @@ public class DataService {
     }
 
     public long getNbCreateByAndStatus(String userEppn) {
-        return dataRepository.countByCreateByAndStatus(userEppn, SignRequestStatus.draft);
+        User user = userService.getByEppn(userEppn);
+        return dataRepository.countByCreateByAndStatus(user, SignRequestStatus.draft);
     }
 
     @Transactional

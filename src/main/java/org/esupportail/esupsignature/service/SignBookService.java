@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -71,6 +72,9 @@ public class SignBookService {
 
     @Resource
     private SignService signService;
+
+    @Resource
+    private WebUtilsService webUtilsService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -376,6 +380,7 @@ public class SignBookService {
                 if(recipient.getUser().getEppn().equals(userEppn)) {
                     Action action = signRequest.getRecipientHasSigned().get(recipient);
                     action.setActionType(ActionType.refused);
+                    action.setUserIp(webUtilsService.getClientIp());
                     action.setDate(new Date());
                     recipient.setSigned(true);
                 }
