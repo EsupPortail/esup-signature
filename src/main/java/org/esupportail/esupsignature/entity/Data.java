@@ -25,9 +25,11 @@ public class Data {
 
     private String name;
 
-	private String owner;
+    @ManyToOne
+	private User owner;
 
-	private String createBy;
+	@ManyToOne
+	private User createBy;
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
@@ -93,19 +95,19 @@ public class Data {
 		this.datas = datas;
 	}
 
-	public String getOwner() {
+	public User getOwner() {
 		return owner;
 	}
 
-	public void setOwner(String owner) {
+	public void setOwner(User owner) {
 		this.owner = owner;
 	}
 
-	public String getCreateBy() {
+	public User getCreateBy() {
 		return createBy;
 	}
 
-	public void setCreateBy(String createBy) {
+	public void setCreateBy(User createBy) {
 		this.createBy = createBy;
 	}
 
