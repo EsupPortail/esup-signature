@@ -64,6 +64,9 @@ public class DataController {
 	@Resource
 	private PdfService pdfService;
 
+	@Resource
+	private UserService userService;
+
 	@GetMapping
 
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
@@ -78,8 +81,9 @@ public class DataController {
 	@GetMapping("{id}")
 	public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(required = false) Integer page, Model model) {
 		Data data = dataService.getById(id);
+		User user = userService.getByEppn(userEppn);
 		model.addAttribute("data", data);
-		if (userEppn.equals(data.getOwner())) {
+		if (user.equals(data.getOwner())) {
 			if (page == null) {
 				page = 1;
 			}
@@ -205,7 +209,8 @@ public class DataController {
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		Data data = dataService.getById(id);
-		if(userEppn.equals(data.getCreateBy()) || userEppn.equals(data.getOwner())) {
+		User user = userService.getByEppn(userEppn);
+		if(user.equals(data.getCreateBy()) || user.equals(data.getOwner())) {
 			dataService.delete(data);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		} else {

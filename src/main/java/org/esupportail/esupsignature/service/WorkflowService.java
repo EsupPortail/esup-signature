@@ -229,7 +229,8 @@ public class WorkflowService {
     }
 
     @Transactional
-    public int importFilesFromSource(Workflow workflow, User user, User authUser) {
+    public int importFilesFromSource(Long workflowId, User user, User authUser) {
+        Workflow workflow = getById(workflowId);
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
         if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {

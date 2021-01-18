@@ -201,7 +201,7 @@ public class SignService {
 		InputStream signImage;
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss ", Locale.FRENCH);
 		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false);
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);
@@ -211,7 +211,7 @@ public class SignService {
 		imageParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
-		if(signRequestParams.isAddExtra()) {
+		if(signRequestParams.getAddExtra()) {
 			signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
 		}
 		int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));

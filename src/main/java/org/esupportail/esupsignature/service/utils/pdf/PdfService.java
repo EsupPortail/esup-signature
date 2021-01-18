@@ -90,13 +90,13 @@ public class PdfService {
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
 
             Date newDate = new Date();
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss 'GMT' Z", Locale.FRENCH);
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             List<String> addText = getSignatureStrings(user, signType, newDate, dateFormat);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, true);
-            } else if (signRequestParams.isAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, true, signRequestParams);
+            } else if (signRequestParams.getAddExtra()) {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
             } else {
                 signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
             }

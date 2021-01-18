@@ -170,8 +170,7 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		User authUser = (User) model.getAttribute("authUser");
-		Workflow workflow = workflowService.getById(id);
-		int nbImportedFiles = workflowService.importFilesFromSource(workflow, authUser, authUser);
+		int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
 		} else {

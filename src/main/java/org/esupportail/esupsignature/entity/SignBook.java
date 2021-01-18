@@ -30,7 +30,7 @@ public class SignBook {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne
+    @ManyToOne
     private User createBy;
 
     @Temporal(TemporalType.TIMESTAMP)
