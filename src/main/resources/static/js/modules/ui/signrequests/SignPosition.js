@@ -33,6 +33,7 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton = $('#signNextImage_0');
         this.signPrevImageButton = $('#signPrevImage_0');
         this.signExtraButton = $('#signExtra_0');
+        this.signExtraOnTopButton = $('#signExtraOnTop_0');
         this.signDropButton = $('#signDrop_0');
         this.addSignButton = $('#addSignButton');
         if(xPos !== 0 && yPos !== 0) {
@@ -81,6 +82,7 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton.on('click', e => this.signNextImage(e));
         this.signPrevImageButton.on('click', e => this.signPrevImage(e));
         this.signExtraButton.on('click', e => this.toggleExtraInfos());
+        this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
         this.signDropButton.on('click', e => this.removeSign(e));
     }
 
@@ -90,6 +92,7 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton.unbind();
         this.signPrevImageButton.unbind();
         this.signExtraButton.unbind();
+        this.signExtraOnTopButton.unbind();
         this.signDropButton.unbind();
     }
 
@@ -212,7 +215,7 @@ export class SignPosition extends EventFactory {
 
     changeSignSize(result) {
         this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
-        this.getCurrentSignParams().signHeight = Math.round((result.h) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
+        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
         this.updateSignSize();
     }
 
@@ -347,7 +350,9 @@ export class SignPosition extends EventFactory {
         textName.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         let textExtra = $('#textExtra_' + this.currentSign);
-        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
+        if(!this.getCurrentSignParams().extraOnTop) {
+            textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
+        }
         textExtra.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         // this.updateSignButtons();
@@ -422,9 +427,9 @@ export class SignPosition extends EventFactory {
 
 
     enableConfirmLeaveSign() {
-        window.onbeforeunload = function(){
-            return "Une signature est en cours sur ce document, voulez abandonner les modifications ?";
-        };
+        // window.onbeforeunload = function(){
+        //     return "Une signature est en cours sur ce document, voulez abandonner les modifications ?";
+        // };
 
     }
 
@@ -432,19 +437,14 @@ export class SignPosition extends EventFactory {
         console.log("toggle extra");
         $('#extraButton').toggleClass('btn-outline-success btn-outline-dark');
         if(this.getCurrentSignParams().addExtra) {
-            this.getCurrentSignParams().addExtra = false;
-            this.getCurrentSignParams().extraWidth = 0;
-            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
-            $("#textExtra_" + this.currentSign).remove();
+            this.removeExtra();
         } else {
             this.getCurrentSignParams().addExtra = true;
-            this.getCurrentSignParams().extraWidth = 200;
-            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + 200;
             let signTypeText = "Signature calligraphique";
             if(this.signType === "certSign" || this.signType === "nexuSign") {
                 signTypeText = "Signature électronique";
             }
-            this.borders.append("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='margin-left: " + this.getCurrentSignParams().extraWidth * this.currentScale + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
+            let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
                 "                        -khtml-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
@@ -453,10 +453,40 @@ export class SignPosition extends EventFactory {
                 "<br>" +
                 "Signé par " + this.userName +
                 "<br>" +
-                "Le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT] Z') +
+                "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
                 "</span>");
+
+            if(this.getCurrentSignParams().extraOnTop) {
+                this.borders.append(textExtra);
+                let textExtraHeight = textExtra.height() * this.fixRatio;
+                this.getCurrentSignParams().extraHeight = textExtraHeight;
+                this.getCurrentSignParams().extraWidth = 0;
+                this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
+            } else {
+                this.borders.append(textExtra);
+                console.log(textExtra);
+                let textExtraWidth = textExtra.width();
+                this.getCurrentSignParams().extraHeight = 0;
+                this.getCurrentSignParams().extraWidth = textExtraWidth;
+                this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + textExtraWidth;
+            }
         }
         this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+    }
+
+    toggleExtraPosition() {
+        this.getCurrentSignParams().extraOnTop = !this.getCurrentSignParams().extraOnTop;
+        this.getCurrentSignParams().addExtra = !this.getCurrentSignParams().addExtra;
+        this.removeExtra();
+        this.toggleExtraInfos();
+    }
+
+    removeExtra() {
+        this.getCurrentSignParams().addExtra = false;
+        this.getCurrentSignParams().extraWidth = 0;
+        this.getCurrentSignParams().extraHeight = 0;
+        this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+        $("#textExtra_" + this.currentSign).remove();
     }
 
 }

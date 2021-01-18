@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -60,9 +59,6 @@ public class MailService {
 
     @Resource
     private TemplateEngine templateEngine;
-
-    @Resource
-    private SignRequestService signRequestService;
 
     @Resource
     private UserService userService;

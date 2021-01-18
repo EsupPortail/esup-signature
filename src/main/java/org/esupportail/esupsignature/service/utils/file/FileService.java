@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -217,17 +218,22 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, java.util.List<String> text, boolean visa) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, java.util.List<String> text, boolean visa, SignRequestParams signRequestParams) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		if(text.size() > 0) {
 			final BufferedImage signImage = ImageIO.read(imageStream);
-			int offset = 0;
-			if(!visa) {
-				offset = 600;
+			int widthOffset = 0;
+			int heightOffset = 0;
+			if(signRequestParams.getAddExtra()) {
+				if(signRequestParams.getExtraOnTop()) {
+					heightOffset = (int) Math.round((signRequestParams.getSignHeight() / 0.75 / signRequestParams.getSignScale()) - (signImage.getHeight() / 3));
+				} else {
+					widthOffset = (int) Math.round((signRequestParams.getSignWidth() / 0.75 / signRequestParams.getSignScale()) - (signImage.getWidth() / 3));
+				}
 			}
-			BufferedImage  image = new BufferedImage(signImage.getWidth() + offset,  signImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			BufferedImage  image = new BufferedImage(signImage.getWidth() + (widthOffset * 3),  signImage.getHeight() + (heightOffset * 3), BufferedImage.TYPE_INT_ARGB);
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-			graphics2D.drawImage(signImage, 0, 0, null);
+			graphics2D.drawImage(signImage, 0, heightOffset * 3, null);
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 1;
 			Map<TextAttribute, Object> map = new Hashtable<>();
@@ -239,11 +245,11 @@ public class FileService {
 			graphics2D.setPaint(Color.black);
 			for (String line : text) {
 				FontMetrics fm = graphics2D.getFontMetrics();
-				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), offset, fm.getHeight() * lineCount);
+				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset * 3, fm.getHeight() * lineCount);
 				lineCount++;
 			}
 			FontMetrics fm = graphics2D.getFontMetrics();
-			graphics2D.drawString("", offset, fm.getHeight() * lineCount + 1);
+			graphics2D.drawString("", widthOffset * 3, fm.getHeight() * lineCount + 1);
 			graphics2D.dispose();
 			File fileImage = getTempFile("sign.png");
 			ImageIO.write(image, "png", fileImage);

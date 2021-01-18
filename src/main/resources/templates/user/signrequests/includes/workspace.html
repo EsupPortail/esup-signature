@@ -12,7 +12,7 @@
                 <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
-                     th:style="'display: none;background-repeat: no-repeat; background-position: left top; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
+                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
                     <div id="crossTools_0" class="badge badge-success position-absolute d-none" style="left: 0px; top: -45px;
                         z-index: 3; opacity: .9;user-select: none;
                         -moz-user-select: none;
@@ -43,6 +43,11 @@
                                 class="btn btn-sm btn-transparent text-white"
                                 style="z-index: 3;">
                             <i class="fas fa-receipt"></i>
+                        </button>
+                        <button type="button" id="signExtraOnTop_0"
+                                class="btn btn-sm btn-transparent text-white"
+                                style="z-index: 3;">
+                            <i class="fas fa-retweet"></i>
                         </button>
                         <button type="button" id="signDrop_0"
                                 class="btn btn-sm btn-transparent text-white"

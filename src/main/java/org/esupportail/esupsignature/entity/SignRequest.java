@@ -28,7 +28,7 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne
+    @ManyToOne
     private User createBy;
 
     private String exportedDocumentURI;
