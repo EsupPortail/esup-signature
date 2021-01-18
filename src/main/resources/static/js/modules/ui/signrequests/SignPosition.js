@@ -439,9 +439,9 @@ export class SignPosition extends EventFactory {
             this.removeExtra();
         } else {
             this.getCurrentSignParams().addExtra = true;
-            let signTypeText = "Signature calligraphique";
+            let signTypeText = "";
             if(this.signType === "certSign" || this.signType === "nexuSign") {
-                signTypeText = "Signature électronique";
+                signTypeText = "Signature électronique<br/>";
             }
             let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
@@ -449,7 +449,6 @@ export class SignPosition extends EventFactory {
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
                 signTypeText +
-                "<br>" +
                 "Signé par " + this.userName +
                 "<br>" +
                 "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
