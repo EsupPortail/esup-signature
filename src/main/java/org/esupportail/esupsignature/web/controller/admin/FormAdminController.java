@@ -66,12 +66,12 @@ public class FormAdminController {
 	private FieldService fieldService;
 
 	@PostMapping()
-	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames) throws IOException {
+	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
 		DocumentIOType documentIOType = null;
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, fieldNames);
+		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, publicUsage, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -84,8 +84,8 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Model model) throws IOException {
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 

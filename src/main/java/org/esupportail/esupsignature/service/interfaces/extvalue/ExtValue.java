@@ -7,6 +7,7 @@ import java.util.Map;
 
 public interface ExtValue {
 	String getName();
+	List<String> getTypes();
 	Map<String, Object> initValues(User user);
 	String getValueByName(String name, User user);
 	List<Map<String, Object>> search(String searchType, String searchString, String searchReturn);

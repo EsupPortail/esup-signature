@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
@@ -143,13 +142,13 @@ public class WsController {
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> addWorkflowStep(@ModelAttribute("userEppn") String userEppn, @RequestParam String name,
-                                  @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
+                                  @RequestParam String jsonWorkflowStepString) throws IOException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         SignType signType = signRequestService.getSignTypeByLevel(level);
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         return new ResponseEntity<>(HttpStatus.OK);
     }

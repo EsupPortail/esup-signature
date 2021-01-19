@@ -85,9 +85,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
 		return form;
 	}
 
@@ -174,7 +174,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, String... fieldNames) throws IOException {
+	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -201,6 +201,7 @@ public class FormService {
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
+		form.setPublicUsage(publicUsage);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
 			List<UserShare> userShares = userShareService.getUserSharesByForm(testForms.get(0));

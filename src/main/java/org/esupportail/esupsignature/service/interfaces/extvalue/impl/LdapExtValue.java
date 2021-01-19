@@ -44,6 +44,11 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
+	public List<String> getTypes() {
+		return new ArrayList<>(Arrays.asList("person", "organizationalUnit"));
+	}
+
+	@Override
 	public String getValueByName(String name, User user) {
 		Object value = initValues(user).get(name);
 		if(value != null){
