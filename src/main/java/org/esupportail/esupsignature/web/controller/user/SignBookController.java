@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -8,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -38,6 +40,9 @@ public class SignBookController {
 
     @Resource
     private LogService logService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
     @GetMapping(value = "/{id}")
@@ -88,6 +93,23 @@ public class SignBookController {
         }
 
         return "redirect:/user/signbooks/" + id + "/?form";
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PostMapping(value = "/add-repeatable-step/{id}")
+    @ResponseBody
+    public int addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                          @RequestParam("recipientsEmails") String[] recipientsEmails,
+                          @RequestParam("stepNumber") int stepNumber,
+                          @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                          @RequestParam("signType") String signType) {
+        SignBook signBook = signRequestService.getById(id).getParentSignBook();
+        try {
+            signBookService.addLiveStep(signBook, recipientsEmails, stepNumber, allSignToComplete, signType, authUserEppn);
+            return HTTPResponse.SC_OK;
+        } catch (EsupSignatureException e) {
+            return HTTPResponse.SC_SERVER_ERROR;
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

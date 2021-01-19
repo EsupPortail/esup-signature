@@ -4,7 +4,7 @@ import {PrintDocument} from "../../utils/PrintDocument.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -19,12 +19,15 @@ export class SignUi {
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
+        this.stepRepeatable = stepRepeatable;
+        this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
         this.initListeners();
     }
 
     initListeners() {
-        $("#launchSignButton").on('click', e => this.launchSign());
+        $("#checkRepeatableButton").on('click', e => this.checkRepeatable());
+        $("#launchSignButton").on('click', e => this.insertStep());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -167,5 +170,28 @@ export class SignUi {
         textArea.select();
         document.execCommand("Copy");
         textArea.remove();
+    }
+
+    checkRepeatable() {
+        if (this.stepRepeatable) {
+            this.signModal.modal('hide');
+            $('#stepRepeatableModal').modal('show');
+        } else {
+            this.launchSign();
+        }
+    }
+
+    insertStep() {
+        let signBookId = this.signBookId;
+        let csrf = this.csrf;
+        let data = {"recipientsEmails": $('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected(), "stepNumber": this.currentStepNumber + 1,"allSignToComplete": $('#_allSignToComplete').val(), "signType": $('#signType2').val()}
+        $.ajax({
+            url: "/user/add-repeatable-step/?id=" + signBookId + "&" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            contentType: "application/json",
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: response => this.launchSign()
+        });
     }
 }

@@ -490,16 +490,13 @@ public class SignBookService {
 
     public void addLiveStep(SignBook signBook, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType, String authUserEppn) throws EsupSignatureException {
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        if(stepNumber + 1 >= currentSetNumber) {
+        if(stepNumber > currentSetNumber) {
             LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(allSignToComplete, SignType.valueOf(signType), recipientsEmails);
             if (stepNumber == -1) {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
             } else {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
             }
-            signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentSetNumber - 1));
-            pendingSignBook(signBook, null, authUserEppn, authUserEppn);
-
         } else {
             throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
         }
