@@ -12,10 +12,7 @@ import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DefaultPreFill implements PreFill {
@@ -29,6 +26,14 @@ public class DefaultPreFill implements PreFill {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Map<String, List<String>> getTypes() {
+		Map<String, List<String>> types = new HashMap<>();
+		types.put("default", Arrays.asList("system"));
+		types.put("ldap", Arrays.asList("person", "organizationalUnit"));
+		return types;
 	}
 
 	@Override

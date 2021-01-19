@@ -1,6 +1,7 @@
 import {WorkspacePdf} from "./WorkspacePdf.js";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 import {PrintDocument} from "../../utils/PrintDocument.js";
+import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
@@ -184,15 +185,22 @@ export class SignUi {
     }
 
     insertStep() {
-        let signBookId = this.signBookId;
+        let signRequestId = this.signRequestId;
         let csrf = this.csrf;
-        let data = {"recipientsEmails": $('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected(), "stepNumber": this.currentStepNumber + 1,"allSignToComplete": $('#_allSignToComplete').val(), "signType": $('#signType2').val()}
+        let step = new Step();
+        step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        step.stepNumber = this.currentStepNumber + 1;
+        step.allSignToComplete = $('#_allSignToComplete').is(':checked');
+        step.signType = $('#signType2').val();
+
+        let test = JSON.stringify(step);
+
         $.ajax({
-            url: "/user/signbooks/add-repeatable-step/?id=" + signBookId + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             dataType: 'json',
-            data: JSON.stringify(data),
+            data: JSON.stringify(step),
             success: response => this.launchSign()
         });
     }

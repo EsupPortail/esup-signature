@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -48,9 +47,6 @@ public class FormAdminController {
 	}
 
 	@Resource
-	private DocumentService documentService;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -79,6 +75,8 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
+		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/show";
 	}
@@ -161,15 +159,31 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
-											  @RequestParam(value = "required", required = false) String required,
-											  @RequestParam(value = "readOnly", required = false) String readOnly,
-											  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
-											  @RequestParam(value = "extValueType", required = false) String extValueType,
-											  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
-											  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
-											  @RequestParam(value = "searchType", required = false) String searchType,
-											  @RequestParam(value = "searchReturn", required = false) String searchReturn,
+											  @RequestParam(value = "required", required = false) Boolean required,
+											  @RequestParam(value = "readOnly", required = false) Boolean readOnly,
+											  @RequestParam(value = "prefill", required = false) Boolean prefill,
+											  @RequestParam(value = "search", required = false) Boolean search,
+											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
+											  @RequestParam(value = "valueType", required = false) String valueType,
+											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
 											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+
+		String extValueServiceName = "";
+		String extValueType = "";
+		String extValueReturn = "";
+		String searchServiceName = "";
+		String searchType = "";
+		String searchReturn = "";
+		if(prefill) {
+			extValueServiceName = valueServiceName;
+			extValueType = valueType;
+			extValueReturn = valueReturn;
+		}
+		if(search) {
+			searchServiceName = valueServiceName;
+			searchType = valueType;
+			searchReturn = valueReturn;
+		}
 		fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

@@ -25,11 +25,6 @@ public class DonutsExtValue implements ExtValue {
 	}
 
 	@Override
-	public List<String> getTypes() {
-		return new ArrayList<>(Arrays.asList("default"));
-	}
-
-	@Override
 	public Map<String, Object> initValues(User user) {
 		Map<String, Object> values = new HashMap<>();
 		values.put("address", "");

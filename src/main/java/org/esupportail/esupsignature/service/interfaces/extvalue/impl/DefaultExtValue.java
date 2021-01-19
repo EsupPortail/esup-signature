@@ -26,11 +26,6 @@ public class DefaultExtValue implements ExtValue {
 	}
 
 	@Override
-	public List<String> getTypes() {
-		return new ArrayList<>(Arrays.asList("person", "organizationalUnit"));
-	}
-
-	@Override
 	public Map<String, Object> initValues(User user) {
 		Map<String, Object> values = new HashMap<>();
 		Date date = new Date();
