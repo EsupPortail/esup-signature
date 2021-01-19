@@ -30,6 +30,8 @@ public class WorkflowStep {
 
     private Boolean changeable = false;
 
+    private Boolean repeatable = false;
+
     private Boolean allSignToComplete = false;
 
     @Enumerated(EnumType.STRING)
@@ -97,6 +99,14 @@ public class WorkflowStep {
 
     public void setChangeable(Boolean changeable) {
         this.changeable = changeable;
+    }
+
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(Boolean repeatable) {
+        this.repeatable = repeatable;
     }
 
     public Integer getMaxRecipients() {
