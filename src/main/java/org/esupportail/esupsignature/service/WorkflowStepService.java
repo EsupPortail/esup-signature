@@ -80,11 +80,12 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean allSignToComplete) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean allSignToComplete) {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
+        workflowStep.setRepeatable(repeatable);
         workflowStep.setAllSignToComplete(allSignToComplete);
     }
 

@@ -351,7 +351,6 @@ public class WorkflowService {
 
     public List<Workflow> getAllWorkflows() {
         List<Workflow> allWorkflows = new ArrayList<>();
-        allWorkflows.addAll(this.getClassesWorkflows());
         allWorkflows.addAll(this.getDatabaseWorkflows());
         return allWorkflows;
     }
