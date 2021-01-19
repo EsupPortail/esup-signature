@@ -85,17 +85,17 @@ public class WorkflowStepService {
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         if(changeable == null) {
-            workflowStep.setChangeable(true);
+            workflowStep.setChangeable(false);
         } else {
             workflowStep.setChangeable(changeable);
         }
         if(repeatable == null) {
-            workflowStep.setRepeatable(true);
+            workflowStep.setRepeatable(false);
         } else {
             workflowStep.setRepeatable(repeatable);
         }
         if(allSignToComplete == null) {
-            workflowStep.setAllSignToComplete(true);
+            workflowStep.setAllSignToComplete(false);
         } else {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
