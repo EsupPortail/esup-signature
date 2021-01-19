@@ -41,6 +41,16 @@
                                 </div>
                                 <div class="form-group">
                                     <label>
+                                        L'utilisateur peut ajouter une étape avant la suivante
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="repeatable"
+                                               th:checked="${workflowStep.repeatable}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
                                         Tous les participants doivent-ils signer ?
                                     </label>
                                     <label class="switch">

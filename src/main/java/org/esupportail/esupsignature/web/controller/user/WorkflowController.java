@@ -57,9 +57,10 @@ public class WorkflowController {
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="description") String description,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
+                                     @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getId();
     }
 

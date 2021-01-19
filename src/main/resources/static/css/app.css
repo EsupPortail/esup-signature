@@ -211,6 +211,9 @@ code {
   display: inline-block;
   width: 60px;
   height: 34px;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
 /* Hide default HTML checkbox */
@@ -872,6 +875,10 @@ float:left;
     -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.form-group {
+    text-align: left;
 }
 
 .form-group.required label:after {
