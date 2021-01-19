@@ -33,8 +33,17 @@ public class LiveWorkflowStepService {
 
     public LiveWorkflowStep createWorkflowStep(Boolean repeatable, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
-        liveWorkflowStep.setRepeatable(repeatable);
-        liveWorkflowStep.setAllSignToComplete(allSignToComplete);
+        if(repeatable == null) {
+            liveWorkflowStep.setRepeatable(false);
+        } else {
+            liveWorkflowStep.setRepeatable(repeatable);
+        }
+
+        if(allSignToComplete == null) {
+            liveWorkflowStep.setAllSignToComplete(false);
+        } else {
+            liveWorkflowStep.setAllSignToComplete(allSignToComplete);
+        }
         liveWorkflowStep.setSignType(signType);
         if(recipientEmails != null && recipientEmails.length > 0) {
             addRecipientsToWorkflowStep(liveWorkflowStep, recipientEmails);

@@ -84,9 +84,21 @@ public class WorkflowStepService {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
-        workflowStep.setChangeable(changeable);
-        workflowStep.setRepeatable(repeatable);
-        workflowStep.setAllSignToComplete(allSignToComplete);
+        if(changeable == null) {
+            workflowStep.setChangeable(true);
+        } else {
+            workflowStep.setChangeable(changeable);
+        }
+        if(repeatable == null) {
+            workflowStep.setRepeatable(true);
+        } else {
+            workflowStep.setRepeatable(repeatable);
+        }
+        if(allSignToComplete == null) {
+            workflowStep.setAllSignToComplete(true);
+        } else {
+            workflowStep.setAllSignToComplete(allSignToComplete);
+        }
     }
 
     @Transactional
