@@ -369,12 +369,28 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="stepRepeatableModalLabel">Confirmer la signature des documents</h5>
+                <h5 class="modal-title" id="stepRepeatableModalLabel">Etape supplémentaire ?</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
+                <p>
+                    Vous pouvez choisir le(s) prochain(s) destinataire(s) de ce document.
+                </p>
+                <p>
+                    Sans modification de votre part,
+                    <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
+                        vous resterez le dernier destinataire de ce document
+                    </span>
+                    <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
+                        le document sera envoyé à :
+                        <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).getRecipients()}">
+                            <span th:text="${recipient.user.firstname + ' ' + recipient.user.name} + ' '"></span>
+                        </th:block>
+                        .
+                    </span>
+                </p>
                 <label for="signType2">Choisir un type de signature</label>
                 <select name="signType" id="signType2" class="form-control">
                     <th:block th:each="signType : ${signTypes}">
@@ -385,7 +401,7 @@
                 <br>
                 <label for="recipientsEmails">Choisir les participants</label>
                 <div class="form-group">
-                    <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                    <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
                     </select>
                 </div>
                 <div class="form-group" id="_allSignToComplete_div_id">
@@ -400,13 +416,22 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler la signature</button>
+                <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
+                        th:value="${signRequest.parentSignBook.id}">
+                    <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
+                        <i class="fas fa-signature"></i> Signer et envoyer au(x) personne(s) sélectionnée(s)
+                    </span>
+                    <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
+                    <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
+                        </span>
+                </button>
                 <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-signature"></i> Signer
+                        <i class="fas fa-signature"></i> Signer sans modification du circuit
                     </span>
                     <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                    <i class="fas fa-check"></i> Viser
+                    <i class="fas fa-check"></i> Viser sans modification du circuit
                         </span>
                 </button>
             </div>

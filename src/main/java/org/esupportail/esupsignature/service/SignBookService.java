@@ -281,6 +281,7 @@ public class SignBookService {
         liveWorkflowStepService.delete(liveWorkflowStep);
     }
 
+    @Transactional
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         if (liveWorkflowStep.getAllSignToComplete() && !workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) {
@@ -488,7 +489,9 @@ public class SignBookService {
         return allSteps;
     }
 
-    public void addLiveStep(SignBook signBook, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType) throws EsupSignatureException {
+    @Transactional
+    public void addLiveStep(Long id, String[] recipientsEmails, int stepNumber, Boolean allSignToComplete, String signType) throws EsupSignatureException {
+        SignBook signBook = this.getById(id);
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         if(stepNumber > currentSetNumber) {
             LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, allSignToComplete, SignType.valueOf(signType), recipientsEmails);

@@ -28,6 +28,7 @@ export class SignUi {
     initListeners() {
         $("#checkRepeatableButton").on('click', e => this.checkRepeatable());
         $("#launchSignButton").on('click', e => this.insertStep());
+        $("#launchAllSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -39,7 +40,7 @@ export class SignUi {
     }
 
     launchSign() {
-        this.signModal.modal('hide');
+        $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
         if(this.signForm) {
@@ -177,6 +178,7 @@ export class SignUi {
             this.signModal.modal('hide');
             $('#stepRepeatableModal').modal('show');
         } else {
+            this.signModal.modal('hide');
             this.launchSign();
         }
     }
@@ -186,7 +188,7 @@ export class SignUi {
         let csrf = this.csrf;
         let data = {"recipientsEmails": $('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected(), "stepNumber": this.currentStepNumber + 1,"allSignToComplete": $('#_allSignToComplete').val(), "signType": $('#signType2').val()}
         $.ajax({
-            url: "/user/add-repeatable-step/?id=" + signBookId + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/signbooks/add-repeatable-step/?id=" + signBookId + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             dataType: 'json',

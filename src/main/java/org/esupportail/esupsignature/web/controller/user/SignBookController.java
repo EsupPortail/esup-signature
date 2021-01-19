@@ -84,9 +84,8 @@ public class SignBookController {
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.addLiveStep(signBook, recipientsEmails, stepNumber, allSignToComplete, signType);
+            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -95,17 +94,16 @@ public class SignBookController {
         return "redirect:/user/signbooks/" + id + "/?form";
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/add-repeatable-step/{id}")
     @ResponseBody
-    public int addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public int addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType) {
-        SignBook signBook = signRequestService.getById(id).getParentSignBook();
         try {
-            signBookService.addLiveStep(signBook, recipientsEmails, stepNumber, allSignToComplete, signType);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmails, stepNumber, allSignToComplete, signType);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;
