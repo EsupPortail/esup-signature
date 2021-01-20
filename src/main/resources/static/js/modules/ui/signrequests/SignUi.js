@@ -192,9 +192,6 @@ export class SignUi {
         step.stepNumber = this.currentStepNumber + 1;
         step.allSignToComplete = $('#_allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signType2Infinite').val();
-
-        let test = JSON.stringify(step);
-
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',

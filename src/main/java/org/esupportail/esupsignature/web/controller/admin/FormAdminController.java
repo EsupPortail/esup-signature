@@ -159,10 +159,10 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
-											  @RequestParam(value = "required", required = false) Boolean required,
-											  @RequestParam(value = "readOnly", required = false) Boolean readOnly,
-											  @RequestParam(value = "prefill", required = false) Boolean prefill,
-											  @RequestParam(value = "search", required = false) Boolean search,
+											  @RequestParam(value = "required", required = false) String required,
+											  @RequestParam(value = "readOnly", required = false) String readOnly,
+											  @RequestParam(value = "prefill", required = false) String prefill,
+											  @RequestParam(value = "search", required = false) String search,
 											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
 											  @RequestParam(value = "valueType", required = false) String valueType,
 											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
@@ -174,17 +174,17 @@ public class FormAdminController {
 		String searchServiceName = "";
 		String searchType = "";
 		String searchReturn = "";
-		if(prefill) {
+		if(Boolean.parseBoolean(prefill)) {
 			extValueServiceName = valueServiceName;
 			extValueType = valueType;
 			extValueReturn = valueReturn;
 		}
-		if(search) {
+		if(Boolean.parseBoolean(search)) {
 			searchServiceName = valueServiceName;
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(id, Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

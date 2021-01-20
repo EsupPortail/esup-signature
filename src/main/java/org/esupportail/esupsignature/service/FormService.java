@@ -302,13 +302,16 @@ public class FormService {
 			}
 		}
 		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).collect(Collectors.toList());
+		List<Field> fieldsOrdered = new LinkedList<>();
 		int i=0;
 		for(Field field : fields) {
 			i++;
 			field.setFillOrder(i);
 			fieldService.updateField(field);
+			fieldsOrdered.add(field);
 		}
-		return fields;
+
+		return fieldsOrdered;
 	}
 
 	private void parseField(Field field, PDField pdField, PDAnnotationWidget pdAnnotationWidget, int page) {
