@@ -3,7 +3,7 @@ import {EventFactory} from "../../utils/EventFactory.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, xPos, yPos, signPageNumber, signImages, userName) {
+    constructor(signType, xPos, yPos, signPageNumber, signImages, userName, signable) {
         super();
         console.info("Starting sign positioning tools");
         this.cross = $('#cross_0');
@@ -55,6 +55,7 @@ export class SignPosition extends EventFactory {
         if(this.signType !== "visa") {
             $(document).ready(e => this.toggleExtraInfos());
         }
+        this.signable = signable;
         this.initListeners();
     }
 
@@ -63,7 +64,7 @@ export class SignPosition extends EventFactory {
         this.initCrossListeners();
         this.initCrossToolsListeners();
         this.addSignButton.on('click', e => this.addSign(e));
-        if(this.getCurrentSignParams().xPos !== 0 || this.getCurrentSignParams().yPos !== 0) {
+        if((this.getCurrentSignParams().xPos !== 0 || this.getCurrentSignParams().yPos !== 0) && this.signable) {
             this.enableConfirmLeaveSign();
             this.confirmEnabled = true;
         }
