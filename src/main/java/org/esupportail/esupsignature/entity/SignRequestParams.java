@@ -37,6 +37,12 @@ public class SignRequestParams {
 
 	private Float signScale = 1F;
 
+	private Integer red = 0;
+
+    private Integer green = 0;
+
+    private Integer blue = 0;
+
     public Long getId() {
         return this.id;
     }
@@ -147,5 +153,29 @@ public class SignRequestParams {
 
     public void setSignScale(Float signScale) {
         this.signScale = signScale;
+    }
+
+    public int getRed() {
+        return red;
+    }
+
+    public void setRed(int red) {
+        this.red = red;
+    }
+
+    public int getGreen() {
+        return green;
+    }
+
+    public void setGreen(int green) {
+        this.green = green;
+    }
+
+    public int getBlue() {
+        return blue;
+    }
+
+    public void setBlue(int blue) {
+        this.blue = blue;
     }
 }

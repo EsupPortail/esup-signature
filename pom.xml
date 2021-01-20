@@ -713,6 +713,11 @@
 			<artifactId>spring-orm</artifactId>
 			<version>5.3.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>spectrum-colorpicker</artifactId>
+			<version>1.8.0</version>
+		</dependency>
 
 	</dependencies>
 	<build>

@@ -15,6 +15,9 @@ export class SignRequestParams {
         this.addName;
         this.addDate;
         this.signScale = 1;
+        this.red = 0;
+        this.green = 0;
+        this.blue = 0;
         Object.assign(this, signRequestParams);
     }
 

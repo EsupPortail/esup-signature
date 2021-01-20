@@ -1,5 +1,7 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
 import {EventFactory} from "../../utils/EventFactory.js";
+import {Color} from "../../utils/Color.js";
+import {Solver} from "../../utils/Solver.js";
 
 export class SignPosition extends EventFactory {
 
@@ -55,6 +57,10 @@ export class SignPosition extends EventFactory {
         if(this.signType !== "visa") {
             $(document).ready(e => this.toggleExtraInfos());
         }
+        $('#color-picker').spectrum({
+            type: "color",
+            change: color => this.changeSignColor(color)
+        });
         this.initListeners();
     }
 
@@ -485,6 +491,38 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().extraHeight = 0;
         this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
         $("#textExtra_" + this.currentSign).remove();
+    }
+
+    hexToRgb(hex) {
+        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+        hex = hex.replace(shorthandRegex, (m, r, g, b) => {
+            return r + r + g + g + b + b;
+        });
+
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+            ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16),
+            ]
+            : null;
+    }
+
+    changeSignColor(color) {
+
+        const rgb = this.hexToRgb(color.toHexString());
+
+        this.getCurrentSignParams().red = rgb[0];
+        this.getCurrentSignParams().green = rgb[1];
+        this.getCurrentSignParams().blue = rgb[2];
+
+        const rgbColor = new Color(rgb[0], rgb[1], rgb[2]);
+        const solver = new Solver(rgbColor);
+        const result = solver.solve();
+
+        this.cross.css('filter', result.filter);
     }
 
 }
