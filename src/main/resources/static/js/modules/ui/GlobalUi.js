@@ -313,6 +313,8 @@ export class GlobalUi {
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: false,
+                allowDeselect: true,
+                placeholder: ' ',
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)

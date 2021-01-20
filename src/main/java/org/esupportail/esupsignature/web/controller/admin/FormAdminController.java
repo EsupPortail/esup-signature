@@ -4,7 +4,6 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -48,9 +47,6 @@ public class FormAdminController {
 	}
 
 	@Resource
-	private DocumentService documentService;
-
-	@Resource
 	private FormService formService;
 
 	@Resource
@@ -66,12 +62,12 @@ public class FormAdminController {
 	private FieldService fieldService;
 
 	@PostMapping()
-	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames) throws IOException {
+	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
 		DocumentIOType documentIOType = null;
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, fieldNames);
+		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, publicUsage, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -79,13 +75,15 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
+		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/show";
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Model model) throws IOException {
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri);
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -163,14 +161,30 @@ public class FormAdminController {
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
 											  @RequestParam(value = "required", required = false) String required,
 											  @RequestParam(value = "readOnly", required = false) String readOnly,
-											  @RequestParam(value = "extValueServiceName", required = false) String extValueServiceName,
-											  @RequestParam(value = "extValueType", required = false) String extValueType,
-											  @RequestParam(value = "extValueReturn", required = false) String extValueReturn,
-											  @RequestParam(value = "searchServiceName", required = false) String searchServiceName,
-											  @RequestParam(value = "searchType", required = false) String searchType,
-											  @RequestParam(value = "searchReturn", required = false) String searchReturn,
+											  @RequestParam(value = "prefill", required = false) String prefill,
+											  @RequestParam(value = "search", required = false) String search,
+											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
+											  @RequestParam(value = "valueType", required = false) String valueType,
+											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
 											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
-		fieldService.updateField(id, Boolean.valueOf(required), Boolean.valueOf(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+
+		String extValueServiceName = "";
+		String extValueType = "";
+		String extValueReturn = "";
+		String searchServiceName = "";
+		String searchType = "";
+		String searchReturn = "";
+		if(Boolean.parseBoolean(prefill)) {
+			extValueServiceName = valueServiceName;
+			extValueType = valueType;
+			extValueReturn = valueReturn;
+		}
+		if(Boolean.parseBoolean(search)) {
+			searchServiceName = valueServiceName;
+			searchType = valueType;
+			searchReturn = valueReturn;
+		}
+		fieldService.updateField(id, Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

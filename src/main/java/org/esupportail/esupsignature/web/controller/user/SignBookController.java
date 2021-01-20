@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -8,14 +9,15 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +40,9 @@ public class SignBookController {
 
     @Resource
     private LogService logService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
     @GetMapping(value = "/{id}")
@@ -79,15 +84,30 @@ public class SignBookController {
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getById(id);
         try {
-            signBookService.addLiveStep(signBook, recipientsEmails, stepNumber, allSignToComplete, signType, authUserEppn);
+            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
         }
 
         return "redirect:/user/signbooks/" + id + "/?form";
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
+    @PostMapping(value = "/add-repeatable-step/{id}")
+    @ResponseBody
+    public int addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
+                                 @PathVariable("id") Long id,
+                                 @RequestBody JsonWorkflowStep step) {
+        try {
+            String[] itemsArray = new String[step.getRecipientsEmails().size()];
+            itemsArray = step.getRecipientsEmails().toArray(itemsArray);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), itemsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
+            return HTTPResponse.SC_OK;
+        } catch (EsupSignatureException e) {
+            return HTTPResponse.SC_SERVER_ERROR;
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -145,7 +165,6 @@ public class SignBookController {
 
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
     public Object addDocumentToNewSignRequestUnique(@ModelAttribute("authUserEppn") String authUserEppn,
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,

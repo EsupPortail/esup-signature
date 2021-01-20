@@ -138,17 +138,21 @@
                         <label for="name" class="col-form-label">Titre</label>
                         <input type="text" id="title" name="title" class="form-control" required>
                     </div>
-                        <div class="form-group">
-                            <label class="col-form-label">Modèle PDF Form</label>
-                            <div class="custom-file">
-                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
-                                       data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
-                                       type="file" required/>
-                                <label class="custom-file-label" for="modelFile" id="inputGroupLabel01">
-                                    Choisir un fichier
-                                </label>
-                            </div>
+                    <div class="form-group">
+                        <label class="col-form-label">Modèle PDF Form</label>
+                        <div class="custom-file">
+                            <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                                   data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
+                                   type="file" required/>
+                            <label class="custom-file-label" for="modelFile" id="inputGroupLabel01">
+                                Choisir un fichier
+                            </label>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="roleName" class="col-form-label">Visibilité publique (diffusion immédiate)</label>
+                        <input type="checkbox" id="publicUsage" name="publicUsage">
+                    </div>
                     <div class="form-group">
                         <label for="roleName" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
                         <input type="text" id="roleName" name="roleName" class="form-control">
@@ -170,13 +174,6 @@
                                         th:text="${preFillType.description}"></option>
                             </th:block>
                         </select>
-                    </div>
-                    <div class="alert alert-info d-none">
-                        Le "code" permet de mettre en lien le formulaire avec un role utilisateur, ceci pour gérer
-                        les droits sur les formulaires.
-                        Ce même code permet aussi de programmer un comportement spécifique pour le pré-remplissable
-                        des champs.
-                        Ex : pour les ordres de mission, mettre "ordre_mission"
                     </div>
                     <div class="form-group">
                         <label for="targetType" class="col-form-label">Type de destination</label>

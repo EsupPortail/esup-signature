@@ -4,9 +4,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class DonutsExtValue implements ExtValue {

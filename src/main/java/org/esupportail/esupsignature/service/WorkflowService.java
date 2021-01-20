@@ -282,7 +282,7 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
@@ -351,7 +351,6 @@ public class WorkflowService {
 
     public List<Workflow> getAllWorkflows() {
         List<Workflow> allWorkflows = new ArrayList<>();
-        allWorkflows.addAll(this.getClassesWorkflows());
         allWorkflows.addAll(this.getDatabaseWorkflows());
         return allWorkflows;
     }
