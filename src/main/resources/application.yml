@@ -172,6 +172,8 @@ security:
             for.esup-signature.admin: ROLE_ADMIN
             for.esup-signature.test: ROLE_USER
         ws-access-authorize-ips: 127.0.0.1
+#        group-mapping-spel:
+#            for.esup-signature.user: "true"
 
 server:
     error:
