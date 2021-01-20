@@ -420,7 +420,7 @@ input:checked + .slider:before {
     z-index: 6;
     min-width: 260px;
     max-width: 260px;
-    min-height: 100vh;
+    height: calc(100vh - 80px);
     background: #FFF;
     overflow-y: auto;
     overflow-x: fragments;

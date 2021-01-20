@@ -394,7 +394,7 @@
                     </span>
                 </p>
                 <label for="signType2">Choisir un type de signature</label>
-                <select name="signType" id="signType2" class="form-control">
+                <select name="signType" id="signType2Infinite" class="form-control">
                     <th:block th:each="signType : ${signTypes}">
                         <option th:value="${signType}"
                                 th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
@@ -411,7 +411,7 @@
                         Tous les participants doivent-ils signer ?
                     </label>
                     <label class="switch">
-                        <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                        <input type="checkbox" name="allSignToComplete" id="_allSignToCompleteInfinite"/>
                         <span class="slider round"></span>
                     </label>
                 </div>
