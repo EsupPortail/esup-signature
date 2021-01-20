@@ -85,7 +85,7 @@ public class SignBookController {
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
         try {
-            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType);
+            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -103,7 +103,7 @@ public class SignBookController {
         try {
             String[] itemsArray = new String[step.getRecipientsEmails().size()];
             itemsArray = step.getRecipientsEmails().toArray(itemsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), itemsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType());
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), itemsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;

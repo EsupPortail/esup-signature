@@ -190,8 +190,8 @@ export class SignUi {
         let step = new Step();
         step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
         step.stepNumber = this.currentStepNumber + 1;
-        step.allSignToComplete = $('#_allSignToComplete').is(':checked');
-        step.signType = $('#signType2').val();
+        step.allSignToComplete = $('#_allSignToCompleteInfinite').is(':checked');
+        step.signType = $('#signType2Infinite').val();
 
         let test = JSON.stringify(step);
 
