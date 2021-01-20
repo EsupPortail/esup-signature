@@ -53,11 +53,11 @@
 <!--                    </a>-->
                     <div class="d-inline-block" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
-                            <a role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
+                            <a id="startWizardButton" role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
                                 style="width: 150px; height: 200px;" data-toggle="modal"
                                 data-target="#newRequest"
-                                th:title="'Circuit : ' + ${workflow.description}"
-                                th:onclick="'$(\'#workflowIFrame\').attr(\'src\', \'/user/wizard/wiz2?workflowId=' + ${workflow.id} +'\');'">
+                                th:attr="data-workflow-id=${workflow.id}"
+                                th:title="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
                                     <i class="fas fa-project-diagram fa-4x"></i>
                                 </div>

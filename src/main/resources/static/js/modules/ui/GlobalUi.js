@@ -86,9 +86,17 @@ export class GlobalUi {
         $(document).ready(e => this.onDocumentLoad());
 
         $("#sendPendingButton").on('click', e => this.checkUserCertificate());
-        // $("#submitSendPending").on('click', e => this.submitSendPending());
+
+        $("#startWizardButton").on('click', function(e) {
+            let iFrame = $('#workflowIFrame');
+            iFrame.attr('src', '/user/wizard/wiz2?workflowId=' + $(this).attr('data-workflow-id'));
+        });
 
         this.bindKeyboardKeys();
+    }
+
+    enableIframe() {
+
     }
 
     checkUserCertificate() {

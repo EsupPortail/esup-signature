@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.LiveWorkflowStepService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +38,6 @@ public class WizardController {
 
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
-    private WorkflowStepService workflowStepService;
 
     @GetMapping(value = "/wiz2", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
