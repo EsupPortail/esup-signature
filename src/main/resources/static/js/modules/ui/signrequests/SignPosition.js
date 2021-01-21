@@ -58,6 +58,7 @@ export class SignPosition extends EventFactory {
         this.signable = signable;
         $('#color-picker').spectrum({
             type: "color",
+            showPaletteOnly: "true",
             change: color => this.changeSignColor(color)
         });
         this.initListeners();
