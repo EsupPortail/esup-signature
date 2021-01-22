@@ -6,7 +6,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 export class CreateDataUi {
 
     constructor(id, action, data, fields, csrf) {
-        console.info("Starting data UI");
+        console.info("Starting data UI for :" + data.id);
         console.log(fields);
         this.data = data;
         if(data) {
@@ -44,11 +44,11 @@ export class CreateDataUi {
             this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
         }
         document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
-        document.getElementById('newData').addEventListener('submit', e => this.launchSave(e));
+        document.getElementById('newData').addEventListener('submit', e => this.launchSave());
     }
 
-    launchSave(e) {
-        e.preventDefault()
+    launchSave() {
+        //e.preventDefault()
         if(this.nextCommand === "none") {
             this.saveData();
         } else {
@@ -97,7 +97,7 @@ export class CreateDataUi {
 
     submitForm() {
         this.nextCommand = "none";
-        $('#realDataSubmit').click();
+        this.launchSave();
     }
 
     simulateSave(command) {
@@ -122,13 +122,12 @@ export class CreateDataUi {
         pdfViewer.dataFields.forEach(function(dataField){
             let savedField = pdfViewer.savedFields.get(dataField.name)
             formData[dataField.name]= savedField;
-            if(dataField.required && (savedField === "" || savedField == null)) {
-                alert("Un champ n'est pas rempli en page " + dataField.page);
-                redirect = false;
-                pdfViewer.renderPage(dataField.page);
-            }
+            // if(dataField.required && (savedField === "" || savedField == null)) {
+            //     alert("Un champ n'est pas rempli en page " + dataField.page);
+            //     redirect = false;
+            //     pdfViewer.renderPage(dataField.page);
+            // }
         })
-
         let dispatcher = this.sseDispatcher;
         if(redirect || this.data.id != null) {
             let json = JSON.stringify(formData);
