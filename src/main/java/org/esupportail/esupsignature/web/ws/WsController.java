@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws;
+package org.esupportail.esupsignature.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +16,9 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.utils.barcode.DdDocService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
+import org.esupportail.esupsignature.web.ws.json.JsonDocuments;
+import org.esupportail.esupsignature.web.ws.json.JsonSignRequestStatus;
+import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
