@@ -154,10 +154,17 @@ public class WizardController {
     @PostMapping(value = "/wiz-save-workflow/{id}")
     public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model) {
         User user = (User) model.getAttribute("user");
-        Workflow workflow = workflowService.initWorkflow(user, id, name);
-        return "redirect:/user/wizard/wizend-workflow/" + workflow.getId();
+        if(!workflowService.isWorkflowExist(name, userEppn)) {
+            Workflow workflow = workflowService.initWorkflow(user, id, name);
+            model.addAttribute("workflow", workflow);
+            return "user/wizard/wizend";
+        } else {
+            Workflow workflow = workflowService.getById(id);
+            model.addAttribute("workflow", workflow);
+            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
+            return "user/wizard/wiz-save-workflow";
+        }
     }
-
 
     @GetMapping(value = "/wizend-workflow/{id}")
     public String wizEndWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {

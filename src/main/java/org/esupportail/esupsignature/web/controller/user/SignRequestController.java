@@ -14,7 +14,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,9 +87,6 @@ public class SignRequestController {
 
     @Resource
     private DocumentService documentService;
-
-    @Resource
-    private FileService fileService;
 
     @Resource
     private OtpService otpService;

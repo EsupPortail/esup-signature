@@ -32,7 +32,7 @@
             <button id="exitWiz" type="button" class="btn btn-secondary float-left">
                 <i class="fas fa-door-open"></i> Fermer sans enregister
             </button>
-            <button id="saveWorkflow" type="button" class="btn btn-success float-right">
+            <button id="saveWorkflow" th:value="${signBook.id}" type="button" class="btn btn-success float-right">
                 <i class="fas fa-save"></i> Enregistrer le circuit
             </button>
         </div>

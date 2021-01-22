@@ -69,6 +69,8 @@ public class SignBookController {
         model.addAttribute("signBook", signBook);
         SignRequest signRequest = signBook.getSignRequests().get(0);
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("logs", signBook.getLogs());
         model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
