@@ -22,7 +22,7 @@ export class WizUi {
         console.info("Start wizard");
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz2?workflowId=' + this.workflowId,
+            url: '/user/wizard/wiz-start-by-docs?workflowId=' + this.workflowId,
             dataType : 'html',
             cache: false,
             success : html => this.initWiz1(html)
@@ -31,10 +31,10 @@ export class WizUi {
 
     startByRecipients() {
         console.info("Start wizard");
-        this.mode = "Workflow";
+        this.mode = "-workflow";
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz4Workflow',
+            url: '/user/wizard/wiz-init-steps-workflow',
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)
@@ -56,7 +56,7 @@ export class WizUi {
         console.log(this.signBookId);
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz4/' + this.signBookId + '?workflowId=' + this.workflowId,
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId,
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)
@@ -69,13 +69,13 @@ export class WizUi {
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz");
         }
-        $("#addNew").on('click', e => this.gotoStepX(false));
-        $("#end").on('click', e => this.gotoStepX(true));
+        $("#addNew").on('click', e => this.gotoAddStep(false));
+        $("#end").on('click', e => this.gotoAddStep(true));
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow());
     }
 
-    gotoStepX(end) {
+    gotoAddStep(end) {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
@@ -85,7 +85,7 @@ export class WizUi {
         let signBookId = this.signBookId;
         console.log(signBookId);
         $.ajax({
-            url: "/user/wizard/wizX"+ this.mode +"/" + signBookId + "?end=" + end + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
@@ -101,15 +101,11 @@ export class WizUi {
             return false;
         }
 
-        // if(!saveWorkflowForm.valid()) {
-        //     // saveWorkflowForm.submit();
-        //     return;
-        // }
         let csrf = this.csrf;
         let signBookId = this.signBookId;
         let name = $("#workflowName").val();
         $.ajax({
-            url: "/user/wizard/wiz5"+ this.mode +"/" + signBookId + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + signBookId + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });
