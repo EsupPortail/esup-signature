@@ -118,17 +118,6 @@ export class CreateDataUi {
         let formData  = new Map();
         console.info("check data name");
         let pdfViewer = this.pdfViewer;
-        // pdfViewer.savedFields.forEach(function (value, key, map){
-        //     formData[key]= value;
-        //     let dataField = pdfViewer.dataFields.filter(obj => {
-        //         return obj.name === key
-        //     })[0];
-        //     if(dataField.required && value === null) {
-        //         alert("Un champ n'est pas rempli en page " + dataField.page);
-        //         redirect = false;
-        //         pdfViewer.renderPage(dataField.page);
-        //     }
-        // })
 
         pdfViewer.dataFields.forEach(function(dataField){
             let savedField = pdfViewer.savedFields.get(dataField.name)

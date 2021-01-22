@@ -1,12 +1,13 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
 import {SseSubscribe} from "../utils/SseSubscribe.js";
 import {CsrfToken} from "../../prototypes/CsrfToken.js";
+import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
     constructor(csrf) {
         console.info("Starting global UI");
-        this.csrf = new CsrfToken(csrf);
+        this.csrf = csrf;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -87,9 +88,22 @@ export class GlobalUi {
 
         $("#sendPendingButton").on('click', e => this.checkUserCertificate());
 
+        let csrf = this.csrf;
+        $("#startWizardCustomButton").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "Demande personnalisée", csrf);
+            wizUi.startByDocs();
+        });
+
+        $(".startWizardWorkflowButton").each(function() {
+            $(this).on('click', function(e) {
+                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), csrf);
+                wizUi.startByDocs();
+            });
+        });
+
         $("#startWizardButton").on('click', function(e) {
-            let iFrame = $('#workflowIFrame');
-            iFrame.attr('src', '/user/wizard/wiz2?workflowId=' + $(this).attr('data-workflow-id'));
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            wizUi.startByRecipients();
         });
 
         this.bindKeyboardKeys();
@@ -101,7 +115,7 @@ export class GlobalUi {
 
     checkUserCertificate() {
         if ($('#signType2').val() === 'certSign') {
-            let csrf = this.csrf;
+            let csrf = new CsrfToken(this.csrf);
             $.ajax({
                 url: "/user/users/check-user-certificate?" + csrf.parameterName + "=" + csrf.token,
                 type: 'POST',

@@ -101,9 +101,9 @@ public class SignBookController {
                                  @PathVariable("id") Long id,
                                  @RequestBody JsonWorkflowStep step) {
         try {
-            String[] itemsArray = new String[step.getRecipientsEmails().size()];
-            itemsArray = step.getRecipientsEmails().toArray(itemsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), itemsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
+            String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
+            recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;
@@ -158,8 +158,8 @@ public class SignBookController {
                                              @PathVariable("name") String name,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
-        String[] ok = {"ok"};
+        SignBook signBook = signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
+        String[] ok = {"" + signBook.getId()};
         return ok;
     }
 
@@ -171,8 +171,8 @@ public class SignBookController {
                                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
         User authUser = (User) model.getAttribute("authUser");
         logger.info("start add documents in " + name);
-        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
-        String[] ok = {"ok"};
+        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
+        String[] ok = {"" + signBook.getId()};
         return ok;
     }
 

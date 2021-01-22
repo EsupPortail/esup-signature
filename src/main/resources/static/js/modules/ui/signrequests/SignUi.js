@@ -190,8 +190,8 @@ export class SignUi {
         let step = new Step();
         step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
         step.stepNumber = this.currentStepNumber + 1;
-        step.allSignToComplete = $('#_allSignToCompleteInfinite').is(':checked');
-        step.signType = $('#signType2Infinite').val();
+        step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
+        step.signType = $('#signTypeInfinite').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',

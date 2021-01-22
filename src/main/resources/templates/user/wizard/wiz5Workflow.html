@@ -1,11 +1,5 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"></head>
-<body>
-<script th:inline="javascript" type="module">
-    import Toast from "../../static/js/modules/ui/Toast.js";
-    new Toast([[${message}]]);
-</script>
 <div class="bs-stepper-header" role="tablist">
     <div class="step" data-target="#test-l-2">
         <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
@@ -40,6 +34,4 @@
         </div>
     </div>
 </form>
-<div th:replace="fragments/message :: message"></div>
-</body>
 </html>

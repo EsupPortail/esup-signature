@@ -1,11 +1,5 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head"></head>
-<body>
-<script th:inline="javascript" type="module">
-    import Toast from "../../static/js/modules/ui/Toast.js";
-    new Toast([[${message}]]);
-</script>
 <div class="bs-stepper-header" role="tablist">
     <div class="step" data-target="#test-l-2">
         <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
@@ -28,22 +22,20 @@
     </div>
 </div>
 <h4 class="d-flex justify-content-center mt-4">Création du circuit terminée</h4>
-<form th:action="'/user/wizard/wiz5/' + ${signBook.id}" method="post">
+<form id="saveWorkflowForm">
     <div class="row">
         <div class="col-lg-12">
-            <label><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
-            <input type="text" name="name" class="form-control" required>
+            <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
+            <input type="submit" id="saveWorkflowSubmit" class="d-none">
+            <input type="text" id="workflowName" name="name" class="form-control required" required>
             <br>
-            <button  th:onclick="'parent.location.href=\'/user/signrequests/' + ${signBook.signRequests.get(0).id} + '\''"
-                    type="button" class="btn btn-secondary float-left">
+            <button id="exitWiz" type="button" class="btn btn-secondary float-left">
                 <i class="fas fa-door-open"></i> Fermer sans enregister
             </button>
-            <button type="submit" class="btn btn-success float-right">
+            <button id="saveWorkflow" type="button" class="btn btn-success float-right">
                 <i class="fas fa-save"></i> Enregistrer le circuit
             </button>
         </div>
     </div>
 </form>
-<div th:replace="fragments/message :: message"></div>
-</body>
 </html>

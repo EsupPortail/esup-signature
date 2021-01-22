@@ -8,6 +8,8 @@ import java.util.List;
 @JsonIgnoreProperties
 public class JsonWorkflowStep {
 
+	private Long workflowId;
+
 	private Integer stepNumber;
 
 	private String description;
@@ -21,6 +23,14 @@ public class JsonWorkflowStep {
 	private String signType = "visa";
 
 	private Boolean allSignToComplete = false;
+
+	public Long getWorkflowId() {
+		return workflowId;
+	}
+
+	public void setWorkflowId(Long workflowId) {
+		this.workflowId = workflowId;
+	}
 
 	public Integer getStepNumber() {
 		return stepNumber;

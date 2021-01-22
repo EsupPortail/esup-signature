@@ -28,9 +28,11 @@
                         <h6>Demander une signature</h6>
                     </a>
 
-                    <a id="newWizard" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
-                       data-target="#wizardModal" style="width: 150px; height: 200px;"
-                       title="Créer une nouvelle demande à l'aide de l'assistant" onclick="$('#wizIframeDemand').attr('src', '/user/wizard/wiz2');">
+                    <a id="startWizardCustomButton" th:if="${!isUserOnSu}"
+                       th:unless="${globalProperties.hideWizard}"
+                       role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
+                       data-target="#wizModalCustom" style="width: 150px; height: 200px;"
+                       title="Créer une nouvelle demande à l'aide de l'assistant">
                         <div class="crop">
                             <span class="fa-stack fa-3x">
                                 <i class="fas fa-paper-plane fa-stack-1x mr-4"></i>
@@ -53,10 +55,10 @@
 <!--                    </a>-->
                     <div class="d-inline-block" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
-                            <a id="startWizardButton" role="button" class="btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
+                            <a role="button" class="startWizardWorkflowButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
                                 style="width: 150px; height: 200px;" data-toggle="modal"
-                                data-target="#newRequest"
-                                th:attr="data-workflow-id=${workflow.id}"
+                                data-target="#wizModalWorkflow"
+                                th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
                                 th:title="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
                                     <i class="fas fa-project-diagram fa-4x"></i>
@@ -115,6 +117,7 @@
 
     <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalLabel" aria-hidden="true">
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -161,7 +164,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="newRequest" tabindex="-1" role="dialog"
+    <div class="modal fade" id="wizModalCustom" tabindex="-1" role="dialog"
          aria-labelledby="#newRequestlabel'" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -172,13 +175,15 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <iframe id="workflowIFrame" frameborder="0" style="width: 100%; height: 600px;"></iframe>
+                    <div id="wizFrameCustom" style="transition: height 1s">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="wizardModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+    <div class="modal fade" id="wizModalWorkflow" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog"
+         aria-labelledby="addSignRequestLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -189,7 +194,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <iframe id="wizIframeDemand" frameborder="0" style="width: 100%; height: 600px;"></iframe>
+                    <div th:id="wizFrameWorkflow" style="transition: height 1s"></div>
                 </div>
             </div>
         </div>

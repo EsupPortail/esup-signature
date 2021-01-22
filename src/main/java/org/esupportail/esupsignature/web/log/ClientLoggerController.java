@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.log;
+package org.esupportail.esupsignature.web.log;
 
 import org.esupportail.esupsignature.web.controller.user.UserController;
 import org.esupportail.esupsignature.web.controller.ws.json.JsonClientSideError;
