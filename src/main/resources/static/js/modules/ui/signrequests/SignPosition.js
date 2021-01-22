@@ -35,6 +35,13 @@ export class SignPosition extends EventFactory {
         this.signExtraButton = $('#signExtra_0');
         this.signExtraOnTopButton = $('#signExtraOnTop_0');
         this.signDropButton = $('#signDrop_0');
+        this.signColorPicker = $('#signColorPicker_0');
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            change: color => this.changeSignColor(color)
+        });
         this.addSignButton = $('#addSignButton');
         if(xPos !== 0 && yPos !== 0) {
             this.updateCrossPosition();
@@ -56,12 +63,6 @@ export class SignPosition extends EventFactory {
             $(document).ready(e => this.toggleExtraInfos());
         }
         this.signable = signable;
-        $('#color-picker').spectrum({
-            type: "color",
-            showPaletteOnly: true,
-            hideAfterPaletteSelect: true,
-            change: color => this.changeSignColor(color)
-        });
         this.initListeners();
     }
 
@@ -91,9 +92,20 @@ export class SignPosition extends EventFactory {
         this.signExtraButton.on('click', e => this.toggleExtraInfos());
         this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
         this.signDropButton.on('click', e => this.removeSign(e));
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            change: color => this.changeSignColor(color)
+        });
     }
 
     unbindCrossToolsListeners() {
+        $('.sp-replacer').each(function (){
+            $(this).remove();
+        });
+        this.signColorPicker.spectrum('destroy');
+        this.signColorPicker.hide();
         this.signZoomOutButton.unbind();
         this.signZoomInButton.unbind();
         this.signNextImageButton.unbind();
@@ -101,10 +113,12 @@ export class SignPosition extends EventFactory {
         this.signExtraButton.unbind();
         this.signExtraOnTopButton.unbind();
         this.signDropButton.unbind();
+
+
     }
 
     getCurrentSignParams() {
-        return this.signRequestParamses.get(this.currentSign + "");
+        return this.signRequestParamses.get(this.currentSign);
     }
 
     getUiXpos() {
@@ -140,7 +154,7 @@ export class SignPosition extends EventFactory {
         okSign.children().removeClass("anim-border");
         okSign.appendTo(this.pdf);
         okSign.on("click", e => this.switchSignToTarget(e));
-        let currentSign = Array.from(this.signRequestParamses.keys())[this.signRequestParamses.size - 1] + 1;
+        let currentSign = (parseInt(Array.from(this.signRequestParamses.keys())[this.signRequestParamses.size - 1]) + 1) + "";
         this.signRequestParamses.set(currentSign + "", signRequestParams);
         this.currentSign = currentSign;
         this.updateCrossPosition();
@@ -153,13 +167,27 @@ export class SignPosition extends EventFactory {
             $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
         });
         this.cross.children().children().each(function (e) {
-            $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+            if($(this).attr("id")) {
+                $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+            }
         });
+        $('.sp-replacer').each(function (){
+            $(this).remove();
+        });
+        this.signColorPicker.spectrum('destroy');
+        this.signColorPicker.hide();
         this.signZoomOutButton = $('#signZoomOut_' + currentSign);
         this.signZoomInButton = $('#signZoomIn_' + currentSign);
         this.signNextImageButton = $('#signNextImage_' + currentSign);
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
+        this.signColorPicker = $('#signColorPicker_' + currentSign);
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            change: color => this.changeSignColor(color)
+        });
         this.addSignButton.attr("disabled", "disabled");
         this.hideButtons();
         let dateButton = $('#dateButton');
@@ -196,6 +224,8 @@ export class SignPosition extends EventFactory {
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
         this.signDropButton = $('#signDrop_' + currentSign);
+        this.signDropButton = $('#signDrop_' + currentSign);
+        this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.initCrossToolsListeners();
     }
 
