@@ -9,10 +9,10 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
+                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';" class="bgfilter"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseout="this.style.backgroundColor= 'rgba(0, 255, 0, .0)';"
-                     th:style="'display: none;background-repeat: no-repeat; background-position: left bottom; background-size: ' + ${signWidth} + 'px; width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px; line-height: ' + ${signHeight} + 'px; text-align: center;z-index:4;pointer-events: auto;cursor: move;'">
+                     onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"
+                     style="display: none;z-index:4;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
                     <div id="crossTools_0" class="badge badge-success position-absolute d-none" style="left: 0px; top: -45px;
                         z-index: 3; opacity: .9;user-select: none;
                         -moz-user-select: none;
@@ -54,6 +54,7 @@
                                 style="z-index: 3;">
                             <i class="fas fa-trash-alt"></i>
                         </button>
+                        <input id="signColorPicker_0" value='#000000'/>
                     </div>
                     <div id="borders_0" class="anim-border"
                          th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>

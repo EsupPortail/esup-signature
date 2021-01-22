@@ -40,9 +40,8 @@
             <div id="addButton" th:unless="${data.status == null}" class="fixed-action-btns active">
                 <ul class="">
                     <li>
-                        <a id="sendModalButton" href="#" role="button" title="Démarrer la procédure"
+                        <a id="sendModalButton" title="Démarrer la procédure"
                            th:if="${data.signBook == null || data.signBook.signRequests.size() == 0}" type="button"
-                           data-toggle="modal" data-target="#sendModal"
                            class="btn-lg btn-floating bg-success wave-effect">
                             <i class="fas fa-play"></i></a>
                     </li>

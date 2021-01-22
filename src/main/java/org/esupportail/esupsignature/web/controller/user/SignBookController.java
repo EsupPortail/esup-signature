@@ -11,8 +11,8 @@ import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -69,6 +69,8 @@ public class SignBookController {
         model.addAttribute("signBook", signBook);
         SignRequest signRequest = signBook.getSignRequests().get(0);
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(signRequest.getId()).get(0));
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("logs", signBook.getLogs());
         model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
@@ -101,9 +103,9 @@ public class SignBookController {
                                  @PathVariable("id") Long id,
                                  @RequestBody JsonWorkflowStep step) {
         try {
-            String[] itemsArray = new String[step.getRecipientsEmails().size()];
-            itemsArray = step.getRecipientsEmails().toArray(itemsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), itemsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
+            String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
+            recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;
@@ -158,8 +160,8 @@ public class SignBookController {
                                              @PathVariable("name") String name,
                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents in " + name);
-        signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
-        String[] ok = {"ok"};
+        SignBook signBook = signBookService.addDocsInNewSignBookGrouped(name, multipartFiles, authUserEppn);
+        String[] ok = {"" + signBook.getId()};
         return ok;
     }
 
@@ -171,8 +173,8 @@ public class SignBookController {
                                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
         User authUser = (User) model.getAttribute("authUser");
         logger.info("start add documents in " + name);
-        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
-        String[] ok = {"ok"};
+        SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
+        String[] ok = {"" + signBook.getId()};
         return ok;
     }
 

@@ -19,7 +19,7 @@ export class WorkspacePdf {
             this.currentSignRequestParams[0].yPos,
             this.currentSignRequestParams[0].signPageNumber,
             signImages,
-            userName);
+            userName, signable);
         if(this.isPdf) {
             this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         }

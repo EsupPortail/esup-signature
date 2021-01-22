@@ -1,9 +1,11 @@
 import {DocumentPreview} from "../../prototypes/DocumentPreview.js";
 import {CsrfToken} from "../../prototypes/CsrfToken.js";
+import {EventFactory} from "./EventFactory.js";
 
-export default class FilesInput {
+export default class FilesInput extends EventFactory {
 
     constructor(input, workflowName, name, documents, readOnly, csrf, signRequestId) {
+        super();
         console.info("enable complete file input for : " + name);
         this.input = input;
         this.name = name;
@@ -44,8 +46,7 @@ export default class FilesInput {
         let urls = [];
         let previews = [];
         let type = 'other';
-        let csrfParameterName = this.csrf.parameterName;
-        let csrfToken = this.csrf.token;
+        let csrf = this.csrf
         if (documents != null) {
             documents.forEach(function (document) {
                 urls.push("/user/signrequests/get-file/" + document.id);
@@ -68,7 +69,7 @@ export default class FilesInput {
                     document.size,
                     document.contentType,
                     document.fileName,
-                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrfParameterName + "=" + csrfToken,
+                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token,
                     document.id,
                     "/user/signrequests/get-file/" + document.id,
                     document.fileName
@@ -151,12 +152,14 @@ export default class FilesInput {
     fileUpload() {
         console.info("file upload");
         this.input.fileinput('upload');
-        this.input.on('filebatchuploadsuccess', function(event, previewId, index, fileId) {
+        let self = this;
+        this.input.on('filebatchuploadsuccess', function(event, data) {
             console.info("submit form");
-            $('#wiz2Form').submit();
+            self.fireEvent("uploaded", data.response);
         });
-
     }
+
+
 
     checkUniqueFile() {
         if(this.input.fileinput('getFilesCount') > 1) {
