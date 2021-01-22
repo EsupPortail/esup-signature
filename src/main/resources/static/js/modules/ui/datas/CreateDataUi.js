@@ -43,6 +43,9 @@ export class CreateDataUi {
             this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
             this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
         }
+        if (document.getElementById('sendModalButton') != null) {
+            document.getElementById('sendModalButton').addEventListener('click', e => this.checkForm());
+        }
         document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
         document.getElementById('newData').addEventListener('submit', e => this.launchSave());
     }
@@ -163,6 +166,27 @@ export class CreateDataUi {
     startRender() {
         this.pdfViewer.renderPage(1);
         this.pdfViewer.adjustZoom();
+    }
+
+    checkForm() {
+        let formData  = new Map();
+        console.info("check data name");
+        let pdfViewer = this.pdfViewer;
+        let openModal = true
+        pdfViewer.dataFields.forEach(function(dataField){
+            let savedField = pdfViewer.savedFields.get(dataField.name)
+            formData[dataField.name]= savedField;
+            if(dataField.required && (savedField === "" || savedField == null)) {
+                alert("Un champ n'est pas rempli en page " + dataField.page);
+                openModal = false;
+                pdfViewer.renderPage(dataField.page);
+            }
+        })
+        if (openModal) {
+            $('#sendModal').modal('show');
+        } else {
+            $('#sendModal').modal('hide');
+        }
     }
 
 }
