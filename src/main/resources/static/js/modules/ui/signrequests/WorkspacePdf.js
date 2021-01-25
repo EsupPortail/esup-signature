@@ -344,7 +344,7 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
-        $('#workspace').toggleClass('alert-success alert-secondary');
+        // $('#workspace').toggleClass('alert-secondary');
         $(".circle").each(function( index ) {
             $(this).hide();
         });
@@ -367,7 +367,7 @@ export class WorkspacePdf {
 
     disableAllModes() {
         //this.mode = 'sign';
-        $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
+        $('#workspace').removeClass('alert-danger').removeClass('alert-warning');
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');

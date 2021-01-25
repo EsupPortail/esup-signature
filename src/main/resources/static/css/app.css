@@ -463,7 +463,6 @@ input:checked + .slider:before {
     z-index: 5;
     position: fixed;
     padding-left: 10px;
-    border-bottom: 1px solid #ebebeb;
 }
 
 .breadcrumb {
@@ -803,17 +802,18 @@ float:left;
 
 .nav-tabs {
     border-bottom : 1px solid #000000;
-    margin-bottom: 5px;
 }
 
 .nav-tabs .nav-link {
-    border-color: #dee2e6 !important;
+    color: #6c757d;
+    border-color: #6c757d !important;
     border-bottom : 1px solid #000000 !important;
     /*background-color: #dee2e6;*/
 }
 
-.nav-tabs .nav-link.active {
-    border-color: #000 #000 #fff !important;
+.nav-tabs .nav-link.current {
+    color: black;
+    border-color: #000 #000 #e2e3e5 #000 !important;
 
 }
 
