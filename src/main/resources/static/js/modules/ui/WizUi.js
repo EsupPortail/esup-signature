@@ -39,6 +39,7 @@ export class WizUi {
                     });
                 }
                 this.modal.modal('hide');
+                this.modal.unbind();
             } else {
                 this.modal.modal('show');
             }

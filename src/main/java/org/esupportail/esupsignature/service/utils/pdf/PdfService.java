@@ -182,14 +182,8 @@ public class PdfService {
     public List<String> getSignatureStrings(User user, SignType signType, Date newDate, DateFormat dateFormat) throws IOException {
         List<String> addText = new ArrayList<>();
         if(signType.equals(SignType.visa)) {
-            addText.add("Visa\n");
             addText.add("Visé par " + user.getFirstname() + " " + user.getName() + "\n");
         } else {
-            if(signType.equals(SignType.pdfImageStamp)) {
-                addText.add("Signature calligraphique\n");
-            } else {
-                addText.add("Signature électronique\n");
-            }
             addText.add("Signé par " + user.getFirstname() + " " + user.getName() + "\n");
         }
         addText.add("Le " + dateFormat.format(newDate));

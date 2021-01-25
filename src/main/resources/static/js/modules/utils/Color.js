@@ -2,7 +2,6 @@ export class Color {
 
 
     static changeColInUri(data, colfrom, colto) {
-
         return new Promise((resolve, reject) => {
             let img = document.createElement("img");
             img.onload = function() {
