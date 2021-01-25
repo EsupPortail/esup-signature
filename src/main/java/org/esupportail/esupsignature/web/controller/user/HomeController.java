@@ -61,6 +61,8 @@ public class HomeController {
     @Resource
     private MessageService messageService;
 
+    @Resource UserService userService;
+
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         User authUser = (User) model.getAttribute("authUser");
@@ -83,6 +85,7 @@ public class HomeController {
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+            model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");

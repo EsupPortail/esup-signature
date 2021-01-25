@@ -16,7 +16,7 @@
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
     import {SignRequestHelp} from "/static/js/modules/help/SignRequestHelp.js";
 
-    let help = new SignRequestHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
+    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
 
     let signable = [[${signable}]];
@@ -170,14 +170,13 @@
                 </div>
                 <nav class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
                     <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-                        <li class="nav-item overflow-hidden"
-                            th:classappend="${nbSignRequestInSignBookParent > 1} ? 'file-tab'">
-                            <a class="nav-link"
-                               th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'text-success' : 'bg-danger text-white')}"
+                        <li class="nav-item overflow-hidden" th:classappend="${nbSignRequestInSignBookParent > 1} ? 'file-tab'">
+                            <a class="nav-link text-black" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
                                th:href="'/user/signrequests/' + ${signRequestTab.id}"
                                th:title="${signRequestTab.title}">
-                                <div class="truncate"><i class="fas fa-file"></i>&nbsp;
-                                    <span th:text="${signRequestTab.title}"></span></div>
+                                <div class="truncate">
+                                    <i th:class="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}? 'fas fa-file-signature' : 'fas fa-file'"></i>&nbsp;<span th:text="${signRequestTab.title}"></span>
+                                </div>
                             </a>
                         </li>
                     </th:block>

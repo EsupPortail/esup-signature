@@ -73,10 +73,6 @@ export class SignPosition extends EventFactory {
         this.initCrossListeners();
         this.initCrossToolsListeners();
         this.addSignButton.on('click', e => this.addSign(e));
-        if((this.getCurrentSignParams().xPos !== 0 || this.getCurrentSignParams().yPos !== 0) && this.signable) {
-            this.enableConfirmLeaveSign();
-            this.confirmEnabled = true;
-        }
     }
 
     initCrossListeners() {
@@ -436,9 +432,12 @@ export class SignPosition extends EventFactory {
         this.posY = window.scrollY;
         this.pdf.css('pointerEvents', "auto");
         $('body').addClass('disable-div-selection cursor-move');
-
         this.pointItEnable = true;
         this.hideButtons();
+        if(!this.confirmEnabled && this.signable) {
+            this.enableConfirmLeaveSign();
+            this.confirmEnabled = true;
+        }
     }
 
     hideButtons() {
