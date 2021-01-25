@@ -87,11 +87,11 @@ export class HomeUi {
         this.noFilterButton.addClass('btn-light');
     }
 
-    activeHorizontalScrolling(event){
+    activeHorizontalScrolling(e){
         if(!this.menuToggled) {
-            event.preventDefault();
-            var delta = Math.max(-1, Math.min(1, (event.originalEvent.wheelDelta || -event.originalEvent.detail)));
-            $(this).scrollLeft($(this).scrollLeft() - (delta * 100));
+            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
+            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
+            e.preventDefault();
         }
     }
 
