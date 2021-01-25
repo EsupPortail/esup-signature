@@ -6,7 +6,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 export class WorkspacePdf {
 
     constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields) {
-        console.info("Starting workspace UI ");
+        console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
