@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

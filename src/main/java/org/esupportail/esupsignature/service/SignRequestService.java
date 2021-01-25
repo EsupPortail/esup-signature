@@ -35,7 +35,7 @@ import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -591,11 +591,11 @@ public class SignRequestService {
 	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
-			if (!UserType.external.equals(recipientUser.getUserType())
-					&& !recipientUser.getEppn().equals(userEppn)
-					&& (recipientUser.getEmailAlertFrequency() == null
-						|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
-						|| userService.checkEmailAlert(recipientUser))) {
+			if (!UserType.external.equals(recipientUser.getUserType()) 
+			&& !recipientUser.getEppn().equals(userEppn) 
+			&& (recipientUser.getEmailAlertFrequency() == null 
+			|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) 
+			|| userService.checkEmailAlert(recipientUser))) {
 				sendSignRequestEmailAlert(signRequest, recipientUser, data);
 			}
 		}

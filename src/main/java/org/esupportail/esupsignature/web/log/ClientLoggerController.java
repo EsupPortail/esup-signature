@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.log;
 
 import org.esupportail.esupsignature.web.controller.user.UserController;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonClientSideError;
+import org.esupportail.esupsignature.web.ws.json.JsonClientSideError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

@@ -72,7 +72,7 @@ export class WizUi {
         $("#addNew").on('click', e => this.gotoAddStep(false));
         $("#end").on('click', e => this.gotoAddStep(true));
         $("#exitWiz").on('click', e => this.exit());
-        $("#saveWorkflow").on('click', e => this.saveWorkflow());
+        $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
     }
 
     gotoAddStep(end) {
@@ -93,7 +93,7 @@ export class WizUi {
         });
     }
 
-    saveWorkflow() {
+    saveWorkflow(e) {
         let saveWorkflowForm = $("#saveWorkflowForm");
         if (saveWorkflowForm.find('.required').filter(function(){ return this.value === '' }).length > 0) {
             event.preventDefault();
@@ -102,10 +102,9 @@ export class WizUi {
         }
 
         let csrf = this.csrf;
-        let signBookId = this.signBookId;
         let name = $("#workflowName").val();
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + signBookId + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + $("#elementId").val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });

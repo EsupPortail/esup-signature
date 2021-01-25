@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws;
+package org.esupportail.esupsignature.web.ws;
 
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;

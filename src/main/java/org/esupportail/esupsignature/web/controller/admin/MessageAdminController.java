@@ -20,7 +20,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.service.MessageService;
 import org.esupportail.esupsignature.service.event.EventService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
