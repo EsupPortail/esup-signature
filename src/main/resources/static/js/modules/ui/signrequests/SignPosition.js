@@ -343,16 +343,10 @@ export class SignPosition extends EventFactory {
 
     updateScale(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
-        $('div[id^="sign_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
+        $('div[id^="cross_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
         this.currentScale = scale;
         this.updateCrossPosition();
     }
-    //
-    // updateSignButtons() {
-    //     console.debug("update buttons");
-    //     this.crossTools.css('left', 0  + "px");
-    //     this.crossTools.css('top', -45 + "px");
-    // }
 
     updateCrossPosition() {
         console.debug("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
@@ -366,15 +360,21 @@ export class SignPosition extends EventFactory {
     }
 
     updateOtherSignPosition(sign, scale) {
+        let id = $(sign).attr('id').split("_")[1];
+        let cross = $("#cross_" + id);
         let newTop = parseInt($(sign).css("top"), 10) / this.currentScale * scale;
         let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
-        $(sign).css('top', newTop + "px");
-        $(sign).css('left', newLeft + "px");
+        cross.css('top', newTop + "px");
+        cross.css('left', newLeft + "px");
+
+        let borders  = $("#borders_" + id);
         let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
         let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
-        $(sign).css('width', newWidth + "px");
-        $(sign).css('height', newHeight + "px");
-        $(sign).css('background-size', newWidth);
+        cross.css('width', newWidth + "px");
+        cross.css('height', newHeight + "px");
+        cross.css('background-size', newWidth);
+        borders.css('width', newWidth + "px");
+        borders.css('height', newHeight + "px");
 
     }
 
