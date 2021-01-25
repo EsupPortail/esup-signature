@@ -67,7 +67,7 @@ public class HomeController {
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
             if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
-                final Context ctx = new Context(Locale.FRENCH);
+                Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
                 ctx.setVariable("splashMessage", true);
                 Message splashMessage = new Message();

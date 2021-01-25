@@ -5,7 +5,6 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
-
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
 </script>

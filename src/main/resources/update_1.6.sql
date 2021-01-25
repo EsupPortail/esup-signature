@@ -9,6 +9,7 @@ BEGIN
         END LOOP ;
     ALTER TABLE data DROP COLUMN create_by;
     ALTER TABLE data DROP COLUMN owner;
+    UPDATE sign_request_params set blue = 0, green = 0, red = 0;
 END
 $BODY$
     LANGUAGE plpgsql;

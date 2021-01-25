@@ -68,10 +68,9 @@
                             <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Vue manager</span>
                         </a>
                         <div th:if="${formManaged.size() > 0}" class="dropdown-divider"></div>
-                        <a th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
-                           data-target="#wizardWorkflowModal"
-                           title="Créez un nouveau circuit à l'aide de l'assistant"
-                           onclick="$('#wizIframe').attr('src', '/user/wizard/wiz4Workflow');">
+                        <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
+                           data-target="#wizModal"
+                           title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fas fa-magic"></i> Assistant de création de circuit
                         </a>
 <!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
@@ -311,7 +310,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="wizardWorkflowModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+<div class="modal fade" id="wizModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
@@ -322,7 +321,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <iframe id="wizIframe" frameborder="0" style="width: 100%; height: 600px;"></iframe>
+                <div id="wizFrame" style="width: 100%; height: 600px;"></div>
             </div>
         </div>
     </div>
@@ -363,12 +362,12 @@
                             <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
                             </select>
                         </div>
-                        <div class="form-group" id="_allSignToComplete_div_id">
-                            <label for="_allSignToComplete">
+                        <div class="form-group" id="allSignToComplete_div_id">
+                            <label for="allSignToComplete">
                                 Tous les participants doivent-ils signer ?
                             </label>
                             <label class="switch">
-                                <input type="checkbox" name="allSignToComplete" id="_allSignToComplete"/>
+                                <input type="checkbox" name="allSignToComplete" id="allSignToComplete"/>
                                 <span class="slider round"></span>
                             </label>
                         </div>

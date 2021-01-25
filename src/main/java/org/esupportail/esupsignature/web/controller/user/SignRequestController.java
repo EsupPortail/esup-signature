@@ -14,9 +14,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.mail.MailService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -89,9 +87,6 @@ public class SignRequestController {
 
     @Resource
     private DocumentService documentService;
-
-    @Resource
-    private FileService fileService;
 
     @Resource
     private OtpService otpService;
@@ -178,17 +173,12 @@ public class SignRequestController {
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
-            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-        }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
         model.addAttribute("signRequest", signRequest);
-
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn) && signRequest.getOriginalDocuments().size() > 0) {
-            signRequest.setSignable(true);
-        }
+        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";

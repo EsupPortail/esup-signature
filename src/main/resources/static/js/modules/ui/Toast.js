@@ -31,6 +31,9 @@ export default class Toast {
 
     launch(message) {
         console.info("display toast : " + message.type + " " + message.text);
+        $(".toast").each(function(e) {
+            $(this).toast('hide');
+        })
         let toast = $("#toast-" + message.type);
         let toastMessage = $("#message-" + message.type);
         if(message.type === "custom") {

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws;
+package org.esupportail.esupsignature.web.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,15 +11,14 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.utils.barcode.DdDocService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonDocuments;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonSignRequestStatus;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonWorkflowStep;
+import org.esupportail.esupsignature.web.ws.json.JsonDocuments;
+import org.esupportail.esupsignature.web.ws.json.JsonSignRequestStatus;
+import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -143,13 +142,13 @@ public class WsController {
     @ResponseBody
     @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HttpStatus> addWorkflowStep(@ModelAttribute("userEppn") String userEppn, @RequestParam String name,
-                                  @RequestParam String jsonWorkflowStepString) throws IOException, EsupSignatureUserException {
+                                  @RequestParam String jsonWorkflowStepString) throws IOException {
         SignBook signBook = signBookRepository.findByName(name).get(0);
         ObjectMapper mapper = new ObjectMapper();
         JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
         int level = jsonWorkflowStep.getSignLevel();
         SignType signType = signRequestService.getSignTypeByLevel(level);
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientEmails().stream().toArray(String[]::new));
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientsEmails().stream().toArray(String[]::new));
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         return new ResponseEntity<>(HttpStatus.OK);
     }

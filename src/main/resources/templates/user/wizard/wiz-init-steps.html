@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div id="stepper1" class="bs-stepper linear">
+    <div class="bs-stepper-header" role="tablist">
+        <div class="step" data-target="#test-l-2">
+            <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
+            <span class="bs-stepper-label">Copie des fichiers</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step active" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
+            <span class="bs-stepper-label">Création du circuit</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
+            <span class="bs-stepper-label">Sauvegarde</span>
+        </div>
+        <div class="bs-stepper-line"></div>
+        <div class="step" data-target="#test-l-3">
+            <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
+            <span class="bs-stepper-label">Fin</span>
+        </div>
+    </div>
+</div>
+<h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape&nbsp;<span th:text="${signBook.liveWorkflow.liveWorkflowSteps.size() + 1}"></span></h4>
+<div class="col-12">
+    <label for="recipientsEmailsWiz">Choisir les participants</label>
+    <select name="recipientsEmails" id="recipientsEmailsWiz" size="5" multiple="multiple" required="required">
+    </select>
+    <br/><br/>
+    <label>
+        Tous les participants doivent-ils signer ?
+    </label>
+    <label class="switch">
+        <input type="checkbox" id="allSignToCompleteWiz" name="allSignToComplete"/>
+        <span class="slider round"></span>
+    </label>
+    <br/><br/>
+    <label>Type de signature :</label>
+    <select id="signTypeWiz" name="signType" class="form-control">
+        <th:block th:each="signType : ${signTypes}">
+            <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+        </th:block>
+    </select>
+</div>
+<div class="inline-flex">
+<button th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" type="button" class="btn btn-success m-1" >
+    <i class="fas fa-angle-left"></i> Précédent
+</button>
+<button type="button" id="addNew" name="addNew" value="true" class="btn btn-primary float-right m-1">
+    <i class="fas fa-save"></i> Enregistrer l'étape
+</button>
+<button formnovalidate id="end" name="end" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-right m-1">
+    <i class="fas fa-flag-checkered"></i> Terminer
+</button>
+</div>
+</html>

@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -123,10 +123,11 @@ public class WorkflowAdminController {
 									 @PathVariable("step") Integer step,
 									 @RequestParam(name="signType") SignType signType,
 									 @RequestParam(name="description") String description,
+									 @RequestParam(name="repeatable", required = false) Boolean repeatable,
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
 		return "redirect:/admin/workflows/" + id;
 	}
 

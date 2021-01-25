@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws.json;
+package org.esupportail.esupsignature.web.ws.json;
 
 import java.util.ArrayList;
 import java.util.List;

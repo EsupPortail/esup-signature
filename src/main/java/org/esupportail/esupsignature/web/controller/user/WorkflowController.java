@@ -5,7 +5,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,9 +57,10 @@ public class WorkflowController {
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="description") String description,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
+                                     @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, allSignToComplete);
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
         return "redirect:/user/workflows/" + workflow.getId();
     }
 
@@ -95,14 +96,20 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
-
-
     @DeleteMapping(value = "/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
         return "redirect:/";
+    }
+
+    @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
+    @ResponseBody
+    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Workflow workflow = workflowService.getById(id);
+        workflowService.delete(workflow);
     }
 
 }

@@ -21,6 +21,8 @@ public class LiveWorkflowStep {
 
     private Boolean allSignToComplete = false;
 
+    private Boolean repeatable = false;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -54,6 +56,14 @@ public class LiveWorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(Boolean repeatable) {
+        this.repeatable = repeatable;
     }
 
     public SignType getSignType() {

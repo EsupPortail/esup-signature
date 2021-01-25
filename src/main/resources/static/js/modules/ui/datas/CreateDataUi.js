@@ -6,7 +6,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 export class CreateDataUi {
 
     constructor(id, action, data, fields, csrf) {
-        console.info("Starting data UI");
+        console.info("Starting data UI for :" + data.id);
         console.log(fields);
         this.data = data;
         if(data) {
@@ -43,12 +43,15 @@ export class CreateDataUi {
             this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
             this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
         }
+        if (document.getElementById('sendModalButton') != null) {
+            document.getElementById('sendModalButton').addEventListener('click', e => this.checkForm());
+        }
         document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
-        document.getElementById('newData').addEventListener('submit', e => this.launchSave(e));
+        document.getElementById('newData').addEventListener('submit', e => this.launchSave());
     }
 
-    launchSave(e) {
-        e.preventDefault()
+    launchSave() {
+        //e.preventDefault()
         if(this.nextCommand === "none") {
             this.saveData();
         } else {
@@ -97,7 +100,7 @@ export class CreateDataUi {
 
     submitForm() {
         this.nextCommand = "none";
-        $('#realDataSubmit').click();
+        this.launchSave();
     }
 
     simulateSave(command) {
@@ -118,28 +121,16 @@ export class CreateDataUi {
         let formData  = new Map();
         console.info("check data name");
         let pdfViewer = this.pdfViewer;
-        // pdfViewer.savedFields.forEach(function (value, key, map){
-        //     formData[key]= value;
-        //     let dataField = pdfViewer.dataFields.filter(obj => {
-        //         return obj.name === key
-        //     })[0];
-        //     if(dataField.required && value === null) {
-        //         alert("Un champ n'est pas rempli en page " + dataField.page);
-        //         redirect = false;
-        //         pdfViewer.renderPage(dataField.page);
-        //     }
-        // })
 
         pdfViewer.dataFields.forEach(function(dataField){
             let savedField = pdfViewer.savedFields.get(dataField.name)
             formData[dataField.name]= savedField;
-            if(dataField.required && (savedField === "" || savedField == null)) {
-                alert("Un champ n'est pas rempli en page " + dataField.page);
-                redirect = false;
-                pdfViewer.renderPage(dataField.page);
-            }
+            // if(dataField.required && (savedField === "" || savedField == null)) {
+            //     alert("Un champ n'est pas rempli en page " + dataField.page);
+            //     redirect = false;
+            //     pdfViewer.renderPage(dataField.page);
+            // }
         })
-
         let dispatcher = this.sseDispatcher;
         if(redirect || this.data.id != null) {
             let json = JSON.stringify(formData);
@@ -175,6 +166,27 @@ export class CreateDataUi {
     startRender() {
         this.pdfViewer.renderPage(1);
         this.pdfViewer.adjustZoom();
+    }
+
+    checkForm() {
+        let formData  = new Map();
+        console.info("check data name");
+        let pdfViewer = this.pdfViewer;
+        let openModal = true
+        pdfViewer.dataFields.forEach(function(dataField){
+            let savedField = pdfViewer.savedFields.get(dataField.name)
+            formData[dataField.name]= savedField;
+            if(dataField.required && (savedField === "" || savedField == null)) {
+                alert("Un champ n'est pas rempli en page " + dataField.page);
+                openModal = false;
+                pdfViewer.renderPage(dataField.page);
+            }
+        })
+        if (openModal) {
+            $('#sendModal').modal('show');
+        } else {
+            $('#sendModal').modal('hide');
+        }
     }
 
 }

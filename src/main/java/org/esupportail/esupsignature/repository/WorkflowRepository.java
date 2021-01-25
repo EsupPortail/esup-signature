@@ -17,4 +17,5 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long>, Work
     List<Workflow> findByManagersContains(@Param("email") String email);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
     Long countByName(String name);
+    Long countByNameAndCreateByEppn(String name, String userEppn);
 }

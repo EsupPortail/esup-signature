@@ -99,7 +99,7 @@ public class WorkflowService {
     public void copyClassWorkflowsIntoDatabase() throws EsupSignatureException {
         for (Workflow classWorkflow : getClassesWorkflows()) {
             logger.info("workflow class found : " + classWorkflow.getName());
-            if (!isWorkflowExist(classWorkflow.getClass().getSimpleName())) {
+            if (!isWorkflowExist(classWorkflow.getClass().getSimpleName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
                 Workflow newWorkflow = createWorkflow(classWorkflow.getClass().getSimpleName(), classWorkflow.getDescription(), userService.getSystemUser());
                 newWorkflow.setFromCode(true);
@@ -148,9 +148,13 @@ public class WorkflowService {
         }
     }
 
-    public boolean isWorkflowExist(String name) {
-        return workflowRepository.countByName(name) > 0;
+    public boolean isWorkflowExist(String name, String userEppn) {
+        return workflowRepository.countByNameAndCreateByEppn(name, userEppn) > 0;
     }
+
+//    public boolean isWorkflowExist(String name) {
+//        return workflowRepository.countByName(name) > 0;
+//    }
 
     public Workflow createWorkflow(User user) {
         Workflow workflow;
@@ -187,7 +191,7 @@ public class WorkflowService {
             name = user.getEppn().split("@")[0] + title.substring(0, 1).toUpperCase() + title.toLowerCase().substring(1);
             name = name.replaceAll("[^a-zA-Z0-9]", "");
         }
-        if (!isWorkflowExist(name)) {
+        if (!isWorkflowExist(name, user.getEppn())) {
             Workflow workflow = new Workflow();
             workflow.setName(name);
             workflow.setDescription(description);
@@ -195,13 +199,9 @@ public class WorkflowService {
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
-            Document model = null;
             workflow.setSourceType(DocumentIOType.none);
             workflow.setTargetType(DocumentIOType.none);
             workflowRepository.save(workflow);
-            if (model != null) {
-                model.setParentId(workflow.getId());
-            }
             return workflow;
         } else {
             throw new EsupSignatureException("already exist");
@@ -282,7 +282,7 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
