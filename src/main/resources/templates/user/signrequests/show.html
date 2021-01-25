@@ -16,7 +16,7 @@
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
     import {SignRequestHelp} from "/static/js/modules/help/SignRequestHelp.js";
 
-    let help = new SignRequestHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
+    let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
 
     let signable = [[${signable}]];
