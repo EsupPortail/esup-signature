@@ -96,14 +96,20 @@ public class WorkflowController {
         return "redirect:/user/workflows/" + workflow.getName();
     }
 
-
-
     @DeleteMapping(value = "/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
         return "redirect:/";
+    }
+
+    @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
+    @ResponseBody
+    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Workflow workflow = workflowService.getById(id);
+        workflowService.delete(workflow);
     }
 
 }

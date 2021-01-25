@@ -13,13 +13,40 @@ export class WizUi {
         this.mode = "";
         this.input;
         this.fileInput
+        this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
+        this.initListeners();
     }
 
     initListeners() {
+        this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
+    }
+
+    checkOnModalClose() {
+        let workflowId = $("#wizWorkflowId").val();
+        if(this.signBookId || workflowId) {
+            if (confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues")) {
+                if(workflowId) {
+                    $.ajax({
+                        method: "DELETE",
+                        url: "/user/workflows/silent-delete/" + workflowId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
+                        cache: false
+                    });
+                } else {
+                    $.ajax({
+                        method: "DELETE",
+                        url: "/user/signbooks/silent-delete/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
+                        cache: false
+                    });
+                }
+                this.modal.modal('hide');
+            } else {
+                this.modal.modal('show');
+            }
+        }
     }
 
     startByDocs() {
-        console.info("Start wizard");
+        console.info("Start wizard signbook");
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-start-by-docs?workflowId=' + this.workflowId,
@@ -30,7 +57,7 @@ export class WizUi {
     }
 
     startByRecipients() {
-        console.info("Start wizard");
+        console.info("Start wizard workflow");
         this.mode = "-workflow";
         $.ajax({
             type: "GET",
@@ -42,7 +69,6 @@ export class WizUi {
     }
 
     initWiz1(html) {
-        console.log(this.csrf);
         this.div.html(html);
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
@@ -73,6 +99,7 @@ export class WizUi {
         $("#end").on('click', e => this.gotoAddStep(true));
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
+
     }
 
     gotoAddStep(end) {
@@ -96,7 +123,6 @@ export class WizUi {
     saveWorkflow(e) {
         let saveWorkflowForm = $("#saveWorkflowForm");
         if (saveWorkflowForm.find('.required').filter(function(){ return this.value === '' }).length > 0) {
-            event.preventDefault();
             $("#saveWorkflowSubmit").click();
             return false;
         }

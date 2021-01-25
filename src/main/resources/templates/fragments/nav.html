@@ -69,7 +69,7 @@
                         </a>
                         <div th:if="${formManaged.size() > 0}" class="dropdown-divider"></div>
                         <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
-                           data-target="#wizardModal"
+                           data-target="#wizModal"
                            title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fas fa-magic"></i> Assistant de création de circuit
                         </a>
@@ -310,7 +310,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="wizardModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
+<div class="modal fade" id="wizModal" th:unless="${globalProperties.hideWizard}" tabindex="-1" role="dialog" aria-labelledby="addSignRequestLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
