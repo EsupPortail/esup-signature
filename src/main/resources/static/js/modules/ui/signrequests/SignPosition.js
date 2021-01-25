@@ -1,5 +1,6 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
 import {EventFactory} from "../../utils/EventFactory.js";
+import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
@@ -258,7 +259,7 @@ export class SignPosition extends EventFactory {
     changeSignSize(result) {
         this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
         this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
-        this.changeSignColor(this.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
+        this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
         this.updateSignSize();
     }
 
@@ -532,82 +533,17 @@ export class SignPosition extends EventFactory {
 
     changeSignColor(color) {
         console.info("change color to : " + color);
-        const rgb = this.hexToRgb(color);
+        const rgb = Color.hexToRgb(color);
 
         this.getCurrentSignParams().red = rgb[0];
         this.getCurrentSignParams().green = rgb[1];
         this.getCurrentSignParams().blue = rgb[2];
 
         let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[this.getCurrentSignParams().signImageNumber];
-
-        this.cross.css("background-image", "url('" + this.changeColInUri(img, "#000000", color) + "')");
-
+        let cross = this.cross;
+        Color.changeColInUri(img, "#000000", color).then(function (e) {
+            cross.css("background-image", "url('" + e + "')");
+        })
     }
 
-    changeColInUri(data, colfrom, colto) {
-
-        console.log(data);
-
-        let img = document.createElement("img");
-        img.src = data;
-        img.style.visibility = "hidden";
-        document.body.appendChild(img);
-
-        let canvas = document.createElement("canvas");
-        canvas.width = img.offsetWidth;
-        canvas.height = img.offsetHeight;
-
-        let ctx = canvas.getContext("2d");
-        ctx.drawImage(img,0,0);
-
-        img.parentNode.removeChild(img);
-
-        let imageData = ctx.getImageData(0,0, canvas.width, canvas.height);
-        data = imageData.data;
-
-        let rgbfrom = this.hexToRgb(colfrom);
-        let rgbto = this.hexToRgb(colto);
-
-        let r,g,b;
-        for(let x = 0, len = data.length; x < len; x+=4) {
-            r = data[x];
-            g = data[x+1];
-            b = data[x+2];
-
-            if((r === rgbfrom[0]) &&
-                (g === rgbfrom[1]) &&
-                (b === rgbfrom[2])) {
-
-                data[x] = rgbto[0];
-                data[x+1] = rgbto[1];
-                data[x+2] = rgbto[2];
-
-            }
-        }
-
-        ctx.putImageData(imageData,0,0);
-
-        return canvas.toDataURL();
-    }
-
-    hexToRgb(hex) {
-        // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-        const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-        hex = hex.toString().replace(shorthandRegex, (m, r, g, b) => {
-            return r + r + g + g + b + b;
-        });
-
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result
-            ? [
-                parseInt(result[1], 16),
-                parseInt(result[2], 16),
-                parseInt(result[3], 16),
-            ]
-            : null;
-    }
-
-    rgbToHex(r, g, b) {
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-    }
 }

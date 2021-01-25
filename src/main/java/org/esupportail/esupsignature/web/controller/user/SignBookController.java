@@ -63,6 +63,13 @@ public class SignBookController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
+    @ResponseBody
+    public void silentDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        signBookService.delete(id);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
