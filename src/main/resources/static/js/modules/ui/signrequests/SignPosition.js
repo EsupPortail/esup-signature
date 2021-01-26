@@ -470,9 +470,9 @@ export class SignPosition extends EventFactory {
 
 
     enableConfirmLeaveSign() {
-        window.onbeforeunload = function(){
-            return confirm("Une signature est en cours sur ce document, voulez abandonner les modifications ?");
-        };
+        $(window).on("beforeunload", function(e) {
+            return true;
+        });
     }
 
     toggleExtraInfos() {

@@ -11,6 +11,9 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
         this.scale = 1;
+        if(localStorage.getItem('scale')) {
+            this.scale = parseFloat(localStorage.getItem('scale'));
+        }
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -103,8 +106,8 @@ export class PdfViewer extends EventFactory {
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
-        if(this.isFloat(localStorage.getItem('scale'))) {
-            newScale = localStorage.getItem('scale');
+        if(localStorage.getItem('scale')) {
+            newScale = parseFloat(localStorage.getItem('scale'));
         }
         if (window.innerWidth < 1200) {
             newScale = 0.9;
@@ -157,10 +160,10 @@ export class PdfViewer extends EventFactory {
     }
 
     renderTask(page) {
-        console.info("launch render task");
+        console.info("launch render task" + this.scale);
         this.page = page;
         let scale = this.scale;
-        localStorage.setItem('scale', this.scale);
+        localStorage.setItem('scale', scale);
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -293,7 +296,6 @@ export class PdfViewer extends EventFactory {
                     $('#' + items[i].fieldName.split(/\\$|#|!/)[0] + ' option').each(function()
                     {
                         if(this.savedFields.get(items[i].fieldName) === $(this).value) {
-                            alert("test");
                             $(this).prop("selected", true);
                         }
                     });
