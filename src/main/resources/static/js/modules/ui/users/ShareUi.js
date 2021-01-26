@@ -17,9 +17,13 @@ export default class ShareUi {
         if(selectedTargetValue === 'form') {
             $('#selectFormDiv').removeClass('d-none');
             $('#selectWorkflowDiv').addClass('d-none');
-        } else {
+        } else if(selectedTargetValue === 'workflow') {
             $('#selectFormDiv').addClass('d-none');
             $('#selectWorkflowDiv').removeClass('d-none');
+        } else {
+            $("input[id^='check-']").each(function() {
+                $(this).removeAttr("disabled");
+            });
         }
     }
 

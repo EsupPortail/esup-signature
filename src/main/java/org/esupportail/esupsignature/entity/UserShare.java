@@ -26,6 +26,8 @@ public class UserShare {
     @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
 
+    private Boolean allSignRequests = false;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date beginDate;
 
@@ -73,6 +75,14 @@ public class UserShare {
 
     public void setWorkflow(Workflow workflow) {
         this.workflow = workflow;
+    }
+
+    public Boolean getAllSignRequests() {
+        return allSignRequests;
+    }
+
+    public void setAllSignRequests(Boolean all) {
+        this.allSignRequests = all;
     }
 
     public Date getBeginDate() {

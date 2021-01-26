@@ -44,6 +44,7 @@
                                 <td>
                                     <span th:if="${userShare.form}" class="text-left" th:text="'Formulaire : ' + ${userShare.form.title}"></span>
                                     <span th:if="${userShare.workflow}" class="text-left" th:text="'Circuit : ' + ${userShare.workflow.description}"></span>
+                                    <span th:if="${userShare.allSignRequests}" class="text-left">Toutes les demandes</span>
                                 </td>
                                 <td>
                                     <ul class="text-left">
@@ -130,9 +131,10 @@
                     <div class="modal-body">
 
                         <div class="form-group">
-                            <label for="selectTarget">Type d'élément à déléguer (circuit ou formulaire)</label>
+                            <label for="selectTarget">Type d'élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
                             <select id="selectTarget" class="form-control" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
+                                <option value="all">Toutes les demandes</option>
                                 <option value="workflow">Circuit</option>
                                 <option value="form">Formulaire</option>
                             </select>

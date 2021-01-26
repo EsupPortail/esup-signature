@@ -79,6 +79,9 @@ public class UserShareService {
                 throw new EsupSignatureUserException("Une délégation pour ce circuit existe déjà, merci de la modifier");
             }
         }
+        if(formsIds.size() == 0 && workflowsIds.size() == 0) {
+            userShare.setAllSignRequests(true);
+        }
         userShare.getToUsers().addAll(userEmails);
         userShare.setBeginDate(beginDate);
         userShare.setEndDate(endDate);
@@ -134,22 +137,19 @@ public class UserShareService {
     }
 
     public Boolean checkShare(String fromUserEppn, String toUserEppn, SignRequest signRequest, ShareType shareType) {
+        List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), shareType);
         if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-            List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType);
-            for (UserShare userShare : userShares) {
-                if (checkUserShareDate(userShare)) {
-                    return true;
-                }
-            }
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType));
+
         }
         Data data = dataService.getBySignRequest(signRequest);
         if(data != null) {
-            List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType);
-            for (UserShare userShare : userShares) {
-                if (checkUserShareDate(userShare)) {
-                    return true;
-                }
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
+        }
+        for (UserShare userShare : userShares) {
+            if (checkUserShareDate(userShare)) {
+                return true;
             }
         }
         return false;
