@@ -20,6 +20,8 @@ public class UserShare {
     @ManyToMany
     private List<User> toUsers = new ArrayList<>();
 
+    private Boolean signWithOwnSign = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
@@ -59,6 +61,15 @@ public class UserShare {
 
     public void setToUsers(List<User> toUsers) {
         this.toUsers = toUsers;
+    }
+
+
+    public Boolean getSignWithOwnSign() {
+        return signWithOwnSign;
+    }
+
+    public void setSignWithOwnSign(Boolean signWithOwnSign) {
+        this.signWithOwnSign = signWithOwnSign;
     }
 
     public Form getForm() {

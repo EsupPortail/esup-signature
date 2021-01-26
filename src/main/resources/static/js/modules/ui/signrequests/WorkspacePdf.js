@@ -13,6 +13,7 @@ export class WorkspacePdf {
         this.postits = postits;
         this.signable = signable;
         this.signRequestId = id;
+        this.signType = signType;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -120,7 +121,7 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(this.signPosition.getCurrentSignParams().xPos === -1) {
+        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa") {
             bootbox.alert("Merci de placer la signature");
         } else {
             if (WorkspacePdf.validateForm()) {

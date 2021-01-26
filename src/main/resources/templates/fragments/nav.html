@@ -111,7 +111,7 @@
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
-                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
+                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                                 <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
                             </a>
                         </th:block>

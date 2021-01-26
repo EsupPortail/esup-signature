@@ -142,7 +142,6 @@ public class FormService {
 		formRepository.save(form);
 	}
 
-
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
 		List<UserShare> userShares = userShareService.getUserSharesByForm(form);

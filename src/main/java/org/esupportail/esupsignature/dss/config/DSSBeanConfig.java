@@ -156,14 +156,13 @@ public class DSSBeanConfig {
 	public KeyStoreCertificateSource ojContentKeyStore() throws IOException {
 		File keystoreFile = new File(dssProperties.getKsFilename());
 		KeyStoreCertificateSource keyStoreCertificateSource = null;
-		if(!keystoreFile.exists()) {
-			log.info("creating oj file in " + keystoreFile.getAbsolutePath());
-			if(keystoreFile.createNewFile()) {
-				keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
-			}
-		} else {
-			log.info("using exising oj file " + keystoreFile.getAbsolutePath());
-			keyStoreCertificateSource = new KeyStoreCertificateSource(keystoreFile, dssProperties.getKsType(), dssProperties.getKsPassword());
+		if(keystoreFile.exists()) {
+			log.info("delete old oj file");
+			keystoreFile.delete();
+		}
+		log.info("creating oj file in " + keystoreFile.getAbsolutePath());
+		if(keystoreFile.createNewFile()) {
+			keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
 		return keyStoreCertificateSource;
 	}

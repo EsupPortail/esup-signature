@@ -184,6 +184,7 @@ public class UserController {
 
 	@PostMapping("/add-share")
 	public String addShare(@ModelAttribute("authUserEppn") String authUserEppn,
+						   @RequestParam(value = "signWithOwnSign", required = false) Boolean signWithOwnSign,
 						   @RequestParam(value = "form", required = false) Long[] form,
 						   @RequestParam(value = "workflow", required = false) Long[] workflow,
 						   @RequestParam("types") String[] types,
@@ -194,8 +195,9 @@ public class UserController {
 		User authUser = (User) model.getAttribute("authUser");
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
+		if(signWithOwnSign == null) signWithOwnSign = false;
 		try {
-			userShareService.addUserShare(authUser, form, workflow, types, userEmails, beginDate, endDate);
+			userShareService.addUserShare(authUser, signWithOwnSign, form, workflow, types, userEmails, beginDate, endDate);
 		} catch (EsupSignatureUserException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
@@ -205,35 +207,31 @@ public class UserController {
 	@PostMapping("/update-share/{id}")
 	public String updateShare(@ModelAttribute("authUserEppn") String authUserEppn,
 							  @PathVariable("id") Long id,
+							  @RequestParam(value = "signWithOwnSign", required = false) Boolean signWithOwnSign,
 							  @RequestParam("types") String[] types,
 							  @RequestParam("userIds") String[] userEmails,
 							  @RequestParam("beginDate") String beginDate,
 							  @RequestParam("endDate") String endDate, Model model) {
-		User authUser = (User) model.getAttribute("authUser");
-		UserShare userShare = userShareService.getById(id);
-		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
+		userShareService.updateUserShare(authUserEppn, types, userEmails, beginDate, endDate, id, signWithOwnSign);
 		return "redirect:/user/users/shares";
 	}
 
 	@DeleteMapping("/del-share/{id}")
 	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = (User) model.getAttribute("authUser");
-		UserShare userShare = userShareService.getById(id);
-		if (userShare.getUser().equals(authUser)) {
-			userShareService.delete(userShare);
-		}
+		userShareService.delete(id, authUserEppn);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Élément supprimé"));
 		return "redirect:/user/users/shares";
 	}
 
 	@GetMapping("/change-share")
-	public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
+	public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, @RequestParam(required = false) Long userShareId, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
 		if(eppn == null || eppn.isEmpty()) {
 			httpSession.setAttribute("suEppn", null);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
 		} else {
 			if(userShareService.checkShare(eppn, authUserEppn)) {
 				httpSession.setAttribute("suEppn", eppn);
+				httpSession.setAttribute("userShareId", userShareId);
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
 			} else {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));

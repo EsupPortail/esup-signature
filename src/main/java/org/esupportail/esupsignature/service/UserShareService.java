@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -40,7 +41,9 @@ public class UserShareService {
         List<User> suUsers = new ArrayList<>();
         for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
             if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
-                suUsers.add(userShare.getUser());
+                User user = userShare.getUser();
+                user.setUserShareId(userShare.getId());
+                suUsers.add(user);
             }
         }
         return suUsers;
@@ -51,9 +54,10 @@ public class UserShareService {
     }
 
 
-    public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
+    public void createUserShare(Boolean signWithOwnSign, List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
+        userShare.setSignWithOwnSign(signWithOwnSign);
         List<ShareType> shareTypes = new ArrayList<>();
         for(String type : types) {
             shareTypes.add(ShareType.valueOf(type));
@@ -88,7 +92,7 @@ public class UserShareService {
         userShareRepository.save(userShare);
     }
 
-    public void addUserShare(User authUser, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
+    public void addUserShare(User authUser, Boolean signWithOwnSign, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
         List<User> users = new ArrayList<>();
         for (String userEmail : userEmails) {
             users.add(userService.getUserByEmail(userEmail));
@@ -103,10 +107,14 @@ public class UserShareService {
                 logger.error("error on parsing dates");
             }
         }
-        createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+        createUserShare(signWithOwnSign, Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
     }
 
-    public void updateUserShare(User authUser, String[] types, String[] userEmails, String beginDate, String endDate, UserShare userShare) {
+    @Transactional
+    public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign) {
+        User authUser = userService.getUserByEppn(authUserEppn);
+        UserShare userShare = getById(userShareId);
+        userShare.setSignWithOwnSign(signWithOwnSign);
         if(userShare.getUser().equals(authUser)) {
             userShare.getToUsers().clear();
             for (String userEmail : userEmails) {
@@ -119,6 +127,9 @@ public class UserShareService {
             }
             if(userShare.getForm() != null ) {
                 authorizedShareTypes.addAll(userShare.getForm().getAuthorizedShareTypes());
+            }
+            if(userShare.getAllSignRequests()) {
+                authorizedShareTypes.addAll(Arrays.asList(ShareType.values()));
             }
             for(String type : types) {
                 if(authorizedShareTypes.contains(ShareType.valueOf(type))) {
@@ -217,6 +228,14 @@ public class UserShareService {
 
     public UserShare getById(Long id) {
         return userShareRepository.findById(id).get();
+    }
+
+    public void delete(Long userShareId, String authUserEppn) {
+        User authUser = userService.getUserByEppn(authUserEppn);
+        UserShare userShare = getById(userShareId);
+        if (userShare.getUser().equals(authUser)) {
+            delete(userShare);
+        }
     }
 
     public void delete(UserShare userShare) {
