@@ -28,6 +28,9 @@ public class GlobalAttributsControllerAdvice {
     private SignRequestService signRequestService;
 
     @Resource
+    private SignBookService signBookService;
+
+    @Resource
     private FormService formService;
 
     @Resource
@@ -84,7 +87,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("signTypes", signTypes);
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userEppn));
-        model.addAttribute("nbToSign", signRequestService.nbToSignRequests(userEppn));
+        model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
     }
 
     public void parseRoles(User user) {

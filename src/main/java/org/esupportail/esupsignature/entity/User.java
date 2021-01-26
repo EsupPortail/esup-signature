@@ -31,6 +31,7 @@ public class User {
     private String email;
 
     @ElementCollection
+    @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
     private String formMessages = "";

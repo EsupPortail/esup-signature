@@ -96,8 +96,12 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(WorkspacePdf.validateForm()) {
-            $("#signModal").modal('toggle');
+        if(this.signPosition.getCurrentSignParams().xPos === -1) {
+            bootbox.alert("Merci de placer la signature");
+        } else {
+            if (WorkspacePdf.validateForm()) {
+                $("#signModal").modal('toggle');
+            }
         }
     }
 
@@ -292,9 +296,6 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
         this.pdfViewer.scale = 0.5;
-        if(this.isFloat(localStorage.getItem('scale'))) {
-            this.pdfViewer.scale = localStorage.getItem('scale');
-        }
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);

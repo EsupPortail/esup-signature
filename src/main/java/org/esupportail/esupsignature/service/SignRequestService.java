@@ -198,7 +198,7 @@ public class SignRequestService {
 		return new ArrayList<>(signRequests);
 	}
 
-	public Long nbToSignRequests(String userEppn) {
+	public Long nbToSignSignRequests(String userEppn) {
 		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
 
