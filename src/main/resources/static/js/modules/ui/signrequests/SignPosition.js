@@ -17,9 +17,14 @@ export class SignPosition extends EventFactory {
         let signRequestParams = new SignRequestParams();
         this.signImages = signImages;
         if(this.signImages != null && this.signImages.length > 0) {
-            signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
-            signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
-            signRequestParams.signPageNumber = signPageNumber;
+            if(xPos === 0 && yPos === 0) {
+                signRequestParams.xPos = -1;
+                signRequestParams.yPos = -1;
+            } else {
+                signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
+                signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
+                signRequestParams.signPageNumber = signPageNumber;
+            }
         }
         this.signRequestParamses = new Map();
         this.signRequestParamses.set("0", signRequestParams);
@@ -140,8 +145,8 @@ export class SignPosition extends EventFactory {
         this.hideButtons();
         console.info("add sign");
         let signRequestParams = new SignRequestParams();
-        signRequestParams.xPos = 0;
-        signRequestParams.yPos = 0;
+        signRequestParams.xPos -1;
+        signRequestParams.yPos = -1;
         signRequestParams.signPageNumber = this.getCurrentSignParams().signPageNumber;
         signRequestParams.addExtra = this.getCurrentSignParams().addExtra;
         signRequestParams.extraWidth = this.getCurrentSignParams().extraWidth;
@@ -348,8 +353,8 @@ export class SignPosition extends EventFactory {
     updateCrossPosition() {
         console.debug("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
         console.debug("update sign pos to : " + this.getCurrentSignParams().xPos + " " + this.getCurrentSignParams().yPos);
-        if(this.posX < 0) this.posX = 0;
-        if(this.posY < 0) this.posY = 0;
+        if(this.posX < 0) this.posX = -1;
+        if(this.posY < 0) this.posY = -1;
         // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
@@ -470,9 +475,9 @@ export class SignPosition extends EventFactory {
 
 
     enableConfirmLeaveSign() {
-        $(window).on("beforeunload", function(e) {
+        window.beforeunload = function(e) {
             return true;
-        });
+        };
     }
 
     toggleExtraInfos() {

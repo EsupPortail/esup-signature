@@ -96,8 +96,12 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(WorkspacePdf.validateForm()) {
-            $("#signModal").modal('toggle');
+        if(this.signPosition.getCurrentSignParams().xPos === -1) {
+            bootbox.alert("Merci de placer la signature");
+        } else {
+            if (WorkspacePdf.validateForm()) {
+                $("#signModal").modal('toggle');
+            }
         }
     }
 
