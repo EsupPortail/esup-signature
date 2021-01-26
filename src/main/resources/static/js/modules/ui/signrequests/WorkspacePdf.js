@@ -74,6 +74,30 @@ export class WorkspacePdf {
                 postitButton.on('click', e => this.focusComment(postit));
             });
         }
+        $('[id^="deleteAttachement_"]').each(function (){
+            $(this).on('click', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Confimez la suppression de la pièce jointe ?", function (result) {
+                    if(result) {
+                        location.href = $(target).attr('href');
+                    }
+                });
+            });
+        });
+
+        $('[id^="deleteLink_"]').each(function (){
+            $(this).on('click', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Confirmez la suppression du lien ?", function (result) {
+                    if(result) {
+                        location.href = $(target).attr('href');
+                    }
+                });
+            });
+        });
+
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
         $("#signLaunchButton").on('click', e => this.launchSignModal());
         $("#refuseLaunchButton").on('click', function (){

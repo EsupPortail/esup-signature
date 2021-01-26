@@ -21,7 +21,7 @@
                                     <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
                                 </td>
                                 <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                    <a th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  onclick="return confirm('Confimez la suppression de la pièce jointe')" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    <a th:id="'deleteAttachement_' + ${attachment.id}" th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>
                         </th:block>
@@ -33,7 +33,7 @@
                                     <a th:href="${link}" target="_blank" th:text="${link}"></a>
                                 </td>
                                 <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                    <a th:href="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}"  onclick="return confirm('Confimez la suppression du lien')" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    <a th:id="'deleteLink_' + ${iterator.index}" th:href="'/user/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>
                         </th:block>
