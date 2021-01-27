@@ -17,6 +17,18 @@ export default class UserUi {
     initListeners() {
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
         this.emailAlertFrequencySelect.addEventListener("change", e => this.checkAlertFrequency());
+        $('[id^="deleteSign_"]').each(function() {
+            $(this).on('click', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Voulez-vous vraiment supprimer cette signature ?", function(result){
+                    if(result) {
+                        location.href = $(target).attr('href');
+                    }
+                })
+            });
+        });
+
     }
 
     checkAlertFrequency() {

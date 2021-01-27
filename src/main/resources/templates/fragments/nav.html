@@ -97,8 +97,7 @@
                         </a>
                     </div>
                 </li>
-
-                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn}">
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && globalProperties.shareMode > 0}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle"
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
@@ -111,14 +110,14 @@
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
-                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/change-share?eppn=' + ${suUser.eppn}" class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
+                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/shares/change?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn text-white btn-transparent text-left m-1" style="width: 250px;">
                                 <i class="fas fa-user"></i> <span class="nav-item-label d-none d-xl-inline" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
                             </a>
                         </th:block>
                     </div>
                 </li>
-                <li class="nav-item dropdown" th:if="${userEppn != authUserEppn}">
-                    <a th:if="${userEppn != authUserEppn}" th:href="'/user/users/change-share'" class="btn btn-transparent text-left">
+                <li class="nav-item dropdown" th:if="${userEppn != authUserEppn  && globalProperties.shareMode > 0}">
+                    <a th:if="${userEppn != authUserEppn}" th:href="'/user/users/shares/change'" class="btn btn-transparent text-left">
                         <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                     </a>
                 </li>
@@ -165,7 +164,7 @@
             <h5 th:unless="${isUserOnSu}">
                 <b>Délégations</b>
             </h5>
-            <form id="changeSuEppn" th:action="'/user/users/change-share'" method="post">
+            <form id="changeSuEppn" th:action="'/user/users/shares/change'" method="post">
                 <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
                     <option th:unless="${isUserOnSu}" selected disabled>Choisir un

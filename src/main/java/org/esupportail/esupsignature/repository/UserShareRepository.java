@@ -17,6 +17,7 @@ public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
 	List<UserShare> findByWorkflowId(Long workflowId);
 	List<UserShare> findByFormId(Long formId);
 	List<UserShare> findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(String userEppn, List<String> toUsers, Workflow workflow, ShareType shareType);
+	List<UserShare> findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(String userEppn, List<String> toUsers,ShareType shareType);
 	List<UserShare> findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(String userEppn, List<String> toUsers, Form form, ShareType shareType);
 	List<UserShare> findByToUsersEppnInAndShareTypesContains(List<String> toUsers, ShareType shareType);
 }

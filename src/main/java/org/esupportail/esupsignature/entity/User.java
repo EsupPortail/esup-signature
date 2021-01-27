@@ -56,6 +56,9 @@ public class User {
     @Transient
     private String signImageBase64;
 
+    @Transient
+    private Long userShareId;
+
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Document keystore = new Document();
@@ -194,7 +197,15 @@ public class User {
         this.signImageBase64 = signImageBase64;
     }
 
-	public Document getKeystore() {
+    public Long getUserShareId() {
+        return userShareId;
+    }
+
+    public void setUserShareId(Long userShareId) {
+        this.userShareId = userShareId;
+    }
+
+    public Document getKeystore() {
         return this.keystore;
     }
 

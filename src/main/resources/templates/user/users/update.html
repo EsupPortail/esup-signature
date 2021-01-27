@@ -51,7 +51,7 @@
                                                     <img class="thumbnail" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
                                                 </td>
                                                 <td>
-                                                    <a th:href="'/user/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white" onclick="return confirm('Voulez-vous vraiment supprimer cette signature ?');">
+                                                    <a th:id="'deleteSign_' + ${signImageId}" th:href="'/user/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </a>
                                                 </td>
