@@ -1,10 +1,11 @@
 import {WorkspacePdf} from "./WorkspacePdf.js";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 import {PrintDocument} from "../../utils/PrintDocument.js";
+import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -19,12 +20,16 @@ export class SignUi {
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
+        this.stepRepeatable = stepRepeatable;
+        this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
         this.initListeners();
     }
 
     initListeners() {
-        $("#launchSignButton").on('click', e => this.launchSign());
+        $("#checkRepeatableButton").on('click', e => this.checkRepeatable());
+        $("#launchSignButton").on('click', e => this.insertStep());
+        $("#launchAllSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -36,7 +41,7 @@ export class SignUi {
     }
 
     launchSign() {
-        this.signModal.modal('hide');
+        $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
         if(this.signForm) {
@@ -167,5 +172,33 @@ export class SignUi {
         textArea.select();
         document.execCommand("Copy");
         textArea.remove();
+    }
+
+    checkRepeatable() {
+        if (this.stepRepeatable) {
+            this.signModal.modal('hide');
+            $('#stepRepeatableModal').modal('show');
+        } else {
+            this.signModal.modal('hide');
+            this.launchSign();
+        }
+    }
+
+    insertStep() {
+        let signRequestId = this.signRequestId;
+        let csrf = this.csrf;
+        let step = new Step();
+        step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        step.stepNumber = this.currentStepNumber + 1;
+        step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
+        step.signType = $('#signTypeInfinite').val();
+        $.ajax({
+            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            contentType: "application/json",
+            dataType: 'json',
+            data: JSON.stringify(step),
+            success: response => this.launchSign()
+        });
     }
 }

@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +31,15 @@ public class LiveWorkflowStepService {
     @Resource
     private SignBookService signBookService;
 
-    public LiveWorkflowStep createWorkflowStep(Boolean allSignToComplete, SignType signType, String... recipientEmails) {
+    public LiveWorkflowStep createWorkflowStep(Boolean repeatable, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
-        if(allSignToComplete ==null) {
+        if(repeatable == null) {
+            liveWorkflowStep.setRepeatable(false);
+        } else {
+            liveWorkflowStep.setRepeatable(repeatable);
+        }
+
+        if(allSignToComplete == null) {
             liveWorkflowStep.setAllSignToComplete(false);
         } else {
             liveWorkflowStep.setAllSignToComplete(allSignToComplete);
@@ -58,16 +63,18 @@ public class LiveWorkflowStepService {
                     }
                 }
             }
-            Recipient recipient = recipientService.createRecipient(recipientUser);
-            liveWorkflowStep.getRecipients().add(recipient);
+            if(recipientUser != null) {
+                Recipient recipient = recipientService.createRecipient(recipientUser);
+                liveWorkflowStep.getRecipients().add(recipient);
+            }
         }
     }
 
     @Transactional
-    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, Long signBookId) throws EsupSignatureUserException {
+    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, Long signBookId) {
         SignBook signBook = signBookService.getById(signBookId);
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-        LiveWorkflowStep liveWorkflowStep = createWorkflowStep(allSignToComplete, signType, recipientsEmail);
+        LiveWorkflowStep liveWorkflowStep = createWorkflowStep(false, allSignToComplete, signType, recipientsEmail);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
     }
 

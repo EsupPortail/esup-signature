@@ -120,6 +120,6 @@ public class SignRequestParamsService {
         signRequestParams.setyPos(signRequestParamses.get(0).getyPos());
         signRequestParams.setSignWidth(signRequestParamses.get(0).getSignWidth());
         signRequestParams.setSignHeight(signRequestParamses.get(0).getSignHeight());
-        signRequestParams.setAddExtra(signRequestParamses.get(0).isAddExtra());
+        signRequestParams.setAddExtra(signRequestParamses.get(0).getAddExtra());
     }
 }

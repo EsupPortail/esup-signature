@@ -12,9 +12,7 @@ import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class CovidPreFill implements PreFill {
@@ -29,6 +27,13 @@ public class CovidPreFill implements PreFill {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	@Override
+	public Map<String, List<String>> getTypes() {
+		Map<String, List<String>> types = new HashMap<>();
+		types.put("ldap", Arrays.asList("person", "organizationalUnit"));
+		return types;
 	}
 
 	@Override

@@ -1,9 +1,10 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
 import {EventFactory} from "../../utils/EventFactory.js";
+import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, xPos, yPos, signPageNumber, signImages, userName) {
+    constructor(signType, xPos, yPos, signPageNumber, signImages, userName, signable) {
         super();
         console.info("Starting sign positioning tools");
         this.cross = $('#cross_0');
@@ -33,7 +34,16 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton = $('#signNextImage_0');
         this.signPrevImageButton = $('#signPrevImage_0');
         this.signExtraButton = $('#signExtra_0');
+        this.signExtraOnTopButton = $('#signExtraOnTop_0');
         this.signDropButton = $('#signDrop_0');
+        this.signColorPicker = $('#signColorPicker_0');
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            preferredFormat: "hex",
+            change: color => this.changeSignColor(color)
+        });
         this.addSignButton = $('#addSignButton');
         if(xPos !== 0 && yPos !== 0) {
             this.updateCrossPosition();
@@ -45,6 +55,7 @@ export class SignPosition extends EventFactory {
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
         }
+        this.confirmEnabled = false;
         this.events = {};
         if(this.signType === "visa") {
             this.addText();
@@ -53,6 +64,7 @@ export class SignPosition extends EventFactory {
         if(this.signType !== "visa") {
             $(document).ready(e => this.toggleExtraInfos());
         }
+        this.signable = signable;
         this.initListeners();
     }
 
@@ -71,25 +83,41 @@ export class SignPosition extends EventFactory {
     }
 
     initCrossToolsListeners() {
+        this.showButtons();
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
         this.signNextImageButton.on('click', e => this.signNextImage(e));
         this.signPrevImageButton.on('click', e => this.signPrevImage(e));
         this.signExtraButton.on('click', e => this.toggleExtraInfos());
+        this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
         this.signDropButton.on('click', e => this.removeSign(e));
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            preferredFormat: "hex",
+            change: color => this.changeSignColor(color)
+        });
     }
 
     unbindCrossToolsListeners() {
+        $('.sp-replacer').each(function (){
+            $(this).remove();
+        });
+        this.signColorPicker.spectrum('destroy');
+        this.signColorPicker.hide();
         this.signZoomOutButton.unbind();
         this.signZoomInButton.unbind();
         this.signNextImageButton.unbind();
         this.signPrevImageButton.unbind();
         this.signExtraButton.unbind();
+        this.signExtraOnTopButton.unbind();
         this.signDropButton.unbind();
+        this.hideButtons();
     }
 
     getCurrentSignParams() {
-        return this.signRequestParamses.get(this.currentSign + "");
+        return this.signRequestParamses.get(this.currentSign);
     }
 
     getUiXpos() {
@@ -109,6 +137,7 @@ export class SignPosition extends EventFactory {
     }
 
     addSign() {
+        this.hideButtons();
         console.info("add sign");
         let signRequestParams = new SignRequestParams();
         signRequestParams.xPos = 0;
@@ -125,7 +154,7 @@ export class SignPosition extends EventFactory {
         okSign.children().removeClass("anim-border");
         okSign.appendTo(this.pdf);
         okSign.on("click", e => this.switchSignToTarget(e));
-        let currentSign = Array.from(this.signRequestParamses.keys())[this.signRequestParamses.size - 1] + 1;
+        let currentSign = (parseInt(Array.from(this.signRequestParamses.keys())[this.signRequestParamses.size - 1]) + 1) + "";
         this.signRequestParamses.set(currentSign + "", signRequestParams);
         this.currentSign = currentSign;
         this.updateCrossPosition();
@@ -138,13 +167,28 @@ export class SignPosition extends EventFactory {
             $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
         });
         this.cross.children().children().each(function (e) {
-            $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+            if($(this).attr("id")) {
+                $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+            }
         });
+        $('.sp-replacer').each(function (){
+            $(this).remove();
+        });
+        this.signColorPicker.spectrum('destroy');
+        this.signColorPicker.hide();
         this.signZoomOutButton = $('#signZoomOut_' + currentSign);
         this.signZoomInButton = $('#signZoomIn_' + currentSign);
         this.signNextImageButton = $('#signNextImage_' + currentSign);
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
+        this.signColorPicker = $('#signColorPicker_' + currentSign);
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            preferredFormat: "hex",
+            change: color => this.changeSignColor(color)
+        });
         this.addSignButton.attr("disabled", "disabled");
         this.hideButtons();
         let dateButton = $('#dateButton');
@@ -170,17 +214,19 @@ export class SignPosition extends EventFactory {
         this.currentSign = currentSign;
         this.cross = $('#cross_' + currentSign);
         this.cross.unbind();
-        this.crossTools = $('#crossTools_' + currentSign);
         this.borders = $('#borders_' + currentSign);
         this.borders.addClass("anim-border");
         this.initCrossListeners();
         this.unbindCrossToolsListeners();
+        this.crossTools = $('#crossTools_' + currentSign);
         this.signZoomOutButton = $('#signZoomOut_' + currentSign);
         this.signZoomInButton = $('#signZoomIn_' + currentSign);
         this.signNextImageButton = $('#signNextImage_' + currentSign);
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
         this.signDropButton = $('#signDrop_' + currentSign);
+        this.signDropButton = $('#signDrop_' + currentSign);
+        this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.initCrossToolsListeners();
     }
 
@@ -199,6 +245,7 @@ export class SignPosition extends EventFactory {
         if(this.signImages != null) {
             console.debug("change sign image to " + imageNum);
             let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+            this.getCurrentSignParams().signImageNumber = imageNum;
             this.cross.css("background-image", "url('" + img + "')");
             let sizes = this.getImageDimensions(img);
             sizes.then(result => this.changeSignSize(result));
@@ -207,7 +254,8 @@ export class SignPosition extends EventFactory {
 
     changeSignSize(result) {
         this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
-        this.getCurrentSignParams().signHeight = Math.round((result.h) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
+        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
+        this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
         this.updateSignSize();
     }
 
@@ -292,16 +340,10 @@ export class SignPosition extends EventFactory {
 
     updateScale(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
-        $('div[id^="sign_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
+        $('div[id^="cross_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
         this.currentScale = scale;
         this.updateCrossPosition();
     }
-    //
-    // updateSignButtons() {
-    //     console.debug("update buttons");
-    //     this.crossTools.css('left', 0  + "px");
-    //     this.crossTools.css('top', -45 + "px");
-    // }
 
     updateCrossPosition() {
         console.debug("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
@@ -315,15 +357,21 @@ export class SignPosition extends EventFactory {
     }
 
     updateOtherSignPosition(sign, scale) {
+        let id = $(sign).attr('id').split("_")[1];
+        let cross = $("#cross_" + id);
         let newTop = parseInt($(sign).css("top"), 10) / this.currentScale * scale;
         let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
-        $(sign).css('top', newTop + "px");
-        $(sign).css('left', newLeft + "px");
+        cross.css('top', newTop + "px");
+        cross.css('left', newLeft + "px");
+
+        let borders  = $("#borders_" + id);
         let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
         let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
-        $(sign).css('width', newWidth + "px");
-        $(sign).css('height', newHeight + "px");
-        $(sign).css('background-size', newWidth);
+        cross.css('width', newWidth + "px");
+        cross.css('height', newHeight + "px");
+        cross.css('background-size', newWidth);
+        borders.css('width', newWidth + "px");
+        borders.css('height', newHeight + "px");
 
     }
 
@@ -342,7 +390,9 @@ export class SignPosition extends EventFactory {
         textName.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
         textName.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         let textExtra = $('#textExtra_' + this.currentSign);
-        textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
+        if(!this.getCurrentSignParams().extraOnTop) {
+            textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
+        }
         textExtra.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         // this.updateSignButtons();
@@ -351,7 +401,7 @@ export class SignPosition extends EventFactory {
     stopDragSignature() {
         console.info("stop drag");
         this.fireEvent('stopDrag', ['ok']);
-        this.cross.css('backgroundColor', 'rgba(0, 255, 0, .0)');
+        // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .0)');
         this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";
         if(this.pointItEnable) {
@@ -362,6 +412,10 @@ export class SignPosition extends EventFactory {
         this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
+        if(!this.confirmEnabled) {
+            this.enableConfirmLeaveSign();
+            this.confirmEnabled = true;
+        }
     }
 
     dragSignature() {
@@ -378,9 +432,12 @@ export class SignPosition extends EventFactory {
         this.posY = window.scrollY;
         this.pdf.css('pointerEvents', "auto");
         $('body').addClass('disable-div-selection cursor-move');
-
         this.pointItEnable = true;
         this.hideButtons();
+        if(!this.confirmEnabled && this.signable) {
+            this.enableConfirmLeaveSign();
+            this.confirmEnabled = true;
+        }
     }
 
     hideButtons() {
@@ -411,35 +468,81 @@ export class SignPosition extends EventFactory {
         this.borders.append("<span id='textDate' class='align-top visa-text' style='top:-" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale * 3 + "px; font-size:" + this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px;'>Le " + moment().format('DD/MM/YYYY HH:mm:ss') + "</span>");
     }
 
+
+    enableConfirmLeaveSign() {
+        window.onbeforeunload = function(){
+            return confirm("Une signature est en cours sur ce document, voulez abandonner les modifications ?");
+        };
+    }
+
     toggleExtraInfos() {
         console.log("toggle extra");
         $('#extraButton').toggleClass('btn-outline-success btn-outline-dark');
         if(this.getCurrentSignParams().addExtra) {
-            this.getCurrentSignParams().addExtra = false;
-            this.getCurrentSignParams().extraWidth = 0;
-            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
-            $("#textExtra_" + this.currentSign).remove();
+            this.removeExtra();
         } else {
             this.getCurrentSignParams().addExtra = true;
-            this.getCurrentSignParams().extraWidth = 200;
-            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + 200;
-            let signTypeText = "Signature calligraphique";
+            let signTypeText = "";
             if(this.signType === "certSign" || this.signType === "nexuSign") {
-                signTypeText = "Signature électronique";
+                signTypeText = "Signature électronique<br/>";
             }
-            this.borders.append("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='margin-left: " + this.getCurrentSignParams().extraWidth * this.currentScale + "px; font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
+            let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
                 "                        -khtml-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
                 signTypeText +
-                "<br>" +
                 "Signé par " + this.userName +
                 "<br>" +
-                "Le " + moment().format('DD/MM/YYYY HH:mm:ss [GMT] Z') +
+                "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
                 "</span>");
+
+            if(this.getCurrentSignParams().extraOnTop) {
+                this.borders.append(textExtra);
+                let textExtraHeight = textExtra.height() * this.fixRatio;
+                this.getCurrentSignParams().extraHeight = textExtraHeight;
+                this.getCurrentSignParams().extraWidth = 0;
+                this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
+            } else {
+                this.borders.append(textExtra);
+                console.log(textExtra);
+                let textExtraWidth = textExtra.width();
+                this.getCurrentSignParams().extraHeight = 0;
+                this.getCurrentSignParams().extraWidth = textExtraWidth;
+                this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + textExtraWidth;
+            }
         }
         this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+    }
+
+    toggleExtraPosition() {
+        this.getCurrentSignParams().extraOnTop = !this.getCurrentSignParams().extraOnTop;
+        this.getCurrentSignParams().addExtra = !this.getCurrentSignParams().addExtra;
+        this.removeExtra();
+        this.toggleExtraInfos();
+    }
+
+    removeExtra() {
+        this.getCurrentSignParams().addExtra = false;
+        this.getCurrentSignParams().extraWidth = 0;
+        this.getCurrentSignParams().extraHeight = 0;
+        this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+        $("#textExtra_" + this.currentSign).remove();
+    }
+
+    changeSignColor(color) {
+        console.info("change color to : " + color);
+        const rgb = Color.hexToRgb(color);
+
+        this.getCurrentSignParams().red = rgb[0];
+        this.getCurrentSignParams().green = rgb[1];
+        this.getCurrentSignParams().blue = rgb[2];
+
+        let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[this.getCurrentSignParams().signImageNumber];
+        let cross = this.cross;
+        Color.changeColInUri(img, "#000000", color).then(function (e) {
+            cross.css("background-image", "url('" + e + "')");
+        })
     }
 
 }

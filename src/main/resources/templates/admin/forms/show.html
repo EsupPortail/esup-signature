@@ -2,10 +2,11 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
-    new FormUi([[${form.id}]]);
+    new FormUi([[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -28,6 +29,14 @@
                     </li>
                 </ul>
             </div>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" onclick="return false;">Configuration des champs</a>
+                </li>
+            </ul>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                 <table class="table table-borderless table-hover">
@@ -36,13 +45,12 @@
                             <th class="align-middle">Nom</th>
                             <th class="align-middle">Type</th>
                             <th class="align-middle">Requis</th>
-                            <th class="align-middle">lecture seule</th>
-                            <th class="align-middle">Pré-remplissage : Nom du service</th>
-                            <th class="align-middle">Pré-remplissage : Type</th>
-                            <th class="align-middle">Pré-remplissage : Attribut retourné</th>
-                            <th class="align-middle">Auto-completion : Nom du service</th>
-                            <th class="align-middle">Auto-completion : Type</th>
-                            <th class="align-middle">Auto-completion : Attribut retourné</th>
+                            <th class="align-middle">Lecture seule</th>
+                            <th class="align-middle">Pré-remplissage</th>
+                            <th class="align-middle">Auto-completion</th>
+                            <th class="align-middle">Nom du service</th>
+                            <th class="align-middle">Type de données</th>
+                            <th class="align-middle">Attribut retourné</th>
                             <th class="align-middle">Etapes autorisées</th>
                         </tr>
                     </thead>
@@ -54,13 +62,38 @@
                             <td><span th:text="${field.type}" /></td>
                             <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
                             <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
-                            <td><input type="text" name="extValueServiceName" th:value="${field.extValueServiceName}" size="7"/></td>
-                            <td><input type="text" name="extValueType" th:value="${field.extValueType}"  size="7"/></td>
-                            <td><input type="text" name="extValueReturn" th:value="${field.extValueReturn}" size="7"/></td>
-                            <td><input type="text" name="searchServiceName" th:value="${field.searchServiceName}"  size="7"/></td>
-                            <td><input type="text" name="searchType" th:value="${field.searchType}"  size="7"/></td>
-                            <td><input type="text" name="searchReturn" th:value="${field.searchReturn}"  size="7"/></td>
-                            <td><input type="text" name="stepNumbers" th:value="${field.stepNumbers}"  size="7"/></td>
+                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != ''}"/></td>
+                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" name="search" th:value="true" th:checked="${field.searchServiceName != ''}"/></td>
+                            <td>
+                                <select class="slim-select-simple" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${field.extValueServiceName == '' && field.searchServiceName == ''}">
+                                    <option value=""></option>
+                                    <th:block th:each="service : ${preFillTypes}">
+                                        <option th:selected="${field.extValueServiceName == service.key || field.searchServiceName == service.key}" th:value="${service.key}" th:text="${service.key}"></option>
+                                    </th:block>
+                                </select>
+                            </td>
+                            <td>
+                                <select class="slim-select-simple" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${field.extValueServiceName == '' && field.searchServiceName == ''}">
+                                    <th:block th:if="${field.extValueType != ''}">
+                                        <option th:value="${field.extValueType}" th:text="${field.extValueType}" selected></option>
+                                    </th:block>
+                                    <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
+                                        <option th:value="${field.searchType}" th:text="${field.searchType}" selected></option>
+                                    </th:block>
+                                </select>
+                            </td>
+                            <td>
+                                <th:block th:if="${field.extValueType != ''}">
+                                    <input type="text" class="form-control" name="valueReturn" th:value="${field.extValueReturn}" size="7"/>
+                                </th:block>
+                                <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
+                                    <input type="text" class="form-control" name="valueReturn" th:value="${field.searchReturn}" size="7"/>
+                                </th:block>
+                                <th:block th:if="${field.extValueType == '' && field.searchType == ''}">
+                                    <input type="text" class="form-control" name="valueReturn" size="7"/>
+                                </th:block>
+                            </td>
+                            <td><input type="text" class="form-control" name="stepNumbers" th:value="${field.stepNumbers}"  size="7"/></td>
                             </form>
                         </tr>
                     </th:block>

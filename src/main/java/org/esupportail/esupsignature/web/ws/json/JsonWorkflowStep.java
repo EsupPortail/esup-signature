@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller.ws.json;
+package org.esupportail.esupsignature.web.ws.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -8,17 +8,29 @@ import java.util.List;
 @JsonIgnoreProperties
 public class JsonWorkflowStep {
 
+	private Long workflowId;
+
 	private Integer stepNumber;
 
 	private String description;
 
-	private List<String> recipientEmails = new ArrayList<>();
+	private List<String> recipientsEmails = new ArrayList<>();
 
 	private Boolean changeable = false;
 
 	private Integer signLevel = 0;
 
+	private String signType = "visa";
+
 	private Boolean allSignToComplete = false;
+
+	public Long getWorkflowId() {
+		return workflowId;
+	}
+
+	public void setWorkflowId(Long workflowId) {
+		this.workflowId = workflowId;
+	}
 
 	public Integer getStepNumber() {
 		return stepNumber;
@@ -36,12 +48,12 @@ public class JsonWorkflowStep {
 		this.description = description;
 	}
 
-	public List<String> getRecipientEmails() {
-		return recipientEmails;
+	public List<String> getRecipientsEmails() {
+		return recipientsEmails;
 	}
 
-	public void setRecipientEmails(List<String> recipientEmails) {
-		this.recipientEmails = recipientEmails;
+	public void setRecipientsEmails(List<String> recipientsEmails) {
+		this.recipientsEmails = recipientsEmails;
 	}
 
 	public Boolean getChangeable() {
@@ -50,6 +62,14 @@ public class JsonWorkflowStep {
 
 	public void setChangeable(Boolean changeable) {
 		this.changeable = changeable;
+	}
+
+	public String getSignType() {
+		return signType;
+	}
+
+	public void setSignType(String signType) {
+		this.signType = signType;
 	}
 
 	public Integer getSignLevel() {

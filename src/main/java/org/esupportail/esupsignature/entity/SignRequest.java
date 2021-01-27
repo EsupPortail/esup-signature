@@ -28,7 +28,7 @@ public class SignRequest {
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
-    @OneToOne
+    @ManyToOne
     private User createBy;
 
     private String exportedDocumentURI;
@@ -80,6 +80,8 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient Data data;
+
+    private Date lastNotifDate;
     
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
@@ -310,4 +312,11 @@ public class SignRequest {
         }
     }
 
+    public Date getLastNotifDate() {
+        return lastNotifDate;
+    }
+
+    public void setLastNotifDate(Date lastNotifDate) {
+        this.lastNotifDate = lastNotifDate;
+    }
 }

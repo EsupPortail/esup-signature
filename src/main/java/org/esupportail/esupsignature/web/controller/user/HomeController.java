@@ -61,13 +61,15 @@ public class HomeController {
     @Resource
     private MessageService messageService;
 
+    @Resource UserService userService;
+
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         User authUser = (User) model.getAttribute("authUser");
         if(authUser != null) {
             List<Message> messages = new ArrayList<>();
             if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
-                final Context ctx = new Context(Locale.FRENCH);
+                Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
                 ctx.setVariable("splashMessage", true);
                 Message splashMessage = new Message();
@@ -79,10 +81,11 @@ public class HomeController {
             }
             model.addAttribute("messageNews", messages);
             model.addAttribute("signRequests", signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, "tosign", pageable));
-            List<Data> datas = dataRepository.findByCreateByAndStatus(userEppn, SignRequestStatus.draft);
+            List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+            model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");

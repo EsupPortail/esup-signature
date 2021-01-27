@@ -14,8 +14,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.web.controller.ws.json.JsonMessage;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -48,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,9 +89,6 @@ public class SignRequestController {
     private DocumentService documentService;
 
     @Resource
-    private FileService fileService;
-
-    @Resource
     private OtpService otpService;
 
     @Resource
@@ -131,6 +128,11 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
+        if (signRequest.getLastNotifDate() == null) {
+            model.addAttribute("notifTime", 0);
+        } else {
+            model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
+        }
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
@@ -139,6 +141,7 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
+        model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
                 model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
@@ -171,17 +174,12 @@ public class SignRequestController {
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null) {
-            model.addAttribute("signFile", fileService.getBase64Image(user.getSignImages().get(0)));
-        }
         if (user.getKeystore() != null) {
             model.addAttribute("keystore", user.getKeystore().getFileName());
         }
         model.addAttribute("signRequest", signRequest);
-
-        if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn) && signRequest.getOriginalDocuments().size() > 0) {
-            signRequest.setSignable(true);
-        }
+        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";
@@ -487,6 +485,14 @@ public class SignRequestController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Problème d'envoi OTP"));
         }
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PostMapping(value = "replay-notif/{id}")
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) {
+        signRequestService.replayNotif(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;
     }
 

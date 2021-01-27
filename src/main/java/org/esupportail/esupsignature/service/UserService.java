@@ -158,6 +158,7 @@ public class UserService {
         return null;
     }
 
+    @Transactional
     public User createUserWithEmail(String mail) {
         if (ldapPersonService.getIfAvailable() != null) {
             List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByMail(mail);
@@ -462,5 +463,12 @@ public class UserService {
         List<User> users = new ArrayList<>();
         userEmails.forEach(ue -> users.add(this.getUserByEmail(ue)));
         return users.stream().filter(u -> u.getKeystoreFileName() == null).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public Map<UiParams, String> getUiParams(String authUserEppn) {
+        User user = getUserByEppn(authUserEppn);
+        Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
+        return uiParamsStringMap;
     }
 }

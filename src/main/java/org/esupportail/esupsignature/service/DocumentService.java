@@ -87,23 +87,28 @@ public class DocumentService {
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureException {
 		String documentUri;
-		try {
-			logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + signedFile.getFileName());
-			FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
-			fsAccessService.createURITree(targetUrl);
-			InputStream inputStream = signedFile.getInputStream();
-			if(fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)){
-				documentUri = targetUrl + "/" + signedFile.getFileName();
-				if(fsAccessService.getFileFromURI(documentUri) != null) {
-					return documentUri;
+		FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
+		if(fsAccessService != null) {
+			try {
+				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + signedFile.getFileName());
+
+				fsAccessService.createURITree(targetUrl);
+				InputStream inputStream = signedFile.getInputStream();
+				if (fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)) {
+					documentUri = targetUrl + "/" + signedFile.getFileName();
+					if (fsAccessService.getFileFromURI(documentUri) != null) {
+						return documentUri;
+					} else {
+						throw new EsupSignatureException("file is not exported");
+					}
 				} else {
 					throw new EsupSignatureException("file is not exported");
 				}
-			} else {
-				throw new EsupSignatureException("file is not exported");
+			} catch (EsupSignatureFsException e) {
+				throw new EsupSignatureException("write fsaccess error : ", e);
 			}
-		} catch (EsupSignatureFsException e) {
-			throw new EsupSignatureException("write fsaccess error : ", e);
+		} else {
+			throw new EsupSignatureException("aucun fsService configuré");
 		}
 	}
 

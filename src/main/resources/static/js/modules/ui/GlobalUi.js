@@ -1,10 +1,13 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
 import {SseSubscribe} from "../utils/SseSubscribe.js";
+import {CsrfToken} from "../../prototypes/CsrfToken.js";
+import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor() {
+    constructor(csrf) {
         console.info("Starting global UI");
+        this.csrf = csrf;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -83,15 +86,60 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
 
-        $("#sendPendingButton").on('click', e => this.submitSendPending());
-        // $("#submitSendPending").on('click', e => this.submitSendPending());
+        $("#sendPendingButton").on('click', e => this.checkUserCertificate());
+
+        let csrf = this.csrf;
+        $("#startWizardCustomButton").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrameCustom"), "Demande personnalisée", csrf);
+            wizUi.startByDocs();
+        });
+
+        $(".startWizardWorkflowButton").each(function() {
+            $(this).on('click', function(e) {
+                let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), csrf);
+                wizUi.startByDocs();
+            });
+        });
+
+        $("#startWizardButton").on('click', function(e) {
+            let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
+            wizUi.startByRecipients();
+        });
 
         this.bindKeyboardKeys();
     }
 
-    submitSendPending() {
-        $("#pending").val(true);
-        $("#sendButton").click();
+    enableIframe() {
+
+    }
+
+    checkUserCertificate() {
+        if ($('#signType2').val() === 'certSign') {
+            let csrf = new CsrfToken(this.csrf);
+            $.ajax({
+                url: "/user/users/check-user-certificate?" + csrf.parameterName + "=" + csrf.token,
+                type: 'POST',
+                contentType: "application/json",
+                dataType: 'json',
+                data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
+                success: response => this.submitSendPending(response)
+            });
+        } else {
+            $("#pending").val(true);
+            $("#sendButton").click();
+        }
+    }
+
+    submitSendPending(data) {
+        let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : ";
+        for (let i = 0; i < data.length ; i++) {
+            stringChain += data[i].firstname + " " + data[i].name + " ";
+        }
+        stringChain += "Confirmez-vous l'envoie de la demande ? "
+        if (data.length < 1 || window.confirm(stringChain)) {
+            $("#pending").val(true);
+            $("#sendButton").click();
+        }
     }
 
     // showSendPendingModal() {
@@ -287,6 +335,8 @@ export class GlobalUi {
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: false,
+                allowDeselect: true,
+                placeholder: ' ',
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)

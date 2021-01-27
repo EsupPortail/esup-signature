@@ -17,9 +17,9 @@ public class PreFillService {
 		return preFillValues;
 	}
 
-	public PreFill getPreFillServiceByClassName(String className) {
+	public PreFill getPreFillServiceByName(String name) {
 		for(PreFill preFillValue : preFillValues ) {
-			if(preFillValue.getClass().getSimpleName().equals(className)) {
+			if(preFillValue.getName().equals(name)) {
 				return preFillValue;
 			}
 		}

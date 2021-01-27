@@ -6,7 +6,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 export class WorkspacePdf {
 
     constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields) {
-        console.info("Starting workspace UI ");
+        console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
         this.currentSignType = currentSignType;
@@ -19,7 +19,7 @@ export class WorkspacePdf {
             this.currentSignRequestParams[0].yPos,
             this.currentSignRequestParams[0].signPageNumber,
             signImages,
-            userName);
+            userName, signable);
         if(this.isPdf) {
             this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
         }
@@ -76,6 +76,9 @@ export class WorkspacePdf {
         }
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
         $("#signLaunchButton").on('click', e => this.launchSignModal());
+        $("#refuseLaunchButton").on('click', function (){
+            window.onbeforeunload = null;
+        });
         //$("#signForm").on('submit', e => this.validateForm(e));
     }
 
@@ -92,6 +95,7 @@ export class WorkspacePdf {
 
     launchSignModal() {
         console.info("launch sign modal");
+        window.onbeforeunload = null;
         if(WorkspacePdf.validateForm()) {
             $("#signModal").modal('toggle');
         }
@@ -340,7 +344,7 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
-        $('#workspace').toggleClass('alert-success alert-secondary');
+        // $('#workspace').toggleClass('alert-secondary');
         $(".circle").each(function( index ) {
             $(this).hide();
         });
@@ -363,7 +367,7 @@ export class WorkspacePdf {
 
     disableAllModes() {
         //this.mode = 'sign';
-        $('#workspace').removeClass('alert-danger').removeClass('alert-warning').removeClass('alert-success').addClass('alert-secondary');
+        $('#workspace').removeClass('alert-danger').removeClass('alert-warning');
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');

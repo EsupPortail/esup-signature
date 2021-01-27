@@ -32,7 +32,8 @@ public class PreAuthorizeService {
 
     public boolean dataUpdate(Long id, String userEppn) {
         Data data = dataService.getById(id);
-        return data.getCreateBy().equals(userEppn) || data.getOwner().equals(userEppn);
+        User user = userService.getByEppn(userEppn);
+        return data.getCreateBy().equals(user) || data.getOwner().equals(user);
     }
 
     public boolean signBookView(Long id, String userEppn) {

@@ -72,6 +72,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("formManaged", formService.getFormByManagersContains(authUser.getEmail()));
         model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
+        model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }

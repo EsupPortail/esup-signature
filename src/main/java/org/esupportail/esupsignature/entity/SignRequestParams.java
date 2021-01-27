@@ -29,9 +29,19 @@ public class SignRequestParams {
 
     private Boolean addExtra = false;
 
+    private Boolean extraOnTop = true;
+
 	private Boolean addDate = false;
 
 	private Boolean addName = false;
+
+	private Float signScale = 1F;
+
+	private Integer red = 0;
+
+    private Integer green = 0;
+
+    private Integer blue = 0;
 
     public Long getId() {
         return this.id;
@@ -105,12 +115,20 @@ public class SignRequestParams {
         this.yPos = yPos;
     }
 
-    public Boolean isAddExtra() {
+    public Boolean getAddExtra() {
         return addExtra;
     }
 
     public void setAddExtra(Boolean addExtra) {
         this.addExtra = addExtra;
+    }
+
+    public Boolean getExtraOnTop() {
+        return extraOnTop;
+    }
+
+    public void setExtraOnTop(Boolean extraOnTop) {
+        this.extraOnTop = extraOnTop;
     }
 
     public Boolean isAddDate() {
@@ -129,4 +147,35 @@ public class SignRequestParams {
         this.addName = addName;
     }
 
+    public Float getSignScale() {
+        return signScale;
+    }
+
+    public void setSignScale(Float signScale) {
+        this.signScale = signScale;
+    }
+
+    public int getRed() {
+        return red;
+    }
+
+    public void setRed(int red) {
+        this.red = red;
+    }
+
+    public int getGreen() {
+        return green;
+    }
+
+    public void setGreen(int green) {
+        this.green = green;
+    }
+
+    public int getBlue() {
+        return blue;
+    }
+
+    public void setBlue(int blue) {
+        this.blue = blue;
+    }
 }

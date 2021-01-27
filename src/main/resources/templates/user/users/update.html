@@ -1,4 +1,4 @@
-<!doctype html>
+¯<!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head"></head>
@@ -7,7 +7,7 @@
     import {UserParamsHelp} from "/static/js/modules/help/UserParamsHelp.js";
     new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
 
-    let help = new UserParamsHelp([[${authUser.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
+    let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
 <body>

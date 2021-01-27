@@ -27,6 +27,7 @@ public class GlobalProperties implements Cloneable {
     private Boolean enableSplash = false;
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
+    private int hoursBeforeRefreshNotif = 24;
 
     public String getRootUrl() {
         return rootUrl;
@@ -164,4 +165,11 @@ public class GlobalProperties implements Cloneable {
         this.applicationEmail = applicationEmail;
     }
 
+    public int getHoursBeforeRefreshNotif() {
+        return hoursBeforeRefreshNotif;
+    }
+
+    public void setHoursBeforeRefreshNotif(int hoursBeforeRefreshNotif) {
+        this.hoursBeforeRefreshNotif = hoursBeforeRefreshNotif;
+    }
 }

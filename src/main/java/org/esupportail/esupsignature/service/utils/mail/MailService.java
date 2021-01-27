@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -37,6 +36,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -59,9 +59,6 @@ public class MailService {
 
     @Resource
     private TemplateEngine templateEngine;
-
-    @Resource
-    private SignRequestService signRequestService;
 
     @Resource
     private UserService userService;
@@ -151,6 +148,7 @@ public class MailService {
             message.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.getIfAvailable().send(mimeMessage);
+            signRequest.setLastNotifDate(new Date());
         } catch (MessagingException e) {
             logger.error("unable to send email", e);
         }

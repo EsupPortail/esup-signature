@@ -171,7 +171,7 @@ code {
 }
 
 .anim-border {
-    background-color: rgba(173, 255, 47, 0.5);
+    /*background-color: rgba(173, 255, 47, 0.5);*/
     background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
     background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
     background-size: 15px 2px, 15px 2px, 2px 15px, 2px 15px;
@@ -211,6 +211,9 @@ code {
   display: inline-block;
   width: 60px;
   height: 34px;
+    float: right;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 
 /* Hide default HTML checkbox */
@@ -417,7 +420,7 @@ input:checked + .slider:before {
     z-index: 6;
     min-width: 260px;
     max-width: 260px;
-    min-height: 100vh;
+    height: calc(100vh - 80px);
     background: #FFF;
     overflow-y: auto;
     overflow-x: fragments;
@@ -460,7 +463,6 @@ input:checked + .slider:before {
     z-index: 5;
     position: fixed;
     padding-left: 10px;
-    border-bottom: 1px solid #ebebeb;
 }
 
 .breadcrumb {
@@ -803,13 +805,15 @@ float:left;
 }
 
 .nav-tabs .nav-link {
-    border-color: #dee2e6 !important;
+    color: #6c757d;
+    border-color: #6c757d !important;
     border-bottom : 1px solid #000000 !important;
     /*background-color: #dee2e6;*/
 }
 
-.nav-tabs .nav-link.active {
-    border-color: #000 #000 #fff !important;
+.nav-tabs .nav-link.current {
+    color: black;
+    border-color: #000 #000 #e2e3e5 #000 !important;
 
 }
 
@@ -872,6 +876,10 @@ float:left;
     -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.form-group {
+    text-align: left;
 }
 
 .form-group.required label:after {
