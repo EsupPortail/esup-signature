@@ -16,7 +16,8 @@ global:
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
     hours-before-refresh-notif: 24
-
+    share-mode: 3
+    
 #tomcat:
 #    ajp:
 #        port: 6009
@@ -61,13 +62,11 @@ spring:
             ddl-auto: update
         properties:
             hibernate:
-                flushMode: MANUAL
                 jdbc:
                     lob:
                         non_contextual_creation: true
         show-sql: false
         open-in-view: false
-        database: postgresql
     ldap:
         base: dc=univ-ville,dc=fr
         password: ldap-password
