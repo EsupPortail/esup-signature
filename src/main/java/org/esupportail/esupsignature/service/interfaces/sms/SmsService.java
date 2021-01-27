@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.utils.sms;
+package org.esupportail.esupsignature.service.interfaces.sms;
 
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 

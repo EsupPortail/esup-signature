@@ -159,7 +159,7 @@ public class UserShareService {
             userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
         }
         for (UserShare userShare : userShares) {
-            if (checkUserShareDate(userShare)) {
+            if (checkUserShareDate(userShare) && checkUserShareDate(userShare, signRequest.getCreateDate())) {
                 return true;
             }
         }
@@ -214,12 +214,16 @@ public class UserShareService {
         return userShareRepository.findByUserEppnAndToUsersEppnInAndShareTypesContains(fromUserEppn, toUsers, shareType);
     }
 
-    public Boolean checkUserShareDate(UserShare userShare) {
-        Date today = new Date();
-        if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
+    public Boolean checkUserShareDate(UserShare userShare, Date checkDate) {
+        if((userShare.getBeginDate() == null || checkDate.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || checkDate.before(userShare.getEndDate()))) {
             return true;
         }
         return false;
+    }
+
+    public Boolean checkUserShareDate(UserShare userShare) {
+        Date checkDate = new Date();
+        return checkUserShareDate(userShare, checkDate);
     }
 
     public List<UserShare> getUserSharesByUser(String authUserEppn) {

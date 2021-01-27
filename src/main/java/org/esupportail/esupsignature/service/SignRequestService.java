@@ -156,7 +156,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
 		if(!userEppn.equals(authUserEppn)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
+				if(userShareService.checkShare(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -164,6 +164,18 @@ public class SignRequestService {
 			signRequestList.addAll(signRequests);
 		}
 		return signRequestList.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
+	}
+
+	public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
+		boolean isInRecipients = false;
+		Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
+		for(Recipient recipient : recipients) {
+			if (recipient.getUser().getEppn().equals(userEppn)) {
+				isInRecipients = true;
+				break;
+			}
+		}
+		return isInRecipients;
 	}
 
 	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
