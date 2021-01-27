@@ -68,10 +68,9 @@
                             </th:block>
                         </div>
 
-                        <div class="form-group" th:if="${globalProperties.shareMode > 2}">
+                        <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
                             <label for="signWithOwnSign">Modalité de signature</label>
-                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign"
-                                    required="required">
+                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="true" th:selected="${userShare.signWithOwnSign}">Le délégué signe avec ça propre signature</option>
                                 <option value="false" th:selected="${!userShare.signWithOwnSign}">Le délégué signe avec votre signature</option>

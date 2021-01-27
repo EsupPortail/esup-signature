@@ -9,6 +9,13 @@ export default class ShareUi {
         $('#selectTarget').on('change', e => this.toggleShareForm());
         $('#selectWorkflow').on('change', e => this.updateTypeCheckboxes(e));
         $('#selectForm').on('change', e => this.updateTypeCheckboxes(e));
+        let checkSign = $("#check-sign");
+        if(checkSign) {
+            this.listenToCheckSign();
+            if(checkSign.prop("checked") === true) {
+                $('#sign-mod').removeClass("d-none");
+            }
+        }
     }
 
     toggleShareForm() {
@@ -21,8 +28,12 @@ export default class ShareUi {
             $('#selectFormDiv').addClass('d-none');
             $('#selectWorkflowDiv').removeClass('d-none');
         } else {
+            let self = this;
             $("input[id^='check-']").each(function() {
                 $(this).removeAttr("disabled");
+                if($(this).attr("id").split("-")[1] === "sign") {
+                    self.listenToCheckSign();
+                }
             });
         }
     }
@@ -35,13 +46,27 @@ export default class ShareUi {
         let authorizedSignTypesData = optionSelected.attr("data");
         if(authorizedSignTypesData) {
             let authorizedSignTypes = authorizedSignTypesData.replace("[", "").replace("]", "").split(",");
+            let self = this;
             $.each(authorizedSignTypes, function (id, value) {
-                $("#check-" + value.trim()).removeAttr("disabled");
+                let checkBox = $("#check-" + value.trim());
+                checkBox.removeAttr("disabled");
+                if(value.trim() === "sign") {
+                    self.listenToCheckSign();
+                }
                 console.log(value);
             });
         }
     }
 
+    listenToCheckSign() {
+        $("#check-sign").on('click', function () {
+            if ($(this).prop("checked") === true) {
+                $('#sign-mod').removeClass("d-none");
+            } else {
+                $('#sign-mod').addClass("d-none");
+            }
+        });
+    }
 
 
 }

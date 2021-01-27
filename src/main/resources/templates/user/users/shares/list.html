@@ -55,8 +55,10 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec ça propre signature</span>
-                                    <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
+                                    <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
+                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec ça propre signature</span>
+                                        <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <ul class="text-left">
@@ -175,9 +177,9 @@
                             </th:block>
                         </div>
 
-                        <div class="form-group" th:if="${globalProperties.shareMode > 2}">
+                        <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
                             <label for="signWithOwnSign">Modalité de signature</label>
-                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign" required="required">
+                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="true">Le délégué signe avec ça propre signature</option>
                                 <option value="false">Le délégué signe avec votre signature</option>
