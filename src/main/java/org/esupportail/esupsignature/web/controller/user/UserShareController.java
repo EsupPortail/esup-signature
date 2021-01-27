@@ -119,8 +119,7 @@ public class UserShareController {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
             }
         }
-        String referer = httpServletRequest.getHeader("Referer");
-        return "redirect:"+ referer;
+        return "redirect:/";
     }
 
 

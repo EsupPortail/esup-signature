@@ -41,6 +41,8 @@ public class UserShareService {
     @Resource
     private WorkflowService workflowService;
 
+    private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
+
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
         if(globalProperties.getShareMode() > 0) {
@@ -112,8 +114,8 @@ public class UserShareService {
         Date endDateDate = null;
         if (beginDate != null && endDate != null) {
             try {
-                beginDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(beginDate);
-                endDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+                beginDateDate = new SimpleDateFormat(DATE_PATTERN).parse(beginDate);
+                endDateDate = new SimpleDateFormat(DATE_PATTERN).parse(endDate);
             } catch (ParseException e) {
                 logger.error("error on parsing dates");
             }
@@ -155,8 +157,8 @@ public class UserShareService {
             }
             if (beginDate != null && endDate != null) {
                 try {
-                    userShare.setBeginDate(new SimpleDateFormat("yyyy-MM-dd").parse(beginDate));
-                    userShare.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(endDate));
+                    userShare.setBeginDate(new SimpleDateFormat(DATE_PATTERN).parse(beginDate));
+                    userShare.setEndDate(new SimpleDateFormat(DATE_PATTERN).parse(endDate));
                 } catch (ParseException e) {
                     logger.error("error on parsing dates");
                 }
@@ -232,7 +234,10 @@ public class UserShareService {
     }
 
     public Boolean checkUserShareDate(UserShare userShare, Date checkDate) {
-        if((userShare.getBeginDate() == null || checkDate.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || checkDate.before(userShare.getEndDate()))) {
+        if((userShare.getBeginDate() == null
+                || checkDate.after(userShare.getBeginDate()))
+                && (userShare.getEndDate() == null
+                || checkDate.before(userShare.getEndDate()))) {
             return true;
         }
         return false;

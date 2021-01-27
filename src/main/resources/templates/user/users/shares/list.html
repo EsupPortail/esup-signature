@@ -66,10 +66,10 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy')}"></span>
+                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy')}"></span>
+                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td class="d-inline-flex">
                                     <a type="button" title="Supprimer" th:href="'/user/users/shares/update/' + ${userShare.id}"

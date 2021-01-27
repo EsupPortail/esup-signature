@@ -7,6 +7,7 @@ BEGIN
         LOOP
             insert into live_workflow_live_workflow_steps values(lw.live_workflow_id, lw.workflow_steps_id, lw.workflow_steps_order);
         END LOOP ;
+    drop table live_workflow_workflow_steps;
 END
 $BODY$
     LANGUAGE plpgsql;
