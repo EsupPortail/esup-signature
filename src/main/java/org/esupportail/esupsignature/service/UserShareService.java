@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -18,6 +19,9 @@ import java.util.*;
 public class UserShareService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserShareService.class);
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private UserService userService;
@@ -39,11 +43,13 @@ public class UserShareService {
 
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
-        for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
-            if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
-                User user = userShare.getUser();
-                user.setUserShareId(userShare.getId());
-                suUsers.add(user);
+        if(globalProperties.getShareMode() > 0) {
+            for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
+                if (!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
+                    User user = userShare.getUser();
+                    user.setUserShareId(userShare.getId());
+                    suUsers.add(user);
+                }
             }
         }
         return suUsers;
@@ -53,11 +59,16 @@ public class UserShareService {
         return userShareRepository.findByWorkflowId(id);
     }
 
-
     public void createUserShare(Boolean signWithOwnSign, List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
-        userShare.setSignWithOwnSign(signWithOwnSign);
+        if(globalProperties.getShareMode() > 2) {
+            userShare.setSignWithOwnSign(signWithOwnSign);
+        } else if(globalProperties.getShareMode() > 1) {
+            userShare.setSignWithOwnSign(false);
+        } else if(globalProperties.getShareMode() > 0) {
+            userShare.setSignWithOwnSign(true);
+        }
         List<ShareType> shareTypes = new ArrayList<>();
         for(String type : types) {
             shareTypes.add(ShareType.valueOf(type));
@@ -114,7 +125,13 @@ public class UserShareService {
     public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign) {
         User authUser = userService.getUserByEppn(authUserEppn);
         UserShare userShare = getById(userShareId);
-        userShare.setSignWithOwnSign(signWithOwnSign);
+        if(globalProperties.getShareMode() > 2) {
+            userShare.setSignWithOwnSign(signWithOwnSign);
+        } else if(globalProperties.getShareMode() > 1) {
+            userShare.setSignWithOwnSign(false);
+        } else if(globalProperties.getShareMode() > 0) {
+            userShare.setSignWithOwnSign(true);
+        }
         if(userShare.getUser().equals(authUser)) {
             userShare.getToUsers().clear();
             for (String userEmail : userEmails) {

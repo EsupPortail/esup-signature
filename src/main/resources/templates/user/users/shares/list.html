@@ -87,7 +87,7 @@
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command"
-                                                      th:action="'/user/users/del-share/' + ${userShare.id}"
+                                                      th:action="'/user/users/shares/del/' + ${userShare.id}"
                                                       th:method="delete">
                                                     <div class="modal-header">
                                                         <button type="button" class="close" data-dismiss="modal"
@@ -132,7 +132,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form id="shareForm" th:action="'/user/users/add-share'" method="post">
+                <form id="shareForm" th:action="'/user/users/shares/add'" method="post">
                     <div class="modal-body">
 
                         <div class="form-group">
@@ -175,7 +175,7 @@
                             </th:block>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" th:if="${globalProperties.shareMode > 2}">
                             <label for="signWithOwnSign">Modalité de signature</label>
                             <select id="signWithOwnSign" class="form-control" name="signWithOwnSign" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
@@ -191,11 +191,11 @@
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de début</label>
-                            <input type="date" name="beginDate" class="form-control datepicker">
+                            <input type="datetime-local" name="beginDate" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de fin</label>
-                            <input type="date" name="endDate" class="form-control datepicker">
+                            <input type="datetime-local" name="endDate" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
