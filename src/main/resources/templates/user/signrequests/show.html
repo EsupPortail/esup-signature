@@ -456,8 +456,12 @@
             </div>
             <form th:action="'/user/signrequests/pending/' + ${signRequest.id}">
                 <div class="modal-body">
-                    <p th:unless="${steps.size() > 0}">Après la validation, vous pourrez télécharger le document</p>
-                    <div th:if="${steps.size() > 0}">
+                    <th:block th:unless="${steps.size() > 0}">
+                        <p th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                            Après la validation, vous pourrez télécharger le document
+                        </p>
+                    </th:block>
+                    <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
                             <p>
                                 La procédure comporte <span

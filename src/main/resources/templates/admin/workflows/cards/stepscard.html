@@ -67,7 +67,7 @@
                                   th:action="${fromAdmin == true ? '/admin/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
                                   th:method="delete">
                                 <button type="submit" title="Supprimer l'étape"
-                                        onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');"
+                                        onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');"
                                         class="btn btn-danger float-right">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
@@ -95,7 +95,7 @@
                                             </td>
                                             <td>
                                                 <button title="Supprimer le destinataire"
-                                                        onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                        onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                         type="submit" class="btn btn-danger btn-sm"><i
                                                         class="fas fa-minus-circle"></i></button>
                                             </td>

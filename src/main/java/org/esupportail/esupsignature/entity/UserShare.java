@@ -20,11 +20,15 @@ public class UserShare {
     @ManyToMany
     private List<User> toUsers = new ArrayList<>();
 
+    private Boolean signWithOwnSign = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Form form;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
+
+    private Boolean allSignRequests = false;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date beginDate;
@@ -59,6 +63,15 @@ public class UserShare {
         this.toUsers = toUsers;
     }
 
+
+    public Boolean getSignWithOwnSign() {
+        return signWithOwnSign;
+    }
+
+    public void setSignWithOwnSign(Boolean signWithOwnSign) {
+        this.signWithOwnSign = signWithOwnSign;
+    }
+
     public Form getForm() {
         return form;
     }
@@ -73,6 +86,14 @@ public class UserShare {
 
     public void setWorkflow(Workflow workflow) {
         this.workflow = workflow;
+    }
+
+    public Boolean getAllSignRequests() {
+        return allSignRequests;
+    }
+
+    public void setAllSignRequests(Boolean all) {
+        this.allSignRequests = all;
     }
 
     public Date getBeginDate() {

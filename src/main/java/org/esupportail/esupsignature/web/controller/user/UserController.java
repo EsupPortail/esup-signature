@@ -3,11 +3,8 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
-import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
@@ -28,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -52,9 +48,6 @@ public class UserController {
 	@Resource
 	private FormService formService;
 
-	@Resource
-	private WorkflowService workflowService;
-
 	@Autowired(required=false)
 	private UserKeystoreService userKeystoreService;
 	
@@ -62,15 +55,12 @@ public class UserController {
 	private UserService userService;
 
 	@Resource
-	private UserShareService userShareService;
-
-	@Resource
 	private UserPropertieService userPropertieService;
 
 	@Resource
 	private MessageService messageService;
 
-	@Resource
+	@Autowired(required = false)
 	private LdapAliasService ldapAliasService;
 
 	@Resource
@@ -137,7 +127,10 @@ public class UserController {
 	@ResponseBody
 	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
     	logger.debug("ldap search for : " + searchString);
-		return ldapAliasService.searchAlias(searchString);
+    	if(ldapAliasService != null) {
+			return ldapAliasService.searchAlias(searchString);
+		}
+    	return new ArrayList<>();
 	}
 
 	@GetMapping(value = "/search-user-list")
@@ -148,100 +141,20 @@ public class UserController {
 
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
-		model.addAttribute("userProperties", userProperties);
+		UserPropertie userPropertie = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
+		if (userPropertie != null) {
+			List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
+			entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+			Map<User, Date> sortedMap = new LinkedHashMap<>();
+			entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+			model.addAttribute("favorites", sortedMap);
+		}
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
-	@GetMapping("/shares")
-	public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
-		model.addAttribute("userShares", userShares);
-		model.addAttribute("shareTypes", ShareType.values());
-		model.addAttribute("forms", formService. getAuthorizedToShareForms());
-		model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
-		model.addAttribute("users", userService.getAllUsers());
-		model.addAttribute("activeMenu", "shares");
-		return "user/users/shares/list";
-	}
-
-	@GetMapping("/shares/update/{id}")
-	public String params(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		model.addAttribute("activeMenu", "shares");
-		UserShare userShare = userShareService.getById(id);
-		if(userShare.getUser().getEppn().equals(authUserEppn)) {
-			model.addAttribute("shareTypes", ShareType.values());
-			model.addAttribute("userShare", userShare);
-			return "user/users/shares/update";
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Accès refusé"));
-			return "redirect:/user/users/shares";
-		}
-	}
-
-	@PostMapping("/add-share")
-	public String addShare(@ModelAttribute("authUserEppn") String authUserEppn,
-						   @RequestParam(value = "form", required = false) Long[] form,
-						   @RequestParam(value = "workflow", required = false) Long[] workflow,
-						   @RequestParam("types") String[] types,
-						   @RequestParam("userIds") String[] userEmails,
-						   @RequestParam("beginDate") String beginDate,
-						   @RequestParam("endDate") String endDate, Model model,
-						   RedirectAttributes redirectAttributes) {
-		User authUser = (User) model.getAttribute("authUser");
-    	if(form == null) form = new Long[] {};
-		if(workflow == null) workflow = new Long[] {};
-		try {
-			userShareService.addUserShare(authUser, form, workflow, types, userEmails, beginDate, endDate);
-		} catch (EsupSignatureUserException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-		}
-		return "redirect:/user/users/shares";
-	}
-
-	@PostMapping("/update-share/{id}")
-	public String updateShare(@ModelAttribute("authUserEppn") String authUserEppn,
-							  @PathVariable("id") Long id,
-							  @RequestParam("types") String[] types,
-							  @RequestParam("userIds") String[] userEmails,
-							  @RequestParam("beginDate") String beginDate,
-							  @RequestParam("endDate") String endDate, Model model) {
-		User authUser = (User) model.getAttribute("authUser");
-		UserShare userShare = userShareService.getById(id);
-		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
-		return "redirect:/user/users/shares";
-	}
-
-	@DeleteMapping("/del-share/{id}")
-	public String delShare(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = (User) model.getAttribute("authUser");
-		UserShare userShare = userShareService.getById(id);
-		if (userShare.getUser().equals(authUser)) {
-			userShareService.delete(userShare);
-		}
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Élément supprimé"));
-		return "redirect:/user/users/shares";
-	}
-
-	@GetMapping("/change-share")
-	public String change(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(required = false) String eppn, RedirectAttributes redirectAttributes, HttpSession httpSession, HttpServletRequest httpServletRequest) {
-		if(eppn == null || eppn.isEmpty()) {
-			httpSession.setAttribute("suEppn", null);
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
-		} else {
-			if(userShareService.checkShare(eppn, authUserEppn)) {
-				httpSession.setAttribute("suEppn", eppn);
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));
-			} else {
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune délégation active en ce moment"));
-			}
-		}
-		String referer = httpServletRequest.getHeader("Referer");
-		return "redirect:"+ referer;
-	}
 
 	@GetMapping("/mark-intro-as-read/{name}")
 	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
@@ -290,6 +203,12 @@ public class UserController {
 	@PostMapping(value ="/check-user-certificate")
 	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
     	return userService.getUserWithoutCertificate(userEmails);
+	}
+
+	@ResponseBody
+	@GetMapping("/get-favorites")
+	private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    	return userPropertieService.getFavoritesEmails(authUserEppn);
 	}
 
 }

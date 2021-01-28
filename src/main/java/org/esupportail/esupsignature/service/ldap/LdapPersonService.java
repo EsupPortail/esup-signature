@@ -28,7 +28,6 @@ public class LdapPersonService {
 
     public List<PersonLdap> search(String searchString) {
         return personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
-
     }
 
 	public PersonLdapRepository getPersonLdapRepository() {

@@ -156,7 +156,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
 		if(!userEppn.equals(authUserEppn)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
+				if(userShareService.checkShare(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -164,6 +164,18 @@ public class SignRequestService {
 			signRequestList.addAll(signRequests);
 		}
 		return signRequestList.stream().sorted(Comparator.comparing(SignRequest::getId)).collect(Collectors.toList());
+	}
+
+	public boolean isUserInRecipients(SignRequest signRequest, String userEppn) {
+		boolean isInRecipients = false;
+		Set<Recipient> recipients = signRequest.getRecipientHasSigned().keySet();
+		for(Recipient recipient : recipients) {
+			if (recipient.getUser().getEppn().equals(userEppn)) {
+				isInRecipients = true;
+				break;
+			}
+		}
+		return isInRecipients;
 	}
 
 	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
@@ -198,7 +210,7 @@ public class SignRequestService {
 		return new ArrayList<>(signRequests);
 	}
 
-	public Long nbToSignRequests(String userEppn) {
+	public Long nbToSignSignRequests(String userEppn) {
 		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
 
@@ -301,7 +313,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String userEppn, String authUserEppn) {
+	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userShareId, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -344,7 +356,7 @@ public class SignRequestService {
 			signRequest.setComment(comment);
 			User user = userService.getByEppn(userEppn);
 			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser);
+			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId);
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
 				public void afterCommit(){
 					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
@@ -360,7 +372,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser) throws EsupSignatureException, IOException, InterruptedException {
+	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId) throws EsupSignatureException, IOException, InterruptedException {
+		User signerUser = user;
+		if(userShareId != null) {
+			UserShare userShare = userShareService.getById(userShareId);
+			if (userShare.getUser().getEppn().equals(user.getEppn()) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
+				signerUser = userService.getByEppn(authUser.getEppn());
+			}
+		}
 		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 		SignType signType = signRequest.getCurrentSignType();
 		InputStream filledInputStream;
@@ -393,7 +412,7 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
-					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, user);
+					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
 					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 				}
 			}
@@ -406,7 +425,7 @@ public class SignRequestService {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
-			certSign(signRequest, user, password, visual, sseId);
+			certSign(signRequest, signerUser, password, visual, sseId);
 		}
 		if (signType.equals(SignType.visa)) {
 			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
@@ -1042,10 +1061,9 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<String> getSignImageForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn) throws EsupSignatureUserException, IOException {
+	public List<String> getSignImagesForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userEppn, authUserEppn);
 		signRequestRef.setSignable(signRequest.getSignable());
-		User user = userService.getByEppn(userEppn);
 		List<String> signImages = new ArrayList<>();
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
@@ -1053,6 +1071,13 @@ public class SignRequestService {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
 					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/sceau.png"), "sceau.png"));
 				} else {
+					User user = userService.getByEppn(userEppn);
+					if(userShareId != null) {
+						UserShare userShare = userShareService.getById(userShareId);
+						if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
+							user = userService.getByEppn(authUserEppn);
+						}
+					}
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
 						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);

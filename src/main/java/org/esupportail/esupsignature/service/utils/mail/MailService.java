@@ -130,8 +130,10 @@ public class MailService {
         final Context ctx = new Context(Locale.FRENCH);
 
         PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
-        OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
-        ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
         ctx.setVariable("signRequest", signRequest);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);

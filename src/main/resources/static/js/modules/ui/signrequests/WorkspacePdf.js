@@ -13,6 +13,7 @@ export class WorkspacePdf {
         this.postits = postits;
         this.signable = signable;
         this.signRequestId = id;
+        this.signType = signType;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -74,6 +75,30 @@ export class WorkspacePdf {
                 postitButton.on('click', e => this.focusComment(postit));
             });
         }
+        $('[id^="deleteAttachement_"]').each(function (){
+            $(this).on('click', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Confimez la suppression de la pièce jointe ?", function (result) {
+                    if(result) {
+                        location.href = $(target).attr('href');
+                    }
+                });
+            });
+        });
+
+        $('[id^="deleteLink_"]').each(function (){
+            $(this).on('click', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Confirmez la suppression du lien ?", function (result) {
+                    if(result) {
+                        location.href = $(target).attr('href');
+                    }
+                });
+            });
+        });
+
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
         $("#signLaunchButton").on('click', e => this.launchSignModal());
         $("#refuseLaunchButton").on('click', function (){
@@ -96,8 +121,12 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(WorkspacePdf.validateForm()) {
-            $("#signModal").modal('toggle');
+        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa") {
+            bootbox.alert("Merci de placer la signature");
+        } else {
+            if (WorkspacePdf.validateForm()) {
+                $("#signModal").modal('toggle');
+            }
         }
     }
 
@@ -292,9 +321,6 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
         this.pdfViewer.scale = 0.5;
-        if(this.isFloat(localStorage.getItem('scale'))) {
-            this.pdfViewer.scale = localStorage.getItem('scale');
-        }
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);

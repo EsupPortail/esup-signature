@@ -177,7 +177,7 @@ export class CreateDataUi {
             let savedField = pdfViewer.savedFields.get(dataField.name)
             formData[dataField.name]= savedField;
             if(dataField.required && (savedField === "" || savedField == null)) {
-                alert("Un champ n'est pas rempli en page " + dataField.page);
+                bootbox.alert("Un champ n'est pas rempli en page " + dataField.page);
                 openModal = false;
                 pdfViewer.renderPage(dataField.page);
             }

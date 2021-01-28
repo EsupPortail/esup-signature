@@ -5,6 +5,7 @@
 <head th:replace="fragments/head :: head"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from "/static/js/modules/ui/users/ShareUi.js";
+
     new ShareUi();
 </script>
 <body>
@@ -15,7 +16,8 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
-                <li class="breadcrumb-item active" th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></li>
+                <li class="breadcrumb-item active" th:if="${userShare.workflow}"
+                    th:text="${userShare.workflow.title}"></li>
                 <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
             </ol>
         </nav>
@@ -28,61 +30,72 @@
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body text-center">
-                    <form id="shareForm" th:action="'/user/users/update-share/' + ${userShare.id}" method="post">
-                            <div id="selectFormDiv" class="form-group" th:if="${userShare.form}">
-                                <h5>
+                    <form id="shareForm" th:action="'/user/users/shares/update/' + ${userShare.id}" method="post">
+                        <div id="selectFormDiv" class="form-group" th:if="${userShare.form}">
+                            <h5>
                                 <label>Formulaires délégué : </label>
                                 <span th:text="${userShare.form.title}"></span>
-                                </h5>
-                            </div>
+                            </h5>
+                        </div>
 
-                            <div id="selectWorkflowDiv" class="form-group" th:if="${userShare.workflow}">
-                                <label>Circuits délégué : </label>
-                                <span th:text="${userShare.workflow.description}" selected></span>
-                            </div>
+                        <div id="selectWorkflowDiv" class="form-group" th:if="${userShare.workflow}">
+                            <label>Circuits délégué : </label>
+                            <span th:text="${userShare.workflow.description}" selected></span>
+                        </div>
 
-<!--                            <div class="form-group">-->
-<!--                                <label for="selectType">Type de délégation</label>-->
-<!--                                <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">-->
-<!--                                    <option value="" data-placeholder="true">Choisir un type de délégation</option>-->
-<!--                                    <th:block th:each="shareType : ${shareTypes}">-->
-<!--                                        <option th:selected="${userShare.shareTypes.contains(shareType)}" th:value="${shareType.name()}"-->
-<!--                                                th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>-->
-<!--                                    </th:block>-->
-<!--                                </select>-->
-<!--                            </div>-->
+                        <!--                            <div class="form-group">-->
+                        <!--                                <label for="selectType">Type de délégation</label>-->
+                        <!--                                <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">-->
+                        <!--                                    <option value="" data-placeholder="true">Choisir un type de délégation</option>-->
+                        <!--                                    <th:block th:each="shareType : ${shareTypes}">-->
+                        <!--                                        <option th:selected="${userShare.shareTypes.contains(shareType)}" th:value="${shareType.name()}"-->
+                        <!--                                                th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>-->
+                        <!--                                    </th:block>-->
+                        <!--                                </select>-->
+                        <!--                            </div>-->
 
-                            <div class="form-group">
-                                <label>Type de délégation</label>
-                                <th:block th:each="shareType : ${shareTypes}">
-                                    <div class="form-check text-left">
-                                        <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types"
-                                               th:checked="${userShare.shareTypes.contains(shareType)}"
-                                               th:value="${shareType.name()}"
-                                               th:disabled="${(userShare.form != null && !userShare.form.authorizedShareTypes.contains(shareType)) || (userShare.workflow != null &&!userShare.workflow.authorizedShareTypes.contains(shareType))}"/>
-                                        <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
-                                    </div>
+                        <div class="form-group">
+                            <label>Type de délégation</label>
+                            <th:block th:each="shareType : ${shareTypes}">
+                                <div class="form-check text-left">
+                                    <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types"
+                                           th:checked="${userShare.shareTypes.contains(shareType)}"
+                                           th:value="${shareType.name()}"
+                                           th:disabled="${(userShare.form != null && !userShare.form.authorizedShareTypes.contains(shareType)) || (userShare.workflow != null &&!userShare.workflow.authorizedShareTypes.contains(shareType))}"/>
+                                    <label class="form-check-label" th:for="'check-' + ${shareType.name()}"
+                                           th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
+                                </div>
+                            </th:block>
+                        </div>
+
+                        <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
+                            <label for="signWithOwnSign">Modalité de signature</label>
+                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
+                                <option value="" data-placeholder="true">Choisir un type</option>
+                                <option value="true" th:selected="${userShare.signWithOwnSign}">Le délégué signe avec ça propre signature</option>
+                                <option value="false" th:selected="${!userShare.signWithOwnSign}">Le délégué signe avec votre signature</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="selectUsers">Choix des utilisateurs</label>
+                            <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
+                                    required="required">
+                                <th:block th:each="user : ${userShare.toUsers}">
+                                    <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
+                                            selected></option>
                                 </th:block>
-                            </div>
 
-                            <div class="form-group">
-                                <label for="selectUsers">Choix des utilisateurs</label>
-                                <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
-                                        required="required">
-                                    <th:block th:each="user : ${userShare.toUsers}">
-                                        <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}" selected></option>
-                                    </th:block>
-
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="selectUsers">Date de début</label>
-                                <input type="date" name="beginDate" class="form-control datepicker">
-                            </div>
-                            <div class="form-group">
-                                <label for="selectUsers">Date de fin</label>
-                                <input type="date" name="endDate" class="form-control datepicker">
-                            </div>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="selectUsers">Date de début</label>
+                            <input type="datetime-local" name="beginDate" class="form-control datepicker" th:value="${#dates.format(userShare.beginDate, 'yyyy-MM-dd''T''HH:mm')}">
+                        </div>
+                        <div class="form-group">
+                            <label for="selectUsers">Date de fin</label>
+                            <input type="datetime-local" name="endDate" class="form-control datepicker" th:value="${#dates.format(userShare.endDate, 'yyyy-MM-dd''T''HH:mm')}">
+                        </div>
                     </form>
                 </div>
             </div>
