@@ -18,28 +18,18 @@
                     <table class="table table-hover table-borderless table-striped">
                         <thead class="thead-dark">
                         <tr>
-                            <th>Workflow</th>
-                            <th>Score</th>
-                            <th>Signataire</th>
                             <th>Destinataire</th>
+                            <th>Dernière date d'utilisation</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="userPropertie : ${userProperties}">
+                        <th:block th:if="${favorites != null}" th:each="favorite : ${favorites}">
                             <tr>
                                 <td>
-                                    <span th:text="${userPropertie.workflowStep.description}"></span>
+                                    <span th:text="${favorite.key.firstname + ' ' + favorite.key.name}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${userPropertie.score}"></span>
-                                </td>
-                                <td>
-                                    <ul th:each="user : ${userPropertie.users}">
-                                       <li th:text="${user.eppn}"></li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <span th:text="${userPropertie.targetEmail}"></span>
+                                    <span th:text="${#dates.format(favorite.value, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                             </tr>
                         </th:block>

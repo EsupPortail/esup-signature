@@ -95,6 +95,9 @@ public class SignRequestController {
     @Resource
     private TemplateEngine templateEngine;
 
+    @Resource
+    private UserPropertieService userPropertieService;
+
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -283,6 +286,7 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
                 Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.get(0)));
@@ -443,6 +447,7 @@ public class SignRequestController {
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
@@ -454,6 +459,7 @@ public class SignRequestController {
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
         signRequestService.addStep(id, recipientsEmails, signType, allSignToComplete);
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

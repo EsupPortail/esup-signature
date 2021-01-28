@@ -3,8 +3,7 @@ package org.esupportail.esupsignature.entity;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Configurable
@@ -14,18 +13,11 @@ public class UserPropertie {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private Integer score = 0;
-
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private WorkflowStep workflowStep;
-
-    @ManyToMany
-    private List<User> users = new ArrayList<>();
-
-    private String targetEmail;
+    @ElementCollection
+    private Map<User, Date> favorites = new HashMap<>();
 
     public Long getId() {
         return this.id;
@@ -33,14 +25,6 @@ public class UserPropertie {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Integer getScore() {
-        return score;
-    }
-
-    public void setScore(Integer score) {
-        this.score = score;
     }
 
     public User getUser() {
@@ -51,27 +35,11 @@ public class UserPropertie {
         this.user = user;
     }
 
-    public WorkflowStep getWorkflowStep() {
-        return workflowStep;
+    public Map<User, Date> getFavorites() {
+        return favorites;
     }
 
-    public void setWorkflowStep(WorkflowStep workflowStep) {
-        this.workflowStep = workflowStep;
-    }
-
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    public String getTargetEmail() {
-        return targetEmail;
-    }
-
-    public void setTargetEmail(String targetEmail) {
-        this.targetEmail = targetEmail;
+    public void setFavorites(Map<User, Date> users) {
+        this.favorites = users;
     }
 }

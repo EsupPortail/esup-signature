@@ -8,6 +8,7 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
+        this.favorites = null;
         let selectNameSplit = selectName.split("_");
         if(selectNameSplit.length === 2) {
             this.valuePrefix = selectNameSplit[1] + "*";
@@ -15,7 +16,7 @@ export default class SelectUser {
         if(limit != null) {
             this.limit = limit;
         }
-        this.createUserSelect(selectName,  this.valuePrefix);
+        this.createUserSelectBefore(selectName,  this.valuePrefix);
         this.selectField.addClass("slim-select-hack");
         this.initListeners();
     }
@@ -98,11 +99,34 @@ export default class SelectUser {
         return false;
     }
 
+    setFavorites(response, selectName, valuePrefix) {
+        console.log(response);
+        let typeValues = [];
+        for(let j = 0; j < response.length; j++) {
+            let value = response[j];
+            typeValues[j] = {text : value};
+        }
+        this.favorites = typeValues;
+        this.createUserSelect(selectName, valuePrefix);
+    }
+
+    createUserSelectBefore(selectName, valuePrefix) {
+        $.ajax({
+            url: "/user/users/get-favorites",
+            type: 'GET',
+            dataType: 'json',
+            contentType: "application/json",
+            success: response => this.setFavorites(response, selectName, valuePrefix)
+        });
+    }
+
     createUserSelect(selectName, valuePrefix) {
-        var controller = new AbortController()
-        var signal = controller.signal
+        var controller = new AbortController();
+        var signal = controller.signal;
+        console.log(this.favorites);
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
+            data: this.favorites,
             placeholder: 'Choisir un ou plusieurs participants',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',

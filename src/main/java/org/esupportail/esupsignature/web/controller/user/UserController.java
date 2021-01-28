@@ -30,10 +30,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
@@ -51,17 +48,11 @@ public class UserController {
 	@Resource
 	private FormService formService;
 
-	@Resource
-	private WorkflowService workflowService;
-
 	@Autowired(required=false)
 	private UserKeystoreService userKeystoreService;
 	
 	@Resource
 	private UserService userService;
-
-	@Resource
-	private UserShareService userShareService;
 
 	@Resource
 	private UserPropertieService userPropertieService;
@@ -147,13 +138,20 @@ public class UserController {
 
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
-		model.addAttribute("userProperties", userProperties);
+		UserPropertie userPropertie = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
+		if (userPropertie != null) {
+			List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
+			entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+			Map<User, Date> sortedMap = new LinkedHashMap<>();
+			entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+			model.addAttribute("favorites", sortedMap);
+		}
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
+
 
 	@GetMapping("/mark-intro-as-read/{name}")
 	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
@@ -202,6 +200,12 @@ public class UserController {
 	@PostMapping(value ="/check-user-certificate")
 	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
     	return userService.getUserWithoutCertificate(userEmails);
+	}
+
+	@ResponseBody
+	@GetMapping("/get-favorites")
+	private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    	return userPropertieService.getFavoritesEmails(authUserEppn);
 	}
 
 }
