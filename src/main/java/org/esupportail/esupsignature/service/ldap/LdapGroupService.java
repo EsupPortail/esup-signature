@@ -4,6 +4,8 @@ import org.esupportail.esupsignature.service.security.GroupService;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.query.LdapQuery;
+import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -14,8 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.springframework.ldap.query.LdapQueryBuilder.query;
 
 public class LdapGroupService implements GroupService {
 
@@ -74,40 +74,35 @@ public class LdapGroupService implements GroupService {
 
         String username = eppn.replaceAll("@.*", "");
 
-        List<String> dns = ldapTemplate.search(query().where("uid").is(username),
+        List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").where("uid").is(username),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                    String dn = searchResultContext.getNameInNamespace();
-                    return dn;
+                    return searchResultContext.getNameInNamespace();
                 });
 
         List<String> groups = new ArrayList<>();
 
         if(!dns.isEmpty()) {
             String userDn = dns.get(0);
-            String formattedFilter = MessageFormat.format(groupSearchFilter, new String[] { userDn, username });
-
-            groups = ldapTemplate.search(
-                    groupSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {
-                        DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
+            String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, new String[] { userDn, username });
+            LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(formattedGroupSearchFilter);
+            groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
+                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return searchResultContext.getStringAttribute("cn");
                     });
         }
 
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
-
             String hardcodedFilter = MessageFormat.format(memberSearchFilter, new String[] {username, ldapFilter});
-
-            List<String> filterDns = ldapTemplate.search(query().filter(hardcodedFilter),
+            List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
-                        DirContextAdapter searchResultContext = (DirContextAdapter)ctx;
+                        DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return searchResultContext.getNameInNamespace();
                     });
 
             if(!filterDns.isEmpty()) {
                 groups.add(ldapFiltersGroups.get(ldapFilter));
             }
-
         }
         return groups;
     }

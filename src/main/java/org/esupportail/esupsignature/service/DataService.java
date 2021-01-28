@@ -45,9 +45,6 @@ public class DataService {
     private PreFillService preFillService;
 
     @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
@@ -89,8 +86,6 @@ public class DataService {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");
             }
-            String targetUrl = String.join(",", targetEmails);
-            userPropertieService.createTargetPropertie(user, workflowService.getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0), targetUrl);
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
@@ -110,7 +105,6 @@ public class DataService {
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        workflowService.saveProperties(user, modelWorkflow, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
             signBook.getLiveWorkflow().setTargetType(form.getTargetType());
