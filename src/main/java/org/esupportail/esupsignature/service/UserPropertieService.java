@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserPropertieService {
@@ -43,22 +44,15 @@ public class UserPropertieService {
         userPropertieRepository.save(userPropertie);
     }
 
-    public List<User> getFavoritesEmails(String userEppn) {
+    public List<String> getFavoritesEmails(String userEppn) {
         UserPropertie userPropertie = getUserProperties(userEppn);
-        List<User> favoriteUsers = new ArrayList<>();
-        for (int i = 0 ; i < 5 ; i++) {
-            Date mostRecentDate = new Date(0);
-            User bestFavoriteUser = null;
-            for (User user : userPropertie.getFavorites().keySet()) {
-                if (userPropertie.getFavorites().get(user).after(mostRecentDate)) {
-                    mostRecentDate = userPropertie.getFavorites().get(user);
-                    bestFavoriteUser = user;
-                }
-            }
-            favoriteUsers.add(bestFavoriteUser);
-            userPropertie.getFavorites().remove(bestFavoriteUser);
+        List<String> favoriteUserEmails = new ArrayList<>();
+        List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
+        entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+        for (int i = 0 ; i < Math.min(entrySet.size(), 5) ; i++) {
+            favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
         }
-        return favoriteUsers;
+        return favoriteUserEmails;
     }
 
     public UserPropertie getUserProperties(String userEppn) {

@@ -300,4 +300,10 @@ public class UserController {
     	return userService.getUserWithoutCertificate(userEmails);
 	}
 
+	@ResponseBody
+	@GetMapping("/get-favorites")
+	private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
+    	return userPropertieService.getFavoritesEmails(authUserEppn);
+	}
+
 }
