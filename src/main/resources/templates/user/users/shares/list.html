@@ -32,6 +32,7 @@
                         <tr>
                             <th style="width: 15%">Elément délégué</th>
                             <th style="width: 15%">Type de délégation</th>
+                            <th style="width: 15%">Modalité de signature</th>
                             <th style="width: 15%">Délégataire</th>
                             <th style="width: 10%">Date de début</th>
                             <th style="width: 10%">Date de fin</th>
@@ -44,6 +45,7 @@
                                 <td>
                                     <span th:if="${userShare.form}" class="text-left" th:text="'Formulaire : ' + ${userShare.form.title}"></span>
                                     <span th:if="${userShare.workflow}" class="text-left" th:text="'Circuit : ' + ${userShare.workflow.description}"></span>
+                                    <span th:if="${userShare.allSignRequests}" class="text-left">Toutes les demandes</span>
                                 </td>
                                 <td>
                                     <ul class="text-left">
@@ -53,6 +55,12 @@
                                     </ul>
                                 </td>
                                 <td>
+                                    <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
+                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec ça propre signature</span>
+                                        <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
+                                    </div>
+                                </td>
+                                <td>
                                     <ul class="text-left">
                                     <th:block th:each="toUser : ${userShare.toUsers}">
                                         <li th:text="${toUser.firstname} + ' ' + ${toUser.name}"></li>
@@ -60,10 +68,10 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy')}"></span>
+                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td>
-                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy')}"></span>
+                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td class="d-inline-flex">
                                     <a type="button" title="Supprimer" th:href="'/user/users/shares/update/' + ${userShare.id}"
@@ -81,7 +89,7 @@
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <form id="command"
-                                                      th:action="'/user/users/del-share/' + ${userShare.id}"
+                                                      th:action="'/user/users/shares/del/' + ${userShare.id}"
                                                       th:method="delete">
                                                     <div class="modal-header">
                                                         <button type="button" class="close" data-dismiss="modal"
@@ -126,13 +134,14 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form id="shareForm" th:action="'/user/users/add-share'" method="post">
+                <form id="shareForm" th:action="'/user/users/shares/add'" method="post">
                     <div class="modal-body">
 
                         <div class="form-group">
-                            <label for="selectTarget">Type d'élément à déléguer (circuit ou formulaire)</label>
+                            <label for="selectTarget">Type d'élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
                             <select id="selectTarget" class="form-control" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
+                                <option value="all">Toutes les demandes</option>
                                 <option value="workflow">Circuit</option>
                                 <option value="form">Formulaire</option>
                             </select>
@@ -168,6 +177,15 @@
                             </th:block>
                         </div>
 
+                        <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
+                            <label for="signWithOwnSign">Modalité de signature</label>
+                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
+                                <option value="" data-placeholder="true">Choisir un type</option>
+                                <option value="true">Le délégué signe avec ça propre signature</option>
+                                <option value="false">Le délégué signe avec votre signature</option>
+                            </select>
+                        </div>
+
                         <div class="form-group">
                             <label for="selectUsers">Choix des utilisateurs</label>
                             <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
@@ -175,11 +193,11 @@
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de début</label>
-                            <input type="date" name="beginDate" class="form-control datepicker">
+                            <input type="datetime-local" name="beginDate" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="selectUsers">Date de fin</label>
-                            <input type="date" name="endDate" class="form-control datepicker">
+                            <input type="datetime-local" name="endDate" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">

@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.sms.SmsService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

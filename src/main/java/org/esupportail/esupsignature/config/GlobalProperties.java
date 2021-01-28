@@ -10,6 +10,9 @@ import java.util.List;
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties implements Cloneable {
 
+    /**
+     * Chemin d'acces à l'application
+     */
     private String rootUrl;
     private String domain;
     private String nexuUrl;
@@ -28,6 +31,16 @@ public class GlobalProperties implements Cloneable {
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
     private int hoursBeforeRefreshNotif = 24;
+    /**
+     * Choisir le fonctionnement des délégations :
+     *  <ul>
+     *      <li>0 : système de délégation désactivé</li>
+     *      <li>1 : le délégué ne peut signer qu'avec sa propre signature</li>
+     *      <li>2 : le délégué ne peut signer qu'avec la signature du mandant</li>
+     *      <li>2 : le mandant ne peut choisir la signature du délégué</li>
+     *  </ul>
+     */
+    private int shareMode = 0;
 
     public String getRootUrl() {
         return rootUrl;
@@ -171,5 +184,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setHoursBeforeRefreshNotif(int hoursBeforeRefreshNotif) {
         this.hoursBeforeRefreshNotif = hoursBeforeRefreshNotif;
+    }
+
+    public int getShareMode() {
+        return shareMode;
+    }
+
+    public void setShareMode(int shareMode) {
+        this.shareMode = shareMode;
     }
 }

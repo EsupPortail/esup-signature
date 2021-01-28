@@ -17,6 +17,17 @@ export class HomeUi {
         this.globalFilterButton.on('click', e => this.globalWorkflows(e));
         this.formFilterButton.on('click', e => this.filterForms(e));
         this.noFilterButton.on('click', e => this.filterNothing(e));
+        $('[id^="deleteWorkflow_"]').each(function (){
+            $(this).on('submit', function (e){
+                e.preventDefault();
+                let target = e.currentTarget;
+                bootbox.confirm("Voulez-vous vraiment supprimer ce circuit ?", function (result) {
+                    if(result) {
+                        target.submit();
+                    }
+                });
+            });
+        });
     }
 
     toggleNewMenu() {

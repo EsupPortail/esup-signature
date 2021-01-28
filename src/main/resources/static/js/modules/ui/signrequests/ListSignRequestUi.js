@@ -45,19 +45,21 @@ export default class ListSignRequestUi {
         });
 
         if(ids.length > 0) {
-            if(confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?")) {
-                let csrf = this.csrf;
-                $.ajax({
-                    url: "/user/signrequests/delete-multiple?" + csrf.parameterName + "=" + csrf.token,
-                    type: 'POST',
-                    dataType : 'json',
-                    contentType: "application/json",
-                    data: JSON.stringify(ids),
-                    success: function(){
-                        location.reload();
-                    }
-                });
-            }
+            let csrf = this.csrf;
+            bootbox.confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?", function(result) {
+                if(result) {
+                    $.ajax({
+                        url: "/user/signrequests/delete-multiple?" + csrf.parameterName + "=" + csrf.token,
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: "application/json",
+                        data: JSON.stringify(ids),
+                        success: function () {
+                            location.reload();
+                        }
+                    });
+                }
+            });
         }
     }
 
