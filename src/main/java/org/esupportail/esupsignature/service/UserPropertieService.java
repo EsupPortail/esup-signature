@@ -45,12 +45,17 @@ public class UserPropertieService {
     }
 
     public List<String> getFavoritesEmails(String userEppn) {
-        UserPropertie userPropertie = getUserProperties(userEppn);
         List<String> favoriteUserEmails = new ArrayList<>();
-        List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
-        entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-        for (int i = 0 ; i < Math.min(entrySet.size(), 5) ; i++) {
-            favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+        UserPropertie userPropertie = getUserProperties(userEppn);
+        if(userPropertie != null) {
+            Map<User, Date> favorites = userPropertie.getFavorites();
+            if (favorites.size() > 0) {
+                List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
+                entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+                for (int i = 0; i < Math.min(entrySet.size(), 5); i++) {
+                    favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+                }
+            }
         }
         return favoriteUserEmails;
     }

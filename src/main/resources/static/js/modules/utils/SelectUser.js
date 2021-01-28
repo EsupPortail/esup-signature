@@ -16,8 +16,9 @@ export default class SelectUser {
         if(limit != null) {
             this.limit = limit;
         }
-        this.createUserSelectBefore(selectName,  this.valuePrefix);
+        this.createUserSelect(selectName,  this.valuePrefix);
         this.selectField.addClass("slim-select-hack");
+        this.populateWithFavorites();
         this.initListeners();
     }
 
@@ -99,24 +100,25 @@ export default class SelectUser {
         return false;
     }
 
-    setFavorites(response, selectName, valuePrefix) {
-        console.log(response);
+    setFavorites(response) {
         let typeValues = [];
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
             typeValues[j] = {text : value};
         }
         this.favorites = typeValues;
-        this.createUserSelect(selectName, valuePrefix);
+        console.log(this.favorites);
+        this.slimSelect.setData(this.favorites);
+        this.slimSelect.set();
     }
 
-    createUserSelectBefore(selectName, valuePrefix) {
+    populateWithFavorites() {
         $.ajax({
             url: "/user/users/get-favorites",
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",
-            success: response => this.setFavorites(response, selectName, valuePrefix)
+            success: response => this.setFavorites(response)
         });
     }
 
