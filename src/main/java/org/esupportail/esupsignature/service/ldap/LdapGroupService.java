@@ -74,11 +74,10 @@ public class LdapGroupService implements GroupService {
 
         String username = eppn.replaceAll("@.*", "");
 
-        List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().where("uid").is(username),
+        List<String> dns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").where("uid").is(username),
                 (ContextMapper<String>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
-                    String dn = searchResultContext.getNameInNamespace();
-                    return dn;
+                    return searchResultContext.getNameInNamespace();
                 });
 
         List<String> groups = new ArrayList<>();
@@ -86,8 +85,7 @@ public class LdapGroupService implements GroupService {
         if(!dns.isEmpty()) {
             String userDn = dns.get(0);
             String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, new String[] { userDn, username });
-            LdapQuery groupSearchQuery = LdapQueryBuilder.query().base(groupSearchBase).filter(formattedGroupSearchFilter);
-            String test = groupSearchQuery.toString();
+            LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(formattedGroupSearchFilter);
             groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return searchResultContext.getStringAttribute("cn");
@@ -96,7 +94,7 @@ public class LdapGroupService implements GroupService {
 
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
             String hardcodedFilter = MessageFormat.format(memberSearchFilter, new String[] {username, ldapFilter});
-            List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().filter(hardcodedFilter),
+            List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return searchResultContext.getNameInNamespace();

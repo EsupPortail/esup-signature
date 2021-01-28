@@ -101,9 +101,7 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}
 				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-					if(ldapGroups.size() == 0) {
-						ldapGroups.addAll(ldapGroupService.getGroups(token.getName()));
-					}
+					ldapGroups.addAll(ldapGroupService.getGroups(token.getName()));
 					ldapGroupService.addLdapRoles(grantedAuthorities, new ArrayList<>(ldapGroups), groupPrefixRoleName, mappingGroupesRoles);
 				}
 			} catch (Exception e) {
