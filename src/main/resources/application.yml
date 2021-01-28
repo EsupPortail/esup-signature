@@ -68,10 +68,10 @@ spring:
         show-sql: false
         open-in-view: false
     ldap:
-        base: dc=univ-ville,dc=fr
-        password: ldap-password
-        urls: ldap://ldap.univ-ville.fr
-        username: cn=consult,dc=univ-ville,dc=fr
+#        base: dc=univ-ville,dc=fr
+#        password: ldap-password
+#        urls: ldap://ldap.univ-ville.fr
+#        username: cn=consult,dc=univ-ville,dc=fr
     mail:
 #        host: smtp.univ-ville.fr
     messages:

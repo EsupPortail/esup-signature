@@ -105,8 +105,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/user/", "/user/**").access("hasRole('ROLE_USER')")
-				.antMatchers("/sse/", "/sse/**").access("hasRole('ROLE_USER')")
+				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
+				.antMatchers("/sse/", "/sse/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();

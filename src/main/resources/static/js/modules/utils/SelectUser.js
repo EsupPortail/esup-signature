@@ -51,21 +51,28 @@ export default class SelectUser {
     }
 
     addListMembers(data, selectValue) {
-        this.flag = false;
-        let array = [];
-        let array2 = [];
-        for (let i = 0; i < this.slimSelect.data.data.length ; i++) {
-            if (this.slimSelect.data.data[i].text !== selectValue && this.slimSelect.data.data[i].value !== "undefined") {
-                array.push({text: this.slimSelect.data.data[i].text, value: this.slimSelect.data.data[i].value, display: true});
-                array2.push(this.slimSelect.data.data[i].value);
+        if(data.length > 0) {
+            this.flag = false;
+            let array = [];
+            let array2 = [];
+            for (let i = 0; i < this.slimSelect.data.data.length; i++) {
+                let prevData = this.slimSelect.data.data[i];
+                if (prevData.text !== selectValue && prevData.value !== "undefined" && prevData.value !== "") {
+                    array.push({
+                        text: this.slimSelect.data.data[i].text,
+                        value: this.slimSelect.data.data[i].value,
+                        display: true
+                    });
+                    array2.push(this.slimSelect.data.data[i].value);
+                }
             }
+            for (let i = 0; i < data.length; i++) {
+                array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
+                array2.push(data[i]);
+            }
+            this.slimSelect.setData(array);
+            this.slimSelect.set(array2);
         }
-        for(let i = 0; i < data.length; i++) {
-            array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
-            array2.push(data[i]);
-        }
-        this.slimSelect.setData(array);
-        this.slimSelect.set(array2);
     }
 
     displayTempUsersSuccess(data) {
@@ -123,8 +130,8 @@ export default class SelectUser {
     }
 
     createUserSelect(selectName, valuePrefix) {
-        var controller = new AbortController();
-        var signal = controller.signal;
+        let controller = new AbortController();
+        let signal = controller.signal;
         console.log(this.favorites);
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
@@ -180,7 +187,9 @@ export default class SelectUser {
                                         for (let i = 0; i < json.length; i++) {
                                             data.push({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
                                         }
-                                        callback(data);
+                                        if(data.length > 0) {
+                                            callback(data);
+                                        }
                                     })
                             }
                         })

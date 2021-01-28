@@ -447,7 +447,9 @@ public class SignRequestController {
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
+        if(recipientEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
+        }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
