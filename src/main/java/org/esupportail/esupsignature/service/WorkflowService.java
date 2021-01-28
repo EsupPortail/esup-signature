@@ -395,7 +395,7 @@ public class WorkflowService {
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
                 replaceStepSystemUsers(userEppn, workflowStep.getId());
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                    List<User> recipients = userPropertieService.getFavoriteRecipientEmail(step, workflowStep, recipientEmails, userEppn);
+                    List<User> recipients = this.getFavoriteRecipientEmail(step, recipientEmails);
                     if(recipients.size() > 0 && !computeForDisplay) {
                         workflowStep.getUsers().clear();
                         for (User oneUser : recipients) {
@@ -410,6 +410,19 @@ public class WorkflowService {
         } catch (Exception e) {
             throw new EsupSignatureException("compute workflow error", e);
         }
+    }
+
+    @Transactional
+    public List<User> getFavoriteRecipientEmail(int stepNumber, List<String> recipientEmails) {
+        List<User> users = new ArrayList<>();
+        if (recipientEmails != null && recipientEmails.size() > 0) {
+            recipientEmails = recipientEmails.stream().filter(r -> r.startsWith(String.valueOf(stepNumber))).collect(Collectors.toList());
+            for (String recipientEmail : recipientEmails) {
+                String userEmail = recipientEmail.split("\\*")[1];
+                users.add(userService.getUserByEmail(userEmail));
+            }
+        }
+        return users;
     }
 
     public void replaceStepSystemUsers(String userEppn, Long workflowStepId) {
@@ -427,17 +440,6 @@ public class WorkflowService {
             }
         }
    }
-
-    public void saveProperties(User user, Workflow modelWorkflow, Workflow computedWorkflow) {
-        int i = 0;
-        for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-            List<User> recipients = computedWorkflow.getWorkflowSteps().get(i).getUsers();
-            if(recipients.size() > 0 && workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
-                userPropertieService.createUserPropertie(user, workflowStep, recipients);
-            }
-            i++;
-        }
-    }
 
     public void delete(Workflow workflow) {
         List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
@@ -515,18 +517,6 @@ public class WorkflowService {
     public void setUpdateByAndUpdateDate(Workflow workflow, String updateBy) {
         workflow.setUpdateBy(updateBy);
         workflow.setUpdateDate(new Date());
-    }
-
-
-    public String[] getTargetEmails(String userEppn, Form form) {
-        List<UserPropertie> userProperties = userPropertieService.getUserProperties(userEppn, getWorkflowByName(form.getWorkflowType()).getWorkflowSteps().get(0).getId());
-        userProperties = userProperties.stream().sorted(Comparator.comparing(UserPropertie::getId).reversed()).collect(Collectors.toList());
-        if(userProperties.size() > 0 ) {
-            if(userProperties.get(0).getTargetEmail() != null) {
-                return userProperties.get(0).getTargetEmail().split(",");
-            }
-        }
-        return null;
     }
 
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {

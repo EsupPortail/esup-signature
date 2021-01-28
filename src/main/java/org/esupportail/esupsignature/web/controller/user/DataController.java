@@ -67,6 +67,9 @@ public class DataController {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private UserPropertieService userPropertieService;
+
 	@GetMapping
 
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
@@ -130,7 +133,6 @@ public class DataController {
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
 			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form));
-			model.addAttribute("targetEmails", workflowService.getTargetEmails(userEppn, form));
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
@@ -195,6 +197,7 @@ public class DataController {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
+			userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

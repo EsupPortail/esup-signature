@@ -148,8 +148,14 @@ public class UserController {
 
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<UserPropertie> userProperties = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
-		model.addAttribute("userProperties", userProperties);
+		UserPropertie userPropertie = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
+		if (userPropertie != null) {
+			List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
+			entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+			Map<User, Date> sortedMap = new LinkedHashMap<>();
+			entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+			model.addAttribute("favorites", sortedMap);
+		}
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
@@ -195,6 +201,7 @@ public class UserController {
     	if(form == null) form = new Long[] {};
 		if(workflow == null) workflow = new Long[] {};
 		try {
+			userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(userEmails));
 			userShareService.addUserShare(authUser, form, workflow, types, userEmails, beginDate, endDate);
 		} catch (EsupSignatureUserException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -211,6 +218,7 @@ public class UserController {
 							  @RequestParam("endDate") String endDate, Model model) {
 		User authUser = (User) model.getAttribute("authUser");
 		UserShare userShare = userShareService.getById(id);
+		userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(userEmails));
 		userShareService.updateUserShare(authUser, types, userEmails, beginDate, endDate, userShare);
 		return "redirect:/user/users/shares";
 	}
