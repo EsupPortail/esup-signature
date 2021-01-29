@@ -27,7 +27,6 @@ export class PdfViewer extends EventFactory {
         this.rotation = 0;
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
-        this.saveTempField = null;
     }
 
     initListeners() {
@@ -332,12 +331,12 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
-                if(dataField.favorisable) {
-                    this.saveTempField = inputField;
+                if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
+                    let sendField = inputField;
                     $.ajax({
                         type: "GET",
                         url: '/user/datas/get-favorites/' + dataField.id,
-                        success : response => this.autocomplete(response)
+                        success : response => this.autocomplete(response, sendField)
                     });
                 }
                 if(items[i].readOnly || dataField.readOnly) {
@@ -450,12 +449,12 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length > 0) {
-                this.saveTempField = inputField;
+                let sendField = inputField;
                 if(dataField.favorisable) {
                     $.ajax({
                         type: "GET",
                         url: '/user/datas/get-favorites/' + dataField.id,
-                        success : response => this.autocomplete(response)
+                        success : response => this.autocomplete(response, sendField)
                     });
                 }
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
@@ -626,9 +625,13 @@ export class PdfViewer extends EventFactory {
         });
     }
 
-    autocomplete(response) {
-        this.saveTempField.autocomplete({
+    autocomplete(response, inputField) {
+        let id = inputField.attr('id');
+        let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
+        $(div).insertAfter(inputField);
+        inputField.autocomplete({
             source: response,
+            appendTo: "#div_" + id,
             minLength:0
         }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }

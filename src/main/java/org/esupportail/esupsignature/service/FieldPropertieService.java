@@ -20,11 +20,13 @@ public class FieldPropertieService {
 
     public void createFieldPropertie(User user, Field field, String value) {
         FieldPropertie fieldPropertie = getFieldPropertie(user.getEppn(), field.getId());
-        if (fieldPropertie == null) {
-            addPropertie(user, field, value);
-        } else {
-            fieldPropertie.getFavorites().put(value, new Date());
-            fieldPropertieRepository.save(fieldPropertie);
+        if(value != null && !value.isEmpty()) {
+            if (fieldPropertie == null) {
+                addPropertie(user, field, value);
+            } else {
+                fieldPropertie.getFavorites().put(value, new Date());
+                fieldPropertieRepository.save(fieldPropertie);
+            }
         }
     }
 

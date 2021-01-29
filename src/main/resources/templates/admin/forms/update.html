@@ -31,6 +31,7 @@
                     <a class="nav-link" th:href="'/admin/forms/' + ${form.id}">Configuration des champs</a>
                 </li>
             </ul>
+            <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="put">
