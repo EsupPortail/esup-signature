@@ -70,6 +70,9 @@ public class DataController {
 	@Resource
 	private UserPropertieService userPropertieService;
 
+	@Resource
+	private FieldPropertieService fieldPropertieService;
+
 	@GetMapping
 
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
@@ -268,7 +271,6 @@ public class DataController {
 	}
 
 	@GetMapping(value = "/get-model/{id}")
-
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Map<String, Object> modelResponse = dataService.getModelResponse(id);
@@ -280,6 +282,12 @@ public class DataController {
 			logger.error("get file error", e);
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping(value = "/get-favorites/{id}")
+	@ResponseBody
+	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
 	}
 
 }

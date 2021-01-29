@@ -65,6 +65,9 @@ public class DataService {
     @Resource
     private UserService userService;
 
+    @Resource
+    private FieldPropertieService fieldPropertieService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
     }
@@ -125,6 +128,9 @@ public class DataService {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
 
         for(Field field : fields) {
+            if (field.getFavorisable()) {
+                fieldPropertieService.createFieldPropertie(authUser, field, formDatas.get(field.getName()));
+            }
             if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
                 formDatas.put(field.getName(), field.getDefaultValue());
             }

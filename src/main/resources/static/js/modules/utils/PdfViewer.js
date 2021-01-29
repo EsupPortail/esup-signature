@@ -27,6 +27,7 @@ export class PdfViewer extends EventFactory {
         this.rotation = 0;
         pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
+        this.saveTempField = null;
     }
 
     initListeners() {
@@ -331,6 +332,14 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                if(dataField.favorisable) {
+                    this.saveTempField = inputField;
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response)
+                    });
+                }
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
@@ -441,6 +450,14 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length > 0) {
+                this.saveTempField = inputField;
+                if(dataField.favorisable) {
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response)
+                    });
+                }
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -607,5 +624,12 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.eventBus.dispatch('print', {
             source: self
         });
+    }
+
+    autocomplete(response) {
+        this.saveTempField.autocomplete({
+            source: response,
+            minLength:0
+        }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }
 }
