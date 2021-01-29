@@ -448,7 +448,7 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if(inputField.length > 0) {
+            if(inputField.length && dataField != null) {
                 let sendField = inputField;
                 if(dataField.favorisable) {
                     $.ajax({
@@ -475,7 +475,7 @@ export class PdfViewer extends EventFactory {
                 }
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length > 0) {
+            if(inputField.length) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
