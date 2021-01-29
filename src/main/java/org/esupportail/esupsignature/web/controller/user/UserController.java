@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -56,6 +57,9 @@ public class UserController {
 
 	@Resource
 	private UserPropertieService userPropertieService;
+
+	@Resource
+	private FieldPropertieService fieldPropertieService;
 
 	@Resource
 	private MessageService messageService;
@@ -147,14 +151,32 @@ public class UserController {
 			entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
 			Map<User, Date> sortedMap = new LinkedHashMap<>();
 			entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
-			model.addAttribute("favorites", sortedMap);
+			model.addAttribute("userProperties", sortedMap);
 		}
+		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
+		model.addAttribute("fieldProperties", fieldProperties);
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
 		model.addAttribute("users", userService.getAllUsers());
 		model.addAttribute("activeMenu", "properties");
 		return "user/users/properties";
 	}
 
+	@DeleteMapping("/delete-user-propertie/{id}")
+	public String deleteUserPropertie(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+		userPropertieService.delete(authUserEppn, id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le favori à bien été supprimé"));
+		return "redirect:/user/users/properties";
+	}
+
+	@DeleteMapping("/delete-field-propertie/{id}/{key}")
+	public String deleteFieldPropertie(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("key	") String key, RedirectAttributes redirectAttributes) {
+		FieldPropertie fieldPropertie = fieldPropertieService.getById(id);
+		if(fieldPropertie.getUser().getEppn().equals(authUserEppn)) {
+			fieldPropertieService.delete(id, key);
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le favori à bien été supprimé"));
+		}
+		return "redirect:/user/users/properties";
+	}
 
 	@GetMapping("/mark-intro-as-read/{name}")
 	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
