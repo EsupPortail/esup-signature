@@ -60,7 +60,7 @@ public class UserController {
 	@Resource
 	private MessageService messageService;
 
-	@Resource
+	@Autowired(required = false)
 	private LdapAliasService ldapAliasService;
 
 	@Resource
@@ -127,7 +127,10 @@ public class UserController {
 	@ResponseBody
 	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
     	logger.debug("ldap search for : " + searchString);
-		return ldapAliasService.searchAlias(searchString);
+    	if(ldapAliasService != null) {
+			return ldapAliasService.searchAlias(searchString);
+		}
+    	return new ArrayList<>();
 	}
 
 	@GetMapping(value = "/search-user-list")

@@ -184,14 +184,14 @@ public class UserService {
 
     @Transactional
     public User createUserWithAuthentication(Authentication authentication) {
+        if(ldapPersonService.getIfAvailable() == null) {
+            throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
+        }
         String uid;
         if (authentication.getName().contains("@")) {
             uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
         } else {
             uid = authentication.getName();
-        }
-        if(ldapPersonService.getIfAvailable() == null) {
-        	throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
         }
         logger.info("controle de l'utilisateur " + uid);
         List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdap(uid);
@@ -216,7 +216,6 @@ public class UserService {
             logger.info("creation de l'utilisateur " + eppn);
             user = new User();
             user.setKeystore(null);
-
         }
         user.setName(name);
         user.setFirstname(firstName);
@@ -226,16 +225,13 @@ public class UserService {
         if(!user.getUserType().equals(UserType.system)) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
-                String userName = buildEppn(auth.getName());
-                if (webSecurityProperties.getGroupToRoleFilterPattern() != null && eppn.equals(userName)) {
-                    logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-                    Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-                    if (authorities.size() > 0) {
-                        user.getRoles().clear();
-                        for (GrantedAuthority authority : authorities) {
-                            if(authority.getAuthority().startsWith("ROLE_")) {
-                                user.getRoles().add(authority.getAuthority());
-                            }
+                logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
+                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                if (authorities.size() > 0) {
+                    user.getRoles().clear();
+                    for (GrantedAuthority authority : authorities) {
+                        if(authority.getAuthority().startsWith("ROLE_")) {
+                            user.getRoles().add(authority.getAuthority());
                         }
                     }
                 }
