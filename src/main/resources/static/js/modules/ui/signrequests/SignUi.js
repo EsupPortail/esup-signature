@@ -14,7 +14,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -28,8 +28,8 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkRepeatableButtonEnd").on('click', e => this.checkRepeatable(false));
-        $("#checkRepeatableButtonNext").on('click', e => this.checkRepeatable(true));
+        $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
+        $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
         $("#launchSignButton").on('click', e => this.insertStep());
         $("#launchAllSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
@@ -42,7 +42,9 @@ export class SignUi {
         document.addEventListener("sign", e => this.updateWaitModal(e));
     }
 
-    launchSign() {
+    launchSign(gotoNext) {
+        this.gotoNext = gotoNext;
+        $('#signModal').modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
@@ -175,17 +177,6 @@ export class SignUi {
         textArea.select();
         document.execCommand("Copy");
         textArea.remove();
-    }
-
-    checkRepeatable(gotoNext) {
-        this.gotoNext = gotoNext;
-        if (this.stepRepeatable) {
-            this.signModal.modal('hide');
-            $('#stepRepeatableModal').modal('show');
-        } else {
-            this.signModal.modal('hide');
-            this.launchSign();
-        }
     }
 
     insertStep() {

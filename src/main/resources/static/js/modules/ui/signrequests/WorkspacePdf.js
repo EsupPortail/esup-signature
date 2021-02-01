@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
@@ -14,6 +14,7 @@ export class WorkspacePdf {
         this.signable = signable;
         this.signRequestId = id;
         this.signType = signType;
+        this.stepRepeatable  = stepRepeatable;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -126,7 +127,12 @@ export class WorkspacePdf {
             bootbox.alert("Merci de placer la signature");
         } else {
             if (WorkspacePdf.validateForm()) {
-                let signModal = $("#signModal");
+                let signModal = null;
+                if (this.stepRepeatable) {
+                    signModal = $('#stepRepeatableModal');
+                } else {
+                    signModal = $("#signModal");
+                }
                 signModal.on('shown.bs.modal', function(){
                     $("#checkRepeatableButtonEnd").focus();
                     $("#checkRepeatableButtonNext").focus();
