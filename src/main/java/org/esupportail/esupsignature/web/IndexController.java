@@ -22,10 +22,13 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonService;
+import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -63,6 +66,9 @@ public class IndexController {
 
 	@Resource
 	private SignRequestService signRequestService;
+
+	@Autowired(required = false)
+	private LdapPersonService ldapPersonService;
 
 	@GetMapping
 	public String index(Model model) {
@@ -120,8 +126,16 @@ public class IndexController {
 
 	public User getAuthUser(Authentication auth) {
 		User user = null;
-		if (auth != null) {
-			user = userService.getUserByEppn(auth.getName());
+		if (auth != null && !auth.getName().equals("anonymousUser")) {
+			if(ldapPersonService != null) {
+				List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
+				if(personLdaps.size() > 0) {
+					user = userService.getUserByEppn(personLdaps.get(0).getEduPersonPrincipalName());
+				}
+			} else {
+				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");
+				user = userService.getUserByEppn(auth.getName());
+			}
 		}
 		return user;
 	}

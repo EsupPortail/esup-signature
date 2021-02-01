@@ -87,20 +87,18 @@
                                 </thead>
                                 <th:block th:each="user : ${workflowStep.users}">
                                     <tr>
-                                        <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}"
-                                              th:method="'delete'">
-                                            <input type="hidden" name="userEppn" th:value="${user.eppn}"/>
-                                            <td class="text-left">
-                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
-                                            </td>
-                                            <td>
+                                        <td class="text-left">
+                                            <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                        </td>
+                                        <td>
+                                            <form th:action="${fromAdmin == true ? '/admin/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
+                                                <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
-                                                        onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
-                                                        type="submit" class="btn btn-danger btn-sm"><i
-                                                        class="fas fa-minus-circle"></i></button>
-                                            </td>
-                                            </li>
-                                        </form>
+                                                    onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                    type="submit" class="btn btn-danger btn-sm"><i
+                                                    class="fas fa-minus-circle"></i></button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 </th:block>
                             </table>
