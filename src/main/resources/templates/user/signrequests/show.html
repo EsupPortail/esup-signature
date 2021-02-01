@@ -320,7 +320,7 @@
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                 <button id="checkRepeatableButton"
                         th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}">
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     <i class="fas fa-signature"></i> Signer
                 </button>
                 <button id="checkRepeatableButton"
