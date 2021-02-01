@@ -23,11 +23,13 @@ export class SignUi {
         this.stepRepeatable = stepRepeatable;
         this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
+        this.gotoNext = false;
         this.initListeners();
     }
 
     initListeners() {
-        $("#checkRepeatableButton").on('click', e => this.checkRepeatable());
+        $("#checkRepeatableButtonEnd").on('click', e => this.checkRepeatable(false));
+        $("#checkRepeatableButtonNext").on('click', e => this.checkRepeatable(true));
         $("#launchSignButton").on('click', e => this.insertStep());
         $("#launchAllSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
@@ -106,11 +108,8 @@ export class SignUi {
     sendData(signRequestUrlParams) {
         this.reset();
         this.xmlHttpMain.open('POST', '/user/signrequests/sign/' + this.signRequestId, true);
-        //this.xmlHttpMain.addEventListener('readystatechange', e => this.end());
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(signRequestUrlParams);
-        //this.getProgressTimer = setInterval(e => this.getStep(), 500);
     }
 
     updateWaitModal(e) {
@@ -133,7 +132,11 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = message.text;
             document.getElementById("bar").style.width = 100 + "%";
-            document.location.href="/user/signrequests/" + this.signRequestId;
+            if(this.gotoNext) {
+                document.location.href = $("#nextSignRequestButton").attr('href');
+            } else {
+                document.location.href = "/user/";
+            }
         } else {
             console.debug("update bar");
             document.getElementById("bar").style.display = "block";
@@ -174,7 +177,8 @@ export class SignUi {
         textArea.remove();
     }
 
-    checkRepeatable() {
+    checkRepeatable(gotoNext) {
+        this.gotoNext = gotoNext;
         if (this.stepRepeatable) {
             this.signModal.modal('hide');
             $('#stepRepeatableModal').modal('show');

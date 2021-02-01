@@ -67,12 +67,17 @@
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
-                    <li th:if="${signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${!signRequest.title.startsWith('Signature simple') && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                            th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-            <th:block id="signButtons"
+                    <li th:if="${signRequest.title.startsWith('Signature simple')}">
+                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
+                           data-toggle="modal" data-target="#modal-warning"
+                           th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
+                    </li>
+                    <th:block id="signButtons"
                  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
                  th:unless="${signable}" class="fixed-action-btns active">
                     <li><a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
@@ -318,10 +323,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button id="checkRepeatableButton"
-                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}">
-                    <i class="fas fa-signature"></i> Signer
+                <button id="checkRepeatableButtonEnd" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    Signer et retourner à l'accueil
+                </button>
+                <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null && (signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp)}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
                 <button id="checkRepeatableButton"
                         th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
@@ -646,7 +654,7 @@
 <!--</div>-->
 
 
-<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+<div th:if="${signRequest.title.startsWith('Signature simple') || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">

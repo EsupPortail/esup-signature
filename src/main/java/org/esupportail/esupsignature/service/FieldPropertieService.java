@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.FieldPropertieRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -17,6 +18,10 @@ public class FieldPropertieService {
 
     @Resource
     private FieldPropertieRepository fieldPropertieRepository;
+
+    public FieldPropertie getById(Long id) {
+        return fieldPropertieRepository.findById(id).get();
+    }
 
     public void createFieldPropertie(User user, Field field, String value) {
         FieldPropertie fieldPropertie = getFieldPropertie(user.getEppn(), field.getId());
@@ -58,7 +63,20 @@ public class FieldPropertieService {
         return fieldPropertieRepository.findByFieldIdAndUserEppn(fieldId, userEppn);
     }
 
-    public void delete(FieldPropertie fieldPropertie) {
+    public List<FieldPropertie> getFieldProperties(String userEppn) {
+        return fieldPropertieRepository.findByUserEppn(userEppn);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        FieldPropertie fieldPropertie = getById(id);
         fieldPropertieRepository.delete(fieldPropertie);
     }
+
+    @Transactional
+    public void delete(Long id, String key) {
+        FieldPropertie fieldPropertie = getById(id);
+        fieldPropertie.getFavorites().remove(key);
+    }
+
 }

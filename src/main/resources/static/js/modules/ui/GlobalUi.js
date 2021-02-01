@@ -408,6 +408,13 @@ export class GlobalUi {
                         }
                         break;
                 }
+            } else {
+                if(event.which === 13) {
+                    let signLaunchButton = $("#signLaunchButton");
+                    if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
+                        signLaunchButton.click();
+                    }
+                }
             }
         });
     }
