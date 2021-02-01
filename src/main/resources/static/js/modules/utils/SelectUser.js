@@ -26,6 +26,15 @@ export default class SelectUser {
     }
 
     displayTempUsers(e) {
+        if (this.selectField.attr('id') === 'recipientsEmailsInfinite') {
+            if (this.slimSelect.selected().length > 0) {
+                $('#launchAllSignButton').hide();
+                $('#launchSignButton').show();
+            } else {
+                $('#launchAllSignButton').show();
+                $('#launchSignButton').hide();
+            }
+        }
         if (this.signRequestId != null) {
             let recipientEmails = this.slimSelect.selected()
             $.ajax({
