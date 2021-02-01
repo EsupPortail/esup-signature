@@ -53,10 +53,9 @@ public class WorkflowController {
                           @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-        Workflow workflow = workflowService.getById(id);
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(userEppn), Arrays.asList(recipientsEmails));
         workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete);
-        return "redirect:/user/workflows/" + workflow.getName();
+        return "redirect:/user/workflows/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
@@ -71,7 +70,7 @@ public class WorkflowController {
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
         workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
-        return "redirect:/user/workflows/" + workflow.getId();
+        return "redirect:/user/workflows/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
