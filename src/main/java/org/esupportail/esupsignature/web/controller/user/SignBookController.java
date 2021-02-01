@@ -127,10 +127,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getById(id);
-        int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        if(currentStepNumber <= step) {
-            signBookService.removeStep(signBook, step);
+        if (signBookService.removeStep(id, step)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "L'étape a été supprimés"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "L'étape ne peut pas être supprimée"));
