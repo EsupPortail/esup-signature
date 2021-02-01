@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.repository.UserPropertieRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -19,6 +20,10 @@ public class UserPropertieService {
 
     @Resource
     private UserService userService;
+
+    public UserPropertie getById(Long id) {
+        return userPropertieRepository.findById(id).get();
+    }
 
     public void createUserPropertieFromMails(User user, List<String> recipientEmails) {
         for (String recipientEmail : recipientEmails) {
@@ -68,7 +73,16 @@ public class UserPropertieService {
         return userPropertieRepository.findByUserEppn(userEppn);
     }
 
-    public void delete(UserPropertie userPropertie) {
+    @Transactional
+    public void delete(Long id) {
+        UserPropertie userPropertie = getById(id);
         userPropertieRepository.delete(userPropertie);
+    }
+
+    @Transactional
+    public void delete(String authUserEppn, Long id) {
+        UserPropertie userPropertie = getUserPropertiesByUserEppn(authUserEppn);
+        User user = userService.getById(id);
+        userPropertie.getFavorites().remove(user);
     }
 }

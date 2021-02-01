@@ -160,6 +160,7 @@ public class FormAdminController {
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
 											  @RequestParam(value = "required", required = false) String required,
+											  @RequestParam(value = "favorisable", required = false) String favorisable,
 											  @RequestParam(value = "readOnly", required = false) String readOnly,
 											  @RequestParam(value = "prefill", required = false) String prefill,
 											  @RequestParam(value = "search", required = false) String search,
@@ -184,7 +185,7 @@ public class FormAdminController {
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(id, Boolean.parseBoolean(favorisable), Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

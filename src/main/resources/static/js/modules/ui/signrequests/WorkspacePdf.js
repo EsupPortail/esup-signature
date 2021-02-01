@@ -28,6 +28,7 @@ export class WorkspacePdf {
         this.mode = 'sign';
         this.xmlHttpMain = new XMLHttpRequest();
         this.wheelDetector = new WheelDetector();
+        this.signLaunchButton = $("#signLaunchButton");
         this.initListeners();
         this.initDataFields(fields);
     }
@@ -100,7 +101,7 @@ export class WorkspacePdf {
         });
 
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        $("#signLaunchButton").on('click', e => this.launchSignModal());
+        this.signLaunchButton.on('click', e => this.launchSignModal());
         $("#refuseLaunchButton").on('click', function (){
             window.onbeforeunload = null;
         });
@@ -125,7 +126,12 @@ export class WorkspacePdf {
             bootbox.alert("Merci de placer la signature");
         } else {
             if (WorkspacePdf.validateForm()) {
-                $("#signModal").modal('toggle');
+                let signModal = $("#signModal");
+                signModal.on('shown.bs.modal', function(){
+                    $("#checkRepeatableButtonEnd").focus();
+                    $("#checkRepeatableButtonNext").focus();
+                });
+                signModal.modal('show');
             }
         }
     }
