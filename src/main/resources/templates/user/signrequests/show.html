@@ -312,8 +312,11 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé matérielle ou un keystore</small>
                         </div>
-                        <button id="checkRepeatableButton" class="mb-1 btn btn-success float-right" title="Signer"
-                                th:value="${signRequest.id}">Signer
+                        <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success float-right" title="Signer"
+                                th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
+                        </button>
+                        <button id="checkRepeatableButtonNext" class="mb-1 btn btn-success float-right" title="Signer"
+                                th:value="${signRequest.id}" autofocus>Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                         </button>
                     </div>
                 </div>
@@ -331,10 +334,15 @@
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
-                <button id="checkRepeatableButton"
+                <button id="checkRepeatableButtonEnd"
                         th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}">
-                    <i class="fas fa-check"></i> Viser
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    Viser et retourner à l'accueil
+                </button>
+                <button id="checkRepeatableButtonNext"
+                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                    Viser et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
             </div>
         </div>
