@@ -51,12 +51,6 @@ export default class SelectUser {
     }
 
     addListMembers(data, selectValue) {
-        if(data.length > 10 ){
-            bootbox.alert("La liste sélectionnée est trop grande");
-            this.slimSelect.setData([]);
-            this.slimSelect.set([]);
-            return;
-        }
         if(data.length > 0) {
             this.flag = false;
             let array = [];
