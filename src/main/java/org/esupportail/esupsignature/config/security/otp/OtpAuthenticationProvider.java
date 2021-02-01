@@ -15,9 +15,9 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
         String password = authentication.getCredentials().toString();
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_OTP");
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-        simpleGrantedAuthorities.add(authority);
+        simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
+//        simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
         return new UsernamePasswordAuthenticationToken(name, password, simpleGrantedAuthorities);
     }
 

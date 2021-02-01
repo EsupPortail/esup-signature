@@ -50,6 +50,8 @@ public class Field {
 
 	@Enumerated(EnumType.STRING)
     private FieldType type;
+
+	private Boolean favorisable = false;
 	
 	transient List<String> defaultValues = new ArrayList<>();
 
@@ -213,4 +215,11 @@ public class Field {
 		this.searchReturn = searchReturn;
 	}
 
+	public Boolean getFavorisable() {
+		return favorisable;
+	}
+
+	public void setFavorisable(Boolean favorisable) {
+		this.favorisable = favorisable;
+	}
 }

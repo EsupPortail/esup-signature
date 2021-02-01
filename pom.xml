@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.6</version>
+	<version>1.7</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -135,7 +135,7 @@
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>popper.js</artifactId>
-		   <version>2.0.2</version>
+		   <version>2.5.4</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.webjars.npm/pdfjs-dist -->
@@ -203,6 +203,12 @@
 			<groupId>org.webjars</groupId>
 			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
 			<version>4.17.47</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>bootbox.js</artifactId>
+			<version>5.3.2</version>
 		</dependency>
 
 		<dependency>

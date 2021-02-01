@@ -67,6 +67,12 @@ public class DataController {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private UserPropertieService userPropertieService;
+
+	@Resource
+	private FieldPropertieService fieldPropertieService;
+
 	@GetMapping
 
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
@@ -130,7 +136,6 @@ public class DataController {
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
 			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form));
-			model.addAttribute("targetEmails", workflowService.getTargetEmails(userEppn, form));
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
@@ -195,6 +200,7 @@ public class DataController {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
+			userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
@@ -265,7 +271,6 @@ public class DataController {
 	}
 
 	@GetMapping(value = "/get-model/{id}")
-
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Map<String, Object> modelResponse = dataService.getModelResponse(id);
@@ -277,6 +282,12 @@ public class DataController {
 			logger.error("get file error", e);
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+
+	@GetMapping(value = "/get-favorites/{id}")
+	@ResponseBody
+	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
 	}
 
 }

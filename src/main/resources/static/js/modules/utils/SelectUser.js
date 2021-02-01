@@ -8,6 +8,7 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
+        this.favorites = null;
         let selectNameSplit = selectName.split("_");
         if(selectNameSplit.length === 2) {
             this.valuePrefix = selectNameSplit[1] + "*";
@@ -17,6 +18,7 @@ export default class SelectUser {
         }
         this.createUserSelect(selectName,  this.valuePrefix);
         this.selectField.addClass("slim-select-hack");
+        this.populateWithFavorites();
         this.initListeners();
     }
 
@@ -49,21 +51,34 @@ export default class SelectUser {
     }
 
     addListMembers(data, selectValue) {
-        this.flag = false;
-        let array = [];
-        let array2 = [];
-        for (let i = 0; i < this.slimSelect.data.data.length ; i++) {
-            if (this.slimSelect.data.data[i].text !== selectValue && this.slimSelect.data.data[i].value !== "undefined") {
-                array.push({text: this.slimSelect.data.data[i].text, value: this.slimSelect.data.data[i].value, display: true});
-                array2.push(this.slimSelect.data.data[i].value);
+        if(data.length > 10 ){
+            bootbox.alert("La liste sélectionnée est trop grande");
+            this.slimSelect.setData([]);
+            this.slimSelect.set([]);
+            return;
+        }
+        if(data.length > 0) {
+            this.flag = false;
+            let array = [];
+            let array2 = [];
+            for (let i = 0; i < this.slimSelect.data.data.length; i++) {
+                let prevData = this.slimSelect.data.data[i];
+                if (prevData.text !== selectValue && prevData.value !== "undefined" && prevData.value !== "") {
+                    array.push({
+                        text: this.slimSelect.data.data[i].text,
+                        value: this.slimSelect.data.data[i].value,
+                        display: true
+                    });
+                    array2.push(this.slimSelect.data.data[i].value);
+                }
             }
+            for (let i = 0; i < data.length; i++) {
+                array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
+                array2.push(data[i]);
+            }
+            this.slimSelect.setData(array);
+            this.slimSelect.set(array2);
         }
-        for(let i = 0; i < data.length; i++) {
-            array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
-            array2.push(data[i]);
-        }
-        this.slimSelect.setData(array);
-        this.slimSelect.set(array2);
     }
 
     displayTempUsersSuccess(data) {
@@ -98,11 +113,35 @@ export default class SelectUser {
         return false;
     }
 
+    setFavorites(response) {
+        let typeValues = [];
+        for(let j = 0; j < response.length; j++) {
+            let value = response[j];
+            typeValues[j] = {text : value};
+        }
+        this.favorites = typeValues;
+        console.log(this.favorites);
+        this.slimSelect.setData(this.favorites);
+        this.slimSelect.set();
+    }
+
+    populateWithFavorites() {
+        $.ajax({
+            url: "/user/users/get-favorites",
+            type: 'GET',
+            dataType: 'json',
+            contentType: "application/json",
+            success: response => this.setFavorites(response)
+        });
+    }
+
     createUserSelect(selectName, valuePrefix) {
-        var controller = new AbortController()
-        var signal = controller.signal
+        let controller = new AbortController();
+        let signal = controller.signal;
+        console.log(this.favorites);
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
+            data: this.favorites,
             placeholder: 'Choisir un ou plusieurs participants',
             searchText: 'Aucun résultat',
             searchPlaceholder: 'Rechercher',
@@ -154,7 +193,9 @@ export default class SelectUser {
                                         for (let i = 0; i < json.length; i++) {
                                             data.push({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
                                         }
-                                        callback(data);
+                                        if(data.length > 0) {
+                                            callback(data);
+                                        }
                                     })
                             }
                         })

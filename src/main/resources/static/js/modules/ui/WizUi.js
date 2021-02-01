@@ -24,7 +24,7 @@ export class WizUi {
     checkOnModalClose() {
         let workflowId = $("#wizWorkflowId").val();
         if(this.signBookId || workflowId) {
-            if (confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues")) {
+            if (bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues")) {
                 if(workflowId) {
                     $.ajax({
                         method: "DELETE",

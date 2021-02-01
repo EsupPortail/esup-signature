@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -7,6 +8,7 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -17,6 +19,9 @@ import java.util.*;
 public class UserShareService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserShareService.class);
+
+    @Resource
+    private GlobalProperties globalProperties;
 
     @Resource
     private UserService userService;
@@ -36,11 +41,17 @@ public class UserShareService {
     @Resource
     private WorkflowService workflowService;
 
+    private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
+
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
-        for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
-            if(!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
-                suUsers.add(userShare.getUser());
+        if(globalProperties.getShareMode() > 0) {
+            for (UserShare userShare : userShareRepository.findByToUsersEppnIn(Arrays.asList(authUserEppn))) {
+                if (!suUsers.contains(userShare.getUser()) && checkUserShareDate(userShare)) {
+                    User user = userShare.getUser();
+                    user.setUserShareId(userShare.getId());
+                    suUsers.add(user);
+                }
             }
         }
         return suUsers;
@@ -50,10 +61,16 @@ public class UserShareService {
         return userShareRepository.findByWorkflowId(id);
     }
 
-
-    public void createUserShare(List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
+    public void createUserShare(Boolean signWithOwnSign, List<Long> formsIds, List<Long> workflowsIds, String[] types, List<User> userEmails, Date beginDate, Date endDate, User user) throws EsupSignatureUserException {
         UserShare userShare = new UserShare();
         userShare.setUser(user);
+        if(globalProperties.getShareMode() > 2) {
+            userShare.setSignWithOwnSign(signWithOwnSign);
+        } else if(globalProperties.getShareMode() > 1) {
+            userShare.setSignWithOwnSign(false);
+        } else if(globalProperties.getShareMode() > 0) {
+            userShare.setSignWithOwnSign(true);
+        }
         List<ShareType> shareTypes = new ArrayList<>();
         for(String type : types) {
             shareTypes.add(ShareType.valueOf(type));
@@ -79,13 +96,16 @@ public class UserShareService {
                 throw new EsupSignatureUserException("Une délégation pour ce circuit existe déjà, merci de la modifier");
             }
         }
+        if(formsIds.size() == 0 && workflowsIds.size() == 0) {
+            userShare.setAllSignRequests(true);
+        }
         userShare.getToUsers().addAll(userEmails);
         userShare.setBeginDate(beginDate);
         userShare.setEndDate(endDate);
         userShareRepository.save(userShare);
     }
 
-    public void addUserShare(User authUser, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
+    public void addUserShare(User authUser, Boolean signWithOwnSign, Long[] form, Long[] workflow, String[] types, String[] userEmails, String beginDate, String endDate) throws EsupSignatureUserException {
         List<User> users = new ArrayList<>();
         for (String userEmail : userEmails) {
             users.add(userService.getUserByEmail(userEmail));
@@ -94,16 +114,26 @@ public class UserShareService {
         Date endDateDate = null;
         if (beginDate != null && endDate != null) {
             try {
-                beginDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(beginDate);
-                endDateDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+                beginDateDate = new SimpleDateFormat(DATE_PATTERN).parse(beginDate);
+                endDateDate = new SimpleDateFormat(DATE_PATTERN).parse(endDate);
             } catch (ParseException e) {
                 logger.error("error on parsing dates");
             }
         }
-        createUserShare(Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
+        createUserShare(signWithOwnSign, Arrays.asList(form), Arrays.asList(workflow), types, users, beginDateDate, endDateDate, authUser);
     }
 
-    public void updateUserShare(User authUser, String[] types, String[] userEmails, String beginDate, String endDate, UserShare userShare) {
+    @Transactional
+    public void updateUserShare(String authUserEppn, String[] types, String[] userEmails, String beginDate, String endDate, Long userShareId, Boolean signWithOwnSign) {
+        User authUser = userService.getUserByEppn(authUserEppn);
+        UserShare userShare = getById(userShareId);
+        if(globalProperties.getShareMode() > 2) {
+            userShare.setSignWithOwnSign(signWithOwnSign);
+        } else if(globalProperties.getShareMode() > 1) {
+            userShare.setSignWithOwnSign(false);
+        } else if(globalProperties.getShareMode() > 0) {
+            userShare.setSignWithOwnSign(true);
+        }
         if(userShare.getUser().equals(authUser)) {
             userShare.getToUsers().clear();
             for (String userEmail : userEmails) {
@@ -117,6 +147,9 @@ public class UserShareService {
             if(userShare.getForm() != null ) {
                 authorizedShareTypes.addAll(userShare.getForm().getAuthorizedShareTypes());
             }
+            if(userShare.getAllSignRequests()) {
+                authorizedShareTypes.addAll(Arrays.asList(ShareType.values()));
+            }
             for(String type : types) {
                 if(authorizedShareTypes.contains(ShareType.valueOf(type))) {
                     userShare.getShareTypes().add(ShareType.valueOf(type));
@@ -124,8 +157,8 @@ public class UserShareService {
             }
             if (beginDate != null && endDate != null) {
                 try {
-                    userShare.setBeginDate(new SimpleDateFormat("yyyy-MM-dd").parse(beginDate));
-                    userShare.setEndDate(new SimpleDateFormat("yyyy-MM-dd").parse(endDate));
+                    userShare.setBeginDate(new SimpleDateFormat(DATE_PATTERN).parse(beginDate));
+                    userShare.setEndDate(new SimpleDateFormat(DATE_PATTERN).parse(endDate));
                 } catch (ParseException e) {
                     logger.error("error on parsing dates");
                 }
@@ -134,22 +167,19 @@ public class UserShareService {
     }
 
     public Boolean checkShare(String fromUserEppn, String toUserEppn, SignRequest signRequest, ShareType shareType) {
+        List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), shareType);
         if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-            List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType);
-            for (UserShare userShare : userShares) {
-                if (checkUserShareDate(userShare)) {
-                    return true;
-                }
-            }
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType));
+
         }
         Data data = dataService.getBySignRequest(signRequest);
         if(data != null) {
-            List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType);
-            for (UserShare userShare : userShares) {
-                if (checkUserShareDate(userShare)) {
-                    return true;
-                }
+            userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
+        }
+        for (UserShare userShare : userShares) {
+            if (checkUserShareDate(userShare) && checkUserShareDate(userShare, signRequest.getCreateDate())) {
+                return true;
             }
         }
         return false;
@@ -203,12 +233,19 @@ public class UserShareService {
         return userShareRepository.findByUserEppnAndToUsersEppnInAndShareTypesContains(fromUserEppn, toUsers, shareType);
     }
 
-    public Boolean checkUserShareDate(UserShare userShare) {
-        Date today = new Date();
-        if((userShare.getBeginDate() == null || today.after(userShare.getBeginDate())) && (userShare.getEndDate() == null || today.before(userShare.getEndDate()))) {
+    public Boolean checkUserShareDate(UserShare userShare, Date checkDate) {
+        if((userShare.getBeginDate() == null
+                || checkDate.after(userShare.getBeginDate()))
+                && (userShare.getEndDate() == null
+                || checkDate.before(userShare.getEndDate()))) {
             return true;
         }
         return false;
+    }
+
+    public Boolean checkUserShareDate(UserShare userShare) {
+        Date checkDate = new Date();
+        return checkUserShareDate(userShare, checkDate);
     }
 
     public List<UserShare> getUserSharesByUser(String authUserEppn) {
@@ -217,6 +254,14 @@ public class UserShareService {
 
     public UserShare getById(Long id) {
         return userShareRepository.findById(id).get();
+    }
+
+    public void delete(Long userShareId, String authUserEppn) {
+        User authUser = userService.getUserByEppn(authUserEppn);
+        UserShare userShare = getById(userShareId);
+        if (userShare.getUser().equals(authUser)) {
+            delete(userShare);
+        }
     }
 
     public void delete(UserShare userShare) {

@@ -510,5 +510,9 @@ public class SignBookService {
         return signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, signRequestStatus);
     }
 
+    public Long nbToSignSignBooks(String userEppn) {
+        return signBookRepository.countByRecipientUserToSign(userEppn);
+    }
+
 
 }

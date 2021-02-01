@@ -3,11 +3,13 @@ package org.esupportail.esupsignature.entity;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Configurable
-public class UserPropertie {
+public class FieldPropertie {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -16,11 +18,14 @@ public class UserPropertie {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Field field;
+
     @ElementCollection
-    private Map<User, Date> favorites = new HashMap<>();
+    private Map<String, Date> favorites = new HashMap<>();
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
@@ -35,11 +40,19 @@ public class UserPropertie {
         this.user = user;
     }
 
-    public Map<User, Date> getFavorites() {
+    public Field getField() {
+        return field;
+    }
+
+    public void setField(Field field) {
+        this.field = field;
+    }
+
+    public Map<String, Date> getFavorites() {
         return favorites;
     }
 
-    public void setFavorites(Map<User, Date> users) {
-        this.favorites = users;
+    public void setFavorites(Map<String, Date> favorites) {
+        this.favorites = favorites;
     }
 }

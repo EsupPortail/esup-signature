@@ -43,6 +43,7 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -94,6 +95,9 @@ public class SignRequestController {
     @Resource
     private TemplateEngine templateEngine;
 
+    @Resource
+    private UserPropertieService userPropertieService;
+
 //
 //    @Resource
 //    private SedaExportService sedaExportService;
@@ -126,7 +130,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model) throws IOException, EsupSignatureException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
         if (signRequest.getLastNotifDate() == null) {
             model.addAttribute("notifTime", 0);
@@ -144,7 +148,10 @@ public class SignRequestController {
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                model.addAttribute("signImages", signRequestService.getSignImageForSignRequest(signRequest, userEppn, authUserEppn));
+                Object userShareString = httpSession.getAttribute("userShareId");
+                Long userShareId = null;
+                if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
+                model.addAttribute("signImages", signRequestService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId));
             } catch (EsupSignatureUserException e) {
                 logger.error(e.getMessage());
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
@@ -195,9 +202,13 @@ public class SignRequestController {
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
-                               @RequestParam(value = "password", required = false) String password) {
+                               @RequestParam(value = "password", required = false) String password,
+                                       HttpSession httpSession) {
         if (visual == null) visual = true;
-        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userEppn, authUserEppn)) {
+        Object userShareString = httpSession.getAttribute("userShareId");
+        Long userShareId = null;
+        if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
+        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
             new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -275,6 +286,7 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
                 Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.get(0)));
@@ -435,6 +447,9 @@ public class SignRequestController {
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
+        if(recipientEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
+        }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
@@ -446,6 +461,7 @@ public class SignRequestController {
                                 @RequestParam(name = "signType") SignType signType,
                                 @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
         signRequestService.addStep(id, recipientsEmails, signType, allSignToComplete);
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 

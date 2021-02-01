@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userProperties" type="java.util.List<org.esupportail.esupsignature.entity.UserPropertie>"*/-->
+<!--/*@thymesVar id="fieldProperties" type="java.util.List<org.esupportail.esupsignature.entity.fieldPropertie>"*/-->
 <head th:replace="fragments/head :: head"></head>
 <body>
 <nav th:replace="fragments/nav"></nav>
@@ -13,38 +14,70 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body text-center">
-                    <table class="table table-hover table-borderless table-striped">
-                        <thead class="thead-dark">
-                        <tr>
-                            <th>Workflow</th>
-                            <th>Score</th>
-                            <th>Signataire</th>
-                            <th>Destinataire</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="userPropertie : ${userProperties}">
+            <div class="row">
+                <div class="card col-lg-6 mx-auto">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Champs utilisateur</h5>
+                        <table class="table table-hover table-borderless table-striped">
+                            <thead class="thead-dark">
                             <tr>
-                                <td>
-                                    <span th:text="${userPropertie.workflowStep.description}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${userPropertie.score}"></span>
-                                </td>
-                                <td>
-                                    <ul th:each="user : ${userPropertie.users}">
-                                       <li th:text="${user.eppn}"></li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <span th:text="${userPropertie.targetEmail}"></span>
-                                </td>
+                                <th class="text-left">Destinataire</th>
+                                <th class="text-left">Dernière date d'utilisation</th>
+                                <th class="text-left">Suppression</th>
                             </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            <th:block th:if="${userProperties != null}" th:each="userPropertie : ${userProperties}">
+                                <tr>
+                                    <td class="text-left">
+                                        <span th:text="${userPropertie.key.firstname + ' ' + userPropertie.key.name}"></span>
+                                    </td>
+                                    <td class="text-left">
+                                        <span th:text="${#dates.format(userPropertie.value, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </td>
+                                    <td>
+                                        <form th:action="'/user/users/delete-user-propertie/' + ${userPropertie.key.id}" th:method="'delete'">
+                                            <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card col-lg-6 mx-auto">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Champs de formulaires</h5>
+                        <table class="table table-hover table-borderless table-striped">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th class="text-left">Valeur</th>
+                                <th class="text-left">Dernière date d'utilisation</th>
+                                <th class="text-left">Suppression</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:if="${fieldProperties != null}" th:each="fieldPropertie : ${fieldProperties}">
+                                <th:block th:each="favorite : ${fieldPropertie.favorites}">
+                                    <tr>
+                                        <td class="text-left">
+                                            <span th:text="${fieldPropertie.field.name + ' : ' + favorite.key}"></span>
+                                        </td>
+                                        <td class="text-left">
+                                            <span th:text="${#dates.format(favorite.value, 'dd/MM/yyyy HH:mm')}"></span>
+                                        </td>
+                                        <td>
+                                            <form th:action="'/user/users/delete-field-propertie/' + ${fieldPropertie.id} + '/' + ${favorite.key}" th:method="'delete'">
+                                                <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

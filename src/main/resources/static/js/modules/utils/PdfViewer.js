@@ -11,6 +11,9 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
         this.scale = 1;
+        if(localStorage.getItem('scale')) {
+            this.scale = parseFloat(localStorage.getItem('scale'));
+        }
         this.zoomStep = 0.10;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
@@ -103,8 +106,8 @@ export class PdfViewer extends EventFactory {
     adjustZoom() {
         console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
-        if(this.isFloat(localStorage.getItem('scale'))) {
-            newScale = localStorage.getItem('scale');
+        if(localStorage.getItem('scale')) {
+            newScale = parseFloat(localStorage.getItem('scale'));
         }
         if (window.innerWidth < 1200) {
             newScale = 0.9;
@@ -157,10 +160,10 @@ export class PdfViewer extends EventFactory {
     }
 
     renderTask(page) {
-        console.info("launch render task");
+        console.info("launch render task" + this.scale);
         this.page = page;
         let scale = this.scale;
-        localStorage.setItem('scale', this.scale);
+        localStorage.setItem('scale', scale);
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -293,7 +296,6 @@ export class PdfViewer extends EventFactory {
                     $('#' + items[i].fieldName.split(/\\$|#|!/)[0] + ' option').each(function()
                     {
                         if(this.savedFields.get(items[i].fieldName) === $(this).value) {
-                            alert("test");
                             $(this).prop("selected", true);
                         }
                     });
@@ -329,6 +331,14 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
+                    let sendField = inputField;
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response, sendField)
+                    });
+                }
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
@@ -438,7 +448,15 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if(inputField.length > 0) {
+            if(inputField.length && dataField != null) {
+                let sendField = inputField;
+                if(dataField.favorisable) {
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response, sendField)
+                    });
+                }
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -457,7 +475,7 @@ export class PdfViewer extends EventFactory {
                 }
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length > 0) {
+            if(inputField.length) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -605,5 +623,16 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.eventBus.dispatch('print', {
             source: self
         });
+    }
+
+    autocomplete(response, inputField) {
+        let id = inputField.attr('id');
+        let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
+        $(div).insertAfter(inputField);
+        inputField.autocomplete({
+            source: response,
+            appendTo: "#div_" + id,
+            minLength:0
+        }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }
 }

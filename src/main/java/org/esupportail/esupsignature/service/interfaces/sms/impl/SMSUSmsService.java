@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.utils.sms.impl;
+package org.esupportail.esupsignature.service.interfaces.sms.impl;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -11,7 +11,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.utils.sms.SmsService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

@@ -136,7 +136,7 @@ export class GlobalUi {
             stringChain += data[i].firstname + " " + data[i].name + " ";
         }
         stringChain += "Confirmez-vous l'envoie de la demande ? "
-        if (data.length < 1 || window.confirm(stringChain)) {
+        if (data.length < 1 || bootbox.confirm(stringChain)) {
             $("#pending").val(true);
             $("#sendButton").click();
         }
@@ -407,6 +407,13 @@ export class GlobalUi {
                             location.href = prevSignRequestButton.attr('href');
                         }
                         break;
+                }
+            } else {
+                if(event.which === 13) {
+                    let signLaunchButton = $("#signLaunchButton");
+                    if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
+                        signLaunchButton.click();
+                    }
                 }
             }
         });

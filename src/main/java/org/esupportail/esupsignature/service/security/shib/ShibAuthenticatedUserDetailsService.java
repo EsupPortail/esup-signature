@@ -30,6 +30,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,6 +66,7 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 
 	public UserDetails loadUserDetails(PreAuthenticatedAuthenticationToken token) throws AuthenticationException {
 		Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
+		Set<String> ldapGroups = new HashSet<>();
 		if(!token.getCredentials().equals("")) {
 			logger.debug("load user details from : " + token.getName());
 			String credentials = (String) token.getCredentials();
@@ -71,6 +74,13 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 			String[] splitCredentials = credentials.split(";");
 			try {
 				for (String credential : splitCredentials) {
+					LdapName ln = new LdapName(credential);
+					for(Rdn rdn : ln.getRdns()) {
+						if(rdn.getType().equalsIgnoreCase("CN")) {
+							ldapGroups.add(rdn.getValue().toString());
+							break;
+						}
+					}
 					for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
 						if (credential.contains(mappingGroupesRole)) {
 							grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));
@@ -91,8 +101,8 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 					logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 				}
 				if (ldapGroupService != null && ldapGroupService.getDomain().equals(token.getName().split("@")[1])) {
-					List<String> ldapGroups = ldapGroupService.getGroups(token.getName());
-					ldapGroupService.addLdapRoles(grantedAuthorities, ldapGroups, groupPrefixRoleName, mappingGroupesRoles);
+					ldapGroups.addAll(ldapGroupService.getGroups(token.getName()));
+					ldapGroupService.addLdapRoles(grantedAuthorities, new ArrayList<>(ldapGroups), groupPrefixRoleName, mappingGroupesRoles);
 				}
 			} catch (Exception e) {
 				logger.warn("unable to find authorities", e);
