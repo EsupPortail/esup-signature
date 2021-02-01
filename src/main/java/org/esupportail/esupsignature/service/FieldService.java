@@ -31,21 +31,22 @@ public class FieldService {
 
 	public void updateField(Field field) {
 		if (field.getId() !=null) {
-			updateField(field.getId(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
+			updateField(field.getId(), field.getFavorisable(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
 		}else {
 			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepNumbers());
 		}
 	}
 
 	@Transactional
-	public Field updateField(Long id, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
+	public Field updateField(Long id, Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
 							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers) {
 		Field field = fieldRepository.findById(id).get();
-		setFieldValues(required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers, field);
+		setFieldValues(favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers, field);
 		return field;
 	}
 
-	public void setFieldValues(Boolean required, Boolean readOnly, String extValueServiceName, String extValueType, String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers, Field field) {
+	public void setFieldValues(Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType, String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers, Field field) {
+		field.setFavorisable(favorisable);
 		field.setRequired(required);
 		field.setReadOnly(readOnly);
 		field.setExtValueServiceName(extValueServiceName);
@@ -60,7 +61,7 @@ public class FieldService {
 	public Field createField(Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
 								String extValueReturn, String searchServiceName, String searchType, String searchReturn, String stepNumbers) {
 		Field field = new Field();
-		setFieldValues(required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers, field);
+		setFieldValues(false, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers, field);
 		fieldRepository.save(field);
 		return field;
 	}

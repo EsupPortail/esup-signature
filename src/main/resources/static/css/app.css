@@ -161,15 +161,6 @@ code {
 	content: "Parcourir" !important;
 }
 
-.ui-autocomplete {
-    max-height: 200px;
-    overflow-y: auto;
-    /* prevent horizontal scrollbar */
-    overflow-x: hidden;
-    /* add padding to account for vertical scrollbar */
-    padding-right: 20px;
-}
-
 .anim-border {
     /*background-color: rgba(173, 255, 47, 0.5);*/
     background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
@@ -817,6 +808,11 @@ float:left;
 
 }
 
+.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
+    color: black;
+    border-color: #000 #000 transparent #000 !important;
+}
+
 .file-tab {
     width: 200px;
     overflow: hidden;
@@ -1454,4 +1450,38 @@ float:left;
 .ss-main {
     font-weight: normal !important;
     margin-bottom: 20px !important;
+}
+
+.custom-autocompletion {
+    all: initial;
+    margin-top: 5%;
+}
+
+.ui-autocomplete {
+    position: relative !important;
+    top: 0 !important;
+    transform: matrix(0.75, 0, 0, 0.75, 0, 0);
+    transform-origin: 0.75% 0.75%;
+    z-index: 1000;
+    float: left;
+    display: none;
+    min-width: 160px;
+    _width: 160px;
+    padding: 4px 0;
+    margin: 2px 0 0 0;
+    list-style: none;
+    background-color: #ffffff;
+    border-color: #ccc;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 1px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
 }

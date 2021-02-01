@@ -37,10 +37,10 @@
                             </thead>
                             <tbody>
                             <th:block th:each="data : ${datas}">
-                            <tr>
-                                <td class="w-10 text-dark"><i class="fab fa-firstdraft"></i></td>
-                                <td th:text="${data.name}"></td>
-                                <td th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                            <tr th:data-href="'/user/datas/' + ${data.id} + '/update'">
+                                <td class="w-10 text-dark clickable-td"><i class="fab fa-firstdraft"></i></td>
+                                <td class="clickable-td" th:text="${data.name}"></td>
+                                <td class="clickable-td" th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td>
                                     <button type="button" th:id="'menu-toggle-' + ${data.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${data.name}" th:data-target="'#menu-' + ${data.id}" th:aria-controls="'menu-' + ${data.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>

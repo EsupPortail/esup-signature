@@ -55,20 +55,34 @@ export default class SelectUser {
             this.flag = false;
             let array = [];
             let array2 = [];
-            for (let i = 0; i < this.slimSelect.data.data.length; i++) {
-                let prevData = this.slimSelect.data.data[i];
-                if (prevData.text !== selectValue && prevData.value !== "undefined" && prevData.value !== "") {
-                    array.push({
-                        text: this.slimSelect.data.data[i].text,
-                        value: this.slimSelect.data.data[i].value,
-                        display: true
-                    });
-                    array2.push(this.slimSelect.data.data[i].value);
+            let prevData = this.slimSelect.selected()
+            if (Array.isArray(prevData)) {
+                for (let i = 0; i < prevData.length; i++) {
+                    let onePrevData = prevData[i];
+                    if (onePrevData !== selectValue && onePrevData !== "undefined" && onePrevData !== "") {
+                        array.push({
+                            text: onePrevData,
+                            value: onePrevData,
+                            display: true
+                        });
+                        array2.push(onePrevData);
+                    }
                 }
+            } else {
+                array.push({
+                    text: prevData,
+                    value: prevData,
+                    display: true
+                });
+                array2.push(prevData);
             }
-            for (let i = 0; i < data.length; i++) {
-                array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
-                array2.push(data[i]);
+            if (data.length > 10) {
+                alert("Merci de sélectionner une liste contenant au maximum 10 personnes. La liste sélectionnée dépasse cette limite.");
+            } else {
+                for (let i = 0; i < data.length; i++) {
+                    array.push({text: data[i], value: this.valuePrefix + data[i], display: true})
+                    array2.push(data[i]);
+                }
             }
             this.slimSelect.setData(array);
             this.slimSelect.set(array2);

@@ -417,10 +417,10 @@ export class SignPosition extends EventFactory {
         this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
-        if(!this.confirmEnabled) {
-            this.enableConfirmLeaveSign();
-            this.confirmEnabled = true;
-        }
+        // if(!this.confirmEnabled) {
+        //     this.enableConfirmLeaveSign();
+        //     this.confirmEnabled = true;
+        // }
     }
 
     dragSignature() {
@@ -475,7 +475,7 @@ export class SignPosition extends EventFactory {
 
 
     enableConfirmLeaveSign() {
-        window.beforeunload = function(e) {
+        window.onbeforeunload = function(e) {
             return true;
         };
     }

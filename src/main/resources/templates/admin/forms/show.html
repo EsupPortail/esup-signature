@@ -37,6 +37,7 @@
                     <a class="nav-link active" href="#" onclick="return false;">Configuration des champs</a>
                 </li>
             </ul>
+            <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                 <table class="table table-borderless table-hover">
@@ -44,6 +45,7 @@
                         <tr>
                             <th class="align-middle">Nom</th>
                             <th class="align-middle">Type</th>
+                            <th class="align-middle">Favorisable</th>
                             <th class="align-middle">Requis</th>
                             <th class="align-middle">Lecture seule</th>
                             <th class="align-middle">Pré-remplissage</th>
@@ -59,7 +61,8 @@
                         <tr>
                             <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/field/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
-                            <td><span th:text="${field.type}" /></td>
+                            <td><span th:text="${field.type}"/></td>
+                            <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
                             <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
                             <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
                             <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != ''}"/></td>

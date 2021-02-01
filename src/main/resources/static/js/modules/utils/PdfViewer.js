@@ -331,6 +331,14 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
+                    let sendField = inputField;
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response, sendField)
+                    });
+                }
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
@@ -440,7 +448,15 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if(inputField.length > 0) {
+            if(inputField.length && dataField != null) {
+                let sendField = inputField;
+                if(dataField.favorisable) {
+                    $.ajax({
+                        type: "GET",
+                        url: '/user/datas/get-favorites/' + dataField.id,
+                        success : response => this.autocomplete(response, sendField)
+                    });
+                }
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -459,7 +475,7 @@ export class PdfViewer extends EventFactory {
                 }
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length > 0) {
+            if(inputField.length) {
                 inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
                 inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -607,5 +623,16 @@ export class PdfViewer extends EventFactory {
         this.pdfPageView.eventBus.dispatch('print', {
             source: self
         });
+    }
+
+    autocomplete(response, inputField) {
+        let id = inputField.attr('id');
+        let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
+        $(div).insertAfter(inputField);
+        inputField.autocomplete({
+            source: response,
+            appendTo: "#div_" + id,
+            minLength:0
+        }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }
 }
