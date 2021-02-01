@@ -87,6 +87,9 @@ export class SignUi {
                 formData[this.name] = this.value;
             }
         });
+        this.workspace.pdfViewer.savedFields.forEach((value, key)=>{
+            formData[key] = value;
+        });
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&sseId=" + sessionStorage.getItem("sseId") +
@@ -135,7 +138,7 @@ export class SignUi {
             if(this.gotoNext) {
                 document.location.href = $("#nextSignRequestButton").attr('href');
             } else {
-                document.location.href = "/user/";
+                document.location.href = "/user/signrequests";
             }
         } else {
             console.debug("update bar");
