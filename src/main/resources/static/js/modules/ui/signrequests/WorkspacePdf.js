@@ -130,6 +130,7 @@ export class WorkspacePdf {
                 let signModal = null;
                 if (this.stepRepeatable) {
                     signModal = $('#stepRepeatableModal');
+                    $('#launchSignButton').hide();
                 } else {
                     signModal = $("#signModal");
                 }
