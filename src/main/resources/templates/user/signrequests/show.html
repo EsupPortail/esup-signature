@@ -331,10 +331,15 @@
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
-                <button id="checkRepeatableButton"
+                <button id="checkRepeatableButtonEnd"
                         th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}">
-                    <i class="fas fa-check"></i> Viser
+                    <i class="fas fa-check"></i> Viser et retourner à l'accueil
+                </button>
+                <button id="checkRepeatableButtonNext"
+                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                        class="btn btn-success" title="Signer" th:value="${signRequest.id}">
+                    <i class="fas fa-check"></i> Viser et aller à la suivante
                 </button>
             </div>
         </div>
