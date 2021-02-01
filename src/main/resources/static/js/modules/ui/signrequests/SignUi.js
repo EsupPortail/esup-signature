@@ -14,7 +14,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -28,10 +28,13 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkRepeatableButtonEnd").on('click', e => this.checkRepeatable(false));
-        $("#checkRepeatableButtonNext").on('click', e => this.checkRepeatable(true));
+        $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
+        $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
         $("#launchSignButton").on('click', e => this.insertStep());
         $("#launchAllSignButton").on('click', e => this.launchSign());
+        $("#stepRepeatableModal").find(".close").on('click', function () {
+            window.location.href = "/";
+        })
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -42,7 +45,9 @@ export class SignUi {
         document.addEventListener("sign", e => this.updateWaitModal(e));
     }
 
-    launchSign() {
+    launchSign(gotoNext) {
+        this.gotoNext = gotoNext;
+        $('#signModal').modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
@@ -86,6 +91,9 @@ export class SignUi {
             if(!this.name.startsWith("comment")) {
                 formData[this.name] = this.value;
             }
+        });
+        this.workspace.pdfViewer.savedFields.forEach((value, key)=>{
+            formData[key] = value;
         });
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
@@ -135,7 +143,7 @@ export class SignUi {
             if(this.gotoNext) {
                 document.location.href = $("#nextSignRequestButton").attr('href');
             } else {
-                document.location.href = "/user/";
+                document.location.href = "/user/signrequests";
             }
         } else {
             console.debug("update bar");
@@ -175,17 +183,6 @@ export class SignUi {
         textArea.select();
         document.execCommand("Copy");
         textArea.remove();
-    }
-
-    checkRepeatable(gotoNext) {
-        this.gotoNext = gotoNext;
-        if (this.stepRepeatable) {
-            this.signModal.modal('hide');
-            $('#stepRepeatableModal').modal('show');
-        } else {
-            this.signModal.modal('hide');
-            this.launchSign();
-        }
     }
 
     insertStep() {
