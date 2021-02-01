@@ -32,6 +32,9 @@ export class SignUi {
         $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
         $("#launchSignButton").on('click', e => this.insertStep());
         $("#launchAllSignButton").on('click', e => this.launchSign());
+        $("#stepRepeatableModal").find(".close").on('click', function () {
+            window.location.href = "/";
+        })
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
