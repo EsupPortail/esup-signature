@@ -134,8 +134,8 @@ public class WorkflowAdminController {
 	@DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
 	public String removeStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 									  @PathVariable("workflowStepId") Long workflowStepId,
-									  @RequestParam(value = "userEppn") String userEppn, RedirectAttributes redirectAttributes) {
-		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userEppn);
+									  @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes) {
+		WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
 		return "redirect:/admin/workflows/" + id + "#" + workflowStep.getId();
 	}

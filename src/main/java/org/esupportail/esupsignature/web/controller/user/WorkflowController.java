@@ -77,11 +77,11 @@ public class WorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
     public String removeStepRecipient(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+                                      @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn,
                                       @PathVariable("workflowStepId") Long workflowStepId, RedirectAttributes redirectAttributes) {
-        Workflow workflow = workflowService.getById(id);
-        WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userEppn);
+        WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
-        return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
+        return "redirect:/user/workflows/" + id + "#" + workflowStep.getId();
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
@@ -93,7 +93,7 @@ public class WorkflowController {
         Workflow workflow = workflowService.getById(id);
         WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
-        return "redirect:/user/workflows/" + workflow.getName() + "#" + workflowStep.getId();
+        return "redirect:/user/workflows/" + workflow.getId() + "#" + workflowStep.getId();
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
@@ -103,7 +103,7 @@ public class WorkflowController {
                           @PathVariable("stepNumber") Integer stepNumber) {
         Workflow workflow = workflowService.getById(id);
         workflowStepService.removeStep(workflow, stepNumber);
-        return "redirect:/user/workflows/" + workflow.getName();
+        return "redirect:/user/workflows/" + workflow.getId();
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
@@ -111,13 +111,14 @@ public class WorkflowController {
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le circuit à bien été supprimé"));
         return "redirect:/";
     }
 
     @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody
-    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
     }
