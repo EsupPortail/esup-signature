@@ -411,7 +411,7 @@ export class GlobalUi {
             } else {
                 if(event.which === 13) {
                     let signLaunchButton = $("#signLaunchButton");
-                    if(signLaunchButton.length) {
+                    if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
                         signLaunchButton.click();
                     }
                 }

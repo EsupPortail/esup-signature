@@ -128,7 +128,8 @@ export class WorkspacePdf {
             if (WorkspacePdf.validateForm()) {
                 let signModal = $("#signModal");
                 signModal.on('shown.bs.modal', function(){
-                    $("#checkRepeatableButton").focus();
+                    $("#checkRepeatableButtonEnd").focus();
+                    $("#checkRepeatableButtonNext").focus();
                 });
                 signModal.modal('show');
             }
