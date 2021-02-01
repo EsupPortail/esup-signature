@@ -200,7 +200,6 @@ public class DataController {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
-			userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
