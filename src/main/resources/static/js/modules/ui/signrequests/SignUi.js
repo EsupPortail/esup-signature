@@ -98,7 +98,7 @@ export class SignUi {
                 "&signRequestParams=" + JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())) +
                 "&visual=" + this.workspace.signPosition.visualActive +
                 "&comment=" + this.signComment.val() +
-                // "&formData=" + JSON.stringify(formData) +
+                "&formData=" + JSON.stringify(formData) +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token
             ;
         } else {
