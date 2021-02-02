@@ -1081,7 +1081,7 @@ public class SignRequestService {
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
 						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
-							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil");
+							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
 						}
 						for (Document signImage : user.getSignImages()) {
 							signImages.add(fileService.getBase64Image(signImage));
