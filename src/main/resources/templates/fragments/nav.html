@@ -6,10 +6,6 @@
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
-<script th:inline="javascript" type="module">
-    import {GlobalUi} from "../../static/js/modules/ui/GlobalUi.js";
-    new GlobalUi([[${_csrf}]]);
-</script>
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
