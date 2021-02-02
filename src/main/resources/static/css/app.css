@@ -140,9 +140,22 @@ code {
 
 .file-preview-frame {
     width: 100%;
+    display: inline-flex;
+}
+.file-preview-frame * {
+    margin: 5px;
 }
 .file-details-cell {
     width: 100%;
+    text-align: left;
+
+}
+.file-actions-cell {
+    width: 30%;
+    display: inline-flex;
+}
+.file-upload-indicator {
+    padding: 10px 0;
 }
 
 .croppie-container .cr-boundary {

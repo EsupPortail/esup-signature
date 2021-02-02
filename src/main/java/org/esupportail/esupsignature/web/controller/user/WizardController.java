@@ -95,7 +95,7 @@ public class WizardController {
                 if (signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn)) {
                     return "user/wizard/wiz-save";
                 } else {
-                    return "user/wizard/wizend/";
+                    return "user/wizard/wizend";
                 }
             }
         }
