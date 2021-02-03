@@ -49,11 +49,34 @@
                                     </div>
                                 </div>
                             </th>
-                            <th class="w-20 d-none d-xxl-table-cell">Circuit</th>
-                            <th class="w-20">Titre des documents</th>
+                            <th class="w-20 d-none d-xxl-table-cell text-center">Circuit
+                                <select id="workflowFilter" class="form-control signRequestFilter">
+                                            <option value="" text=""></option>
+                                    <th:block th:each="workflow : ${signRequestWorkflow}">
+                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
+                            <th class="w-20 text-center">
+                                Titre des documents
+                                <select id="docTitleFilter" class="form-control signRequestFilter">
+                                    <option value="" text=""></option>
+                                    <th:block th:each="docTitle : ${docTitles}">
+                                        <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
                             <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                            <th class="d-none d-lg-table-cell">Participants</th>
+                            <th class="d-none d-lg-table-cell">
+                                Participants
+                                <select id="recipientsFilter" class="form-control signRequestFilter">
+                                    <option value="" text=""></option>
+                                    <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
+                                        <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
                             <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
                             <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
                             <th>Actions</th>

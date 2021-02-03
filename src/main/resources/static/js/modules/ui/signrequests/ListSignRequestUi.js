@@ -12,6 +12,9 @@ export default class ListSignRequestUi {
     }
 
     initListeners() {
+        $('#workflowFilter').on('change', e => this.buildUrlFilter());
+        $('#recipientsFilter').on('change', e => this.buildUrlFilter());
+        $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
@@ -71,5 +74,22 @@ export default class ListSignRequestUi {
                 $('#signRequestTable').append(data);
             });
         }
+    }
+
+    buildUrlFilter() {
+        let url = '/user/signrequests'
+        let filters = $('.signRequestFilter');
+        let firstParameter = true;
+        for (let i = 0 ; i < filters.length ; i++) {
+            if (filters.eq(i).val() !== "") {
+                if (firstParameter) {
+                    url = url + '?' + filters.eq(i).attr('id') + '=' + filters.eq(i).val();
+                    firstParameter = false;
+                } else {
+                    url = url + '&' + filters.eq(i).attr('id') + '=' + filters.eq(i).val();
+                }
+            }
+        }
+        document.location.href = url;
     }
 }
