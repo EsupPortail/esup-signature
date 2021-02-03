@@ -33,4 +33,6 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByRecipient(String recipientUserEppn);
     @Query("select s from SignRequest s join s.recipientHasSigned rhs where s.id = :id and key(rhs).user.eppn = :recipientUserEppn")
     List<SignRequest> findByIdAndRecipient(Long id, String recipientUserEppn);
+    List<SignRequest> findByTitle(String title);
+    List<SignRequest> findByParentSignBookTitle(String title);
 }

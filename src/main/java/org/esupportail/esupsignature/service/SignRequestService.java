@@ -61,6 +61,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -808,8 +811,20 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Page<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, Pageable pageable) {
+	public Page<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
 		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
+		if (recipientsFilter != null) {
+			List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
+			signRequests.retainAll(signRequestByRecipients);
+		}
+		if (workflowFilter != null) {
+			List<SignRequest> signRequestByWorkflow = signRequestRepository.findByParentSignBookTitle(workflowFilter);
+			signRequests.retainAll(signRequestByWorkflow);
+		}
+		if (docTitleFilter != null) {
+			List<SignRequest> signRequestByTitle = signRequestRepository.findByTitle(docTitleFilter);
+			signRequests.retainAll(signRequestByTitle);
+		}
 		List<SignRequest> signRequestsGrouped = new ArrayList<>();
 		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
 		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
@@ -1174,5 +1189,19 @@ public class SignRequestService {
 		List<String> recipientEmails = new ArrayList<>();
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
 		mailService.sendSignRequestAlert(recipientEmails, signRequest);
+	}
+
+	public List<Recipient> getRecipientsNameFromSignRequestPage(Page<SignRequest> signRequests) {
+		List<Recipient> recipientNames = new ArrayList<>();
+		for (SignRequest signRequest : signRequests) {
+			recipientNames.addAll(signRequest.getRecipientHasSigned().keySet());
+		}
+		return recipientNames.stream().filter(distinctByKey(r -> r.getUser().getId())).collect( Collectors.toList() );
+	}
+
+	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor)
+	{
+		Map<Object, Boolean> map = new ConcurrentHashMap<>();
+		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 }
