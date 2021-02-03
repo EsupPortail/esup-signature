@@ -111,6 +111,9 @@ public class SignRequestService {
 	private UserService userService;
 
 	@Resource
+	private CommentService commentService;
+
+	@Resource
 	private UserShareService userShareService;
 
 	@Resource
@@ -353,10 +356,9 @@ public class SignRequestService {
 				return true;
 			}
 			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
-			signRequest.setComment(comment);
 			User user = userService.getByEppn(userEppn);
 			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId);
+			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
 				public void afterCommit(){
 					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
@@ -372,7 +374,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId) throws EsupSignatureException, IOException, InterruptedException {
+	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -428,13 +430,13 @@ public class SignRequestService {
 			certSign(signRequest, signerUser, password, visual, sseId);
 		}
 		if (signType.equals(SignType.visa)) {
-			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
+			if(comment != null && !comment.isEmpty()) {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", user.getEppn(), authUser.getEppn());
 			}
 		} else {
-			if(signRequest.getComment() != null && !signRequest.getComment().isEmpty()) {
+			if(comment != null && !comment.isEmpty()) {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user.getEppn(), authUser.getEppn());
@@ -667,8 +669,7 @@ public class SignRequestService {
 	public void addPostit(Long signRequestId, String comment, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getById(signRequestId);
 				if(comment != null && !comment.isEmpty()) {
-			signRequest.setComment(comment);
-			updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, userEppn, authUserEppn);
+			updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, userEppn, authUserEppn);
 		}
 	}
 
@@ -739,14 +740,17 @@ public class SignRequestService {
 	}
 
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
-		logService.create(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
+		logService.create(signRequest, signRequestStatus, action, null, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
+	}
+
+	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+		logService.create(signRequest, signRequestStatus, action, comment, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
 	@Transactional
 	public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getById(signRequestId);
-		signRequest.setComment(comment);
-		signBookService.refuse(signRequest.getParentSignBook(), signRequest.getComment(), userEppn, authUserEppn);
+		signBookService.refuse(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
@@ -794,9 +798,13 @@ public class SignRequestService {
 	@Transactional
 	public boolean delete(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-		for (Log log : logs) {
-			logService.delete(log);
+//		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
+//		for (Log log : logs) {
+//			logService.delete(log);
+//		}
+		List<Comment> comments = signRequest.getComments();
+		for( Comment comment : comments) {
+			commentService.deleteComment(comment.getId());
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
@@ -814,7 +822,6 @@ public class SignRequestService {
 		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
 		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
 			int last = signBookListEntry.getValue().size() - 1;
-			signBookListEntry.getValue().get(last).setViewTitle("");
 			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
 		}
 		if(pageable.getSort().iterator().hasNext()) {
@@ -992,14 +999,18 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean addSignParams, String authUserEppn) {
+	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean spot, String authUserEppn) {
 		SignRequest signRequest = getById(id);
-		signRequest.setComment(comment);
-		if(addSignParams) {
+		if(spot) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
 		}
-		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY, authUserEppn, authUserEppn);
+		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, signRequest.getSignRequestParams().size(), spot, authUserEppn);
+		if(spot) {
+			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+		} else {
+			updateStatus(signRequest, null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+		}
 	}
 
 	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
@@ -1179,5 +1190,9 @@ public class SignRequestService {
 		List<String> recipientEmails = new ArrayList<>();
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
 		mailService.sendSignRequestAlert(recipientEmails, signRequest);
+	}
+
+	public SignRequest getSignRequestByComment(Comment comment) {
+		return signRequestRepository.findSignRequestByCommentsContains(comment);
 	}
 }

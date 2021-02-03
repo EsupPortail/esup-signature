@@ -39,7 +39,7 @@
         </button>
         <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
             <i class="fas fa-comment"></i> <span class="sidebar-label">Commentaires</span>
-            <span th:if="${comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${comments.size()}"></span>
+            <span th:if="${signRequest.comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${signRequest.comments.size()}"></span>
         </button>
 
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->

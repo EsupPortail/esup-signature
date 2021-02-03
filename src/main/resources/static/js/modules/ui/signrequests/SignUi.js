@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable, status, signRequestParams) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable, status) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -14,8 +14,8 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable, status, signRequestParams);
         this.csrf = new CsrfToken(csrf);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');

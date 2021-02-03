@@ -318,14 +318,16 @@ export class SignPosition extends EventFactory {
             this.getCurrentSignParams().setxPos( (e.pageX - offset.left) / this.currentScale * this.fixRatio);
             this.getCurrentSignParams().setyPos( (e.pageY - offset.top) / this.currentScale * this.fixRatio);
             this.updateCrossPosition();
+            // console.debug("mouse pos : " + $("#commentPosX").val() + ", " + $('#commentPosY').val());
         }
     }
 
     pointIt2(e) {
         if (this.pointItEnable) {
-            $('#commentPosX').val(e.offsetX ? (e.offsetX) : e.clientX);
+            $("#commentPosX").val(e.offsetX ? (e.offsetX) : e.clientX);
             $('#commentPosY').val(e.offsetY ? (e.offsetY) : e.clientY);
             $('#commentPageNumber').val(this.getCurrentSignParams().signPageNumber);
+            console.debug("mouse pos : " + $("#commentPosX").val() + ", " + $('#commentPosY').val());
         }
     }
 

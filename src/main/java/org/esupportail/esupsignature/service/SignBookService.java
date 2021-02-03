@@ -384,7 +384,6 @@ public class SignBookService {
         mailService.sendRefusedMail(signBook, comment);
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment, userEppn, authUserEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signBook.getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().getEppn().equals(userEppn)) {
@@ -435,8 +434,7 @@ public class SignBookService {
             pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn());
             if (comment != null && !comment.isEmpty()) {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
-                    signRequest.setComment(comment);
-                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
+                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
                 }
             }
         } else {

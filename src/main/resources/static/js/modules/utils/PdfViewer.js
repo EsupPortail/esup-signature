@@ -30,13 +30,13 @@ export class PdfViewer extends EventFactory {
     }
 
     initListeners() {
-        document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
-        document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
-        document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
-        document.getElementById('fullheight').addEventListener('click', e => this.fullHeight());
-        document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
-        document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
-        window.addEventListener('resize', e => this.adjustZoom());
+        $('#zoomin').on('click', e => this.zoomIn());
+        $('#zoomout').on('click', e => this.zoomOut());
+        $('#fullwidth').on('click', e => this.fullWidth());
+        $('#fullheight').on('click', e => this.fullHeight());
+        $('#rotateleft').on('click', e => this.rotateLeft());
+        $('#rotateright').on('click', e => this.rotateRight());
+        $(window).on('resize', e => this.adjustZoom());
         this.addEventListener("render", e => this.listenToSearchCompletion());
    }
 

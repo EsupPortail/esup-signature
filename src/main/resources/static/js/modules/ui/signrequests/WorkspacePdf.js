@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, signRequestParams) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
@@ -16,7 +16,7 @@ export class WorkspacePdf {
         this.signType = signType;
         this.stepRepeatable  = stepRepeatable;
         this.status = status;
-        this.signRequestParams = signRequestParams;
+        this.csrf = csrf;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -38,9 +38,9 @@ export class WorkspacePdf {
 
     initListeners() {
         if(this.isPdf) {
-            document.getElementById('prev').addEventListener('click', e => this.pdfViewer.prevPage());
-            document.getElementById('next').addEventListener('click', e => this.pdfViewer.nextPage());
-            document.getElementById('saveCommentButton').addEventListener('click', e => this.saveComment());
+            $('#prev').on('click', e => this.pdfViewer.prevPage());
+            $('#next').on('click', e => this.pdfViewer.nextPage());
+            $('#saveCommentButton').on('click', e => this.saveComment());
             this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
@@ -80,9 +80,11 @@ export class WorkspacePdf {
                 postitButton.on('click', e => this.focusComment(postit));
                 postitButton.on('mouseover', function (){
                     $('#inDocComment_' + postit.id).addClass('text-danger');
+                    postitButton.addClass('circle-border');
                 });
                 postitButton.on('mouseout', function (){
                     $('#inDocComment_' + postit.id).removeClass('text-danger');
+                    postitButton.removeClass('circle-border');
                 });
             });
         }
@@ -116,7 +118,7 @@ export class WorkspacePdf {
         $("#refuseLaunchButton").on('click', function (){
             window.onbeforeunload = null;
         });
-        //$("#signForm").on('submit', e => this.validateForm(e));
+
     }
 
     initWorkspace() {
@@ -246,18 +248,20 @@ export class WorkspacePdf {
     }
 
     saveComment() {
-        let csrf = document.getElementsByName("_csrf")[0];
         let commentUrlParams = "comment=" + $("#postitComment").val() +
             "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
             "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&addSignParams=" + $("#addSignParams").is(":checked") +
-            "&" + csrf.name + "=" + csrf.value;
-        this.xmlHttpMain.addEventListener('readystatechange', function () {document.location.reload()});
-        this.xmlHttpMain.open('POST', '/user/signrequests/comment/' + this.signRequestId, true);
-        this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        this.xmlHttpMain.send(commentUrlParams);
-
+            "&" + this.csrf.parameterName + "=" + this.csrf.token;
+        console.log("X : " + $("#commentPosX").val() + ", Y : " + $("#commentPosY").val())
+        $.ajax({
+            method: 'POST',
+            url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,
+            success: function () {
+                document.location.reload();
+            }
+        });
     }
 
     focusComment(postit) {
@@ -270,29 +274,62 @@ export class WorkspacePdf {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
         this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
         $("div[id^='sign_']").each((index, e) => this.toggleSign(e));
-        this.postits.forEach((postit, iterator) => {
-            let postitDiv = $('#inDocComment_' + postit.id);
-            let postitButton = $('#postit' + postit.id);
-            if (postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
+        let self = this;
+        this.postits.forEach((comment, iterator) => {
+            let postitDiv = $('#inDocComment_' + comment.id);
+            let postitButton = $('#postit' + comment.id);
+            if (comment.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
-                postitDiv.css('left', ((parseInt(postit.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
-                postitDiv.css('top', ((parseInt(postit.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
+                postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
                 postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                 postitButton.css("background-color", "#FFC");
+                postitDiv.unbind('mouseup');
+                postitDiv.on('mouseup', function (e) {
+                    e.stopPropagation();
+                    bootbox.confirm("Supprimer ce commentaire ?", function(result) {
+                        if(result) {
+                            $.ajax({
+                                method: 'DELETE',
+                                url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                success: function () {
+                                    document.location.reload();
+                                }
+                            });
+                        }
+                    });
+                });
             } else {
                 postitDiv.hide();
                 postitButton.css("background-color", "#EEE");
+                postitDiv.unbind('mouseup');
             }
         });
-        this.signRequestParams.forEach((srp, iterator) => {
-            let spotDiv = $('#inDocSpot_' + srp.id);
-            if (srp.signPageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
+        this.postits.forEach((spot, iterator) => {
+            let spotDiv = $('#inDocSpot_' + spot.id);
+            if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 spotDiv.show();
-                spotDiv.css('left', ((parseInt(srp.xPos) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
-                spotDiv.css('top', ((parseInt(srp.yPos) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
+                spotDiv.css('top', ((parseInt(spot.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
                 spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
+                spotDiv.unbind('mouseup');
+                spotDiv.on('mouseup', function (e) {
+                    e.stopPropagation();
+                    bootbox.confirm("Supprimer cet emplacement de signature ?", function(result) {
+                        if(result) {
+                            $.ajax({
+                                method: 'DELETE',
+                                url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + spot.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                success: function () {
+                                    document.location.reload();
+                                }
+                            });
+                        }
+                    });
+                });
             } else {
                 spotDiv.hide();
+                spotDiv.unbind('mouseup');
             }
         });
         let postitForm = $("#postit");
@@ -341,7 +378,7 @@ export class WorkspacePdf {
             return;
         }
         this.signPosition.pointItEnable = false;
-        let commentPosX = $('#commentPosX');
+        let commentPosX = $("#commentPosX");
         let commentPosY = $('#commentPosY');
         let xPos = parseInt(commentPosX.val()) / this.pdfViewer.scale;
         let yPos = parseInt(commentPosY.val()) / this.pdfViewer.scale;

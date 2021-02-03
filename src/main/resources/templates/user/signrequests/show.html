@@ -28,7 +28,7 @@
         [[${signRequest.currentSignRequestParams}]],
         currentSignType,
         signable,
-        [[${comments}]],
+        [[${signRequest.comments}]],
         [[${toSignDocument.contentType == 'application/pdf'}]],
         [[${signRequest.parentSignBook.liveWorkflow.currentStepNumber}]],
         [[${signImages}]],
@@ -41,8 +41,7 @@
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
             null,
         [/]
-        [[${signRequest.status}]],
-        [[${signRequest.signRequestParams}]]
+        [[${signRequest.status}]]
     );
 
 </script>

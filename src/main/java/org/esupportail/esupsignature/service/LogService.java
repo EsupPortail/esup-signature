@@ -72,7 +72,7 @@ public class LogService {
         return log;
     }
 
-    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());
@@ -83,9 +83,7 @@ public class LogService {
         log.setLogDate(new Date());
         log.setAction(action);
         log.setReturnCode(returnCode);
-        if(signRequest.getComment() != null && !signRequest.getComment().isEmpty() && (signRequestStatus == null || signRequestStatus.equals(SignRequestStatus.pending) || signRequestStatus.equals(SignRequestStatus.refused) || pageNumber != null)) {
-            log.setComment(signRequest.getComment());
-        }
+        log.setComment(comment);
         if(pageNumber != null) {
             log.setPageNumber(pageNumber);
             log.setPosX(posX);

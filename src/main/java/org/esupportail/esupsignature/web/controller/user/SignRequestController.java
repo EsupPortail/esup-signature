@@ -90,6 +90,9 @@ public class SignRequestController {
     private DocumentService documentService;
 
     @Resource
+    private CommentService commentService;
+
+    @Resource
     private OtpService otpService;
 
     @Resource
@@ -163,8 +166,6 @@ public class SignRequestController {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
         }
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-        model.addAttribute("globalPostits", logService.getGlobalLogs(signRequest.getId()));
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
         return "user/signrequests/show";
@@ -506,11 +507,18 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-    @PostMapping(value = "replay-notif/{id}")
+    @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) {
         signRequestService.replayNotif(id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre relance a bien été envoyée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
+    public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
+        commentService.deleteComment(commentId);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
