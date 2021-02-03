@@ -323,7 +323,6 @@ export class SignPosition extends EventFactory {
 
     pointIt2(e) {
         if (this.pointItEnable) {
-            console.log("pointit2");
             $('#commentPosX').val(e.offsetX ? (e.offsetX) : e.clientX);
             $('#commentPosY').val(e.offsetY ? (e.offsetY) : e.clientY);
             $('#commentPageNumber').val(this.getCurrentSignParams().signPageNumber);
@@ -334,7 +333,7 @@ export class SignPosition extends EventFactory {
         if (this.pointItEnable) {
             e.preventDefault();
             this.pointItMove = true;
-            console.log("touch");
+            console.debug("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
             this.getCurrentSignParams().setxPos( (touch.pageX - (rect.left)) / this.currentScale * this.fixRatio);
@@ -406,21 +405,15 @@ export class SignPosition extends EventFactory {
     stopDragSignature() {
         console.info("stop drag");
         this.fireEvent('stopDrag', ['ok']);
-        // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .0)');
         this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";
         if(this.pointItEnable) {
-            // this.updateSignButtons();
             this.showButtons();
         }
         this.pointItEnable = false;
         this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
-        // if(!this.confirmEnabled) {
-        //     this.enableConfirmLeaveSign();
-        //     this.confirmEnabled = true;
-        // }
     }
 
     dragSignature() {

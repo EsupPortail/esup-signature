@@ -991,9 +991,14 @@ public class SignRequestService {
 		signRequest.getLinks().remove(toRemove);
 	}
 
-	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String authUserEppn) {
+	@Transactional
+	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean addSignParams, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		signRequest.setComment(comment);
+		if(addSignParams) {
+			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+			signRequest.getSignRequestParams().add(signRequestParams);
+		}
 		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY, authUserEppn, authUserEppn);
 	}
 

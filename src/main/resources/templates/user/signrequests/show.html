@@ -24,7 +24,7 @@
     if (signable && currentSignType === 'nexuSign') {
         new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
     }
-    let signUi = new SignUi([[${signRequest.id}]],
+    new SignUi([[${signRequest.id}]],
         [[${signRequest.currentSignRequestParams}]],
         currentSignType,
         signable,
@@ -38,6 +38,7 @@
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
         [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
         [/]
+        [[${signRequest.status}]]
     );
 
 </script>

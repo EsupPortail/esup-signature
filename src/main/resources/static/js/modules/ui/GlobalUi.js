@@ -25,6 +25,7 @@ export class GlobalUi {
         sessionStorage.setItem("sseId", this.sseId);
         this.sseSubscribe = new SseSubscribe(this.sseId);
         this.initListeners();
+        this.initBootBox();
         this.initSideBar();
         this.checkCurrentPage();
     }
@@ -110,6 +111,18 @@ export class GlobalUi {
         this.bindKeyboardKeys();
     }
 
+    initBootBox() {
+        bootbox.setDefaults({
+            locale: "fr",
+            show: true,
+                backdrop: true,
+            closeButton: true,
+            animate: true,
+            className: "my-modal"
+
+        });
+    }
+
     checkBrowser() {
         let ua = window.navigator.userAgent;
         let msie = ua.indexOf("MSIE ");
@@ -157,7 +170,7 @@ export class GlobalUi {
 
     checkCurrentPage() {
         let url = window.location.pathname;
-        if(!url.match("/user/signrequests/+[\\w\\W]+") || !url.match("/user/signbooks/+[\\w\\W]+")) {
+        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
             this.resetMode();
         }
     }
@@ -421,6 +434,17 @@ export class GlobalUi {
                     let signLaunchButton = $("#signLaunchButton");
                     if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
                         signLaunchButton.click();
+                    }
+                    let saveCommentButton = $("#saveCommentButton");
+                    if(saveCommentButton.length && $("#postitComment").val() !== '') {
+                        saveCommentButton.click();
+                    }
+
+                }
+                if(event.which === 27) {
+                    let hideCommentButton = $("#hideCommentButton");
+                    if(hideCommentButton.length) {
+                        hideCommentButton.click();
                     }
                 }
             }

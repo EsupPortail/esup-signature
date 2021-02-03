@@ -260,10 +260,12 @@ public class SignBookService {
         }
     }
 
-    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn) {
+    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-            pendingSignBook(signBook, null, userEppn, authUserEppn);
+            if(start != null && start) {
+                pendingSignBook(signBook, null, userEppn, authUserEppn);
+            }
             return true;
         }else {
             return false;

@@ -14,7 +14,7 @@
 	<th:block th:each="messageNew : ${messageNews}">
 		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
 			<div class="toast-header pt-3">
-				<h4 class="mr-auto blinking-black">Information !</h4>
+				<h4 class="mr-auto">Information !</h4>
 				<button type="button" class="close" data-dismiss="toast" aria-label="Close">
 					<i class="fas fa-times"></i>
 				</button>
@@ -28,6 +28,7 @@
 					Marquer comme lu
 				</button>
 			</div>
+			<progress id="progress-message" class="progress-bar bg-white"></progress>
 		</div>
 	</th:block>
 	<div id="toast-error" class="toast toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" >
@@ -35,18 +36,20 @@
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times text-white"></i>
 			</button>
-			<h4 class="mr-auto blinking-white">Erreur</h4>
+			<h4 class="mr-auto">Erreur</h4>
 			<h5 id="message-error" class="text-white"></h5>
 		</div>
+		<progress id="progress-error" class="progress-bar bg-danger"></progress>
 	</div>
 	<div id="toast-warn" class="toast toast-sm bg-warning" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-body">
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-			<h4 class="mr-auto blinking-black">Attention</h4>
+			<h4 class="mr-auto">Attention</h4>
 			<h5 id="message-warn"></h5>
 		</div>
+		<progress id="progress-warn" class="progress-bar bg-warning"></progress>
 	</div>
 	<div id="toast-success" class="toast toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="3000">
 		<div class="toast-body text-white">
@@ -55,8 +58,9 @@
 			</button>
 			<h5 id="message-success"></h5>
 		</div>
+		<progress id="progress-success" class="progress-bar bg-success"></progress>
 	</div>
-	<div id="toast-info" class="toast toast-sm bg-info" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
+	<div id="toast-info" class="toast toast-sm bg-info" role="alert" aria-live="assertive" aria-atomic="true" data-delay="3000">
 		<div class="toast-body">
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
@@ -64,6 +68,7 @@
 			<h4 class="mr-auto text-white">Information</h4>
 			<h5 id="message-info" class="text-white"></h5>
 		</div>
+		<progress id="progress-info" class="progress-bar bg-info"></progress>
 	</div>
 	<div id="toast-custom" class="toast toast-md bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
 		<div class="toast-body">
@@ -73,6 +78,7 @@
 			<h4 class="mr-auto text-dark">Message</h4>
 			<h5 id="message-custom"></h5>
 		</div>
+		<progress id="progress-custom" class="progress-bar bg-white"></progress>
 	</div>
 	<div id="toast-help" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
 		<div class="toast-body toast-body-news">
@@ -88,6 +94,7 @@
 				Marquer comme lu
 			</button>
 		</div>
+		<progress id="progress-help" class="progress-bar bg-white"></progress>
 	</div>
 </div>
 </html>

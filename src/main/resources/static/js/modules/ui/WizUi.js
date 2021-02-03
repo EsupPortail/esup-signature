@@ -96,14 +96,15 @@ export class WizUi {
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz");
         }
-        $("#addNew").on('click', e => this.gotoAddStep(false));
-        $("#end").on('click', e => this.gotoAddStep(true));
+        $("#addNew").on('click', e => this.gotoAddStep(false, false));
+        $("#end").on('click', e => this.gotoAddStep(true, false));
+        $("#endStart").on('click', e => this.gotoAddStep(true, true));
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
 
     }
 
-    gotoAddStep(end) {
+    gotoAddStep(end, start) {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
@@ -113,7 +114,7 @@ export class WizUi {
         let signBookId = this.signBookId;
         console.log(signBookId);
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&start=" + start + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
@@ -130,8 +131,9 @@ export class WizUi {
 
         let csrf = this.csrf;
         let name = $("#workflowName").val();
+        let elementId = $("#elementId");
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + $("#elementId").val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });

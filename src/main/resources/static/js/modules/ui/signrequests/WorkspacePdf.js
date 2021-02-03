@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
@@ -15,6 +15,7 @@ export class WorkspacePdf {
         this.signRequestId = id;
         this.signType = signType;
         this.stepRepeatable  = stepRepeatable;
+        this.status = status;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -43,7 +44,7 @@ export class WorkspacePdf {
             this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
-            this.pdfViewer.addEventListener('pageChange', e => this.refreshAfterPageChange());
+            this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('render', e => this.initForm());
             if (document.getElementById('commentModeButton') != null) {
                 document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
@@ -55,7 +56,8 @@ export class WorkspacePdf {
                         visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
                     }
                 }
-                document.getElementById('hideComment').addEventListener('click', e => this.hideComment());
+                document.getElementById('hideCommentButton').addEventListener('click', e => this.hideComment());
+                $("#addSignParams").on('change', e => this.togglePostitMode(e));
             }
 
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
@@ -75,8 +77,15 @@ export class WorkspacePdf {
             this.postits.forEach((postit, index) => {
                 let postitButton = $('#postit' + postit.id);
                 postitButton.on('click', e => this.focusComment(postit));
+                postitButton.on('mouseover', function (){
+                    $('#inDocComment_' + postit.id).addClass('text-danger');
+                });
+                postitButton.on('mouseout', function (){
+                    $('#inDocComment_' + postit.id).removeClass('text-danger');
+                });
             });
         }
+
         $('[id^="deleteAttachement_"]').each(function (){
             $(this).on('click', function (e){
                 e.preventDefault();
@@ -107,6 +116,44 @@ export class WorkspacePdf {
             window.onbeforeunload = null;
         });
         //$("#signForm").on('submit', e => this.validateForm(e));
+    }
+
+    initWorkspace() {
+        console.info("init workspace");
+        if(localStorage.getItem('mode') === null) {
+            this.mode = "comment";
+            localStorage.setItem('mode', this.mode);
+        }
+        if (this.status === 'draft') {
+            this.mode = "comment";
+            localStorage.setItem('mode', this.mode);
+        } else {
+            this.mode = "sign";
+            localStorage.setItem('mode', this.mode);
+        }
+        console.info("init to " + this.mode + " mode");
+        if(localStorage.getItem('mode') === 'comment') {
+            this.enableCommentMode();
+        } else {
+            this.enableSignMode();
+            if(this.signable && this.currentSignType === 'visa') {
+                if(this.mode === 'sign') {
+                    this.signPosition.toggleVisual();
+                }
+            }
+        }
+        this.pdfViewer.adjustZoom();
+        this.pdfViewer.removeEventListener('ready');
+    }
+
+    initForm(e) {
+        console.info("init form");
+        $("#signForm :input").each(function () {
+            $(this).on('change', e => WorkspacePdf.launchValidate());
+        });
+        if(this.mode === 'read' || this.mode === 'comment') {
+            this.disableForm();
+        }
     }
 
     initDataFields(fields) {
@@ -165,46 +212,6 @@ export class WorkspacePdf {
         });
     }
 
-    initWorkspace() {
-        console.info("init workspace");
-        if(localStorage.getItem('mode') == null) {
-            localStorage.setItem('mode', this.mode);
-        }
-        console.info("init to " + this.mode + " mode");
-        if(localStorage.getItem('mode') === 'comment') {
-            this.enableCommentMode();
-        } else {
-            this.enableSignMode();
-            if(this.signable && this.currentSignType === 'visa') {
-                if(this.mode === 'sign') {
-                    this.signPosition.toggleVisual();
-                }
-            }
-        }
-
-        // this.refreshAfterPageChange();
-        // if(this.signable) {
-        //     this.signPosition.resetSign();
-        // }
-//        this.signPosition.updateSignSize(this.pdfViewer.scale);
-
-        this.pdfViewer.adjustZoom();
-        this.pdfViewer.removeEventListener('ready');
-
-    }
-
-    initForm(e) {
-        console.info("init form");
-        $("#signForm :input").each(function () {
-            $(this).on('change', e => WorkspacePdf.launchValidate());
-        });
-        if(this.mode === 'read' || this.mode === 'comment') {
-            this.disableForm();
-        }
-
-    }
-
-
     static launchValidate() {
         if(!WorkspacePdf.validateForm()) {
             $("#visaLaunchButton").attr('disabled', true);
@@ -229,7 +236,6 @@ export class WorkspacePdf {
     }
 
     moveAction(e) {
-        console.debug('move');
         if(this.mode === 'sign') {
             this.signPosition.pointIt(e);
         } else if(this.mode === 'comment') {
@@ -240,15 +246,15 @@ export class WorkspacePdf {
 
     saveComment() {
         let csrf = document.getElementsByName("_csrf")[0];
-        let commentUrlParams = "comment=" + document.getElementById("postitComment").value +
-            "&commentPosX=" + document.getElementById("commentPosX").value +
-            "&commentPosY=" + document.getElementById("commentPosY").value +
-            "&commentPageNumber=" + document.getElementById("commentPageNumber").value +
+        let commentUrlParams = "comment=" + $("#postitComment").val() +
+            "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
+            "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
+            "&commentPageNumber=" + $("#commentPageNumber").val() +
+            "&addSignParams=" + $("#addSignParams").is(":checked") +
             "&" + csrf.name + "=" + csrf.value;
         this.xmlHttpMain.addEventListener('readystatechange', function () {document.location.reload()});
         this.xmlHttpMain.open('POST', '/user/signrequests/comment/' + this.signRequestId, true);
         this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        // this.xmlHttpMain.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         this.xmlHttpMain.send(commentUrlParams);
 
     }
@@ -256,19 +262,20 @@ export class WorkspacePdf {
     focusComment(postit) {
         this.pdfViewer.renderPage(postit.pageNumber)
         this.refreshAfterPageChange();
+        $('html,body').animate({scrollTop: $('#inDocComment_' + postit.id).css('top').replace('px', '')}, 'slow');
     }
 
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
         this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
         $("div[id^='sign_']").each((index, e) => this.toggleSign(e));
-        this.postits.forEach((postit, index) => {
-            let postitDiv = $('#' + postit.id);
+        this.postits.forEach((postit, iterator) => {
+            let postitDiv = $('#inDocComment_' + postit.id);
             let postitButton = $('#postit' + postit.id);
-            if(postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
+            if (postit.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
-                postitDiv.css('left', postit.posX * this.pdfViewer.scale);
-                postitDiv.css('top', postit.posY * this.pdfViewer.scale);
+                postitDiv.css('left', ((parseInt(postit.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
+                postitDiv.css('top', ((parseInt(postit.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
                 postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                 postitButton.css("background-color", "#FFC");
             } else {
@@ -276,6 +283,14 @@ export class WorkspacePdf {
                 postitButton.css("background-color", "#EEE");
             }
         });
+        let postitForm = $("#postit");
+        if (postitForm.is(':visible')) {
+            postitForm.css('left', (parseInt($("#commentPosX").val()) * this.pdfViewer.scale));
+            postitForm.css('top', (parseInt($("#commentPosY").val()) * this.pdfViewer.scale));
+            $("#postit :input").each(function () {
+                $(this).removeAttr('disabled');
+            });
+        }
     }
 
     toggleSign(e) {
@@ -300,7 +315,7 @@ export class WorkspacePdf {
         pointerCtx.font = "24px FontAwesome";
         pointerCtx.textAlign = "center";
         pointerCtx.textBaseline = "middle";
-        pointerCtx.fillText("\uf075", 12, 12);
+        pointerCtx.fillText("\uf245", 12, 12);
         return pointerCanvas.toDataURL('image/png');
     }
 
@@ -309,14 +324,23 @@ export class WorkspacePdf {
     }
 
     displayComment() {
-        if(this.mode !== 'comment') {
+        let postit = $("#postit");
+        if(this.mode !== 'comment' || postit.is(':visible')) {
             return;
         }
         this.signPosition.pointItEnable = false;
-        document.getElementById("postit").style.left = $('#commentPosX').val() + "px";
-        document.getElementById("postit").style.top = $('#commentPosY').val() + "px";
+        let commentPosX = $('#commentPosX');
+        let commentPosY = $('#commentPosY');
+        let xPos = parseInt(commentPosX.val()) / this.pdfViewer.scale;
+        let yPos = parseInt(commentPosY.val()) / this.pdfViewer.scale;
+        commentPosX.val(xPos);
+        commentPosY.val(yPos);
+        postit.css('left', xPos * this.pdfViewer.scale);
+        postit.css('top', yPos * this.pdfViewer.scale);
         $("#postitComment").removeAttr("disabled");
-        $("#postit").show();
+        $("#addSignParams").removeAttr("disabled");
+        postit.show();
+        this.signPosition.stopDragSignature();
     }
 
     hideComment() {
@@ -333,12 +357,9 @@ export class WorkspacePdf {
         this.mode = 'read';
         localStorage.setItem('mode', 'read');
         this.signPosition.pointItEnable = false;
-        this.pdfViewer.scale = 0.5;
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
-        this.pdfViewer.renderForm = false;
-        this.pdfViewer.renderPage(1);
         this.showAllPostits();
     }
 
@@ -348,7 +369,7 @@ export class WorkspacePdf {
 
     toggleCommentMode() {
         if(this.mode === 'comment') {
-            this.enableSignMode();
+            this.enableReadMode();
             return;
         }
         this.enableCommentMode()
@@ -383,7 +404,11 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.mode = 'sign';
         this.signPosition.pointItEnable = false;
-        // $('#workspace').toggleClass('alert-secondary');
+        if(this.status === 'pending') {
+            $('#workspace').toggleClass('alert-secondary');
+        } else {
+            $('#workspace').toggleClass('alert-success');
+        }
         $(".circle").each(function( index ) {
             $(this).hide();
         });
@@ -406,16 +431,11 @@ export class WorkspacePdf {
 
     disableAllModes() {
         //this.mode = 'sign';
-        $('#workspace').removeClass('alert-danger').removeClass('alert-warning');
+        $('#workspace').removeClass('alert-success').removeClass('alert-secondary').removeClass('alert-warning');
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
-        $('#signButtons').addClass('d-none');
         this.signPosition.crossTools.addClass('d-none');
-        // $('#signZoomIn').addClass('d-none');
-        // $('#signZoomOut').addClass('d-none');
-        // $('#signNextImage').addClass('d-none');
-        // $('#signPrevImage').addClass('d-none');
         $('#commentsTools').hide();
 
         $('#signTools').hide();
@@ -456,6 +476,12 @@ export class WorkspacePdf {
         $(".postit-global").each(function () {
             $(this).removeClass("d-none");
         });
+    }
+
+    togglePostitMode(e) {
+        $("#postit").toggleClass("badge-warning badge-success");
+        let stepNumber = $(e.currentTarget).attr("data-target");
+        $("#liveStep-" + stepNumber).toggleClass("bg-white bg-success").toggleClass("text-white");
     }
 
 }

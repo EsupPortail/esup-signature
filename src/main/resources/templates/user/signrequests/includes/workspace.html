@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
-<!--/*@thymesVar id="postit" type="org.esupportail.esupsignature.entity.Log"*/-->
+<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : 'alert-success')">
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
@@ -59,44 +59,47 @@
                          th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                 </div>
             </th:block>
-            <th:block th:each="postit : ${postits}">
-                <div th:id="${postit.id}" class="circle"
-                     th:onmouseover="'$(\'#postit' + ${postit.id} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#postit' + ${postit.id} + '\').removeClass(\'circle-border\');'">
-                    <i class="fas fa-comment fa-3x"></i>
+            <th:block th:each="comment : ${comments}">
+                <div th:id="'inDocComment_' + ${comment.id}" class="circle"
+                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
+                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
+                    <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
-            <div id="postit" class="postit" style="display: none;position: absolute;left: 0px;top: 0px;z-index: 2;cursor: pointer;">
-            <span id="hideComment" class="float-right" style="cursor: pointer;">
-                <i class="fas fa-times"></i>
-            </span>
+            <div id="postit" class="postit badge badge-warning">
                 <input id="commentPosX" name="commentPosX" type="hidden"/>
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
-                <textarea id="postitComment" name="comment" class="postitarea" placeholder="Saisir une annotation"></textarea>
-                <button id="saveCommentButton" type="button" class="btn btn-sm float-right">
+                <div class="form-check float-left text-left" style="margin-top: 15px;" th:with="stepNumber = ${signRequest.signRequestParams.size() + 1}"
+                    th:if="${signRequest.signRequestParams.size() + 1 <= signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
+                    <input id="addSignParams" name="addSignParams" type="checkbox" class="form-check-input" th:data-target="${stepNumber}"/>
+                    <label class="form-check-label" for="addSignParams">
+                        Ajouter un emplacement de signature ici<br>pour l'étape <span th:text="${stepNumber}"></span>
+                    </label>
+                </div>
+                <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire"></textarea>
+                <button id="hideCommentButton" type="button" class="btn btn-sm btn-outline-dark float-left">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button id="saveCommentButton" type="button" class="btn btn-sm btn-outline-dark float-right">
                     <i class="fas fa-save"></i>
                 </button>
             </div>
         </div>
     </form>
 
-    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position :absolute; display: none;width: 300px; left: 20px">
-        <div th:unless="${comments.size() > 0}" class="alert alert-light">Vous pouvez ajouter des commentaires en
-            cliquant sur l’endroit concerné du document
+    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 200px; left: 285px;">
+        <div th:unless="${comments.size() > 0}" class="alert alert-light border-dark text-dark">
+            Vous pouvez ajouter des commentaires ou des emplacements de signature en cliquant directement sur l’endroit concerné du document
         </div>
         <div th:if="${comments.size() > 0}" class="alert alert-warning">
             <h5>Commentaires</h5>
             <ul class="list-group">
-                <th:block th:each="postit : ${comments}">
-                    <li th:id="'postit' + ${postit.id}" class="list-group-item"
-                        style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer"
-                        th:onclick="'$(\'html,body\').animate({scrollTop: $(\'#' + ${postit.id} + '\').css(\'top\').replace(\'px\', \'\')}, \'slow\');'"
-                        th:onmouseover="'$(\'#' + ${postit.id} + '\').addClass(\'text-danger\');'"
-                        th:onmouseout="'$(\'#' + ${postit.id} + '\').removeClass(\'text-danger\');'">
-                        <b th:text="${postit.user.firstname + ' ' + postit.user.name}"></b>
-                        <span th:text="${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                        <p class="postitarea" th:text="${postit.comment}"></p>
+                <th:block th:each="comment, iterator : ${comments}">
+                    <li th:id="'postit' + ${comment.id}" class="list-group-item" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
+                        <b th:text="${comment.user.firstname + ' ' + comment.user.name}"></b>
+                        <p th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></p>
+                        <p class="postitarea" th:text="${comment.comment}"></p>
                     </li>
                 </th:block>
             </ul>
