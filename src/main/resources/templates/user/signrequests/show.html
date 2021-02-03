@@ -36,9 +36,13 @@
         [[${_csrf}]],
         [[${fields}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-        [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
+            [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
         [/]
-        [[${signRequest.status}]]
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
+        [/]
+        [[${signRequest.status}]],
+        [[${signRequest.signRequestParams}]]
     );
 
 </script>

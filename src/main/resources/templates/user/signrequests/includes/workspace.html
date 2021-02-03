@@ -63,6 +63,13 @@
                 <div th:id="'inDocComment_' + ${comment.id}" class="circle"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                      th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
+                    <i class="fas fa-comment fa-3x"></i>
+                </div>
+            </th:block>
+            <th:block th:each="signRequestParams,iterator : ${signRequest.signRequestParams}">
+                <div th:id="'inDocSpot_' + ${signRequestParams.id}" class="spot"
+                     th:onmouseover="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bg-white bg-success\');'"
+                     th:onmouseout="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bd-success bg-white\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
@@ -88,15 +95,15 @@
         </div>
     </form>
 
-    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 200px; left: 285px;">
+    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 250px; left: 285px;">
         <div th:unless="${comments.size() > 0}" class="alert alert-light border-dark text-dark">
             Vous pouvez ajouter des commentaires ou des emplacements de signature en cliquant directement sur l’endroit concerné du document
         </div>
-        <div th:if="${comments.size() > 0}" class="alert alert-warning">
+        <div th:if="${comments.size() > 0}" class="alert alert-light border-dark text-dark">
             <h5>Commentaires</h5>
             <ul class="list-group">
                 <th:block th:each="comment, iterator : ${comments}">
-                    <li th:id="'postit' + ${comment.id}" class="list-group-item" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
+                    <li th:id="'postit' + ${comment.id}" class="list-group-item mb-1" style="position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <b th:text="${comment.user.firstname + ' ' + comment.user.name}"></b>
                         <p th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${comment.comment}"></p>

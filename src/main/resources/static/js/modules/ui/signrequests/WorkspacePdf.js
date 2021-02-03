@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status) {
+    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, signRequestParams) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
@@ -16,6 +16,7 @@ export class WorkspacePdf {
         this.signType = signType;
         this.stepRepeatable  = stepRepeatable;
         this.status = status;
+        this.signRequestParams = signRequestParams;
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams[0].xPos,
@@ -283,6 +284,17 @@ export class WorkspacePdf {
                 postitButton.css("background-color", "#EEE");
             }
         });
+        this.signRequestParams.forEach((srp, iterator) => {
+            let spotDiv = $('#inDocSpot_' + srp.id);
+            if (srp.signPageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
+                spotDiv.show();
+                spotDiv.css('left', ((parseInt(srp.xPos) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
+                spotDiv.css('top', ((parseInt(srp.yPos) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
+            } else {
+                spotDiv.hide();
+            }
+        });
         let postitForm = $("#postit");
         if (postitForm.is(':visible')) {
             postitForm.css('left', (parseInt($("#commentPosX").val()) * this.pdfViewer.scale));
@@ -385,6 +397,9 @@ export class WorkspacePdf {
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
         $('#infos').show();
+        $(".spot").each(function( index ) {
+            $(this).show();
+        });
         this.pdfViewer.renderPage(1);
         this.pdfViewer.promizeToggleFields(false);
         this.refreshAfterPageChange();
@@ -410,6 +425,9 @@ export class WorkspacePdf {
             $('#workspace').toggleClass('alert-success');
         }
         $(".circle").each(function( index ) {
+            $(this).hide();
+        });
+        $(".spot").each(function( index ) {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');

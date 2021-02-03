@@ -765,6 +765,14 @@ height: 100%;
     border: 2px solid red;
 }
 
+.spot {
+    display: none;
+    position: absolute;
+    opacity: 0.5;
+    cursor: pointer;
+    z-index: 2;
+    color: #1e7e34;
+}
 
 .kv-file-upload {
     display: none;
