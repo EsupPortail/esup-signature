@@ -315,7 +315,7 @@
                         <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success float-right" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
                         </button>
-                        <button id="checkRepeatableButtonNext" class="mb-1 btn btn-success float-right" title="Signer"
+                        <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                         </button>
                     </div>
@@ -340,7 +340,7 @@
                     Viser et retourner à l'accueil
                 </button>
                 <button id="checkRepeatableButtonNext"
-                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                        th:if="${nextSignRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     Viser et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>

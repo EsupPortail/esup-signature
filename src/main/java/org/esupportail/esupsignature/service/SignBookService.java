@@ -213,6 +213,7 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+        dispatchSignRequestParams(signBook.getId());
     }
 
     @Transactional
@@ -426,7 +427,7 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, allSignToComplete, signType, recipientsEmails));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-
+        dispatchSignRequestParams(signBook.getId());
         if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
             pending = false;
             message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
@@ -522,5 +523,16 @@ public class SignBookService {
         return signBookRepository.countByRecipientUserToSign(userEppn);
     }
 
-
+    @Transactional
+    public void dispatchSignRequestParams(Long id) {
+        SignBook signBook = getById(id);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            int i = 0;
+            for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                if (signRequest.getSignRequestParams().size() > i) {
+                    liveWorkflowStep.setSignRequestParams(signRequest.getSignRequestParams().get(i));
+                }
+            }
+        }
+    }
 }
