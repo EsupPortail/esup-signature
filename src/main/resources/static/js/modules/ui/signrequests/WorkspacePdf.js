@@ -310,7 +310,7 @@ export class WorkspacePdf {
             if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 spotDiv.show();
                 spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
-                spotDiv.css('top', ((parseInt(spot.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
                 spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
                 spotDiv.unbind('mouseup');
                 spotDiv.on('mouseup', function (e) {

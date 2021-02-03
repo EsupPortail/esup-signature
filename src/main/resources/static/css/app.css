@@ -1048,6 +1048,7 @@ height: 100%;
     margin-bottom: 0;
     z-index: 5;
     overflow: hidden;
+    height: 500px;
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex;
