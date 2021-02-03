@@ -499,7 +499,7 @@ export class WorkspacePdf {
     togglePostitMode(e) {
         $("#postit").toggleClass("badge-warning badge-success");
         let stepNumber = $(e.currentTarget).attr("data-target");
-        $("#liveStep-" + stepNumber).toggleClass("bg-white bg-success").toggleClass("text-white");
+        $("#liveStep-" + stepNumber).toggleClass("bg-white bg-success");
     }
 
 }

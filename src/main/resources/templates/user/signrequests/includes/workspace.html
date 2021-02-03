@@ -69,7 +69,7 @@
             <th:block th:each="signRequestParams,iterator : ${signRequest.signRequestParams}">
                 <div th:id="'inDocSpot_' + ${signRequestParams.id}" class="spot"
                      th:onmouseover="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bg-white bg-success\');'"
-                     th:onmouseout="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bd-success bg-white\');'">
+                     th:onmouseout="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bg-white bg-success\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
@@ -79,9 +79,12 @@
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
                 <div class="form-check float-left text-left" style="margin-top: 15px;" th:with="stepNumber = ${signRequest.signRequestParams.size() + 1}"
                     th:if="${signRequest.signRequestParams.size() + 1 <= signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
-                    <input id="addSignParams" name="addSignParams" type="checkbox" class="form-check-input" th:data-target="${stepNumber}"/>
-                    <label class="form-check-label" for="addSignParams">
-                        Ajouter un emplacement de signature ici<br>pour l'étape <span th:text="${stepNumber}"></span>
+                    <label for="addSignParams">
+                        Ajouter un emplacement <br> de signature ici pour l'étape <span th:text="${stepNumber}"></span>
+                    </label>
+                    <label class="switch">
+                        <input id="addSignParams" name="addSignParams" type="checkbox" th:data-target="${stepNumber}"/>
+                        <span class="slider round"></span>
                     </label>
                 </div>
                 <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire"></textarea>
