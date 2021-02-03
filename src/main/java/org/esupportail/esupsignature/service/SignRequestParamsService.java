@@ -114,7 +114,7 @@ public class SignRequestParamsService {
     }
 
     public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
-        SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
+        SignRequestParams signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         signRequestParams.setSignPageNumber(signRequestParamses.get(0).getSignPageNumber());
         signRequestParams.setxPos(signRequestParamses.get(0).getxPos());
         signRequestParams.setyPos(signRequestParamses.get(0).getyPos());

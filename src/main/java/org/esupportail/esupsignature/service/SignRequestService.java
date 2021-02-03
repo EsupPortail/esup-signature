@@ -434,12 +434,14 @@ public class SignRequestService {
 		}
 		if (signType.equals(SignType.visa)) {
 			if(comment != null && !comment.isEmpty()) {
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, signRequest.getSignRequestParams().size(), false, true, user.getEppn());
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", user.getEppn(), authUser.getEppn());
 			}
 		} else {
 			if(comment != null && !comment.isEmpty()) {
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, signRequest.getSignRequestParams().size(), false, true, user.getEppn());
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user.getEppn(), authUser.getEppn());
@@ -545,7 +547,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getCurrentSignRequestParams(), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams(), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -1014,13 +1016,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean spot, String authUserEppn) {
+	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean spot, Integer stepNumber, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		if(spot) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
+			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1).setSignRequestParams(signRequestParams);
 		}
-		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, signRequest.getSignRequestParams().size(), spot, authUserEppn);
+		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, stepNumber, spot, false, authUserEppn);
 		if(spot) {
 			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		} else {

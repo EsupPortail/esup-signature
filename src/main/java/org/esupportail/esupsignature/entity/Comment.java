@@ -35,6 +35,8 @@ public class Comment {
 
     private Boolean isSpot;
 
+    private Boolean isPostit;
+
     public Long getId() {
         return id;
     }
@@ -113,5 +115,13 @@ public class Comment {
 
     public void setSpot(Boolean spot) {
         isSpot = spot;
+    }
+
+    public Boolean getPostit() {
+        return isPostit;
+    }
+
+    public void setPostit(Boolean postit) {
+        isPostit = postit;
     }
 }

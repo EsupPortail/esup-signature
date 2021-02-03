@@ -200,6 +200,7 @@ public class WizardController {
     public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
+//            signBookService.startLiveWorkflow(signBook, userEppn, userEppn, false);
             if(signBook.getLiveWorkflow().getCurrentStep() == null) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }

@@ -252,9 +252,9 @@ export class WorkspacePdf {
             "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
             "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
+            "&commentStepNumber=" + $("#commentStepNumber").val() +
             "&addSignParams=" + $("#addSignParams").is(":checked") +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
-        console.log("X : " + $("#commentPosX").val() + ", Y : " + $("#commentPosY").val())
         $.ajax({
             method: 'POST',
             url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,
@@ -339,6 +339,9 @@ export class WorkspacePdf {
             $("#postit :input").each(function () {
                 $(this).removeAttr('disabled');
             });
+            $("#postit :select").each(function () {
+                $(this).removeAttr('disabled');
+            });
         }
     }
 
@@ -387,6 +390,7 @@ export class WorkspacePdf {
         postit.css('left', xPos * this.pdfViewer.scale);
         postit.css('top', yPos * this.pdfViewer.scale);
         $("#postitComment").removeAttr("disabled");
+        $("#commentStepNumber").removeAttr("disabled");
         $("#addSignParams").removeAttr("disabled");
         postit.show();
         this.signPosition.stopDragSignature();
@@ -535,7 +539,7 @@ export class WorkspacePdf {
 
     togglePostitMode(e) {
         $("#postit").toggleClass("badge-warning badge-success");
-        let stepNumber = $(e.currentTarget).attr("data-target");
+        let stepNumber = $(commentStepNumber).val();
         $("#liveStep-" + stepNumber).toggleClass("bg-white bg-success");
     }
 

@@ -260,6 +260,7 @@ public class SignBookService {
         }
     }
 
+    @Transactional
     public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));

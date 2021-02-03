@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
+<!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : 'alert-success')">
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
@@ -58,17 +60,17 @@
                          th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
                 </div>
             </th:block>
-            <th:block th:each="comment : ${signRequest.comments}">
+            <th:block th:each="comment : ${comments}">
                 <div class="circle" th:if="${!comment.spot}" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                      th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot,iterator : ${signRequest.comments}">
+            <th:block th:each="spot : ${spots}">
                 <div class="spot" th:if="${spot.spot}" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
-                     th:onmouseover="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bg-white bg-success\');'"
-                     th:onmouseout="'$(\'#liveStep-' + ${iterator.index + 1} + '\').toggleClass(\'bg-white bg-success\');'">
+                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'"
+                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
@@ -76,16 +78,20 @@
                 <input id="commentPosX" name="commentPosX" type="hidden"/>
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
-                <div class="form-check float-left text-left" style="margin-top: 15px;" th:with="stepNumber = ${signRequest.signRequestParams.size() + 1}"
-                    th:if="${signRequest.signRequestParams.size() + 1 <= signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
+                <div class="form-check float-left text-left" style="margin-top: 15px;" th:if="${signRequest.signRequestParams.size() + 1 <= signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
                     <label for="addSignParams">
-                        Ajouter un emplacement <br> de signature ici pour l'étape <span th:text="${stepNumber}"></span>
+                        Ajouter un emplacement <br> de signature ici pour l'étape
                     </label>
                     <label class="switch">
-                        <input id="addSignParams" name="addSignParams" type="checkbox" th:data-target="${stepNumber}"/>
+                        <input id="addSignParams" name="addSignParams" type="checkbox"/>
                         <span class="slider round"></span>
                     </label>
                 </div>
+                <select id="commentStepNumber" name="commentStepNumber" >
+                    <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                        <option th:if="${step.signRequestParams == null}" th:text="${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                    </th:block>
+                </select>
                 <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire"></textarea>
                 <button id="hideCommentButton" type="button" class="btn btn-sm btn-outline-dark float-left">
                     <i class="fas fa-times"></i>
@@ -104,7 +110,7 @@
         <div th:if="${signRequest.comments.size() > 0}" class="alert alert-light border-dark text-dark">
             <h5>Commentaires</h5>
             <ul class="list-group">
-                <th:block th:each="comment, iterator : ${signRequest.comments}">
+                <th:block th:each="comment : ${comments}">
                     <li th:if="${!comment.spot}" th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <b th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}"></b>
                         <p th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></p>
