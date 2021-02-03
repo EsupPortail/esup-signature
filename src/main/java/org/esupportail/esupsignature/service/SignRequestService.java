@@ -1006,9 +1006,14 @@ public class SignRequestService {
 		signRequest.getLinks().remove(toRemove);
 	}
 
-	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String authUserEppn) {
+	@Transactional
+	public void addComment(Long id, String comment, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean addSignParams, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		signRequest.setComment(comment);
+		if(addSignParams) {
+			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+			signRequest.getSignRequestParams().add(signRequestParams);
+		}
 		updateStatus(signRequest, null, "Ajout d'un commentaire", "SUCCESS", commentPageNumber, commentPosX, commentPosY, authUserEppn, authUserEppn);
 	}
 
@@ -1096,7 +1101,7 @@ public class SignRequestService {
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
 						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
-							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil");
+							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
 						}
 						for (Document signImage : user.getSignImages()) {
 							signImages.add(fileService.getBase64Image(signImage));

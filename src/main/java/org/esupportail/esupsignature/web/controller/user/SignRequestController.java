@@ -299,7 +299,7 @@ public class SignRequestController {
                 userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
                 Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
-                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.get(0)));
+                    redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {
                     if(userSignFirst == null || !userSignFirst) {
                         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été envoyée"));
@@ -481,9 +481,10 @@ public class SignRequestController {
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
+                          @RequestParam(value = "addSignParams", required = false) Boolean addSignParams,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, authUserEppn);
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, addSignParams, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 

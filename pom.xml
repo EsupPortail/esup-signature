@@ -91,12 +91,10 @@
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-client</artifactId>
 		</dependency>
-
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -125,6 +123,19 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>5.3.2</version>
+		</dependency>
 
 		<dependency>
 			<groupId>io.github.jpenren</groupId>
@@ -132,13 +143,14 @@
 			<version>3.4.0</version>
 		</dependency>
 
+		<!-- Webjars dependencies -->
+
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>popper.js</artifactId>
 		   <version>2.5.4</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.webjars.npm/pdfjs-dist -->
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
@@ -172,7 +184,7 @@
 		<dependency>
 		    <groupId>org.webjars</groupId>
 		    <artifactId>font-awesome</artifactId>
-		    <version>5.13.0</version>
+		    <version>5.15.2</version>
 		</dependency>
 
 		<dependency>
@@ -184,7 +196,7 @@
 		<dependency>
 		    <groupId>org.webjars.bower</groupId>
 		    <artifactId>bootstrap-fileinput</artifactId>
-		    <version>5.0.1</version>
+		    <version>5.1.0</version>
 		</dependency>
 			
 		<dependency>
@@ -206,9 +218,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>bootbox.js</artifactId>
-			<version>5.3.2</version>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>bootbox</artifactId>
+			<version>5.5.2</version>
 		</dependency>
 
 		<dependency>
@@ -217,7 +229,18 @@
 			<version>0.8.10</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>slim-select</artifactId>
+			<version>1.24.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>spectrum-seballot</artifactId>
+			<version>2.0.5</version>
+		</dependency>
+
 		<dependency>
 		    <groupId>org.imgscalr</groupId>
 		    <artifactId>imgscalr-lib</artifactId>
@@ -333,6 +356,7 @@
 			<artifactId>jstl-impl</artifactId>
 			<version>1.2</version>
 		</dependency>
+
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>el-api</artifactId>
@@ -352,28 +376,36 @@
 			<version>1.1.1</version>
 		</dependency>
 
-	<dependency>
-	    <groupId>org.apache.xmlgraphics</groupId>
-	    <artifactId>xmlgraphics-commons</artifactId>
-	    <version>2.4</version>
-	</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>xmlgraphics-commons</artifactId>
+			<version>2.4</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>${pdfbox.version}</version>
 		</dependency>
+
 		<dependency>
 		    <groupId>org.apache.pdfbox</groupId>
 		    <artifactId>fontbox</artifactId>
 		    <version>${pdfbox.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox-tools</artifactId>
 			<version>${pdfbox.version}</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>xmpbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
+
 		<dependency>
 		  <groupId>org.verapdf</groupId>
 		  <artifactId>validation-model</artifactId>
@@ -398,11 +430,6 @@
 			<version>2.10.6</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>xmpbox</artifactId>
-			<version>${pdfbox.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>net.sf.supercsv</groupId>
 			<artifactId>super-csv</artifactId>
@@ -437,7 +464,6 @@
 			<version>${dss.framework.version}</version>
 		</dependency>
 
-		<!-- Web Services -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-signature-remote</artifactId>
@@ -695,34 +721,18 @@
 			<version>0.9.12</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
 			<version>19.0.0</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-jdbc</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>intro.js</artifactId>
 			<version>3.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<version>5.3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>spectrum-seballot</artifactId>
-			<version>2.0.5</version>
 		</dependency>
 
 	</dependencies>

@@ -7,6 +7,7 @@ export class GlobalUi {
 
     constructor(csrf) {
         console.info("Starting global UI");
+        this.checkBrowser();
         this.csrf = csrf;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
@@ -20,12 +21,13 @@ export class GlobalUi {
         this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
-        this.initListeners();
-        this.initSideBar();
-        this.checkCurrentPage();
         this.sseId = this.uuidv4();
         sessionStorage.setItem("sseId", this.sseId);
         this.sseSubscribe = new SseSubscribe(this.sseId);
+        this.initListeners();
+        this.initBootBox();
+        this.initSideBar();
+        this.checkCurrentPage();
     }
 
     initListeners() {
@@ -109,8 +111,27 @@ export class GlobalUi {
         this.bindKeyboardKeys();
     }
 
-    enableIframe() {
+    initBootBox() {
+        bootbox.setDefaults({
+            locale: "fr",
+            show: true,
+                backdrop: true,
+            closeButton: true,
+            animate: true,
+            className: "my-modal"
 
+        });
+    }
+
+    checkBrowser() {
+        let ua = window.navigator.userAgent;
+        let msie = ua.indexOf("MSIE ");
+        let isIE = /*@cc_on!@*/false || !!document.documentMode;
+        if (isIE || msie > 0) {
+            document.body.innerHTML = "";
+            alert("Votre navigateur n'est pas compatible");
+            window.location.href="https://www.google.com/intl/fr_fr/chrome/";
+        }
     }
 
     checkUserCertificate() {
@@ -149,7 +170,7 @@ export class GlobalUi {
 
     checkCurrentPage() {
         let url = window.location.pathname;
-        if(!url.match("/user/signrequests/+[\\w\\W]+") || !url.match("/user/signbooks/+[\\w\\W]+")) {
+        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
             this.resetMode();
         }
     }
@@ -413,6 +434,17 @@ export class GlobalUi {
                     let signLaunchButton = $("#signLaunchButton");
                     if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
                         signLaunchButton.click();
+                    }
+                    let saveCommentButton = $("#saveCommentButton");
+                    if(saveCommentButton.length && $("#postitComment").val() !== '') {
+                        saveCommentButton.click();
+                    }
+
+                }
+                if(event.which === 27) {
+                    let hideCommentButton = $("#hideCommentButton");
+                    if(hideCommentButton.length) {
+                        hideCommentButton.click();
                     }
                 }
             }

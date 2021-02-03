@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable) {
+    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable, status, signRequestParams) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -14,7 +14,7 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable, status, signRequestParams);
         this.csrf = new CsrfToken(csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -92,6 +92,9 @@ export class SignUi {
                 formData[this.name] = this.value;
             }
         });
+        this.workspace.pdfViewer.savedFields.forEach((value, key)=>{
+            formData[key] = value;
+        });
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&sseId=" + sessionStorage.getItem("sseId") +
@@ -140,7 +143,7 @@ export class SignUi {
             if(this.gotoNext) {
                 document.location.href = $("#nextSignRequestButton").attr('href');
             } else {
-                document.location.href = "/user/";
+                document.location.href = "/user/signrequests";
             }
         } else {
             console.debug("update bar");

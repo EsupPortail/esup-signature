@@ -11,7 +11,7 @@
                             Le circuit n'est pas démarré
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="workflowStep,iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <div class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber} ? 'div-disable'">
+                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                         <span title="Étape à venir" class="bs-stepper-circle">
                                             <i class="fas fa-clock"></i>
