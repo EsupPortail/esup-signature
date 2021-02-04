@@ -17,10 +17,7 @@ export class SignPosition extends EventFactory {
         let signRequestParams = new SignRequestParams();
         this.signImages = signImages;
         if(this.signImages != null && this.signImages.length > 0) {
-            if(xPos === 0 && yPos === 0) {
-                signRequestParams.xPos = -1;
-                signRequestParams.yPos = -1;
-            } else {
+            if(xPos > -1 && yPos > -1) {
                 signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
                 signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
                 signRequestParams.signPageNumber = signPageNumber;
@@ -50,7 +47,7 @@ export class SignPosition extends EventFactory {
             change: color => this.changeSignColor(color)
         });
         this.addSignButton = $('#addSignButton');
-        if(xPos !== 0 && yPos !== 0) {
+        if(xPos > -1 && yPos > -1) {
             this.updateCrossPosition();
             this.cross.css("position", "absolute");
             // this.updateSignButtons();

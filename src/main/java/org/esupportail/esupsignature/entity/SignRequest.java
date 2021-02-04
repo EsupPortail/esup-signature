@@ -248,14 +248,14 @@ public class SignRequest {
 //        }
 //    }
 
-//    public static SignRequestParams getEmptySignRequestParams() {
-//        SignRequestParams signRequestParams = new SignRequestParams();
-//        signRequestParams.setSignImageNumber(0);
-//        signRequestParams.setSignPageNumber(1);
-//        signRequestParams.setxPos(0);
-//        signRequestParams.setyPos(0);
-//        return signRequestParams;
-//    }
+    public static SignRequestParams getEmptySignRequestParams() {
+        SignRequestParams signRequestParams = new SignRequestParams();
+        signRequestParams.setSignImageNumber(0);
+        signRequestParams.setSignPageNumber(1);
+        signRequestParams.setxPos(0);
+        signRequestParams.setyPos(0);
+        return signRequestParams;
+    }
 
     public List<Document> getLiteOriginalDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
