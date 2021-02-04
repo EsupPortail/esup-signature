@@ -58,7 +58,7 @@
 		<title th:text="#{application.title}"></title>
 	</head>
 	<script th:inline="javascript" type="module">
-		import {GlobalUi} from "../../static/js/modules/ui/GlobalUi.js";
-		new GlobalUi([[${_csrf}]]);
+		import {GlobalUi} from "/static/js/modules/ui/GlobalUi.js";
+		new GlobalUi([[${authUserEppn}]], [[${_csrf}]]);
 	</script>
 </html>

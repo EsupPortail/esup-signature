@@ -5,7 +5,7 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(csrf) {
+    constructor(authUserEppn, csrf) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.csrf = csrf;
@@ -21,9 +21,10 @@ export class GlobalUi {
         this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
-        this.sseId = this.uuidv4();
-        sessionStorage.setItem("sseId", this.sseId);
-        this.sseSubscribe = new SseSubscribe(this.sseId);
+        if(authUserEppn != null) {
+            sessionStorage.setItem("sseId", this.csrf.token)
+            this.sseSubscribe = new SseSubscribe(this.csrf.token);
+        }
         this.initListeners();
         this.initBootBox();
         this.initSideBar();
@@ -384,12 +385,6 @@ export class GlobalUi {
                 ]
             });
         });
-    }
-
-    uuidv4() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
     }
 
     onDocumentLoad() {
