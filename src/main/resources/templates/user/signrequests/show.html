@@ -184,11 +184,11 @@
                         </div>
                         <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
                             <button id="addCommentButton" title="Ajouter un commentaire"
-                                    class="btn btn-warning ml-1">
+                                    class="btn btn-outline-warning ml-1">
                                 <i class="fas fa-comment"></i> Ajouter un commentaire
                             </button>
                             <button id="addSpotButton" title="Ajouter un emplacement"
-                                    class="btn btn-success ml-1" th:disabled="${signRequest.signRequestParams.size() + 1 > signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
+                                    class="btn btn-outline-success ml-1" th:disabled="${signRequest.signRequestParams.size() + 1 > signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
                                 <i class="fas fa-plus"></i> Ajouter un emplacement
                             </button>
                         </div>
@@ -551,11 +551,13 @@
                                 <!--                            <div class="form-group">-->
                                 <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
-                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                                <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
-                                    <span th:if="${iterator.index > 0}"> ou </span>
-                                    <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
-                                </th:block>
+                                <p>
+                                    <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
+                                    <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
+                                        <span th:if="${iterator.index > 0}"> ou </span>
+                                        <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
+                                    </th:block>
+                                </p>
                             </th:block>
                         </th:block>
                         <th:block th:if="${isTempUsers}">

@@ -288,7 +288,7 @@
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
-                        <select name="signType" id="signType" class="form-control">
+                        <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>

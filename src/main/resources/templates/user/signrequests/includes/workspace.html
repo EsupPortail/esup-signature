@@ -61,57 +61,55 @@
                 </div>
             </th:block>
             <th:block th:each="comment : ${comments}">
-                <div class="circle" th:if="${!comment.spot}" th:id="'inDocComment_' + ${comment.id}"
+                <div class="circle" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                      th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
             <th:block th:each="spot : ${spots}">
-                <div class="spot" th:if="${spot.spot}" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
                      th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'"
                      th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
             <div id="postit" class="postit badge badge-warning">
+                <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                 <input id="commentPosX" name="commentPosX" type="hidden"/>
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
-                <div class="form-check float-left text-left" style="margin-top: 15px;" th:if="${signRequest.signRequestParams.size() + 1 <= signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
-                    <label for="addSignParams">
-                        Ajouter un emplacement <br> de signature ici pour l'étape
-                    </label>
-                    <label class="switch">
-                        <input id="addSignParams" name="addSignParams" type="checkbox"/>
-                        <span class="slider round"></span>
-                    </label>
+                <input id="addSignParams" name="addSignParams" type="hidden"/>
+                <div id="divSpotStepNumber" class="form-group" style="display: none">
+                    <label for="spotStepNumber">Choisir l'étape concernée</label>
+                    <br/>
+                    <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple" required>
+                        <option></option>
+                        <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                            <option th:if="${step.signRequestParams == null}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                        </th:block>
+                    </select>
                 </div>
-                <select id="commentStepNumber" name="commentStepNumber" >
-                    <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                        <option th:if="${step.signRequestParams == null}" th:text="${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
-                    </th:block>
-                </select>
                 <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire"></textarea>
-                <button id="hideCommentButton" type="button" class="btn btn-sm btn-outline-dark float-left">
+                <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-left">
                     <i class="fas fa-times"></i>
                 </button>
-                <button id="saveCommentButton" type="button" class="btn btn-sm btn-outline-dark float-right">
+                <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-right">
                     <i class="fas fa-save"></i>
                 </button>
             </div>
         </div>
     </form>
 
-    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 250px; left: 285px;">
+    <div id="commentsBar" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 250px; left: 285px;">
         <div th:unless="${signRequest.comments.size() > 0}" class="alert alert-light border-dark text-dark">
-            Vous pouvez ajouter des commentaires ou des emplacements de signature en cliquant directement sur l’endroit concerné du document
+            Pour ajouter des commentaires ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
         </div>
-        <div th:if="${signRequest.comments.size() > 0}" class="alert alert-light border-dark text-dark">
+        <div th:if="${comments.size() > 0}" class="alert alert-light border-dark text-dark">
             <h5>Commentaires</h5>
             <ul class="list-group">
                 <th:block th:each="comment : ${comments}">
-                    <li th:if="${!comment.spot}" th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
+                    <li th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <b th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}"></b>
                         <p th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${comment.text}"></p>

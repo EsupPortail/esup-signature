@@ -349,7 +349,7 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $("select[class='slim-select-simple']").each(function () {
+        $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             new SlimSelect({
@@ -358,7 +358,7 @@ export class GlobalUi {
                 searchHighlight: false,
                 hideSelectedOption: false,
                 allowDeselect: true,
-                placeholder: ' ',
+                placeholder: $(this).attr('data-placeholder'),
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)

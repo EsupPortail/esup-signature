@@ -63,7 +63,7 @@ import java.util.List;
 @ConditionalOnProperty({"dss.tsp-server"})
 public class DSSBeanConfig {
 
-	private static final Logger log = LoggerFactory.getLogger(DSSBeanConfig.class);
+	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);
 
 	private DSSProperties dssProperties;
 
@@ -157,10 +157,10 @@ public class DSSBeanConfig {
 		File keystoreFile = new File(dssProperties.getKsFilename());
 		KeyStoreCertificateSource keyStoreCertificateSource = null;
 		if(keystoreFile.exists()) {
-			log.info("delete old oj file");
+			logger.info("delete old oj file");
 			keystoreFile.delete();
 		}
-		log.info("creating oj file in " + keystoreFile.getAbsolutePath());
+		logger.info("creating oj file in " + keystoreFile.getAbsolutePath());
 		if(keystoreFile.createNewFile()) {
 			keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
@@ -200,7 +200,7 @@ public class DSSBeanConfig {
 		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
-			log.info("TL Cache folder : {}", tslCache.getAbsolutePath());
+			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
 		}
 		return tslCache;
 	}
@@ -227,15 +227,14 @@ public class DSSBeanConfig {
 	public CommonTrustedCertificateSource myTrustedCertificateSource() {
 		CommonTrustedCertificateSource certSource = new CommonTrustedCertificateSource();
 		for(String trustedCertificatUrl : dssProperties.getTrustedCertificatUrlList()) {
-			log.info("adding trusted certificat : " + trustedCertificatUrl);
-			InputStream in = null;
+			logger.info("adding trusted certificat : " + trustedCertificatUrl);
 			try {
-				in = new URL(trustedCertificatUrl).openStream();
+				InputStream in = new URL(trustedCertificatUrl).openStream();
+				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
+				certSource.addCertificate(certificateToken);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.warn("ennable to add trusted certificat : " + trustedCertificatUrl, e);
 			}
-			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
-			certSource.addCertificate(certificateToken);
 		}
 		return certSource;
 	}

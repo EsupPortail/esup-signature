@@ -23,7 +23,7 @@ public class CommentService {
     private UserService userService;
 
     @Transactional
-    public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean spot, Boolean postit, String userEppn) {
+    public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(signRequestId);
         Comment comment = new Comment();
@@ -34,7 +34,6 @@ public class CommentService {
         comment.setPosY(posY);
         comment.setPageNumber(pageNumer);
         comment.setStepNumber(stepNumber);
-        comment.setSpot(spot);
         comment.setPostit(postit);
         commentRepository.save(comment);
         signRequest.getComments().add(comment);
@@ -45,7 +44,7 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId).get();
         SignRequest signRequest = signRequestService.getSignRequestByComment(comment);
-        if(comment.getSpot()) {
+        if(comment.getStepNumber() != null) {
             signRequest.getSignRequestParams().remove(comment.getStepNumber() - 1);
             signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.getStepNumber() - 1).setSignRequestParams(null);
         }
