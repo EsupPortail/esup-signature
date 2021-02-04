@@ -163,22 +163,34 @@
                                  th:text="${attachments.size() + signRequest.links.size()}"
                                  class="badge badge-primary"></div>
                         </button>
-                        <div class="border ml-3 mr-3"></div>
-                        <form th:if="${notifTime} >= ${hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                        <div th:if="${notifTime >= hoursBeforeRefreshNotif}" class="border ml-3 mr-3"></div>
+                        <form th:if="${notifTime >= hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
                             <button type="submit" class="btn btn-light btn-outline-dark ml-1">
                                 <i class="fas fa-bullhorn"></i> <span class="d-none d-xl-inline">Relancer</span>
                             </button>
                         </form>
                         <div class="border ml-3 mr-3"></div>
-                        <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}">
+                        <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;">
                             <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
                                     id="addSignButton" title="Ajouter une signature"
-                                    class="btn btn-success ml-1" disabled><i
-                                    class="fas fa-plus"></i> Ajouter une signature</button>
+                                    class="btn btn-success ml-1" disabled>
+                                <i class="fas fa-signature"></i> Ajouter une signature
+                            </button>
                             <button th:unless="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
                                     id="visualButton" title="Inserer un visuel"
-                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none"><i
-                                    class="fas fa-eye"></i> Inserer un visuel</button>
+                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none">
+                                <i class="fas fa-eye"></i> Inserer un visuel
+                            </button>
+                        </div>
+                        <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
+                            <button id="addCommentButton" title="Ajouter un commentaire"
+                                    class="btn btn-warning ml-1">
+                                <i class="fas fa-comment"></i> Ajouter un commentaire
+                            </button>
+                            <button id="addSpotButton" title="Ajouter un emplacement"
+                                    class="btn btn-success ml-1" th:disabled="${signRequest.signRequestParams.size() + 1 > signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
+                                <i class="fas fa-plus"></i> Ajouter un emplacement
+                            </button>
                         </div>
                     </th:block>
                 </div>

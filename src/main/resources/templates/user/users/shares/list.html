@@ -56,7 +56,7 @@
                                 </td>
                                 <td>
                                     <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
-                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec ça propre signature</span>
+                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec sa propre signature</span>
                                         <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
                                     </div>
                                 </td>
@@ -181,7 +181,7 @@
                             <label for="signWithOwnSign">Modalité de signature</label>
                             <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
-                                <option value="true">Le délégué signe avec ça propre signature</option>
+                                <option value="true">Le délégué signe avec sa propre signature</option>
                                 <option value="false">Le délégué signe avec votre signature</option>
                             </select>
                         </div>

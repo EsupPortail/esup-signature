@@ -72,7 +72,7 @@
                             <label for="signWithOwnSign">Modalité de signature</label>
                             <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
-                                <option value="true" th:selected="${userShare.signWithOwnSign}">Le délégué signe avec ça propre signature</option>
+                                <option value="true" th:selected="${userShare.signWithOwnSign}">Le délégué signe avec sa propre signature</option>
                                 <option value="false" th:selected="${!userShare.signWithOwnSign}">Le délégué signe avec votre signature</option>
                             </select>
                         </div>

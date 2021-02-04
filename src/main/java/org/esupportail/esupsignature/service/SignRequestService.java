@@ -519,7 +519,7 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), "sign", sseId);
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
-			eventService.publishEvent(new JsonMessage("mail", "Déverouillage du keystore", null), "sign", sseId);
+			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), "sign", sseId);
 			pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
