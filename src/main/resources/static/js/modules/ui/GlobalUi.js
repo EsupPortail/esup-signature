@@ -352,12 +352,13 @@ export class GlobalUi {
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
+            let alowDeselect = new Boolean($(this).attr('data-allow-deselect'));
             new SlimSelect({
                 select: '#' + selectName,
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: false,
-                allowDeselect: true,
+                allowDeselect: alowDeselect.valueOf(),
                 placeholder: $(this).attr('data-placeholder'),
                 closeOnSelect: true,
                 ajax: function (search, callback) {
