@@ -255,8 +255,9 @@ export class WorkspacePdf {
     }
 
     saveComment() {
-        let spotStepNumberVal = $("#spotStepNumber").val();
-        if(this.addSpotEnabled && $("#spotStepNumber").val() === "") {
+        let spotStepNumberVal = $("#spotStepNumber");
+        if(this.addSpotEnabled && spotStepNumberVal.val() === "") {
+            spotStepNumberVal.attr("required", true);
             $("#submitPostit").click();
             return;
         }
@@ -264,7 +265,7 @@ export class WorkspacePdf {
             "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
             "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
-            "&spotStepNumber=" + $("#spotStepNumber").val() +
+            "&spotStepNumber=" + spotStepNumberVal.val() +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
         $.ajax({
             method: 'POST',

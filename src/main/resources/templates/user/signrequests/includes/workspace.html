@@ -83,7 +83,7 @@
                 <div id="divSpotStepNumber" class="form-group" style="display: none">
                     <label for="spotStepNumber">Choisir l'étape concernée</label>
                     <br/>
-                    <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple" required>
+                    <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                         <option></option>
                         <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                             <option th:if="${step.signRequestParams == null}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>

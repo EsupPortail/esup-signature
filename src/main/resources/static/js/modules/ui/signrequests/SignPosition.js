@@ -130,14 +130,6 @@ export class SignPosition extends EventFactory {
         return Math.round(this.getCurrentSignParams().yPos * this.currentScale / this.fixRatio);
     }
 
-    getPdfXpos() {
-        return Math.round(this.getCurrentSignParams().xPos / this.currentScale);
-    }
-
-    getPdfYpos() {
-        return Math.round(this.getCurrentSignParams().yPos / this.currentScale);
-    }
-
     addSign() {
         this.hideButtons();
         console.info("add sign");
@@ -227,7 +219,6 @@ export class SignPosition extends EventFactory {
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
         this.signDropButton = $('#signDrop_' + currentSign);
-        this.signDropButton = $('#signDrop_' + currentSign);
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.initCrossToolsListeners();
     }
@@ -255,8 +246,9 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
-        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.currentScale * this.fixRatio);
+        let currentSignParams = this.getCurrentSignParams();
+        this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
+        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
         this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
         this.updateSignSize();
     }
@@ -356,7 +348,7 @@ export class SignPosition extends EventFactory {
         // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
-        this.updateSignSize();
+        // this.updateSignSize();
     }
 
     updateOtherSignPosition(sign, scale) {
@@ -379,7 +371,7 @@ export class SignPosition extends EventFactory {
     }
 
     updateSignSize() {
-        console.debug("update sign size " + this.getCurrentSignParams().signWidth);
+        console.log("update sign size " + this.getCurrentSignParams().signWidth);
         this.cross.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
         this.cross.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
         this.borders.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
