@@ -161,10 +161,9 @@
                 <b>Délégations</b>
             </h5>
             <form id="changeSuEppn" th:action="'/user/users/shares/change'" method="post">
-                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+                <select id="suEppn" class="slim-select-simple" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
-                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un
-                        mandant
+                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un mandant
                     </option>
                     <th:block th:each="suUser : ${suUsers}">
                         <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
@@ -345,10 +344,10 @@
                     </div>
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
-                        <select name="signType" id="signType2" class="form-control">
+                        <select class="slim-select-simple" name="signType" id="signType2">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
+                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                         <br>

@@ -18,6 +18,9 @@ body {
     width: 100%;
 }
 
+label {
+    margin-top: .5rem;
+}
 #actionDiv {
     position: relative;
     width: 100%;
@@ -1456,6 +1459,7 @@ height: 100%;
 
 .ss-main {
     font-weight: normal !important;
+    margin: auto !important;
 }
 
 .custom-autocompletion {
