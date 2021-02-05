@@ -275,7 +275,6 @@ public class SignRequestController {
         if (multipartFiles != null) {
             try {
                 SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, user, authUserEppn);
-                signBookService.dispatchSignRequestParams(signBook.getId());
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));

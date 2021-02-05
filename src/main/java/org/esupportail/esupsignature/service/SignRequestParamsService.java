@@ -67,10 +67,6 @@ public class SignRequestParamsService {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             List<SignRequestParams> signRequestParamses = pdSignatureFieldsToSignRequestParams(pdDocument);
-            if(signRequestParamses.size() == 0) {
-//                SignRequestParams signRequestParams = SignRequest.getEmptySignRequestParams();
-//                signRequestParamses.add(signRequestParams);
-            }
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParamsRepository.save(signRequestParams);
             }

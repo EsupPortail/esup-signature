@@ -224,9 +224,8 @@ export class GlobalUi {
             console.info("auto adjust : hide");
             this.hideSideBar();
         } else {
-            console.info("auto adjust : display");
+            console.debug("auto adjust : display");
             let url = window.location.pathname;
-            console.info("auto display side bar : " + url);
             if(this.sideBarStatus === 'on') {
                 this.showSideBar();
             } else {

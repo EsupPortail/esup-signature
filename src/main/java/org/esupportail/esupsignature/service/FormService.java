@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +64,9 @@ public class FormService {
 
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private FileService fileService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -135,11 +140,27 @@ public class FormService {
 				shareTypes.add(shareType);
 			}
 		}
+
 		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
 		for(UserShare userShare : userShares) {
 			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
 		}
 		formRepository.save(form);
+	}
+
+	@Transactional
+	public void updateFormModel(Long id, MultipartFile multipartModel) {
+		Form form = getById(id);
+		if(multipartModel != null) {
+			Document document = form.getDocument();
+			form.setDocument(null);
+			documentService.delete(document.getId());
+			try {
+				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getName(), multipartModel.getContentType()));
+			} catch (IOException e) {
+				logger.error("unable to modif model", e);
+			}
+		}
 	}
 
 	public void deleteForm(Long formId) {
@@ -368,4 +389,13 @@ public class FormService {
 		return messsage;
 	}
 
+	@Transactional
+	public Map<String, Object> getModel(Long id) throws SQLException, IOException {
+		Form form = getById(id);
+		Document attachement = documentService.getById(form.getDocument().getId());
+		if (attachement != null) {
+			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+		}
+		return null;
+	}
 }

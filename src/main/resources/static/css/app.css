@@ -1244,6 +1244,7 @@ height: 100%;
     background-color: rgba(0, 255, 0, .5);
     cursor: default;
     font-size: 9px;
+    display: none;
 }
 
 .bg-striped {

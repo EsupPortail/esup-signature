@@ -97,9 +97,8 @@ public class DataService {
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
-        signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
-        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() == 0) {
+        if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
@@ -108,6 +107,7 @@ public class DataService {
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+        signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
             signBook.getLiveWorkflow().setTargetType(form.getTargetType());

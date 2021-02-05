@@ -111,6 +111,7 @@ public class SignBookService {
                 SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, false, signType, user.getEmail()));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+                dispatchSignRequestParams(signBook);
                 pendingSignBook(signBook, null, user.getEppn(), authUserEppn);
                 return signBook;
             } catch (EsupSignatureIOException e) {
@@ -213,7 +214,7 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
-        dispatchSignRequestParams(signBook.getId());
+        dispatchSignRequestParams(signBook);
     }
 
     @Transactional
@@ -421,13 +422,12 @@ public class SignBookService {
         if (allSignToComplete == null) {
             allSignToComplete = false;
         }
-
         if(userSignFirst != null && userSignFirst) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, false, SignType.pdfImageStamp, user.getEmail()));
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, allSignToComplete, signType, recipientsEmails));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-        dispatchSignRequestParams(signBook.getId());
+        dispatchSignRequestParams(signBook);
         if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
             pending = false;
             message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
@@ -523,9 +523,7 @@ public class SignBookService {
         return signBookRepository.countByRecipientUserToSign(userEppn);
     }
 
-    @Transactional
-    public void dispatchSignRequestParams(Long id) {
-        SignBook signBook = getById(id);
+    public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             int i = 0;
             for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {

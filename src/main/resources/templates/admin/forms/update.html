@@ -34,14 +34,29 @@
             <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
+                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id}" th:method="put" enctype="multipart/form-data">
+                        <div class="form-group">
+                            Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank">
+                            <span th:text="${form.document.fileName}"></span></a>
+                        </div>
+                        <div class="form-group">
+                            <div class="custom-file">
+                                <input id="multipartModel" type="file" accept="application/pdf"
+                                       class="custom-file-input" name="multipartModel" value="Choose a file"
+                                       aria-describedby="multipartModel"/>
+                                <label for="multipartModel" class="custom-file-label"> Choisir un modèle au PDF</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">Modifier le modèle</button>
+                    </form>
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="put">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group">
-                            <label for="name">Titre</label>
+                            <label for="name">Titre (titre affiché aux utilisateurs)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
                         <div class="form-group">
-                            <label for="name">Nom</label>
+                            <label for="name">Nom (nom technique)</label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
                         <div class="form-group">
