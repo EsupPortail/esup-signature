@@ -534,4 +534,19 @@ public class SignRequestController {
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping(value = "/mass-sign")
+    @ResponseBody
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, HttpSession httpSession, @RequestParam(value = "sseId") String sseId,
+                           @RequestParam(value = "comment", required = false) String comment, @RequestParam(value = "password", required = false) String password) {
+        Object userShareString = httpSession.getAttribute("userShareId");
+        Long userShareId = null;
+        if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
+        for (Long id : ids) {
+            if (signRequestService.initSign(id, sseId, null, comment, null, true, password, userShareId, userEppn, authUserEppn)) {
+                new ResponseEntity<>(HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
