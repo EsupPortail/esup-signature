@@ -33,8 +33,6 @@ public class Comment {
 
     private Integer posY;
 
-    private Boolean isSpot;
-
     private Boolean isPostit;
 
     public Long getId() {
@@ -107,14 +105,6 @@ public class Comment {
 
     public void setPosY(Integer posY) {
         this.posY = posY;
-    }
-
-    public Boolean getSpot() {
-        return isSpot;
-    }
-
-    public void setSpot(Boolean spot) {
-        isSpot = spot;
     }
 
     public Boolean getPostit() {

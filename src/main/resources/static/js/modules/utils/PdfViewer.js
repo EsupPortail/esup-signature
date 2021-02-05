@@ -231,6 +231,10 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    initSavedValues() {
+
+    }
+
     promizeSaveValues() {
         console.info("launch save values");
         return this.page.getAnnotations().then(items => this.saveValues(items));
@@ -240,7 +244,8 @@ export class PdfViewer extends EventFactory {
         console.log("save fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+                let inputField = $('input[name=\'' + inputName + '\']');
                 if (inputField.val() != null) {
                     if (inputField.is(':checkbox')) {
                         if (!inputField[0].checked) {
@@ -251,7 +256,7 @@ export class PdfViewer extends EventFactory {
                         continue;
                     }
                     if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
+                        let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
                         if (radio.prop("checked")) {
                             this.savedFields.set(items[i].fieldName, radio.val());
                         }
@@ -274,29 +279,41 @@ export class PdfViewer extends EventFactory {
         console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+                let savedValue = this.savedFields.get(items[i].fieldName);
+                let inputField = $('input[name=\'' + inputName + '\']');
                 if (inputField.val() != null) {
-                    if (inputField.is(':checkbox')) {
-                        if(this.savedFields.get(items[i].fieldName) === 'on') {
-                            inputField.prop( "checked", true);
-                        } else {
-                            inputField.prop( "checked", false);
+                    if(savedValue != null) {
+                        if (inputField.is(':checkbox')) {
+                            if (savedValue === 'on') {
+                                inputField.prop("checked", true);
+                            } else {
+                                inputField.prop("checked", false);
+                            }
+                            continue;
                         }
+                        if (inputField.is(':radio')) {
+                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
+                            console.log("test " + items[i].fieldName + " " + savedValue + " = " + inputField.val());
+                            if (savedValue === radio.val()) {
+                                radio.prop("checked", true);
+                            }
+                            continue;
+                        }
+                        inputField.val(savedValue);
                         continue;
                     }
-                    if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
-                        console.log("test "+ items[i].fieldName + " " + this.savedFields.get(items[i].fieldName) + " = " + inputField.val());
-                        if (this.savedFields.get(items[i].fieldName) === radio.val()) {
-                            radio.prop("checked", true);
-                        }
-                        continue;
-                    }
-                    inputField.val(this.savedFields.get(items[i].fieldName));
                 }
-                let selectField = $('select[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                let textareaField = $('textarea[name=\'' + inputName + '\']');
+                if (inputField.val() != null) {
+                    if (savedValue != null) {
+                        textareaField.val(savedValue);
+                        continue;
+                    }
+                }
+                let selectField = $('select[name=\'' + inputName + '\']');
                 if (selectField.val() != null) {
-                    $('#' + items[i].fieldName.split(/\\$|#|!/)[0] + ' option').each(function()
+                    $('#' + inputName + ' option').each(function()
                     {
                         if(this.savedFields.get(items[i].fieldName) === $(this).value) {
                             $(this).prop("selected", true);
@@ -313,10 +330,11 @@ export class PdfViewer extends EventFactory {
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute field");
+            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             let dataField;
             if(this.dataFields != null && items[i].fieldName != null) {
                 dataField = this.dataFields.filter(obj => {
-                    return obj.name === items[i].fieldName.split(/\$|#|!/)[0]
+                    return obj.name === inputName
                 })[0];
             }
             if(items[i].fieldType === undefined && items[i].title && items[i].title.toLowerCase().startsWith('sign')) {
@@ -332,8 +350,8 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
                     $.ajax({
@@ -346,8 +364,7 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
                 }
-
-                console.log(dataField);
+                console.debug(dataField);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     inputField.prop('required', false);
@@ -460,8 +477,8 @@ export class PdfViewer extends EventFactory {
                         success : response => this.autocomplete(response, sendField)
                     });
                 }
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                 }
@@ -479,8 +496,8 @@ export class PdfViewer extends EventFactory {
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if(inputField.length) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
@@ -508,6 +525,7 @@ export class PdfViewer extends EventFactory {
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
+            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             if (items[i].fieldType === undefined) {
                 console.debug("sign field found");
                 signFieldNumber = signFieldNumber + 1;
@@ -522,14 +540,14 @@ export class PdfViewer extends EventFactory {
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
                 if (inputField.is(':radio')) {
                     inputField.val(items[i].buttonValue);
                 }
             } else {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {
-                    inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                    inputField.attr('name', inputName);
                     inputField.val(items[i].fieldValue);
                 }
             }

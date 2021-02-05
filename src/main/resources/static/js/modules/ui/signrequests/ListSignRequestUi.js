@@ -79,7 +79,7 @@ export default class ListSignRequestUi {
 
     buildUrlFilter() {
         let url = '/user/signrequests'
-        let filters = $('.signRequestFilter');
+        let filters = $('.sign-request-filter');
         let firstParameter = true;
         for (let i = 0 ; i < filters.length ; i++) {
             if (filters.eq(i).val() !== "") {

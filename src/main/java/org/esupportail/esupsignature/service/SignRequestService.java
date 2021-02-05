@@ -439,14 +439,14 @@ public class SignRequestService {
 		}
 		if (signType.equals(SignType.visa)) {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, false, true, user.getEppn());
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, user.getEppn());
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", user.getEppn(), authUser.getEppn());
 			}
 		} else {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, false, true, user.getEppn());
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, user.getEppn());
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user.getEppn(), authUser.getEppn());
@@ -1021,17 +1021,17 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Boolean spot, Integer stepNumber, String authUserEppn) {
+	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer spotStepNumber, String authUserEppn) {
 		SignRequest signRequest = getById(id);
-		if(spot) {
+		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
 			List<SignRequestParams> signRequestParamsList = new ArrayList<>();
 			signRequestParamsList.add(signRequestParams);
-			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1).setSignRequestParams(signRequestParamsList);
+			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).setSignRequestParams(signRequestParamsList);
 		}
-		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, stepNumber, spot, false, authUserEppn);
-		if(!spot) {
+		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, authUserEppn);
+		if(!(spotStepNumber != null && spotStepNumber > 0)) {
 			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		} else {
 			updateStatus(signRequest, null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);

@@ -24,25 +24,28 @@ export class WizUi {
     checkOnModalClose() {
         let workflowId = $("#wizWorkflowId").val();
         if(this.signBookId || workflowId) {
-            if (bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues")) {
-                if(workflowId) {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/user/workflows/silent-delete/" + workflowId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
-                        cache: false
-                    });
+            let self = this;
+            bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
+                if(result) {
+                    if (workflowId) {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/user/workflows/silent-delete/" + workflowId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false
+                        });
+                    } else {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/user/signbooks/silent-delete/" + self.signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false
+                        });
+                    }
+                    self.modal.modal('hide');
+                    self.modal.unbind();
                 } else {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/user/signbooks/silent-delete/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
-                        cache: false
-                    });
+                    self.modal.modal('show');
                 }
-                this.modal.modal('hide');
-                this.modal.unbind();
-            } else {
-                this.modal.modal('show');
-            }
+            });
         }
     }
 

@@ -51,7 +51,6 @@ export class CreateDataUi {
     }
 
     launchSave() {
-        //e.preventDefault()
         if(this.nextCommand === "none") {
             this.saveData();
         } else {

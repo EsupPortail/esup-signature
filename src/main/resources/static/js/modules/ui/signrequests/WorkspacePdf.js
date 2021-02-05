@@ -43,8 +43,9 @@ export class WorkspacePdf {
             $('#prev').on('click', e => this.pdfViewer.prevPage());
             $('#next').on('click', e => this.pdfViewer.nextPage());
             $('#saveCommentButton').on('click', e => this.saveComment());
-            $('#addCommentButton').on('click', e => this.enableCommentAdd());
-            $('#addSpotButton').on('click', e => this.enableSpotAdd());
+            $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
+            $('#addSpotButton').on('click', e => this.enableSpotAdd(e));
+            $("#spotStepNumber").on('change', e => this.changeSpotStep());
             this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('ready', e => this.initWorkspace());
@@ -62,7 +63,6 @@ export class WorkspacePdf {
                     }
                 }
                 document.getElementById('hideCommentButton').addEventListener('click', e => this.hideComment());
-                $("#addSignParams").on('change', e => this.togglePostitMode(e));
             }
 
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
@@ -93,7 +93,7 @@ export class WorkspacePdf {
             });
         }
 
-        $('[id^="deleteAttachement_"]').each(function (){
+        $('[id^="deleteAttachement-"]').each(function (){
             $(this).on('click', function (e){
                 e.preventDefault();
                 let target = e.currentTarget;
@@ -238,11 +238,8 @@ export class WorkspacePdf {
         if(this.mode === 'sign') {
             this.signPosition.stopDragSignature();
         } else if(this.mode === 'comment') {
-            if(this.addSpotEnabled) {
-                this.displaySpot();
-            }
-            if(this.addCommentEnabled) {
-                this.displayComment();
+            if(this.addSpotEnabled || this.addCommentEnabled) {
+                this.displayDialogBox();
             }
         }
     }
@@ -258,12 +255,17 @@ export class WorkspacePdf {
     }
 
     saveComment() {
+        let spotStepNumberVal = $("#spotStepNumber");
+        if(this.addSpotEnabled && spotStepNumberVal.val() === "") {
+            spotStepNumberVal.attr("required", true);
+            $("#submitPostit").click();
+            return;
+        }
         let commentUrlParams = "comment=" + $("#postitComment").val() +
             "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
             "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
-            "&commentStepNumber=" + $("#commentStepNumber").val() +
-            "&addSignParams=" + $("#addSignParams").is(":checked") +
+            "&spotStepNumber=" + spotStepNumberVal.val() +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
         $.ajax({
             method: 'POST',
@@ -360,7 +362,7 @@ export class WorkspacePdf {
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses[signId];
         console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
-        if(signRequestParams.signPageNumber == this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
+        if(signRequestParams.signPageNumber === this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
             $(e).show();
         } else {
             $(e).hide();
@@ -368,7 +370,7 @@ export class WorkspacePdf {
 
     }
 
-    displayComment() {
+    displayDialogBox() {
         let postit = $("#postit");
         if(this.mode !== 'comment' || postit.is(':visible')) {
             return;
@@ -376,35 +378,17 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         let commentPosX = $("#commentPosX");
         let commentPosY = $('#commentPosY');
-        let xPos = parseInt(commentPosX.val()) / this.pdfViewer.scale;
-        let yPos = parseInt(commentPosY.val()) / this.pdfViewer.scale;
+        let xOffset = 12;
+        let yOffset = 24;
+        if(this.addCommentEnabled) xOffset = 0;
+        let xPos = (parseInt(commentPosX.val()) + xOffset) / this.pdfViewer.scale;
+        let yPos = (parseInt(commentPosY.val()) + yOffset) / this.pdfViewer.scale;
         commentPosX.val(xPos);
         commentPosY.val(yPos);
         postit.css('left', xPos * this.pdfViewer.scale);
         postit.css('top', yPos * this.pdfViewer.scale);
         $("#postitComment").removeAttr("disabled");
-        $("#commentStepNumber").removeAttr("disabled");
-        $("#addSignParams").removeAttr("disabled");
-        postit.show();
-        this.signPosition.stopDragSignature();
-    }
-
-    displaySpot() {
-        let postit = $("#postit");
-        if(this.mode !== 'comment' || postit.is(':visible')) {
-            return;
-        }
-        this.signPosition.pointItEnable = false;
-        let commentPosX = $("#commentPosX");
-        let commentPosY = $('#commentPosY');
-        let xPos = parseInt(commentPosX.val()) / this.pdfViewer.scale;
-        let yPos = parseInt(commentPosY.val()) / this.pdfViewer.scale;
-        commentPosX.val(xPos);
-        commentPosY.val(yPos);
-        postit.css('left', xPos * this.pdfViewer.scale);
-        postit.css('top', yPos * this.pdfViewer.scale);
-        $("#postitComment").removeAttr("disabled");
-        $("#commentStepNumber").removeAttr("disabled");
+        $("#spotStepNumber").removeAttr("disabled");
         $("#addSignParams").removeAttr("disabled");
         postit.show();
         this.signPosition.stopDragSignature();
@@ -451,13 +435,19 @@ export class WorkspacePdf {
         $('#workspace').toggleClass('alert-warning alert-secondary');
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
+        $('#commentsBar').show();
         $('#infos').show();
-        $(".spot").each(function( index ) {
-            $(this).show();
-        });
         this.pdfViewer.renderPage(1);
         this.pdfViewer.promizeToggleFields(false);
         this.refreshAfterPageChange();
+        $(".spot").each(function() {
+            $(this).show();
+            $(this).css('width', '0px');
+        });
+        $(".circle").each(function() {
+            $(this).show();
+            $(this).css('width', '0px');
+        })
     }
 
     toggleSignMode() {
@@ -479,10 +469,10 @@ export class WorkspacePdf {
         } else {
             $('#workspace').toggleClass('alert-success');
         }
-        $(".circle").each(function( index ) {
+        $(".circle").each(function() {
             $(this).hide();
         });
-        $(".spot").each(function( index ) {
+        $(".spot").each(function() {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
@@ -510,7 +500,7 @@ export class WorkspacePdf {
         $('#readModeButton').removeClass('btn-outline-secondary');
         this.signPosition.crossTools.addClass('d-none');
         $('#commentsTools').hide();
-
+        $('#commentsBar').hide();
         $('#signTools').hide();
         this.signPosition.cross.hide();
 
@@ -551,20 +541,36 @@ export class WorkspacePdf {
         });
     }
 
-    togglePostitMode(e) {
-        $("#postit").toggleClass("badge-warning badge-success");
-        let stepNumber = $(commentStepNumber).val();
-        $("#liveStep-" + stepNumber).toggleClass("bg-white bg-success");
+    enableCommentAdd(e) {
+        $(e.currentTarget).toggleClass("btn-outline-warning btn-warning");
+        if(this.addCommentEnabled) {
+            this.addCommentEnabled = false;
+            this.disablePointer();
+        } else {
+            let postit = $("#postit");
+            postit.removeClass("badge-success");
+            postit.addClass("badge-warning");
+            this.addCommentEnabled = true;
+            this.displayCommentPointer();
+        }
+        this.addSpotEnabled = false;
     }
 
-    enableCommentAdd() {
-        this.displayCommentPointer();
-        this.addCommentEnabled = true;
-    }
-
-    enableSpotAdd() {
-        this.displaySpotPointer();
-        this.addSpotEnabled = true;
+    enableSpotAdd(e) {
+        $(e.currentTarget).toggleClass("btn-outline-success btn-success");
+        if(this.addSpotEnabled) {
+            this.addSpotEnabled = false;
+            this.disablePointer();
+        } else {
+            let postit = $("#postit");
+            postit.addClass("badge-success");
+            postit.removeClass("badge-warning");
+            let divSpotStepNumber = $("#divSpotStepNumber");
+            divSpotStepNumber.show();
+            this.addSpotEnabled = true;
+            this.displaySpotPointer();
+        }
+        this.addCommentEnabled = false;
     }
 
     displayCommentPointer() {
@@ -575,6 +581,9 @@ export class WorkspacePdf {
         this.pdfViewer.canvas.style.cursor = 'url(' + this.getCommentPointer("\uf3c5") + '), auto';
     }
 
+    disablePointer() {
+        this.pdfViewer.canvas.style.cursor = 'default';
+    }
 
     getCommentPointer(code) {
         let pointerCanvas = document.createElement("canvas");
@@ -589,4 +598,14 @@ export class WorkspacePdf {
         return pointerCanvas.toDataURL('image/png');
     }
 
+    changeSpotStep() {
+        let stepNumber = $("#spotStepNumber").val();
+        $('[id^="liveStep-"]').each(function (){
+            $(this).removeClass("bg-success");
+            $(this).addClass("bg-white");
+        });
+        let liveStep = $("#liveStep-" + stepNumber);
+        liveStep.removeClass("bg-white");
+        liveStep.addClass("bg-success");
+    }
 }

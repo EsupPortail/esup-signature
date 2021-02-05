@@ -152,8 +152,8 @@ public class SignRequestController {
         }
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
-        model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit()).collect(Collectors.toList()));
-        model.addAttribute("spots", signRequest.getComments().stream().filter(Comment::getSpot).collect(Collectors.toList()));
+        model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
+        model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
@@ -485,12 +485,11 @@ public class SignRequestController {
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
-                          @RequestParam(value = "commentStepNumber", required = false) Integer commentStepNumber,
+                          @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
-                          @RequestParam(value = "addSignParams", required = false) Boolean addSignParams,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, addSignParams, commentStepNumber, authUserEppn);
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, spotStepNumber, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 

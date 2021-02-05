@@ -18,6 +18,9 @@ body {
     width: 100%;
 }
 
+label {
+    margin-top: .5rem;
+}
 #actionDiv {
     position: relative;
     width: 100%;
@@ -82,7 +85,7 @@ td {
 .mini-menu-thead {
     width:250px;
     margin-top: 20px;
-    z-index: 1000;
+    z-index: 10000;
 }
 
 code {
@@ -295,6 +298,10 @@ input:checked + .slider:before {
     margin-top: 36px;
     display: block !important;
     position: absolute;
+}
+
+.ss-main .ss-single-selected .placeholder .ss-disabled {
+    color: black !important;
 }
 
 /* select slim */
@@ -756,9 +763,13 @@ height: 100%;
 .circle {
     display: none;
     position: absolute;
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: pointer;
     z-index: 2;
+}
+
+.circle:hover {
+    opacity: 1;
 }
 
 .circle-border {
@@ -768,10 +779,13 @@ height: 100%;
 .spot {
     display: none;
     position: absolute;
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: pointer;
     z-index: 2;
     color: #1e7e34;
+}
+.spot:hover {
+    opacity: 1;
 }
 
 .kv-file-upload {
@@ -1436,13 +1450,16 @@ height: 100%;
         padding-left: 15px;
     }
 }
+
 .ss-single-selected {
+    vertical-align: middle !important;
+    margin: auto !important;
     min-height: 38px !important;
 }
 
 .ss-main {
     font-weight: normal !important;
-    margin-bottom: 20px !important;
+    margin: auto !important;
 }
 
 .custom-autocompletion {

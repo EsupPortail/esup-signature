@@ -349,16 +349,17 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $("select[class='slim-select-simple']").each(function () {
+        $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
+            let allowDeselect = new Boolean($(this).attr('data-allow-deselect'));
             new SlimSelect({
                 select: '#' + selectName,
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: false,
-                allowDeselect: true,
-                placeholder: ' ',
+                allowDeselect: allowDeselect.valueOf(),
+                placeholder: $(this).attr('data-placeholder'),
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)

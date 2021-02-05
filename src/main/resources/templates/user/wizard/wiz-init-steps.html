@@ -38,7 +38,7 @@
     </label>
     <br/><br/>
     <label>Type de signature :</label>
-    <select id="signTypeWiz" name="signType" class="form-control">
+    <select class="form-control" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${signTypes}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
