@@ -517,7 +517,7 @@ public class SignService {
 		} else {
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) abstractSignatureForm;
-				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams(), new ByteArrayInputStream(documentForm.getDocumentToSign()), user);
+				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()), user);
 			} else {
 				parameters = fillParameters((SignatureDocumentForm) abstractSignatureForm);
 			}

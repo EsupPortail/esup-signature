@@ -352,7 +352,12 @@ public class SignRequestService {
 			formDataMap.remove(toRemoveKey);
 		}
 		try {
-			List<SignRequestParams> signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+			List<SignRequestParams> signRequestParamses;
+			if (signRequestParamsJsonString == null) {
+				signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+			} else {
+				signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
+			}
 			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
@@ -547,7 +552,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams(), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
@@ -1021,10 +1026,12 @@ public class SignRequestService {
 		if(spot) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
-			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1).setSignRequestParams(signRequestParams);
+			List<SignRequestParams> signRequestParamsList = new ArrayList<>();
+			signRequestParamsList.add(signRequestParams);
+			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1).setSignRequestParams(signRequestParamsList);
 		}
 		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, stepNumber, spot, false, authUserEppn);
-		if(spot) {
+		if(!spot) {
 			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		} else {
 			updateStatus(signRequest, null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
