@@ -24,11 +24,16 @@
     if (signable && currentSignType === 'nexuSign') {
         new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
     }
-    let signUi = new SignUi([[${signRequest.id}]],
-        [[${signRequest.currentSignRequestParams}]],
+    new SignUi([[${signRequest.id}]],
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
+            [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
+        [/]
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
+        [/]
         currentSignType,
         signable,
-        [[${comments}]],
+        [[${signRequest.comments}]],
         [[${toSignDocument.contentType == 'application/pdf'}]],
         [[${signRequest.parentSignBook.liveWorkflow.currentStepNumber}]],
         [[${signImages}]],
@@ -36,8 +41,12 @@
         [[${_csrf}]],
         [[${fields}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-        [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
+            [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
         [/]
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
+            null,
+        [/]
+        [[${signRequest.status}]]
     );
 
 </script>
@@ -154,22 +163,34 @@
                                  th:text="${attachments.size() + signRequest.links.size()}"
                                  class="badge badge-primary"></div>
                         </button>
-                        <div class="border ml-3 mr-3"></div>
-                        <form th:if="${notifTime} >= ${hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                        <div th:if="${notifTime >= hoursBeforeRefreshNotif}" class="border ml-3 mr-3"></div>
+                        <form th:if="${notifTime >= hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
                             <button type="submit" class="btn btn-light btn-outline-dark ml-1">
                                 <i class="fas fa-bullhorn"></i> <span class="d-none d-xl-inline">Relancer</span>
                             </button>
                         </form>
                         <div class="border ml-3 mr-3"></div>
-                        <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}">
+                        <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;">
                             <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
                                     id="addSignButton" title="Ajouter une signature"
-                                    class="btn btn-success ml-1" disabled><i
-                                    class="fas fa-plus"></i> Ajouter une signature</button>
+                                    class="btn btn-success ml-1" disabled>
+                                <i class="fas fa-signature"></i> Ajouter une signature
+                            </button>
                             <button th:unless="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
                                     id="visualButton" title="Inserer un visuel"
-                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none"><i
-                                    class="fas fa-eye"></i> Inserer un visuel</button>
+                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none">
+                                <i class="fas fa-eye"></i> Inserer un visuel
+                            </button>
+                        </div>
+                        <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
+                            <button id="addCommentButton" title="Ajouter un commentaire"
+                                    class="btn btn-outline-warning ml-1">
+                                <i class="fas fa-comment"></i> Ajouter un commentaire
+                            </button>
+                            <button id="addSpotButton" title="Ajouter un emplacement"
+                                    class="btn btn-outline-success ml-1" th:disabled="${signRequest.signRequestParams.size() + 1 > signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
+                                <i class="fas fa-plus"></i> Ajouter un emplacement
+                            </button>
                         </div>
                     </th:block>
                 </div>
@@ -188,18 +209,14 @@
                 </nav>
             </div>
             <div style="position: absolute;left: 270px;top: 180px;">
-                <th:block th:each="postit, iterate : ${globalPostits}">
-                    <!--            <div class="box-wrap">-->
-                    <!--                <span class="paper-clip"></span>-->
-                    <!--            </div>-->
-                    <div th:classappend="${postit.finalStatus == 'refused'} ? 'postit-global-red'" class="postit-global d-none" th:style="'position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
+                <th:block th:each="postit, iterate : ${postits}">
+                    <div class="postit-global d-none" th:style="'position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <b th:text="'Postit de ' + ${postit.user.firstname + ' ' + postit.user.name}"></b>
-                        <p th:text="'le ' + ${#dates.format(postit.logDate, 'dd/MM/yyyy HH:mm')}"></p>
-                        <p th:if="${postit.finalStatus == 'refused'}">Motif du refus : </p>
-                        <p class="postitarea" th:text="${postit.comment}"></p>
+                        <b th:text="'Postit de ' + ${postit.createBy.firstname + ' ' + postit.createBy.name}"></b>
+                        <p th:text="'le ' + ${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}"></p>
+                        <p class="postitarea" th:text="${postit.text}"></p>
                     </div>
                 </th:block>
             </div>
@@ -315,7 +332,7 @@
                         <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success float-right" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
                         </button>
-                        <button id="checkRepeatableButtonNext" class="mb-1 btn btn-success float-right" title="Signer"
+                        <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                         </button>
                     </div>
@@ -340,7 +357,7 @@
                     Viser et retourner à l'accueil
                 </button>
                 <button id="checkRepeatableButtonNext"
-                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                        th:if="${nextSignRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
                         class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                     Viser et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
@@ -534,11 +551,13 @@
                                 <!--                            <div class="form-group">-->
                                 <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
                                 <!--                            </div>-->
-                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                                <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
-                                    <span th:if="${iterator.index > 0}"> ou </span>
-                                    <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
-                                </th:block>
+                                <p>
+                                    <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
+                                    <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
+                                        <span th:if="${iterator.index > 0}"> ou </span>
+                                        <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>
+                                    </th:block>
+                                </p>
                             </th:block>
                         </th:block>
                         <th:block th:if="${isTempUsers}">

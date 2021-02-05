@@ -213,6 +213,7 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
         signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+        dispatchSignRequestParams(signBook.getId());
     }
 
     @Transactional
@@ -260,10 +261,13 @@ public class SignBookService {
         }
     }
 
-    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn) {
+    @Transactional
+    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-            pendingSignBook(signBook, null, userEppn, authUserEppn);
+            if(start != null && start) {
+                pendingSignBook(signBook, null, userEppn, authUserEppn);
+            }
             return true;
         }else {
             return false;
@@ -382,7 +386,6 @@ public class SignBookService {
         mailService.sendRefusedMail(signBook, comment);
         updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment, userEppn, authUserEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequest.setComment(comment);
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signBook.getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {
                 if(recipient.getUser().getEppn().equals(userEppn)) {
@@ -424,7 +427,7 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createWorkflowStep(false, allSignToComplete, signType, recipientsEmails));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
-
+        dispatchSignRequestParams(signBook.getId());
         if(userService.getTempUsersFromRecipientList(Arrays.asList(recipientsEmails)) . size() > 0) {
             pending = false;
             message = "La liste des destinataires contient des personnes externes.<br>Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
@@ -433,8 +436,7 @@ public class SignBookService {
             pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn());
             if (comment != null && !comment.isEmpty()) {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
-                    signRequest.setComment(comment);
-                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
+                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
                 }
             }
         } else {
@@ -521,5 +523,16 @@ public class SignBookService {
         return signBookRepository.countByRecipientUserToSign(userEppn);
     }
 
-
+    @Transactional
+    public void dispatchSignRequestParams(Long id) {
+        SignBook signBook = getById(id);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            int i = 0;
+            for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                if (signRequest.getSignRequestParams().size() > i) {
+                    liveWorkflowStep.setSignRequestParams(signRequest.getSignRequestParams().get(i));
+                }
+            }
+        }
+    }
 }

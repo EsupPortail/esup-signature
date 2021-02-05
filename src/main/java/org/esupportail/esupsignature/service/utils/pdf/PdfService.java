@@ -392,6 +392,7 @@ public class PdfService {
                     logger.debug(output.toString());
                 } else {
                     logger.warn("Convert fail");
+                    logger.warn(cmd);
                     logger.warn(output.toString());
                     throw new EsupSignatureSignException("PDF/A convertion failure");
                 }

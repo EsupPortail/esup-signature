@@ -75,6 +75,7 @@ public class WizardController {
     public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
+                       @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody JsonWorkflowStep step,
                        Model model) {
         SignBook signBook = signBookService.getById(id);
@@ -92,10 +93,10 @@ public class WizardController {
             }
             model.addAttribute("signBook", signBook);
             if(end != null && end) {
-                if (signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn)) {
+                if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
                     return "user/wizard/wiz-save";
                 } else {
-                    return "user/wizard/wizend/";
+                    return "user/wizard/wizend";
                 }
             }
         }
@@ -199,6 +200,7 @@ public class WizardController {
     public String wizRedirect(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
+//            signBookService.startLiveWorkflow(signBook, userEppn, userEppn, false);
             if(signBook.getLiveWorkflow().getCurrentStep() == null) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Après vérification, vous devez confirmer l'envoi pour finaliser la demande"));
             }

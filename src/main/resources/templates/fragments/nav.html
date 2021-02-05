@@ -6,10 +6,6 @@
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
-<script th:inline="javascript" type="module">
-    import {GlobalUi} from "../../static/js/modules/ui/GlobalUi.js";
-    new GlobalUi([[${_csrf}]]);
-</script>
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
@@ -165,10 +161,9 @@
                 <b>Délégations</b>
             </h5>
             <form id="changeSuEppn" th:action="'/user/users/shares/change'" method="post">
-                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+                <select id="suEppn" class="slim-select-simple" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
-                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un
-                        mandant
+                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un mandant
                     </option>
                     <th:block th:each="suUser : ${suUsers}">
                         <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
@@ -292,7 +287,7 @@
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
-                        <select name="signType" id="signType" class="form-control">
+                        <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
@@ -349,10 +344,10 @@
                     </div>
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
-                        <select name="signType" id="signType2" class="form-control">
+                        <select class="slim-select-simple" name="signType" id="signType2">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
+                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                         <br>
@@ -372,7 +367,7 @@
                         </div>
                         <div class="form-group" id="_userSignFirst_div_id">
                             <label for="_userSignFirst">
-                                Je dois signer ce document avent l'envoi ?
+                                Je dois signer ce document avant l'envoi ?
                             </label>
                             <label class="switch">
                                 <input type="checkbox" name="userSignFirst" id="_userSignFirst"/>

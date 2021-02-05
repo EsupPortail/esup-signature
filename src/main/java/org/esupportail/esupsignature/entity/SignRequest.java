@@ -61,17 +61,13 @@ public class SignRequest {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
-    private List<SignRequestParams> signRequestParams = new ArrayList<>();
+    private List<SignRequestParams> signRequestParams = new LinkedList<>();
 
     private Date endDate;
 
-    @JsonIgnore
-    @Transient
-    transient String viewTitle;
-
-    @JsonIgnore
-    @Transient
-    transient String comment;
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OrderColumn
+    private List<Comment> comments = new ArrayList<>();
 
     @JsonIgnore
     @Transient
@@ -198,20 +194,12 @@ public class SignRequest {
         this.signRequestParams = signRequestParams;
     }
 
-    public String getViewTitle() {
-        return viewTitle;
+    public List<Comment> getComments() {
+        return comments;
     }
 
-    public void setViewTitle(String viewTitle) {
-        this.viewTitle = viewTitle;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
     public Boolean getSignable() {
@@ -246,28 +234,28 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
-    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
-        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
-            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
-        }
-    }
-
-    public SignRequestParams getCurrentSignRequestParams() {
-        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
-            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
-        } else {
-            return getEmptySignRequestParams();
-        }
-    }
-
-    public static SignRequestParams getEmptySignRequestParams() {
-        SignRequestParams signRequestParams = new SignRequestParams();
-        signRequestParams.setSignImageNumber(0);
-        signRequestParams.setSignPageNumber(1);
-        signRequestParams.setxPos(0);
-        signRequestParams.setyPos(0);
-        return signRequestParams;
-    }
+//    public void setCurrentSignRequestParams(SignRequestParams signRequestParam) {
+//        if(this.signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+//            this.signRequestParams.set(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1, signRequestParam);
+//        }
+//    }
+//
+//    public SignRequestParams getCurrentSignRequestParams() {
+//        if(signRequestParams.size() >= parentSignBook.getLiveWorkflow().getCurrentStepNumber() && parentSignBook.getLiveWorkflow().getCurrentStepNumber() > -1) {
+//            return signRequestParams.get(parentSignBook.getLiveWorkflow().getCurrentStepNumber() - 1);
+//        } else {
+//            return getEmptySignRequestParams();
+//        }
+//    }
+//
+//    public static SignRequestParams getEmptySignRequestParams() {
+//        SignRequestParams signRequestParams = new SignRequestParams();
+//        signRequestParams.setSignImageNumber(0);
+//        signRequestParams.setSignPageNumber(1);
+//        signRequestParams.setxPos(0);
+//        signRequestParams.setyPos(0);
+//        return signRequestParams;
+//    }
 
     public List<Document> getLiteOriginalDocuments() {
         List<Document> liteDocuments = new ArrayList<>();

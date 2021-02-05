@@ -62,7 +62,7 @@
                             </label>
                             <br/>
                             <label>Type de signature :</label>
-                            <select name="signType" class="form-control">
+                            <select class="slim-select-simple" name="signType">
                                 <th:block th:each="signType : ${signTypes}">
                                     <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"
                                             th:selected="${signRequest.parentSignBook.liveWorkflow.currentStep.signType == signType}"></option>

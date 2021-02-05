@@ -25,18 +25,18 @@ export class PdfViewer extends EventFactory {
         this.signable = signable;
         this.events = {};
         this.rotation = 0;
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+        this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
 
     initListeners() {
-        document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
-        document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
-        document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
-        document.getElementById('fullheight').addEventListener('click', e => this.fullHeight());
-        document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
-        document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
-        window.addEventListener('resize', e => this.adjustZoom());
+        $('#zoomin').on('click', e => this.zoomIn());
+        $('#zoomout').on('click', e => this.zoomOut());
+        $('#fullwidth').on('click', e => this.fullWidth());
+        $('#fullheight').on('click', e => this.fullHeight());
+        $('#rotateleft').on('click', e => this.rotateLeft());
+        $('#rotateright').on('click', e => this.rotateRight());
+        $(window).on('resize', e => this.adjustZoom());
         this.addEventListener("render", e => this.listenToSearchCompletion());
    }
 
@@ -163,7 +163,7 @@ export class PdfViewer extends EventFactory {
         console.info("launch render task" + this.scale);
         this.page = page;
         let scale = this.scale;
-        localStorage.setItem('scale', scale);
+        localStorage.setItem('scale', scale.toPrecision(2) + "");
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -186,7 +186,10 @@ export class PdfViewer extends EventFactory {
     }
 
     postRender() {
-        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue());
+        let self = this;
+        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue()).then(function(){
+            self.fireEvent("renderFinished", ['ok']);
+        });
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();

@@ -24,25 +24,28 @@ export class WizUi {
     checkOnModalClose() {
         let workflowId = $("#wizWorkflowId").val();
         if(this.signBookId || workflowId) {
-            if (bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues")) {
-                if(workflowId) {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/user/workflows/silent-delete/" + workflowId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
-                        cache: false
-                    });
+            let self = this;
+            bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
+                if(result) {
+                    if (workflowId) {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/user/workflows/silent-delete/" + workflowId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false
+                        });
+                    } else {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/user/signbooks/silent-delete/" + self.signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false
+                        });
+                    }
+                    self.modal.modal('hide');
+                    self.modal.unbind();
                 } else {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/user/signbooks/silent-delete/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token,
-                        cache: false
-                    });
+                    self.modal.modal('show');
                 }
-                this.modal.modal('hide');
-                this.modal.unbind();
-            } else {
-                this.modal.modal('show');
-            }
+            });
         }
     }
 
@@ -96,14 +99,15 @@ export class WizUi {
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz");
         }
-        $("#addNew").on('click', e => this.gotoAddStep(false));
-        $("#end").on('click', e => this.gotoAddStep(true));
+        $("#addNew").on('click', e => this.gotoAddStep(false, false));
+        $("#end").on('click', e => this.gotoAddStep(true, false));
+        $("#endStart").on('click', e => this.gotoAddStep(true, true));
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
 
     }
 
-    gotoAddStep(end) {
+    gotoAddStep(end, start) {
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
@@ -113,7 +117,7 @@ export class WizUi {
         let signBookId = this.signBookId;
         console.log(signBookId);
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&start=" + start + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
@@ -130,8 +134,9 @@ export class WizUi {
 
         let csrf = this.csrf;
         let name = $("#workflowName").val();
+        let elementId = $("#elementId");
         $.ajax({
-            url: "/user/wizard/wiz-save"+ this.mode +"/" + $("#elementId").val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-save"+ this.mode +"/" + elementId.val() + "?name=" + name + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             success: html => this.initWiz2(html)
         });
