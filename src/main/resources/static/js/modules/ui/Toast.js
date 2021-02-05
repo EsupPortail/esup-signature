@@ -47,7 +47,7 @@ export default class Toast {
         let start = new Date();
         let end = new Date();
         end.setSeconds(start.getSeconds() + (toast.attr('data-delay') / 1000));
-        this.setUpProgressBar("#progress-" + message.type, start.getTime(), end.getTime(), 100)
+        this.setUpProgressBar("#progress-" + message.type, start.getTime(), end.getTime(), 50)
     }
 
     setUpProgressBar(selector, startTime, endTime, update) {
