@@ -134,10 +134,9 @@ public class FormAdminController {
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
 
-	@PutMapping("/update-model/{id}")
-	public String updateFormmodel(@PathVariable("id") Long id, @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel,
-							 @RequestParam(value = "types", required = false) String[] types,
-							 RedirectAttributes redirectAttributes) {
+	@PostMapping("/update-model/{id}")
+	public String updateFormmodel(@PathVariable("id") Long id,
+								  @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
 		formService.updateFormModel(id, multipartModel);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + id;

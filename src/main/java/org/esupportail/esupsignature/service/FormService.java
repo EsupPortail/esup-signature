@@ -156,7 +156,7 @@ public class FormService {
 			form.setDocument(null);
 			documentService.delete(document.getId());
 			try {
-				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getName(), multipartModel.getContentType()));
+				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType()));
 			} catch (IOException e) {
 				logger.error("unable to modif model", e);
 			}

@@ -34,7 +34,7 @@
             <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id}" th:method="put" enctype="multipart/form-data">
+                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <div class="form-group">
                             Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank">
                             <span th:text="${form.document.fileName}"></span></a>
@@ -49,7 +49,7 @@
                         </div>
                         <button type="submit" class="btn btn-success">Modifier le modèle</button>
                     </form>
-                    <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="put">
+                    <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group">
                             <label for="name">Titre (titre affiché aux utilisateurs)</label>

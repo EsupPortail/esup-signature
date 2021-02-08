@@ -528,9 +528,9 @@ public class SignBookService {
             for (int i = 0 ; i < signRequest.getSignRequestParams().size() ; i++) {
                 int size = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size();
                 if (i + 1 >= size) {
-                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(size - 1).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(size - 1).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
                 } else {
-                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(i).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
                 }
             }
         }

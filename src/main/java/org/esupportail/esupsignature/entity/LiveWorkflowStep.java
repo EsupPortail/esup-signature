@@ -27,7 +27,7 @@ public class LiveWorkflowStep {
     private SignType signType;
 
     @OneToMany(cascade = CascadeType.REMOVE)
-    private List<SignRequestParams> signRequestParams;
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     public Long getId() {
         return id;
