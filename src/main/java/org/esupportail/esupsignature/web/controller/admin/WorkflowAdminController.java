@@ -50,9 +50,13 @@ public class WorkflowAdminController {
 	@Resource
 	private WorkflowStepService workflowStepService;
 
-	@GetMapping(produces = "text/html")
-	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
-		model.addAttribute("displayWorkflowType", displayWorkflowType);
+	@GetMapping
+	public String list(@RequestParam(name = "displayWorkflowType", required = false) String displayWorkflowTypeString, Model model) {
+		model.addAttribute("displayWorkflowType", displayWorkflowTypeString);
+		DisplayWorkflowType displayWorkflowType = null;
+		if(displayWorkflowTypeString != null && displayWorkflowTypeString.isEmpty()) {
+			displayWorkflowType = DisplayWorkflowType.valueOf(displayWorkflowTypeString);
+		}
 		model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
 		return "admin/workflows/list";
 	}
