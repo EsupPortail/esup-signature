@@ -91,4 +91,9 @@ public class LiveWorkflowStepService {
     public void delete(LiveWorkflowStep liveWorkflowStep) {
         liveWorkflowStepRepository.delete(liveWorkflowStep);
     }
+
+    public void delete(Long id) {
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepRepository.findById(id).get();
+        liveWorkflowStepRepository.delete(liveWorkflowStep);
+    }
 }
