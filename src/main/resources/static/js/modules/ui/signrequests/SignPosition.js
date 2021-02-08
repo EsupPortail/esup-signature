@@ -31,6 +31,7 @@ export class SignPosition extends EventFactory {
         this.fontSize = 12;
         this.pointItMove = false;
         this.visualActive = true;
+        this.signUndoButton = $('#signUndo_0');
         this.signZoomOutButton = $('#signZoomOut_0');
         this.signZoomInButton = $('#signZoomIn_0');
         this.signNextImageButton = $('#signNextImage_0');
@@ -86,6 +87,7 @@ export class SignPosition extends EventFactory {
 
     initCrossToolsListeners() {
         this.showButtons();
+        this.signUndoButton.on('click', e => this.updateSignZoom(1));
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
         this.signNextImageButton.on('click', e => this.signNextImage(e));
@@ -108,6 +110,7 @@ export class SignPosition extends EventFactory {
         });
         this.signColorPicker.spectrum('destroy');
         this.signColorPicker.hide();
+        this.signUndoButton.unbind();
         this.signZoomOutButton.unbind();
         this.signZoomInButton.unbind();
         this.signNextImageButton.unbind();
@@ -170,6 +173,7 @@ export class SignPosition extends EventFactory {
         });
         this.signColorPicker.spectrum('destroy');
         this.signColorPicker.hide();
+        this.signUndoButton = $('#signUndo_' + currentSign);
         this.signZoomOutButton = $('#signZoomOut_' + currentSign);
         this.signZoomInButton = $('#signZoomIn_' + currentSign);
         this.signNextImageButton = $('#signNextImage_' + currentSign);
@@ -213,6 +217,7 @@ export class SignPosition extends EventFactory {
         this.initCrossListeners();
         this.unbindCrossToolsListeners();
         this.crossTools = $('#crossTools_' + currentSign);
+        this.signUndoButton = $('#signUndo_' + currentSign);
         this.signZoomOutButton = $('#signZoomOut_' + currentSign);
         this.signZoomInButton = $('#signZoomIn_' + currentSign);
         this.signNextImageButton = $('#signNextImage_' + currentSign);
