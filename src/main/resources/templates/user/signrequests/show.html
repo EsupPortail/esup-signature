@@ -25,7 +25,7 @@
         new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
     }
     new SignUi([[${signRequest.id}]],
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
+        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
             [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.get(0)}]],
         [/]
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
