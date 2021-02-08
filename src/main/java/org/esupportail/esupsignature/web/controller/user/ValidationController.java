@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.validation.Valid;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -66,8 +66,13 @@ public class ValidationController {
 	}
 
 	@PostMapping
-	public String validate(@ModelAttribute("multipartFile") @Valid MultipartFile multipartFile, Model model) throws IOException {
-		Reports reports = validationService.validate(multipartFile.getInputStream());
+	public String validate(@RequestParam(name = "multipartFile") MultipartFile multipartFile, @RequestParam(name = "multipartFile2", required = false) MultipartFile multipartFile2, Model model) throws IOException {
+		Reports reports;
+		if(multipartFile2.isEmpty()) {
+			reports = validationService.validate(multipartFile.getInputStream());
+		} else {
+			reports = validationService.validate(multipartFile.getInputStream(), multipartFile2.getInputStream());
+		}
 		if(reports != null) {
 			String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -93,6 +98,7 @@ public class ValidationController {
 	}
 	
 	@GetMapping(value = "/document/{id}")
+	@Transactional
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
 		SignRequest signRequest = signRequestService.getById(id);
 

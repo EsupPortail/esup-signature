@@ -29,7 +29,7 @@ import eu.europa.esig.dss.tsl.alerts.detections.LOTLLocationChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.detections.OJUrlChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
-import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
+import eu.europa.esig.dss.tsl.function.*;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
@@ -211,10 +211,10 @@ public class DSSBeanConfig {
 		lotlSource.setUrl(dssProperties.getLotlUrl());
 		lotlSource.setCertificateSource(ojContentKeyStore());
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
-		lotlSource.setPivotSupport(true);
+//		lotlSource.setPivotSupport(true);
 //		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
 //		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-//		lotlSource.setTrustServicePredicate(new GrantedTrustService());
+		lotlSource.setTrustServicePredicate(new GrantedTrustService());
 		return lotlSource;
 	}
 
@@ -233,7 +233,7 @@ public class DSSBeanConfig {
 				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
 				certSource.addCertificate(certificateToken);
 			} catch (IOException e) {
-				logger.warn("ennable to add trusted certificat : " + trustedCertificatUrl, e);
+				logger.warn("unable to add trusted certificat : " + trustedCertificatUrl, e);
 			}
 		}
 		return certSource;
@@ -245,13 +245,7 @@ public class DSSBeanConfig {
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
-//		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
-//		certificateVerifier.setCrlSource(cachedCRLSource());
-//		certificateVerifier.setOcspSource(cachedOCSPSource());
-//		certificateVerifier.setDataLoader(dataLoader());
-////		certificateVerifier.setExceptionOnMissingRevocationData(false);
-////		certificateVerifier.setExceptionOnInvalidTimestamp(false);
-//		certificateVerifier.setCheckRevocationForUntrustedChains(false);
+		certificateVerifier.setCheckRevocationForUntrustedChains(false);
 		return certificateVerifier;
 	}
 
