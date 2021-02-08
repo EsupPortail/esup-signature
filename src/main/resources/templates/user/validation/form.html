@@ -25,17 +25,17 @@
                     <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                         <div class="form-group">
                         <div class="custom-file">
-                            <input required="required" class="custom-file-input" id="inputGroupFile01" name="multipartFile" type="file" aria-describedby="inputGroupFileAddon01"/>
-                            <label class="custom-file-label" id="inputGroupLabel01" for="upload">
+                            <input required="required" class="custom-file-input" id="multipartSignedDoc" name="multipartSignedDoc" type="file"/>
+                            <label class="custom-file-label" for="multipartSignedDoc">
                                 Choisir un fichier signé
                             </label>
                         </div>
                         </div>
                         <div class="form-group">
                         <div class="custom-file">
-                            <input class="custom-file-input" id="inputGroupFile02" name="multipartFile2" type="file" aria-describedby="inputGroupFileAddon02"/>
-                            <label class="custom-file-label" id="inputGroupLabel02" for="upload">
-                                Choisir un fichier signature (si signature détachée)
+                            <input class="custom-file-input" id="multipartSignature" name="multipartSignature" type="file"/>
+                            <label class="custom-file-label" for="multipartSignature">
+                                Choisir un fichier signature (si la signature est détachée)
                             </label>
                         </div>
                         </div>

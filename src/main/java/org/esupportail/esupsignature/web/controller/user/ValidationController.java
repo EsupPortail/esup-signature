@@ -66,12 +66,12 @@ public class ValidationController {
 	}
 
 	@PostMapping
-	public String validate(@RequestParam(name = "multipartFile") MultipartFile multipartFile, @RequestParam(name = "multipartFile2", required = false) MultipartFile multipartFile2, Model model) throws IOException {
+	public String validate(@RequestParam(name = "multipartSignedDoc") MultipartFile multipartSignedDoc, @RequestParam(name = "multipartSignature", required = false) MultipartFile multipartSignature, Model model) throws IOException {
 		Reports reports;
-		if(multipartFile2.isEmpty()) {
-			reports = validationService.validate(multipartFile.getInputStream());
+		if(multipartSignature.isEmpty()) {
+			reports = validationService.validate(multipartSignedDoc.getInputStream());
 		} else {
-			reports = validationService.validate(multipartFile.getInputStream(), multipartFile2.getInputStream());
+			reports = validationService.validate(multipartSignedDoc.getInputStream(), multipartSignature.getInputStream());
 		}
 		if(reports != null) {
 			String xmlSimpleReport = reports.getXmlSimpleReport();
@@ -84,9 +84,9 @@ public class ValidationController {
 			model.addAttribute("simpleReport", "<h2>Impossible de valider ce document</h2>");
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
-		if(multipartFile.getContentType().contains("pdf")) {
+		if(multipartSignedDoc.getContentType().contains("pdf")) {
 			try {
-				model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartFile.getInputStream(), true));
+				model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartSignedDoc.getInputStream(), true));
 			} catch (EsupSignatureException e) {
 				e.printStackTrace();
 			}
