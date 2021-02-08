@@ -53,7 +53,7 @@ public class WsOtpSignController {
         if(otp != null) {
             if(!otp.isSmsSended() && smsService != null) {
                 String password = otpService.generateOtpPassword(urlId);
-                smsService.sendSms(otp.getPhoneNumber(), "Votre code de sécutité esup-signature : " + password);
+                smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup-signature " + password);
                 otp.setSmsSended(true);
             }
             model.addAttribute("urlid", urlId);
