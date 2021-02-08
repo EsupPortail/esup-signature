@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SignBookService {
@@ -173,11 +174,16 @@ public class SignBookService {
 
     @Transactional
     public boolean delete(Long signBookId) {
-        //TODO critères de suppresion ou en conf
-//        if(signBook.getCurrentWorkflowStepNumber() > 0) {
-//            return false;
-//        }
+        //TODO critères de suppression ou en conf
         SignBook signBook = getById(signBookId);
+        List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
+        for (Long liveWorkflowStepId : liveWorkflowStepIds) {
+            liveWorkflowStepService.delete(liveWorkflowStepId);
+        }
+        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+        for(Long signRequestId : signRequestsIds) {
+            signRequestService.delete(signRequestId);
+        }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
         return true;

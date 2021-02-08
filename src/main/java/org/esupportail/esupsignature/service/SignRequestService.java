@@ -1110,7 +1110,7 @@ public class SignRequestService {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
-					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/sceau.png"), "sceau.png"));
+					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/sceau.png"), "sceau.png"));
 				} else {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
@@ -1137,6 +1137,7 @@ public class SignRequestService {
 				}
 			}
 		}
+		signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/check.png"), "check.png"));
 		return signImages;
 	}
 

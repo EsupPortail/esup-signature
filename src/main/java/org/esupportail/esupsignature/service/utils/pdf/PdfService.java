@@ -42,6 +42,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,11 +95,15 @@ public class PdfService {
             List<String> addText = getSignatureStrings(user, signType, newDate, dateFormat);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, true, signRequestParams);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), addText, true, signRequestParams);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
             } else {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
+                    signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");
+                } else {
+                    signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                }
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());

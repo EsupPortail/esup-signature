@@ -167,7 +167,8 @@ public class SignRequestController {
                 Object userShareString = httpSession.getAttribute("userShareId");
                 Long userShareId = null;
                 if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-                model.addAttribute("signImages", signRequestService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId));
+                List<String> signImages = signRequestService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
+                model.addAttribute("signImages", signImages);
             } catch (EsupSignatureUserException e) {
                 logger.error(e.getMessage());
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
