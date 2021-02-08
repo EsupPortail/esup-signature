@@ -12,6 +12,7 @@ export default class ListSignRequestUi {
     }
 
     initListeners() {
+        $('#massSignButton').on('click', e => this.launchMassSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
@@ -91,5 +92,23 @@ export default class ListSignRequestUi {
             }
         }
         document.location.href = url;
+    }
+
+    launchMassSign() {
+        let csrf = this.csrf;
+        let idDom = $('.idMassSign:checked');
+        let ids = [];
+        for (let i = 0; i < idDom.length ; i++) {
+            ids.push(idDom.eq(i).val());
+        }
+        $.ajax({
+            url: "/user/signrequests/mass-sign" + "?" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(ids),
+            success:  function () {
+                document.location.href = "/";
+            }
+        });
     }
 }

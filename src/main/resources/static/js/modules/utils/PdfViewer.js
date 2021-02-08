@@ -329,7 +329,18 @@ export class PdfViewer extends EventFactory {
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
-            console.debug(">>Start compute field");
+            if(items[i].fieldType === undefined) {
+                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                    signFieldNumber = signFieldNumber + 1;
+                    $('.popupWrapper').remove();
+                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.append('Champ signature ' + signFieldNumber + '<br>');
+                    signField.addClass("sign-field");
+                    // signField.addClass("d-none");
+                    // signField.parent().remove();
+                }
+                continue;
+            }
             let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             let dataField;
             if(this.dataFields != null && items[i].fieldName != null) {
@@ -337,16 +348,7 @@ export class PdfViewer extends EventFactory {
                     return obj.name === inputName
                 })[0];
             }
-            if(items[i].fieldType === undefined && items[i].title && items[i].title.toLowerCase().startsWith('sign')) {
-                console.debug("found sign field");
-                signFieldNumber = signFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber + '<br>');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
-            }
+
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
@@ -525,18 +527,20 @@ export class PdfViewer extends EventFactory {
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
-            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-            if (items[i].fieldType === undefined) {
-                console.debug("sign field found");
-                signFieldNumber = signFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber + '<br>');
-                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
+            if(items[i].fieldType === undefined) {
+                console.log(items[i]);
+                // if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                //     signFieldNumber = signFieldNumber + 1;
+                //     $('.popupWrapper').remove();
+                //     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                //     signField.append('Champ signature ' + signFieldNumber + '<br>');
+                //     signField.addClass("sign-field");
+                //     // signField.addClass("d-none");
+                //     // signField.parent().remove();
+                // }
+                continue;
             }
+            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {

@@ -69,7 +69,7 @@
                             <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
                             <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
                             <td>
-                                <select class="form-control" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
+                                <select class="slim-select-simple" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
                                     <option value=""></option>
                                     <th:block th:each="service : ${preFillTypes}">
                                         <option th:selected="${field.extValueServiceName == service.key || field.searchServiceName == service.key}" th:value="${service.key}" th:text="${service.key}"></option>
@@ -77,7 +77,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="form-control" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
+                                <select class="slim-select-simple" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
                                     <th:block th:if="${field.extValueType != ''}">
                                         <option th:value="${field.extValueType}" th:text="${field.extValueType}" selected></option>
                                     </th:block>

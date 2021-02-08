@@ -275,7 +275,6 @@ public class SignRequestController {
         if (multipartFiles != null) {
             try {
                 SignBook signBook = signBookService.addFastSignRequestInNewSignBook(multipartFiles, signType, user, authUserEppn);
-                signBookService.dispatchSignRequestParams(signBook.getId());
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -534,5 +533,20 @@ public class SignRequestController {
         commentService.deleteComment(commentId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le commentaire à bien été supprimé"));
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/mass-sign")
+    @ResponseBody
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, HttpSession httpSession, @RequestParam(value = "sseId") String sseId,
+                           @RequestParam(value = "comment", required = false) String comment, @RequestParam(value = "password", required = false) String password) {
+        Object userShareString = httpSession.getAttribute("userShareId");
+        Long userShareId = null;
+        if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
+        for (Long id : ids) {
+            if (signRequestService.initSign(id, sseId, null, comment, null, true, password, userShareId, userEppn, authUserEppn)) {
+                new ResponseEntity<>(HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
