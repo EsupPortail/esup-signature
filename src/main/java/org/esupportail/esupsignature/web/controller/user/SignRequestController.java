@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -69,6 +70,9 @@ public class SignRequestController {
     private UserService userService;
 
     @Resource
+    private ObjectMapper objectMapper;
+
+    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     @Resource
@@ -100,6 +104,12 @@ public class SignRequestController {
 
     @Resource
     private UserPropertieService userPropertieService;
+
+    @Resource
+    private ReportService reportService;
+
+    @Resource
+    private EventService eventService;
 
 //
 //    @Resource
@@ -222,7 +232,7 @@ public class SignRequestController {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
+        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn, false)) {
             new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -535,18 +545,31 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(value = "/mass-sign")
     @ResponseBody
-    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, HttpSession httpSession, @RequestParam(value = "sseId") String sseId,
-                           @RequestParam(value = "comment", required = false) String comment, @RequestParam(value = "password", required = false) String password) {
+    @PostMapping(value = "/mass-sign")
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String ids, HttpSession httpSession,
+                                           @RequestParam(value = "sseId") String sseId, @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
+        List<String> idsString = objectMapper.readValue(ids, List.class);
+        List<Long> idsLong = new ArrayList<>();
+        idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
         Object userShareString = httpSession.getAttribute("userShareId");
+        Report report = reportService.createReport(authUserEppn);
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        for (Long id : ids) {
-            if (signRequestService.initSign(id, sseId, null, comment, null, true, password, userShareId, userEppn, authUserEppn)) {
-                new ResponseEntity<>(HttpStatus.OK);
+        for (Long id : idsLong) {
+            SignRequest signRequest = signRequestService.getById(id);
+            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+                reportService.addsignRequestsNoField(report.getId(), signRequest);
+            } else if (signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
+                reportService.addsignRequestsSigned(report.getId(), signRequest);
+            } else {
+                reportService.addsignRequestsError(report.getId(), signRequest);
+            }
+            if (idsLong.get(idsLong.size() - 1).equals(id)) {
+                eventService.publishEvent(new JsonMessage("nextSign", "Signature suivante", null), "massSign", sseId);
             }
         }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        eventService.publishEvent(new JsonMessage("end", "Signature suivante", null), "massSign", sseId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

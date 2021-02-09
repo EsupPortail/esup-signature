@@ -20,6 +20,7 @@ export default class ListSignRequestUi {
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
+        document.addEventListener("massSign", e => this.updateWaitModal(e));
     }
 
     selectAllCheckboxes() {
@@ -95,20 +96,60 @@ export default class ListSignRequestUi {
     }
 
     launchMassSign() {
-        let csrf = this.csrf;
+        $('#wait').modal('show');
+        $('#wait').modal({backdrop: 'static', keyboard: false});
         let idDom = $('.idMassSign:checked');
         let ids = [];
         for (let i = 0; i < idDom.length ; i++) {
             ids.push(idDom.eq(i).val());
         }
-        $.ajax({
-            url: "/user/signrequests/mass-sign" + "?" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            contentType: "application/json",
-            data: JSON.stringify(ids),
-            success:  function () {
-                document.location.href = "/";
-            }
-        });
+        let signRequestUrlParams = "sseId=" + sessionStorage.getItem("sseId") +
+            "&ids=" + JSON.stringify(ids) +
+            "&" + this.csrf.parameterName + "=" + this.csrf.token
+        ;
+        this.reset();
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open('POST', '/user/signrequests/mass-sign', true);
+        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+        xmlHttp.send(signRequestUrlParams);
+    }
+
+    updateWaitModal(e) {
+        console.info("update wait modal");
+        let message = e.detail
+        console.info(message);
+        this.percent = this.percent + 1;
+        if(message.type === "sign_system_error" || message.type === "not_authorized") {
+            console.error("sign error : system error");
+            document.getElementById("signError").style.display = "block";
+            document.getElementById("signError").innerHTML =" Erreur du système de signature : <br>" + message.text;
+            document.getElementById("closeModal").style.display = "block";
+            document.getElementById("bar").classList.remove("progress-bar-animated");
+        } else if(message.type === "initNexu") {
+            console.info("redirect to NexU sign proccess");
+            document.location.href="/user/nexu-sign/" + this.signRequestId;
+        }else if(message.type === "end") {
+            console.info("mass-sign end");
+            document.getElementById("bar-text").innerHTML = "";
+            document.getElementById("bar").classList.remove("progress-bar-animated");
+            document.getElementById("bar-text").innerHTML = message.text;
+            document.getElementById("bar").style.width = 100 + "%";
+            document.location.href = "/user/reports";
+        } else {
+            console.debug("update bar");
+            document.getElementById("bar").style.display = "block";
+            document.getElementById("bar").style.width = this.percent + "%";
+            document.getElementById("bar-text").innerHTML = message.text;
+        }
+    }
+
+    reset() {
+        this.percent = 0;
+        document.getElementById("passwordError").style.display = "none";
+        document.getElementById("signError").style.display = "none";
+        document.getElementById("closeModal").style.display = "none";
+        document.getElementById("validModal").style.display = "none";
+        document.getElementById("bar").style.display = "none";
+        document.getElementById("bar").classList.add("progress-bar-animated");
     }
 }

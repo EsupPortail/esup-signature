@@ -87,7 +87,7 @@
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" class="idMassSign" name="ids[]" th:value="${signRequest.parentSignBook.id}"></td>
+                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" class="idMassSign" name="ids[]" th:value="${signRequest.id}"></td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                 <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
@@ -204,6 +204,33 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <h5>Signature en cours</h5>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;"
+                         id="bar">
+                    </div>
+                </div>
+                <span id="bar-text"></span>
+                <div id="passwordError" class="alert alert-danger" role="alert">
+                    Mauvais mot de passe
+                </div>
+                <div id="signError" class="alert alert-danger" role="alert">
+                    Erreur du système de signature
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                    Fermer
+                </button>
+                <button id="validModal" onclick="location.reload();" class="btn btn-secondary">Terminer</button>
             </div>
         </div>
     </div>
