@@ -31,6 +31,7 @@
         [# th:unless="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
             null,
         [/]
+        [[${user.defaultSignImageNumber}]],
         currentSignType,
         signable,
         [[${signRequest.comments}]],

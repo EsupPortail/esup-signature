@@ -44,6 +44,8 @@ public class User {
     @OrderColumn
     private List<Document> signImages = new ArrayList<>();
 
+    private Integer defaultSignImageNumber = 0;
+
     @Transient
     private String ip;
 
@@ -245,4 +247,11 @@ public class User {
         this.roles = roles;
     }
 
+    public Integer getDefaultSignImageNumber() {
+        return defaultSignImageNumber;
+    }
+
+    public void setDefaultSignImageNumber(Integer defaultSignImageNumber) {
+        this.defaultSignImageNumber = defaultSignImageNumber;
+    }
 }

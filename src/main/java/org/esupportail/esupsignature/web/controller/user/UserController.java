@@ -233,4 +233,10 @@ public class UserController {
     	return userPropertieService.getFavoritesEmails(authUserEppn);
 	}
 
+	@GetMapping("/set-default-sign-image/{signImageNumber}")
+	private String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
+    	userService.setDefaultSignImage(authUserEppn, signImageNumber);
+		return "redirect:/user/users";
+	}
+
 }
