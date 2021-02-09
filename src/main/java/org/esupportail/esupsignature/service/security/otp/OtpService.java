@@ -7,9 +7,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,19 +34,13 @@ public class OtpService {
     private static LoadingCache<String, Otp> otpCache;
 
     @Resource
-    private UserService userService;
-
-    @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
     private MailService mailService;
 
     public OtpService() {
-        otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).removalListener(notification -> clearOTP((String) notification.getKey())).build(new CacheLoader<>() {
+        otpCache = CacheBuilder.newBuilder().expireAfterWrite(EXPIRE_MINS, TimeUnit.MINUTES).build(new CacheLoader<>() {
             public Otp load(String urlId) {
                 return null;
             }

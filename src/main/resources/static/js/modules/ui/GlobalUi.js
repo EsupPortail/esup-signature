@@ -15,7 +15,7 @@ export class GlobalUi {
         this.sideBarLabels = $('.sidebar-label');
         this.content = $('#content');
         this.breadcrumb = $('#breadcrumb');
-        this.inputFile = $(".custom-file-input");
+        this.inputFiles = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
         this.clickableTd = $(".clickable-td");
         this.autoHide = $('.auto-hide');
@@ -71,7 +71,7 @@ export class GlobalUi {
                 window.location = $(this).closest('tr').attr('data-href');
             }
         });
-        this.inputFile.on('change', e => this.changeFileInputName(e));
+        this.inputFiles.on('change', e => this.changeFileInputName(e));
         let delay = 0;
         let offset = 300;
 

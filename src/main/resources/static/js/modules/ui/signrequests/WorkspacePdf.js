@@ -52,17 +52,18 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('render', e => this.initForm());
-            if (document.getElementById('commentModeButton') != null) {
-                document.getElementById('commentModeButton').addEventListener('click', e => this.toggleCommentMode());
+            let commentModeButton = $('#commentModeButton');
+            if (commentModeButton.length) {
+                commentModeButton.on('click', e => this.toggleCommentMode());
                 if (this.signable) {
-                    document.getElementById('signModeButton').addEventListener('click', e => this.toggleSignMode());
-                    let visualButton = document.getElementById('visualButton')
-                    if (this.currentSignType !== "pdfImageStamp") {
-                        visualButton.classList.remove("d-none");
-                        visualButton.addEventListener('click', e => this.signPosition.toggleVisual());
+                    $('#signModeButton').on('click', e => this.toggleSignMode());
+                    let visualButton = $('#visualButton')
+                    if (this.currentSignType == "visa") {
+                        visualButton.removeClass("d-none");
+                        visualButton.on('click', e => this.signPosition.toggleVisual());
                     }
                 }
-                document.getElementById('hideCommentButton').addEventListener('click', e => this.hideComment());
+                $('#hideCommentButton').on('click', e => this.hideComment());
             }
 
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
@@ -72,7 +73,6 @@ export class WorkspacePdf {
 
             this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
 
-            // this.pdfViewer.canvas.addEventListener('mousemove', e => this.moveAction(e));
             $('#pdf').mousemove(e => this.moveAction(e));
 
             $(".postit-global-close").on('click', function () {

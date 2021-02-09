@@ -25,10 +25,16 @@ import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.tsl.alerts.LOTLAlert;
+import eu.europa.esig.dss.tsl.alerts.TLAlert;
 import eu.europa.esig.dss.tsl.alerts.detections.LOTLLocationChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.detections.OJUrlChangeDetection;
+import eu.europa.esig.dss.tsl.alerts.detections.TLExpirationDetection;
+import eu.europa.esig.dss.tsl.alerts.detections.TLSignatureErrorDetection;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
+import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLExpirationAlertHandler;
+import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLSignatureErrorAlertHandler;
+import eu.europa.esig.dss.tsl.function.GrantedTrustService;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
@@ -38,6 +44,7 @@ import eu.europa.esig.dss.ws.signature.common.RemoteDocumentSignatureServiceImpl
 import eu.europa.esig.dss.ws.signature.common.RemoteMultipleDocumentsSignatureServiceImpl;
 import eu.europa.esig.dss.ws.validation.common.RemoteDocumentValidationService;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +63,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -108,6 +116,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			dataLoader.setProxyConfig(proxyConfig);
 		}
+		dataLoader.setTimeoutConnection(10000);
+		dataLoader.setTrustStrategy(new TrustAllStrategy());
 		return dataLoader;
 	}
 
@@ -117,6 +127,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			ocspDataLoader.setProxyConfig(proxyConfig);
 		}
+		ocspDataLoader.setTimeoutConnection(10000);
+		ocspDataLoader.setTrustStrategy(new TrustAllStrategy());
 		return ocspDataLoader;
 	}
 
@@ -169,11 +181,11 @@ public class DSSBeanConfig {
 
 	@Bean
 	public DSSFileLoader onlineLoader() {
-		FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
-		offlineFileLoader.setCacheExpirationTime(0);
-		offlineFileLoader.setDataLoader(dataLoader());
-		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
-		return offlineFileLoader;
+		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
+		onlineFileLoader.setCacheExpirationTime(0);
+		onlineFileLoader.setDataLoader(dataLoader());
+		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+		return onlineFileLoader;
 	}
 
 	@Bean
@@ -188,10 +200,13 @@ public class DSSBeanConfig {
 	@Bean
 	public TLValidationJob job() throws IOException {
 		TLValidationJob job = new TLValidationJob();
+		LOTLSource lotlSource = europeanLOTL();
 		job.setTrustedListCertificateSource(trustedListSource());
-		job.setListOfTrustedListSources(europeanLOTL());
+		job.setListOfTrustedListSources(lotlSource);
 		job.setOfflineDataLoader(offlineLoader());
 		job.setOnlineDataLoader(onlineLoader());
+		job.setLOTLAlerts(Arrays.asList(ojUrlAlert(lotlSource), lotlLocationAlert(lotlSource)));
+		job.setTLAlerts(Arrays.asList(tlSigningAlert(), tlExpirationDetection()));
 		return job;
 	}
 
@@ -211,10 +226,8 @@ public class DSSBeanConfig {
 		lotlSource.setUrl(dssProperties.getLotlUrl());
 		lotlSource.setCertificateSource(ojContentKeyStore());
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
+		lotlSource.setTrustServicePredicate(new GrantedTrustService());
 		lotlSource.setPivotSupport(true);
-//		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-//		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-//		lotlSource.setTrustServicePredicate(new GrantedTrustService());
 		return lotlSource;
 	}
 
@@ -233,7 +246,7 @@ public class DSSBeanConfig {
 				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
 				certSource.addCertificate(certificateToken);
 			} catch (IOException e) {
-				logger.warn("ennable to add trusted certificat : " + trustedCertificatUrl, e);
+				logger.warn("unable to add trusted certificat : " + trustedCertificatUrl, e);
 			}
 		}
 		return certSource;
@@ -244,15 +257,7 @@ public class DSSBeanConfig {
 		List<CertificateSource> trustedCertSources = new ArrayList<>();
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());
-		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
-//		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
-//		certificateVerifier.setCrlSource(cachedCRLSource());
-//		certificateVerifier.setOcspSource(cachedOCSPSource());
-//		certificateVerifier.setDataLoader(dataLoader());
-////		certificateVerifier.setExceptionOnMissingRevocationData(false);
-////		certificateVerifier.setExceptionOnInvalidTimestamp(false);
-//		certificateVerifier.setCheckRevocationForUntrustedChains(false);
-		return certificateVerifier;
+		return new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
 	}
 
 	@Bean
@@ -349,14 +354,24 @@ public class DSSBeanConfig {
 		return ds;
 	}
 
-	@Bean
+	public TLAlert tlSigningAlert() {
+		TLSignatureErrorDetection signingDetection = new TLSignatureErrorDetection();
+		LogTLSignatureErrorAlertHandler handler = new LogTLSignatureErrorAlertHandler();
+		return new TLAlert(signingDetection, handler);
+	}
+
+	public TLAlert tlExpirationDetection() {
+		TLExpirationDetection expirationDetection = new TLExpirationDetection();
+		LogTLExpirationAlertHandler handler = new LogTLExpirationAlertHandler();
+		return new TLAlert(expirationDetection, handler);
+	}
+
 	public LOTLAlert ojUrlAlert(LOTLSource source) {
 		OJUrlChangeDetection ojUrlDetection = new OJUrlChangeDetection(source);
 		LogOJUrlChangeAlertHandler handler = new LogOJUrlChangeAlertHandler();
 		return new LOTLAlert(ojUrlDetection, handler);
 	}
 
-	@Bean
 	public LOTLAlert lotlLocationAlert(LOTLSource source) {
 		LOTLLocationChangeDetection lotlLocationDetection = new LOTLLocationChangeDetection(source);
 		LogLOTLLocationChangeAlertHandler handler = new LogLOTLLocationChangeAlertHandler();

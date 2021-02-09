@@ -13,6 +13,7 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
@@ -1118,7 +1119,7 @@ public class SignRequestService {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
-					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/sceau.png"), "sceau.png"));
+					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/sceau.png"), "sceau.png"));
 				} else {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
@@ -1145,6 +1146,7 @@ public class SignRequestService {
 				}
 			}
 		}
+		signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/check.png"), "check.png"));
 		return signImages;
 	}
 
@@ -1237,9 +1239,19 @@ public class SignRequestService {
 		return recipientNames.stream().filter(distinctByKey(r -> r.getUser().getId())).collect( Collectors.toList() );
 	}
 
-	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor)
-	{
+	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	@Transactional
+	public File getToValidateFile(long id) throws IOException {
+		SignRequest signRequest = getById(id);
+		Document toValideDocument = signRequest.getLastSignedDocument();
+		File file = fileService.getTempFile(toValideDocument.getFileName());
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+		outputStream.close();
+		return file;
 	}
 }

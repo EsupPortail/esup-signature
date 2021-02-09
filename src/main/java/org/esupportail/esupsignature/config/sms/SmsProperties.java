@@ -10,6 +10,10 @@ public class SmsProperties {
     private String url;
     private String username;
     private String password;
+    private String apiKey;
+    private String apiSecret;
+    private String consumerKey;
+
 
     public Boolean getEnableSms() {
         return enableSms;
@@ -49,5 +53,29 @@ public class SmsProperties {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiSecret() {
+        return password;
+    }
+
+    public void setApiSecret(String apiSecret) {
+        this.password = apiSecret;
+    }
+
+    public String getConsumerKey() {
+        return consumerKey;
+    }
+
+    public void setConsumerKey(String consumerKey) {
+        this.consumerKey = consumerKey;
     }
 }
