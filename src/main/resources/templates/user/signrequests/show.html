@@ -189,7 +189,7 @@
                             </button>
                             <button id="addSpotButton" title="Ajouter un emplacement"
                                     class="btn btn-outline-success ml-1" th:disabled="${signRequest.signRequestParams.size() + 1 > signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size()}">
-                                <i class="fas fa-plus"></i> Ajouter un emplacement
+                                <i class="fas fa-plus"></i> Ajouter un emplacement de signature
                             </button>
                         </div>
                     </th:block>
@@ -579,8 +579,10 @@
                                 </th:block>
                             </th:block>
                         </th:block>
-                        <div id="tempUsers">
-
+                        <div id="tempUsers"></div>
+                        <div th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.targetType.name() == 'mail'}" class="form-group">
+                            <label>Etape finale : Envoi par mail à </label>
+                            <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required></select>
                         </div>
                     </div>
                 </div>

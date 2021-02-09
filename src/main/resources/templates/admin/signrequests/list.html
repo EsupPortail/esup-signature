@@ -20,7 +20,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Statut</span>
                             </div>
-                            <select class="slim-select-simple" name="statusFilter" id="statusFilter" onchange="submit();">
+                            <select class="form-control" name="statusFilter" id="statusFilter" onchange="submit();">
                                 <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
                                 <th:block th:each="status : ${statuses}">

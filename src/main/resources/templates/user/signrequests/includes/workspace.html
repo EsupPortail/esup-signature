@@ -91,7 +91,7 @@
                     <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                         <option></option>
                         <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <option th:if="${step.signRequestParams == null}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                            <option th:if="${step.signRequestParams.size() == 0}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
                         </th:block>
                     </select>
                 </div>
