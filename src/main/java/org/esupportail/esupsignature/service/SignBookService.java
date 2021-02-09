@@ -345,7 +345,10 @@ public class SignBookService {
                 importWorkflow(signBook, workflow);
                 nextWorkFlowStep(signBook);
                 if(targetEmails.size() > 0) {
-                    signBook.getLiveWorkflow().setDocumentsTargetUri(targetEmails.get(0));
+                    signBook.getLiveWorkflow().setDocumentsTargetUri("");
+                    for (String targetEmail : targetEmails) {
+                        signBook.getLiveWorkflow().setDocumentsTargetUri(signBook.getLiveWorkflow().getDocumentsTargetUri() + targetEmail + ";");
+                    }
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
