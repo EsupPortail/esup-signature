@@ -13,6 +13,7 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
@@ -1230,9 +1231,19 @@ public class SignRequestService {
 		return recipientNames.stream().filter(distinctByKey(r -> r.getUser().getId())).collect( Collectors.toList() );
 	}
 
-	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor)
-	{
+	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	@Transactional
+	public File getToValidateFile(long id) throws IOException {
+		SignRequest signRequest = getById(id);
+		Document toValideDocument = signRequest.getLastSignedDocument();
+		File file = fileService.getTempFile(toValideDocument.getFileName());
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+		outputStream.close();
+		return file;
 	}
 }

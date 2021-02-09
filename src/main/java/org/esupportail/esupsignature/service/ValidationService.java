@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 @Service
 @ConditionalOnBean(CertificateVerifier.class)
@@ -32,35 +31,16 @@ public class ValidationService {
     @Resource
     private org.springframework.core.io.Resource defaultPolicy;
 
-    public Reports validate(InputStream inputStream) {
-        try {
-            SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(Objects.requireNonNull(DssUtils.toDSSDocument(inputStream)));
-            logger.info("validate with : " + documentValidator.getClass());
-            certificateVerifier.setCheckRevocationForUntrustedChains(false);
-            documentValidator.setCertificateVerifier(certificateVerifier);
-            documentValidator.setValidationLevel(ValidationLevel.BASIC_SIGNATURES);
-            Reports reports = null;
-            try (InputStream is = defaultPolicy.getInputStream()) {
-                reports = documentValidator.validateDocument(is);
-                for(String id : reports.getSimpleReport().getSignatureIdList()) {
-                    reports.getSimpleReport().getErrors(id).remove("Unable to build a certificate chain until a trusted list!");
-                }
-            } catch (IOException e) {
-                logger.error("Unable to parse policy : " + e.getMessage(), e);
-            }
-            return reports;
-        } catch (DSSException e) {
-            logger.error("Unable to read document : " + e.getMessage(), e);
-        }
-        return null;
-    }
-
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {
             List<DSSDocument> detachedContents = new ArrayList<>();
-            detachedContents.add(DssUtils.toDSSDocument(docInputStream));
-
-            SignedDocumentValidator documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(signInputStream));
+            SignedDocumentValidator documentValidator;
+            if(signInputStream != null && signInputStream.available() > 0) {
+                detachedContents.add(DssUtils.toDSSDocument(docInputStream));
+                documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(signInputStream));
+            } else {
+                documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(docInputStream));
+            }
             logger.info("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
             documentValidator.setLocale(Locale.FRENCH);
@@ -76,7 +56,7 @@ public class ValidationService {
                 logger.error("Unable to parse policy : " + e.getMessage(), e);
             }
             return reports;
-        } catch (DSSException e) {
+        } catch (DSSException | IOException e) {
             logger.error("Unable to read document : " + e.getMessage(), e);
         }
         return null;

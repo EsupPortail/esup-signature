@@ -3,11 +3,8 @@ package org.esupportail.esupsignature.web.controller.user;
 import eu.europa.esig.dss.model.MimeType;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dss.service.XSLTService;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.ValidationService;
@@ -17,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.*;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 @Controller
@@ -67,12 +64,7 @@ public class ValidationController {
 
 	@PostMapping
 	public String validate(@RequestParam(name = "multipartSignedDoc") MultipartFile multipartSignedDoc, @RequestParam(name = "multipartSignature", required = false) MultipartFile multipartSignature, Model model) throws IOException {
-		Reports reports;
-		if(multipartSignature.isEmpty()) {
-			reports = validationService.validate(multipartSignedDoc.getInputStream());
-		} else {
-			reports = validationService.validate(multipartSignedDoc.getInputStream(), multipartSignature.getInputStream());
-		}
+		Reports reports = validationService.validate(multipartSignedDoc.getInputStream(), multipartSignature.getInputStream());
 		if(reports != null) {
 			String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -98,36 +90,23 @@ public class ValidationController {
 	}
 	
 	@GetMapping(value = "/document/{id}")
-	@Transactional
-	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException, SQLException {
-		SignRequest signRequest = signRequestService.getById(id);
-
-		Document toValideDocument = signRequest.getLastSignedDocument();
-
-		File file = fileService.getTempFile(toValideDocument.getFileName());
-		OutputStream outputStream = new FileOutputStream(file);
-		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
-		outputStream.close();
-
-		Reports reports = validationService.validate(new FileInputStream(file));
-		
+	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
+		File file = signRequestService.getToValidateFile(id);
+		Reports reports = validationService.validate(new FileInputStream(file), null);
 		String xmlSimpleReport = reports.getXmlSimpleReport();
 		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
-
 		String xmlDetailedReport = reports.getXmlDetailedReport();
 		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
-		if(toValideDocument.getContentType().equals("application/pdf")) {
-			try {
-				model.addAttribute("pdfaReport", pdfService.checkPDFA(toValideDocument.getInputStream(), true));
-			} catch (EsupSignatureException e) {
-				logger.error("enable to check pdf");
-			}
+		try {
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(new FileInputStream(file), true));
+		} catch (EsupSignatureException e) {
+			logger.error("enable to check pdf");
 		}
 		return "user/validation/result";
 	}
-	
+
 	@GetMapping(value = "/download-simple-report")
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {

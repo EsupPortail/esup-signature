@@ -307,4 +307,6 @@ public class SignRequest {
     public void setLastNotifDate(Date lastNotifDate) {
         this.lastNotifDate = lastNotifDate;
     }
+
+
 }
