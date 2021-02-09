@@ -29,6 +29,7 @@ import eu.europa.esig.dss.tsl.alerts.detections.LOTLLocationChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.detections.OJUrlChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
+import eu.europa.esig.dss.tsl.function.GrantedTrustService;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
@@ -38,6 +39,7 @@ import eu.europa.esig.dss.ws.signature.common.RemoteDocumentSignatureServiceImpl
 import eu.europa.esig.dss.ws.signature.common.RemoteMultipleDocumentsSignatureServiceImpl;
 import eu.europa.esig.dss.ws.validation.common.RemoteDocumentValidationService;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +65,7 @@ import java.util.List;
 @ConditionalOnProperty({"dss.tsp-server"})
 public class DSSBeanConfig {
 
-	private static final Logger log = LoggerFactory.getLogger(DSSBeanConfig.class);
+	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);
 
 	private DSSProperties dssProperties;
 
@@ -108,6 +110,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			dataLoader.setProxyConfig(proxyConfig);
 		}
+		dataLoader.setTimeoutConnection(10000);
+		dataLoader.setTrustStrategy(new TrustAllStrategy());
 		return dataLoader;
 	}
 
@@ -117,6 +121,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			ocspDataLoader.setProxyConfig(proxyConfig);
 		}
+		ocspDataLoader.setTimeoutConnection(10000);
+		ocspDataLoader.setTrustStrategy(new TrustAllStrategy());
 		return ocspDataLoader;
 	}
 
@@ -157,10 +163,10 @@ public class DSSBeanConfig {
 		File keystoreFile = new File(dssProperties.getKsFilename());
 		KeyStoreCertificateSource keyStoreCertificateSource = null;
 		if(keystoreFile.exists()) {
-			log.info("delete old oj file");
+			logger.info("delete old oj file");
 			keystoreFile.delete();
 		}
-		log.info("creating oj file in " + keystoreFile.getAbsolutePath());
+		logger.info("creating oj file in " + keystoreFile.getAbsolutePath());
 		if(keystoreFile.createNewFile()) {
 			keyStoreCertificateSource = new KeyStoreCertificateSource((InputStream) null, dssProperties.getKsType(), dssProperties.getKsPassword());
 		}
@@ -169,11 +175,11 @@ public class DSSBeanConfig {
 
 	@Bean
 	public DSSFileLoader onlineLoader() {
-		FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
-		offlineFileLoader.setCacheExpirationTime(0);
-		offlineFileLoader.setDataLoader(dataLoader());
-		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
-		return offlineFileLoader;
+		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
+		onlineFileLoader.setCacheExpirationTime(0);
+		onlineFileLoader.setDataLoader(dataLoader());
+		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+		return onlineFileLoader;
 	}
 
 	@Bean
@@ -200,7 +206,7 @@ public class DSSBeanConfig {
 		File rootFolder = new File(System.getProperty("java.io.tmpdir"));
 		File tslCache = new File(rootFolder, "dss-tsl-loader");
 		if (tslCache.mkdirs()) {
-			log.info("TL Cache folder : {}", tslCache.getAbsolutePath());
+			logger.info("TL Cache folder : {}", tslCache.getAbsolutePath());
 		}
 		return tslCache;
 	}
@@ -211,10 +217,10 @@ public class DSSBeanConfig {
 		lotlSource.setUrl(dssProperties.getLotlUrl());
 		lotlSource.setCertificateSource(ojContentKeyStore());
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
-		lotlSource.setPivotSupport(true);
+//		lotlSource.setPivotSupport(true);
 //		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
 //		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-//		lotlSource.setTrustServicePredicate(new GrantedTrustService());
+		lotlSource.setTrustServicePredicate(new GrantedTrustService());
 		return lotlSource;
 	}
 
@@ -227,15 +233,14 @@ public class DSSBeanConfig {
 	public CommonTrustedCertificateSource myTrustedCertificateSource() {
 		CommonTrustedCertificateSource certSource = new CommonTrustedCertificateSource();
 		for(String trustedCertificatUrl : dssProperties.getTrustedCertificatUrlList()) {
-			log.info("adding trusted certificat : " + trustedCertificatUrl);
-			InputStream in = null;
+			logger.info("adding trusted certificat : " + trustedCertificatUrl);
 			try {
-				in = new URL(trustedCertificatUrl).openStream();
+				InputStream in = new URL(trustedCertificatUrl).openStream();
+				CertificateToken certificateToken = DSSUtils.loadCertificate(in);
+				certSource.addCertificate(certificateToken);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.warn("unable to add trusted certificat : " + trustedCertificatUrl, e);
 			}
-			CertificateToken certificateToken = DSSUtils.loadCertificate(in);
-			certSource.addCertificate(certificateToken);
 		}
 		return certSource;
 	}
@@ -246,13 +251,7 @@ public class DSSBeanConfig {
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
-//		certificateVerifier.setTrustedCertSources(trustedListSource(), myTrustedCertificateSource());
-//		certificateVerifier.setCrlSource(cachedCRLSource());
-//		certificateVerifier.setOcspSource(cachedOCSPSource());
-//		certificateVerifier.setDataLoader(dataLoader());
-////		certificateVerifier.setExceptionOnMissingRevocationData(false);
-////		certificateVerifier.setExceptionOnInvalidTimestamp(false);
-//		certificateVerifier.setCheckRevocationForUntrustedChains(false);
+		certificateVerifier.setCheckRevocationForUntrustedChains(false);
 		return certificateVerifier;
 	}
 
