@@ -4,7 +4,7 @@ import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, xPos, yPos, signPageNumber, signImages, userName, signable) {
+    constructor(signType, xPos, yPos, signPageNumber, signImageNumber, signImages, userName, signable) {
         super();
         console.info("Starting sign positioning tools");
         this.cross = $('#cross_0');
@@ -15,6 +15,9 @@ export class SignPosition extends EventFactory {
         this.fixRatio = .75;
         this.currentSign = "0";
         let signRequestParams = new SignRequestParams();
+        if(signImageNumber != null) {
+            signRequestParams.signImageNumber = signImageNumber;
+        }
         this.signImages = signImages;
         if(this.signImages != null && this.signImages.length > 0) {
             if(xPos > -1 && yPos > -1) {
@@ -191,7 +194,7 @@ export class SignPosition extends EventFactory {
         let nameButton = $('#nameButton');
         nameButton.removeClass('btn-outline-success');
         nameButton.addClass('btn-outline-dark');
-        this.changeSignImage(0);
+        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
     switchSignToTarget(e) {

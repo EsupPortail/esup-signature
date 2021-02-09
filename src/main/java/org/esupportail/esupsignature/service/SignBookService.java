@@ -250,7 +250,7 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
-        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow().getDocumentsTargetUri() != null && !signBook.getLiveWorkflow().getTargetType().equals(DocumentIOType.none)) {
+        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getDocumentsTargetUri() != null && !signBook.getLiveWorkflow().getTargetType().equals(DocumentIOType.none)) {
             signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargetType(), signBook.getLiveWorkflow().getDocumentsTargetUri(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);
         }
@@ -336,7 +336,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientEmails, String userEppn, String authUserEppn) throws EsupSignatureException {
+    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientEmails, List<String> targetEmails, String userEppn, String authUserEppn) throws EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
@@ -344,6 +344,12 @@ public class SignBookService {
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientEmails, userEppn, false);
                 importWorkflow(signBook, workflow);
                 nextWorkFlowStep(signBook);
+                if(targetEmails.size() > 0) {
+                    signBook.getLiveWorkflow().setDocumentsTargetUri("");
+                    for (String targetEmail : targetEmails) {
+                        signBook.getLiveWorkflow().setDocumentsTargetUri(signBook.getLiveWorkflow().getDocumentsTargetUri() + targetEmail + ";");
+                    }
+                }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
         }

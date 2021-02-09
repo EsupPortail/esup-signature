@@ -13,6 +13,7 @@ import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
@@ -656,6 +657,11 @@ public class SignRequestService {
 			if (documentIOType.equals(DocumentIOType.mail)) {
 				logger.info("send by email to " + targetUrl);
 				try {
+					for (SignRequest signRequest : signRequests) {
+						for(String email : targetUrl.split(";")) {
+							signRequest.getViewers().add(userService.getUserByEmail(email));
+						}
+					}
 					mailService.sendFile(title, signRequests, targetUrl);
 				} catch (MessagingException | IOException e) {
 					throw new EsupSignatureException("unable to send mail", e);
@@ -785,7 +791,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
-			if (signRequest.getCreateBy().getEppn().equals(userEppn) || signRequests.size() > 0 ) {
+			if(signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}
@@ -1230,9 +1236,19 @@ public class SignRequestService {
 		return recipientNames.stream().filter(distinctByKey(r -> r.getUser().getId())).collect( Collectors.toList() );
 	}
 
-	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor)
-	{
+	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	@Transactional
+	public File getToValidateFile(long id) throws IOException {
+		SignRequest signRequest = getById(id);
+		Document toValideDocument = signRequest.getLastSignedDocument();
+		File file = fileService.getTempFile(toValideDocument.getFileName());
+		OutputStream outputStream = new FileOutputStream(file);
+		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
+		outputStream.close();
+		return file;
 	}
 }

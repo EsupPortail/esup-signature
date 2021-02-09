@@ -70,7 +70,8 @@ public class OJService {
 	public boolean checkOjFreshness() {
 		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
-		return lotlInfo.getValidationCacheInfo().isRefreshNeeded()
+		return !lotlInfo.getValidationCacheInfo().isValid()
+				|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()
 				|| lotlInfo.getParsingCacheInfo().isRefreshNeeded()
 				|| lotlInfo.getDownloadCacheInfo().isRefreshNeeded();
 	}

@@ -55,7 +55,6 @@ public class Log {
 
 	private Long signRequestId;
 
-
 	public Long getSignRequestId() {
         return this.signRequestId;
     }
