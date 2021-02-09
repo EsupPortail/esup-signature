@@ -344,7 +344,7 @@ public class SignBookService {
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientEmails, userEppn, false);
                 importWorkflow(signBook, workflow);
                 nextWorkFlowStep(signBook);
-                if(targetEmails.size() > 0) {
+                if(targetEmails != null && targetEmails.size() > 0) {
                     signBook.getLiveWorkflow().setDocumentsTargetUri("");
                     for (String targetEmail : targetEmails) {
                         signBook.getLiveWorkflow().setDocumentsTargetUri(signBook.getLiveWorkflow().getDocumentsTargetUri() + targetEmail + ";");
