@@ -29,7 +29,8 @@ import eu.europa.esig.dss.tsl.alerts.detections.LOTLLocationChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.detections.OJUrlChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
-import eu.europa.esig.dss.tsl.function.*;
+import eu.europa.esig.dss.tsl.function.GrantedTrustService;
+import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.validation.CertificateVerifier;
@@ -38,6 +39,7 @@ import eu.europa.esig.dss.ws.signature.common.RemoteDocumentSignatureServiceImpl
 import eu.europa.esig.dss.ws.signature.common.RemoteMultipleDocumentsSignatureServiceImpl;
 import eu.europa.esig.dss.ws.validation.common.RemoteDocumentValidationService;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +110,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			dataLoader.setProxyConfig(proxyConfig);
 		}
+		dataLoader.setTimeoutConnection(10000);
+		dataLoader.setTrustStrategy(new TrustAllStrategy());
 		return dataLoader;
 	}
 
@@ -117,6 +121,8 @@ public class DSSBeanConfig {
 		if(proxyConfig != null) {
 			ocspDataLoader.setProxyConfig(proxyConfig);
 		}
+		ocspDataLoader.setTimeoutConnection(10000);
+		ocspDataLoader.setTrustStrategy(new TrustAllStrategy());
 		return ocspDataLoader;
 	}
 
@@ -169,11 +175,11 @@ public class DSSBeanConfig {
 
 	@Bean
 	public DSSFileLoader onlineLoader() {
-		FileCacheDataLoader offlineFileLoader = new FileCacheDataLoader();
-		offlineFileLoader.setCacheExpirationTime(0);
-		offlineFileLoader.setDataLoader(dataLoader());
-		offlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
-		return offlineFileLoader;
+		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
+		onlineFileLoader.setCacheExpirationTime(0);
+		onlineFileLoader.setDataLoader(dataLoader());
+		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
+		return onlineFileLoader;
 	}
 
 	@Bean
