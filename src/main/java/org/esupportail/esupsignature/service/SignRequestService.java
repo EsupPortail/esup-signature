@@ -1032,9 +1032,7 @@ public class SignRequestService {
 		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
-			List<SignRequestParams> signRequestParamsList = new ArrayList<>();
-			signRequestParamsList.add(signRequestParams);
-			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).setSignRequestParams(signRequestParamsList);
+			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
 		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, authUserEppn);
 		if(!(spotStepNumber != null && spotStepNumber > 0)) {
