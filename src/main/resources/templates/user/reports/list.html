@@ -28,10 +28,21 @@
                         <th:block th:each="report, status : ${reports}">
                             <div class="card">
                                 <div class="card-header" th:id="'heading' + ${status.index}">
-                                    <h5 class="mb-0">
-                                        <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-toggle="collapse" th:data-target="'#collapse' + ${status.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${status.index}">
-                                        </button>
-                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <h5 class="mb-0">
+                                                <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-toggle="collapse" th:data-target="'#collapse' + ${status.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${status.index}">
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div class="col-md-2 text-right">
+                                            <form id="reportDelete" th:action="'/user/reports/'+ ${report.id}" th:method="delete">
+                                                <button class="btn btn-danger" type="submit">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div th:id="'collapse'  + ${status.index}" class="collapse" th:classappend="${status.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${status.index}" data-parent="#accordion">

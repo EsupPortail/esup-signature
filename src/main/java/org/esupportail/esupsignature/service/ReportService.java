@@ -20,6 +20,10 @@ public class ReportService {
     @Resource
     private UserService userService;
 
+    public Report getById(Long id) {
+        return reportRepository.findById(id).get();
+    }
+
     public int countByUser(String eppn) {
         return reportRepository.countByUserEppn(eppn);
     }
@@ -65,5 +69,20 @@ public class ReportService {
     @Transactional
     public void addsignRequestForbid(Long id, SignRequest signRequest) {
         reportRepository.findById(id).get().getSignRequestForbid().add(signRequest);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Report report = reportRepository.findById(id).get();
+        report.getSignRequestForbid().clear();
+        report.getSignRequestsError().clear();
+        report.getSignRequestUserNotInCurrentStep().clear();
+        report.getSignRequestsNoField().clear();
+        report.getSignRequestsSigned().clear();
+        reportRepository.delete(report);
+    }
+
+    public List<Report> getForDelete(SignRequest signRequest) {
+        return reportRepository.findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(signRequest, signRequest, signRequest, signRequest, signRequest);
     }
 }

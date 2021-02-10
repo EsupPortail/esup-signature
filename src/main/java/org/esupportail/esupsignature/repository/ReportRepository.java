@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Report;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface ReportRepository extends CrudRepository<Report, Long> {
     public Optional<Report> findById(Long id);
 
     public int countByUserEppn(String eppn);
+
+    public List<Report> findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(SignRequest signRequest1, SignRequest signRequest2, SignRequest signRequest3, SignRequest signRequest4, SignRequest signRequest5);
 }

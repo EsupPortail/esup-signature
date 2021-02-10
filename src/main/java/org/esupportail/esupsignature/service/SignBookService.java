@@ -77,6 +77,9 @@ public class SignBookService {
     @Resource
     private WebUtilsService webUtilsService;
 
+    @Resource
+    private ReportService reportService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(list::add);
@@ -183,6 +186,16 @@ public class SignBookService {
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId);
+        }
+        for (SignRequest signRequest : signBook.getSignRequests()) {
+            List<Report> reports = reportService.getForDelete(signRequest);
+            for (Report report : reports) {
+                report.getSignRequestsNoField().remove(signRequest);
+                report.getSignRequestsSigned().remove(signRequest);
+                report.getSignRequestsError().remove(signRequest);
+                report.getSignRequestUserNotInCurrentStep().remove(signRequest);
+                report.getSignRequestForbid().remove(signRequest);
+            }
         }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);

@@ -2,15 +2,16 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.service.ReportService;
+import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -33,5 +34,13 @@ public class ReportController {
         reports.sort((o1, o2) -> o2.getDate().compareTo(o1.getDate()));
         model.addAttribute("reports", reports);
         return "user/reports/list";
+    }
+
+    @PreAuthorize("@preAuthorizeService.reportOwner(#id, #authUserEppn)")
+    @DeleteMapping(value = "/{id}", produces = "text/html")
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        reportService.delete(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+        return "redirect:/user/reports";
     }
 }
