@@ -3,12 +3,12 @@ import {UserSignatureCrop} from "./UserSignatureCrop.js";
 
 export default class UserUi {
 
-    constructor(lastSign, signWidth, signHeight) {
+    constructor() {
         console.log('Starting user UI');
         this.emailAlertFrequencySelect = document.getElementById("emailAlertFrequency_id");
         this.emailAlertDay = document.getElementById("emailAlertDay");
         this.emailAlertHour = document.getElementById("emailAlertHour");
-        this.userSignaturePad = new UserSignaturePad(lastSign, signWidth, signHeight);
+        this.userSignaturePad = new UserSignaturePad();
         this.userSignatureCrop = new UserSignatureCrop();
         this.checkAlertFrequency();
         this.initListeners();

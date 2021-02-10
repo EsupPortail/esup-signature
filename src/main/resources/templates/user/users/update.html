@@ -5,8 +5,7 @@
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/static/js/modules/ui/users/UserUi.js";
     import {UserParamsHelp} from "/static/js/modules/help/UserParamsHelp.js";
-    new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
-
+    new UserUi();
     let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
