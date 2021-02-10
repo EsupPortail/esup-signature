@@ -83,6 +83,6 @@ public class ReportService {
     }
 
     public List<Report> getForDelete(SignRequest signRequest) {
-        return reportRepository.findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(signRequest, signRequest, signRequest, signRequest, signRequest);
+        return reportRepository.findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(signRequest, signRequest, signRequest, signRequest, signRequest);
     }
 }

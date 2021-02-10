@@ -15,5 +15,5 @@ public interface ReportRepository extends CrudRepository<Report, Long> {
 
     public int countByUserEppn(String eppn);
 
-    public List<Report> findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(SignRequest signRequest1, SignRequest signRequest2, SignRequest signRequest3, SignRequest signRequest4, SignRequest signRequest5);
+    public List<Report> findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(SignRequest signRequest1, SignRequest signRequest2, SignRequest signRequest3, SignRequest signRequest4, SignRequest signRequest5);
 }
