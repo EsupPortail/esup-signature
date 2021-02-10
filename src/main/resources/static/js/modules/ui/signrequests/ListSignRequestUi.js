@@ -59,7 +59,7 @@ export default class ListSignRequestUi {
         let ids = [];
         let i = 0;
         $("input[name='ids[]']:checked").each(function (e) {
-            ids[i] = $(this).val();
+            ids[i] = $(this).attr("data-id-signbook");
             i++;
         });
 
