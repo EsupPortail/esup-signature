@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -95,6 +96,9 @@ public class SignService {
 
 	@Resource
 	private SignRequestService signRequestService;
+
+	@Autowired
+	private Environment environment;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument extend(ExtensionForm extensionForm) {
@@ -343,7 +347,9 @@ public class SignService {
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
-		abstractSignatureForm.setSignWithExpiredCertificate(false);
+		if(environment.getActiveProfiles()[0].equals("dev")) {
+			abstractSignatureForm.setSignWithExpiredCertificate(true);
+		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
 			abstractSignatureForm.setSignatureLevel(signConfig.getSignProperties().getPadesSignatureLevel());

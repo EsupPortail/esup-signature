@@ -257,7 +257,8 @@ public class DSSBeanConfig {
 		List<CertificateSource> trustedCertSources = new ArrayList<>();
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());
-		return new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
+		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
+		return commonCertificateVerifier;
 	}
 
 	@Bean
