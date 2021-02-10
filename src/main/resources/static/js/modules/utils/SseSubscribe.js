@@ -31,5 +31,10 @@ export class SseSubscribe extends EventFactory {
             let message = new Message(JSON.parse(response.data));
             this.sseDispatcher.dispatchEvent("sign", message);
         }, false);
+        this.eventSource.addEventListener("massSign", response => {
+            console.info("receive mass-sign event");
+            let message = new Message(JSON.parse(response.data));
+            this.sseDispatcher.dispatchEvent("massSign", message);
+        }, false);
     }
 }

@@ -26,6 +26,9 @@ public class PreAuthorizeService {
     @Resource
     private WorkflowService workflowService;
 
+    @Resource
+    private ReportService reportService;
+
     public boolean notInShare(String userEppn, String authUserEppn) {
         return userEppn.equals(authUserEppn);
     }
@@ -54,6 +57,11 @@ public class PreAuthorizeService {
     public boolean signRequestOwner(Long id, String userEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         return signRequest.getCreateBy().getEppn().equals(userEppn);
+    }
+
+    public boolean reportOwner(Long id, String userEppn) {
+        Report report = reportService.getById(id);
+        return report.getUser().getEppn().equals(userEppn);
     }
 
     public boolean signRequestView(Long id, String userEppn, String authUserEppn) {

@@ -52,6 +52,13 @@
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}" >
+                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary'" title="Rapport"
+                       href="/user/reports" class="btn btn-transparent text-left">
+                        <i class="fas fa-file-contract"></i> <span
+                            class="nav-item-label d-none d-xl-inline">Rapports</span>
+                    </a>
+                </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
