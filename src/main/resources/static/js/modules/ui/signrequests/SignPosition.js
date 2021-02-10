@@ -4,7 +4,7 @@ import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, xPos, yPos, signPageNumber, signImages, userName, signable) {
+    constructor(signType, currentSignRequestParams, signImageNumber, signImages, userName, signable) {
         super();
         console.info("Starting sign positioning tools");
         this.cross = $('#cross_0');
@@ -14,17 +14,31 @@ export class SignPosition extends EventFactory {
         this.currentScale = 1;
         this.fixRatio = .75;
         this.currentSign = "0";
-        let signRequestParams = new SignRequestParams();
         this.signImages = signImages;
-        if(this.signImages != null && this.signImages.length > 0) {
-            if(xPos > -1 && yPos > -1) {
-                signRequestParams.xPos = parseInt(xPos, 10) * this.currentScale;
-                signRequestParams.yPos = parseInt(yPos, 10) * this.currentScale;
-                signRequestParams.signPageNumber = signPageNumber;
-            }
-        }
+        this.signImageNumber = signImageNumber;
         this.signRequestParamses = new Map();
-        this.signRequestParamses.set("0", signRequestParams);
+        if(currentSignRequestParams != null) {
+            for (let i = 0; i < currentSignRequestParams.length; i++) {
+                let signRequestParams = new SignRequestParams();
+                if (this.signImageNumber != null) {
+                    signRequestParams.signImageNumber = signImageNumber;
+                }
+                if (this.signImages != null && this.signImages.length > 0) {
+                    if (currentSignRequestParams[i].xPos > -1 && currentSignRequestParams[i].yPos > -1) {
+                        signRequestParams.xPos = currentSignRequestParams[i].xPos;
+                        signRequestParams.yPos = currentSignRequestParams[i].yPos;
+                        signRequestParams.signPageNumber = currentSignRequestParams[i].signPageNumber;
+                    }
+                }
+                this.signRequestParamses.set(i + "", signRequestParams);
+            }
+        } else {
+            let signRequestParams = new SignRequestParams();
+            if(this.signImageNumber != null) {
+                signRequestParams.signImageNumber = this.signImageNumber;
+            }
+            this.signRequestParamses.set("0", signRequestParams);
+        }
         this.userName = userName;
         this.pdf = $('#pdf');
         this.pointItEnable = true;
@@ -48,7 +62,7 @@ export class SignPosition extends EventFactory {
             change: color => this.changeSignColor(color)
         });
         this.addSignButton = $('#addSignButton');
-        if(xPos > -1 && yPos > -1) {
+        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1) {
             this.updateCrossPosition();
             this.cross.css("position", "absolute");
             // this.updateSignButtons();
@@ -131,30 +145,39 @@ export class SignPosition extends EventFactory {
 
     addSign() {
         this.hideButtons();
-        console.info("add sign");
-        let signRequestParams = new SignRequestParams();
-        signRequestParams.xPos -1;
-        signRequestParams.yPos = -1;
-        signRequestParams.signPageNumber = this.getCurrentSignParams().signPageNumber;
-        signRequestParams.addExtra = this.getCurrentSignParams().addExtra;
-        signRequestParams.extraWidth = this.getCurrentSignParams().extraWidth;
-        signRequestParams.signScale = this.getCurrentSignParams().signScale;
-        signRequestParams.addDate = false;
-        signRequestParams.addName = false;
         let okSign = this.cross.clone();
-        // okSign.attr("id", "cross_" + currentSign)
         okSign.css( "z-index", "2");
         okSign.children().removeClass("anim-border");
         okSign.appendTo(this.pdf);
         okSign.on("click", e => this.switchSignToTarget(e));
-        let currentSign = (parseInt(Array.from(this.signRequestParamses.keys())[this.signRequestParamses.size - 1]) + 1) + "";
+        console.info("add sign");
+        let currentSign = (parseInt(this.currentSign) + 1) + "";
+        let signRequestParams;
+        if(this.signRequestParamses.get(currentSign) == null) {
+            signRequestParams = new SignRequestParams();
+
+            signRequestParams.xPos = -1;
+            signRequestParams.yPos = -1;
+            signRequestParams.signPageNumber = this.getCurrentSignParams().signPageNumber;
+            this.cross.css("position", "fixed");
+            this.cross.css("margin-left", "270px");
+            this.cross.css("margin-top", "180px");
+            this.cross.css("margin-top", "180px");
+            this.addSignButton.attr("disabled", "disabled");
+
+        } else {
+            signRequestParams = this.signRequestParamses.get(currentSign);
+        }
+        signRequestParams.addExtra = this.getCurrentSignParams().addExtra;
+        signRequestParams.extraWidth = this.getCurrentSignParams().extraWidth;
+        signRequestParams.signScale = this.getCurrentSignParams().signScale;
+        signRequestParams.signImageNumber = this.signImageNumber;
+        signRequestParams.addDate = false;
+        signRequestParams.addName = false;
         this.signRequestParamses.set(currentSign + "", signRequestParams);
         this.currentSign = currentSign;
         this.updateCrossPosition();
-        this.cross.css("position", "fixed");
-        this.cross.css("margin-left", "270px");
-        this.cross.css("margin-top", "180px");
-        this.cross.css("margin-top", "180px");
+
         this.cross.attr("id", "cross_" + currentSign);
         this.cross.children().each(function (e) {
             $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
@@ -183,7 +206,6 @@ export class SignPosition extends EventFactory {
             preferredFormat: "hex",
             change: color => this.changeSignColor(color)
         });
-        this.addSignButton.attr("disabled", "disabled");
         this.hideButtons();
         let dateButton = $('#dateButton');
         dateButton.removeClass('btn-outline-success');
@@ -191,7 +213,7 @@ export class SignPosition extends EventFactory {
         let nameButton = $('#nameButton');
         nameButton.removeClass('btn-outline-success');
         nameButton.addClass('btn-outline-dark');
-        this.changeSignImage(0);
+        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
     switchSignToTarget(e) {
@@ -442,7 +464,6 @@ export class SignPosition extends EventFactory {
         console.log("toggle visual");
         if(this.visualActive) {
             this.visualActive = false;
-            this.getCurrentSignParams().addExtra
             this.toggleExtraInfos();
             this.cross.hide();
         } else {

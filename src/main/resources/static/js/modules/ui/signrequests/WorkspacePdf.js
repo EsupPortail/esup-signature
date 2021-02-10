@@ -5,10 +5,10 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
+    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
-        this.currentSignRequestParams =  [ new SignRequestParams(currentSignRequestParams) ];
+        this.currentSignRequestParams =  currentSignRequestParams;
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.signable = signable;
@@ -19,9 +19,8 @@ export class WorkspacePdf {
         this.csrf = csrf;
         this.signPosition = new SignPosition(
             signType,
-            this.currentSignRequestParams[0].xPos,
-            this.currentSignRequestParams[0].yPos,
-            this.currentSignRequestParams[0].signPageNumber,
+            this.currentSignRequestParams,
+            signImageNumber,
             signImages,
             userName, signable);
         if(this.isPdf) {
@@ -58,7 +57,7 @@ export class WorkspacePdf {
                 if (this.signable) {
                     $('#signModeButton').on('click', e => this.toggleSignMode());
                     let visualButton = $('#visualButton')
-                    if (this.currentSignType == "visa") {
+                    if (this.currentSignType != "pdfImageStamp") {
                         visualButton.removeClass("d-none");
                         visualButton.on('click', e => this.signPosition.toggleVisual());
                     }
@@ -177,7 +176,7 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa") {
+        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa" && this.signPosition.visualActive) {
             bootbox.alert("Merci de placer la signature");
         } else {
             if (WorkspacePdf.validateForm()) {
@@ -485,7 +484,11 @@ export class WorkspacePdf {
             this.signPosition.cross.show();
         }
         this.pdfViewer.rotation = 0;
-        this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+        if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
+            this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+        } else {
+            this.pdfViewer.renderPage(1);
+        }
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
         this.refreshAfterPageChange();

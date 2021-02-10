@@ -1,9 +1,7 @@
 package org.esupportail.esupsignature.service.utils.mail;
 
-import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
-import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -18,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -213,11 +210,7 @@ public class MailService {
         message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
         message.setSubject("Esup-Signature : nouveau document  " + title);
         message.setFrom(mailConfig.getIfAvailable().getMailFrom());
-        message.setTo(targetUri);
-        for(SignRequest signRequest : signRequests) {
-            Document toSendDocument = signRequest.getLastSignedDocument();
-            message.addAttachment(toSendDocument.getFileName(), new ByteArrayResource(IOUtils.toByteArray(toSendDocument.getInputStream())));
-        }
+        message.setTo(targetUri.split(";"));
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         message.setText(htmlContent, true);
         mailSender.getIfAvailable().send(mimeMessage);

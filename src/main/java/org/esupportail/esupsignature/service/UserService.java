@@ -468,4 +468,10 @@ public class UserService {
         Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
         return uiParamsStringMap;
     }
+
+    @Transactional
+    public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
+        User user = getUserByEppn(authUserEppn);
+        user.setDefaultSignImageNumber(signImaeNumber);
+    }
 }

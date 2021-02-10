@@ -459,6 +459,7 @@ public class SignRequestController {
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(required = false) List<String> recipientEmails,
+                          @RequestParam(required = false) List<String> targetEmails,
                           @RequestParam(value = "comment", required = false) String comment,
                           @RequestParam(value = "names", required = false) String[] names,
                           @RequestParam(value = "firstnames", required = false) String[] firstnames,
@@ -468,7 +469,7 @@ public class SignRequestController {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }
-        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, userEppn, authUserEppn);
+        signBookService.initWorkflowAndPendingSignBook(id, recipientEmails, targetEmails, userEppn, authUserEppn);
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }

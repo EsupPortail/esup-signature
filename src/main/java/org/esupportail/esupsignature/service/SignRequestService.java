@@ -665,6 +665,11 @@ public class SignRequestService {
 			if (documentIOType.equals(DocumentIOType.mail)) {
 				logger.info("send by email to " + targetUrl);
 				try {
+					for (SignRequest signRequest : signRequests) {
+						for(String email : targetUrl.split(";")) {
+							signRequest.getViewers().add(userService.getUserByEmail(email));
+						}
+					}
 					mailService.sendFile(title, signRequests, targetUrl);
 				} catch (MessagingException | IOException e) {
 					throw new EsupSignatureException("unable to send mail", e);
@@ -794,7 +799,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
-			if (signRequest.getCreateBy().getEppn().equals(userEppn) || signRequests.size() > 0 ) {
+			if(signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}
@@ -1035,9 +1040,7 @@ public class SignRequestService {
 		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			signRequest.getSignRequestParams().add(signRequestParams);
-			List<SignRequestParams> signRequestParamsList = new ArrayList<>();
-			signRequestParamsList.add(signRequestParams);
-			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).setSignRequestParams(signRequestParamsList);
+			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
 		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, authUserEppn);
 		if(!(spotStepNumber != null && spotStepNumber > 0)) {

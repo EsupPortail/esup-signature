@@ -195,8 +195,11 @@ public class DataController {
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@PostMapping("{id}/send")
-	public String sendDataById(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
+	public String sendDataById(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+							   @PathVariable("id") Long id,
+                               @RequestParam(required = false) List<String> recipientEmails,
+							   @RequestParam(required = false) List<String> targetEmails,
+							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
