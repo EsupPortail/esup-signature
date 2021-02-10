@@ -11,4 +11,6 @@ public interface ReportRepository extends CrudRepository<Report, Long> {
     public List<Report> findByUserEppn(String eppn);
 
     public Optional<Report> findById(Long id);
+
+    public int countByUserEppn(String eppn);
 }

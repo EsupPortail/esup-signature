@@ -20,6 +20,10 @@ public class ReportService {
     @Resource
     private UserService userService;
 
+    public int countByUser(String eppn) {
+        return reportRepository.countByUserEppn(eppn);
+    }
+
     public List<Report> getAll() {
         List<Report> list = new ArrayList<>();
         reportRepository.findAll().forEach(list::add);
