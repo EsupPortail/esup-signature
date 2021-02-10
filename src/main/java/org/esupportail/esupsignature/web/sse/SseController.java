@@ -32,7 +32,7 @@ public class SseController {
     public SseEmitter globalSseEmitter(@PathVariable("sseId") String sseId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         eventService.getSseClientIds().put(auth.getName().split("@")[0], sseId);
-        return this.eventBus.createSseEmitter(sseId, 150_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign");
+        return this.eventBus.createSseEmitter(sseId, 150_000L, SseEvent.DEFAULT_EVENT, "global", "user", "sign", "massSign");
     }
 
 }
