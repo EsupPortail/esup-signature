@@ -28,6 +28,13 @@ public class Report {
     private List<SignRequest> signRequestsNoField = new ArrayList<>();
 
     @ManyToMany
+    private List<SignRequest> signRequestUserNotInCurrentStep = new ArrayList<>();
+
+
+    @ManyToMany
+    private List<SignRequest> signRequestForbid = new ArrayList<>();
+
+    @ManyToMany
     private List<SignRequest> signRequestsError = new ArrayList<>();
 
     public Long getId() {
@@ -36,6 +43,14 @@ public class Report {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public User getUser() {
@@ -62,19 +77,27 @@ public class Report {
         this.signRequestsNoField = signRequestsNoField;
     }
 
+    public List<SignRequest> getSignRequestUserNotInCurrentStep() {
+        return signRequestUserNotInCurrentStep;
+    }
+
+    public void setSignRequestUserNotInCurrentStep(List<SignRequest> signRequestUserNotInCurrentStep) {
+        this.signRequestUserNotInCurrentStep = signRequestUserNotInCurrentStep;
+    }
+
+    public List<SignRequest> getSignRequestForbid() {
+        return signRequestForbid;
+    }
+
+    public void setSignRequestForbid(List<SignRequest> signRequestForbid) {
+        this.signRequestForbid = signRequestForbid;
+    }
+
     public List<SignRequest> getSignRequestsError() {
         return signRequestsError;
     }
 
     public void setSignRequestsError(List<SignRequest> signRequestsError) {
         this.signRequestsError = signRequestsError;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
     }
 }

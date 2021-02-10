@@ -1254,4 +1254,17 @@ public class SignRequestService {
 		outputStream.close();
 		return file;
 	}
+
+	@Transactional
+	public boolean checkCertSign(List<Long> ids) {
+		boolean check = false;
+		for (Long id : ids) {
+			SignRequest signRequest = this.getById(id);
+			SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
+			if (signType.equals(SignType.certSign)) {
+				check = true;
+			}
+		}
+		return check;
+	}
 }

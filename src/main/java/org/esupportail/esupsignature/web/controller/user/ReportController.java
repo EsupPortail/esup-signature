@@ -19,6 +19,11 @@ import java.util.List;
 @Controller
 public class ReportController {
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "reports";
+    }
+
     @Resource
     private ReportService reportService;
 

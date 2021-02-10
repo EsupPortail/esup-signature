@@ -24,8 +24,10 @@
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
+            </div>
+            <div class="fixed-action-second-btn">
                 <a type="button" id="massSignButton"
-                   class="btn-floating btn-lg bg-primary wave-effect">
+                   class="btn-floating btn-lg bg-primary wave-effect d-none">
                     <i class="fas fa-file-signature"></i>
                 </a>
             </div>
@@ -190,6 +192,33 @@
         </div>
     </div>
 </main>
+<div class="modal fade" id="checkCertSignModal"
+     tabindex="-1" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">Nous avons détecté une signature électronique parmi les demandes sélectionnées</div>
+                <div class="modal-body">
+                    <input class="form-control" type="password" id="password" name="password" value=""
+                           placeholder="Mot de passe du keystore"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button id="checkCertSignButton"
+                        class="btn btn-success" title="Signer" autofocus>
+                    Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
      aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">

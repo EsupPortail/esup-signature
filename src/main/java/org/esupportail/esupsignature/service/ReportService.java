@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -14,11 +13,6 @@ import java.util.List;
 
 @Service
 public class ReportService {
-
-    @ModelAttribute("activeMenu")
-    public String getActiveMenu() {
-        return "reports";
-    }
 
     @Resource
     private ReportRepository reportRepository;
@@ -57,5 +51,15 @@ public class ReportService {
     @Transactional
     public void addsignRequestsError(Long id, SignRequest signRequest) {
         reportRepository.findById(id).get().getSignRequestsError().add(signRequest);
+    }
+
+    @Transactional
+    public void addsignRequestUserNotInCurrentStep(Long id, SignRequest signRequest) {
+        reportRepository.findById(id).get().getSignRequestUserNotInCurrentStep().add(signRequest);
+    }
+
+    @Transactional
+    public void addsignRequestForbid(Long id, SignRequest signRequest) {
+        reportRepository.findById(id).get().getSignRequestForbid().add(signRequest);
     }
 }

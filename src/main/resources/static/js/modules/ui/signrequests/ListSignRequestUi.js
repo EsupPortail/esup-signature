@@ -9,10 +9,11 @@ export default class ListSignRequestUi {
         this.signRequestTable = $("#signRequestTable")
         this.page = 1;
         this.initListeners();
+        this.massSignButtonHide = true;
     }
 
     initListeners() {
-        $('#massSignButton').on('click', e => this.launchMassSign());
+        $('#massSignButton').on('click', e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
@@ -20,7 +21,20 @@ export default class ListSignRequestUi {
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
+        $('.idMassSign').on("click", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
+        $('#checkCertSignButton').on("click", e => this.launchMassSign(false));
+    }
+
+    checkNbCheckboxes() {
+        let idDom = $('.idMassSign:checked');
+        if (idDom.length > 1 && this.massSignButtonHide) {
+            $('#massSignButton').removeClass('d-none');
+            this.massSignButtonHide = false;
+        } else if (idDom.length < 2 && !this.massSignButtonHide) {
+            $('#massSignButton').addClass('d-none');
+            this.massSignButtonHide = true;
+        }
     }
 
     selectAllCheckboxes() {
@@ -95,7 +109,10 @@ export default class ListSignRequestUi {
         document.location.href = url;
     }
 
-    launchMassSign() {
+    launchMassSign(comeFromDispatcher) {
+        if (!comeFromDispatcher) {
+            $('#checkCertSignModal').modal('hide');
+        }
         $('#wait').modal('show');
         $('#wait').modal({backdrop: 'static', keyboard: false});
         let idDom = $('.idMassSign:checked');
@@ -107,6 +124,9 @@ export default class ListSignRequestUi {
             "&ids=" + JSON.stringify(ids) +
             "&" + this.csrf.parameterName + "=" + this.csrf.token
         ;
+        if (!comeFromDispatcher) {
+            signRequestUrlParams += "&password=" + $('#password').val();
+        }
         this.reset();
         let xmlHttp = new XMLHttpRequest();
         xmlHttp.open('POST', '/user/signrequests/mass-sign', true);
@@ -151,5 +171,30 @@ export default class ListSignRequestUi {
         document.getElementById("validModal").style.display = "none";
         document.getElementById("bar").style.display = "none";
         document.getElementById("bar").classList.add("progress-bar-animated");
+    }
+
+    checkCertSign() {
+        let idDom = $('.idMassSign:checked');
+        let ids = [];
+        for (let i = 0; i < idDom.length ; i++) {
+            ids.push(idDom.eq(i).val());
+        }
+        let csrf = this.csrf
+        $.ajax({
+            url: "/user/signrequests/check-cert-sign?" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            dataType: 'json',
+            contentType: "application/json",
+            data: JSON.stringify(ids),
+            success: response => this.dispatcher(response)
+        });
+    }
+
+    dispatcher(response) {
+        if (response) {
+            $('#checkCertSignModal').modal('show');
+        } else {
+            this.launchMassSign(true)
+        }
     }
 }

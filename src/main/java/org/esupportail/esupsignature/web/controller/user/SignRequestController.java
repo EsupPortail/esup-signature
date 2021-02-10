@@ -559,9 +559,13 @@ public class SignRequestController {
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         for (Long id : idsLong) {
             SignRequest signRequest = signRequestService.getById(id);
-            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
+                reportService.addsignRequestForbid(report.getId(), signRequest);
+            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
+                reportService.addsignRequestUserNotInCurrentStep(report.getId(), signRequest);
+            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()){
                 reportService.addsignRequestsNoField(report.getId(), signRequest);
-            } else if (signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
+            } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
                 reportService.addsignRequestsSigned(report.getId(), signRequest);
             } else {
                 reportService.addsignRequestsError(report.getId(), signRequest);
@@ -572,5 +576,11 @@ public class SignRequestController {
         }
         eventService.publishEvent(new JsonMessage("end", "Signature suivante", null), "massSign", sseId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResponseBody
+    @PostMapping(value = "/check-cert-sign")
+    public boolean checkCertSign(@RequestBody List<Long> ids) throws JsonProcessingException {
+        return signRequestService.checkCertSign(ids);
     }
 }

@@ -41,7 +41,13 @@
                                                 Signatures effectuées avec succès : <span th:text="${report.signRequestsSigned.size()}"></span><span th:if="${report.signRequestsSigned.size() > 0}">  (<th:block th:each="sr, status2 : ${report.signRequestsSigned}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
                                             </li>
                                             <li>
+                                                Signatures non effectuées (vous n'êtes pas l'un des signataires de l'étape) : <span th:text="${report.signRequestUserNotInCurrentStep.size()}"></span><span th:if="${report.signRequestUserNotInCurrentStep.size() > 0}">  (<th:block th:each="sr, status2 : ${report.signRequestUserNotInCurrentStep}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestUserNotInCurrentStep.size() - 1} ? ', '"></span></th:block>)</span>
+                                            </li>
+                                            <li>
                                                 Signatures non effectuées (emplacement de signature manquant) : <span th:text="${report.signRequestsNoField.size()}"></span><span th:if="${report.signRequestsNoField.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestsNoField}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
+                                            </li>
+                                            <li>
+                                                Signatures non effectuées (Signature Nexu interdite) : <span th:text="${report.signRequestForbid.size()}"></span><span th:if="${report.signRequestForbid.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestForbid}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestForbid.size() - 1} ? ', '"></span></th:block>)</span>
                                             </li>
                                             <li>
                                                 Signatures non effectuées (erreur) : <span th:text="${report.signRequestsError.size()}"></span><span th:if="${report.signRequestsError.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestsError}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
