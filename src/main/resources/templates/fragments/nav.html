@@ -52,7 +52,7 @@
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${userEppn == authUserEppn}" >
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}" >
                     <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary'" title="Rapport"
                        href="/user/reports" class="btn btn-transparent text-left">
                         <i class="fas fa-file-contract"></i> <span
