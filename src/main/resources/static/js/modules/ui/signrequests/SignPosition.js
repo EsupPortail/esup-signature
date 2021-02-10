@@ -464,7 +464,6 @@ export class SignPosition extends EventFactory {
         console.log("toggle visual");
         if(this.visualActive) {
             this.visualActive = false;
-            this.getCurrentSignParams().addExtra
             this.toggleExtraInfos();
             this.cross.hide();
         } else {

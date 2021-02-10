@@ -177,11 +177,16 @@
                                     class="btn btn-success ml-1" disabled>
                                 <i class="fas fa-signature"></i> Ajouter une signature
                             </button>
-                            <button th:unless="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
-                                    id="visualButton" title="Inserer un visuel"
-                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none">
-                                <i class="fas fa-eye"></i> Inserer un visuel
-                            </button>
+<!--                            <button th:unless="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"-->
+<!--                                    id="visualButton" title="Inserer un visuel"-->
+<!--                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none">-->
+<!--                                <i class="fas fa-eye"></i> Inserer un visuel-->
+<!--                            </button>-->
+                            <label class="switch">
+                                <input type="checkbox" id="visualButton" name="allSignToComplete" th:checked="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}">
+                                <span class="slider round"></span>
+                            </label>
+                            <label for="visualButton">Inserer un visuel</label>
                         </div>
                         <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
                             <button id="addCommentButton" title="Ajouter un commentaire"

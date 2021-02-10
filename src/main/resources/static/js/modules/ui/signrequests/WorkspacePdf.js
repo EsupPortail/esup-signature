@@ -57,7 +57,7 @@ export class WorkspacePdf {
                 if (this.signable) {
                     $('#signModeButton').on('click', e => this.toggleSignMode());
                     let visualButton = $('#visualButton')
-                    if (this.currentSignType == "visa") {
+                    if (this.currentSignType != "pdfImageStamp") {
                         visualButton.removeClass("d-none");
                         visualButton.on('click', e => this.signPosition.toggleVisual());
                     }
@@ -176,7 +176,7 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa") {
+        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa" && this.signPosition.visualActive) {
             bootbox.alert("Merci de placer la signature");
         } else {
             if (WorkspacePdf.validateForm()) {
