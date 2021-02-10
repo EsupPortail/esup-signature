@@ -17,6 +17,7 @@ export class SignPosition extends EventFactory {
         this.signImages = signImages;
         this.signImageNumber = signImageNumber;
         this.signRequestParamses = new Map();
+        this.signable = signable;
         if(currentSignRequestParams != null) {
             for (let i = 0; i < currentSignRequestParams.length; i++) {
                 let signRequestParams = new SignRequestParams();
@@ -74,10 +75,9 @@ export class SignPosition extends EventFactory {
         }
         this.confirmEnabled = false;
         this.events = {};
-        if(this.signType !== "visa") {
+        if(this.signType !== "visa" && this.signable) {
             $(document).ready(e => this.toggleExtraInfos());
         }
-        this.signable = signable;
         this.initListeners();
     }
 
