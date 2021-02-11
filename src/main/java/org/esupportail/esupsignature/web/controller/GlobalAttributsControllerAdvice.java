@@ -84,7 +84,9 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("globalProperties", this.myGlobalProperties);
         model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
         model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
-        model.addAttribute("profile", environment.getActiveProfiles()[0]);
+        if(environment.getActiveProfiles().length > 0) {
+            model.addAttribute("profile", environment.getActiveProfiles()[0]);
+        }
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }
