@@ -177,19 +177,26 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.set(currentSign + "", signRequestParams);
         this.currentSign = currentSign;
         this.updateCrossPosition();
-
         this.cross.attr("id", "cross_" + currentSign);
         this.cross.children().each(function (e) {
             $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
         });
         this.cross.children().children().each(function (e) {
             if($(this).attr("id")) {
-                $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+                if($(this).attr('id').split("_")[0] === "textExtra") {
+                    $(this).remove();
+                } else {
+                    $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + currentSign);
+                }
             }
         });
         $('.sp-replacer').each(function (){
             $(this).remove();
         });
+        if(this.getCurrentSignParams().addExtra) {
+            this.getCurrentSignParams().addExtra = false;
+            this.toggleExtraInfos();
+        }
         this.signColorPicker.spectrum('destroy');
         this.signColorPicker.hide();
         this.signUndoButton = $('#signUndo_' + currentSign);
@@ -363,7 +370,7 @@ export class SignPosition extends EventFactory {
         this.updateCrossPosition();
     }
 
-    updateCrossPosition() {
+        updateCrossPosition() {
         console.debug("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
         console.debug("update sign pos to : " + this.getCurrentSignParams().xPos + " " + this.getCurrentSignParams().yPos);
         if(this.posX < 0) this.posX = -1;
@@ -375,36 +382,46 @@ export class SignPosition extends EventFactory {
 
     updateOtherSignPosition(sign, scale) {
         let id = $(sign).attr('id').split("_")[1];
-        let cross = $("#cross_" + id);
-        let newTop = parseInt($(sign).css("top"), 10) / this.currentScale * scale;
-        let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
-        cross.css('top', newTop + "px");
-        cross.css('left', newLeft + "px");
-        let borders  = $("#borders_" + id);
-        let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
-        let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
-        cross.css('width', newWidth + "px");
-        cross.css('height', newHeight + "px");
-        cross.css('background-size', newWidth);
-        borders.css('width', newWidth + "px");
-        borders.css('height', newHeight + "px");
+        if(id !== this.currentSign) {
+            let cross = $("#cross_" + id);
+            let newTop = parseInt($(sign).css("top"), 10) / this.currentScale * scale;
+            let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
+            cross.css('top', newTop + "px");
+            cross.css('left', newLeft + "px");
+            let borders = $("#borders_" + id);
+            let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
+            let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
+            cross.css('width', newWidth + "px");
+            cross.css('height', newHeight + "px");
+            cross.css('background-size', newWidth);
+            borders.css('width', newWidth + "px");
+            borders.css('height', newHeight + "px");
+            let textExtra = $('#textExtra_' + id);
+            let signRequestParams = this.signRequestParamses.get(id);
+            if (!signRequestParams.extraOnTop) {
+                textExtra.css('margin-left', (signRequestParams.signWidth - (signRequestParams.extraWidth * signRequestParams.signScale * this.fixRatio)) * scale / this.fixRatio + "px");
+            }
+            textExtra.css('font-size', this.fontSize * scale * signRequestParams.signScale + "px");
+            textExtra.css('top', "-" + 30 * scale * signRequestParams.signScale + "px");
+        }
 
     }
 
     updateSignSize() {
         console.log("update sign size " + this.getCurrentSignParams().signWidth);
-        this.cross.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
-        this.cross.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
-        this.borders.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
-        this.borders.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
-        this.cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio);
-        $('#textVisa').css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        let textDate = $('#textDate');
-        textDate.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        textDate.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        let textName = $('#textName');
-        textName.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        textName.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
+        let cross = this.cross;
+        let borders = this.borders;
+        cross.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
+        cross.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
+        borders.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
+        borders.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
+        cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio);
+        // let textDate = $('#textDate');
+        // textDate.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
+        // textDate.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
+        // let textName = $('#textName');
+        // textName.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
+        // textName.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         let textExtra = $('#textExtra_' + this.currentSign);
         if(!this.getCurrentSignParams().extraOnTop) {
             textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
