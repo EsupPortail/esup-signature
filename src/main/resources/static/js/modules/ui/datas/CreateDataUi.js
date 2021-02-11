@@ -23,7 +23,6 @@ export class CreateDataUi {
                 this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
             }
         }
-        this.newData = $('#newData');
         this.nextCommand = "none";
         this.wheelDetector = new WheelDetector();
         this.sseDispatcher = new SseDispatcher();
@@ -33,8 +32,8 @@ export class CreateDataUi {
 
     initListeners() {
         if(this.pdfViewer) {
-            document.getElementById('prev').addEventListener('click', e => this.simulateSave("prev"));
-            document.getElementById('next').addEventListener('click', e => this.simulateSave("next"));
+            $('#prev').on('click', e => this.simulateSave("prev"));
+            $('#next').on('click', e => this.simulateSave("next"));
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
             this.pdfViewer.addEventListener('change', e => this.enableSave());
@@ -46,8 +45,8 @@ export class CreateDataUi {
         if (document.getElementById('sendModalButton') != null) {
             document.getElementById('sendModalButton').addEventListener('click', e => this.checkForm());
         }
-        document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
-        document.getElementById('newData').addEventListener('submit', e => this.launchSave());
+        $('#saveButton').on('click', e => this.submitForm());
+        $('#newData').on('submit', e => this.launchSave());
     }
 
     launchSave() {
