@@ -533,7 +533,7 @@ public class SignBookService {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {
             if (stepNumber >= currentSetNumber) {
-                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber - 1, liveWorkflowStep);
+                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
             } else {
                 throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
             }
