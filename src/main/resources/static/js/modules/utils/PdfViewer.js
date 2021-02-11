@@ -14,7 +14,7 @@ export class PdfViewer extends EventFactory {
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
         }
-        this.zoomStep = 0.10;
+        this.zoomStep = 0.1;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
         this.pageNum = 1;
@@ -596,7 +596,7 @@ export class PdfViewer extends EventFactory {
         if (this.scale >= 2) {
             return;
         }
-        this.scale = this.scale + this.zoomStep;
+        this.scale = Math.round((this.scale + this.zoomStep) * 10) / 10;
         console.info('zoom in, scale = ' + this.scale);
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['in']);
