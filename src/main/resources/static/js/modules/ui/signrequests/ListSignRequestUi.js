@@ -28,6 +28,12 @@ export default class ListSignRequestUi {
 
     checkNbCheckboxes() {
         let idDom = $('.idMassSign:checked');
+        if (idDom.length > 0) {
+            $('#deleteMultipleButton').removeClass('d-none');
+        } else {
+            $('#deleteMultipleButton').addClass('d-none');
+        }
+
         if (idDom.length > 1 && this.massSignButtonHide) {
             $('#massSignButton').removeClass('d-none');
             this.massSignButtonHide = false;

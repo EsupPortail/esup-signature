@@ -985,21 +985,6 @@ height: 100%;
     padding: 15px;
 }
 
-.fixed-action-second-btn {
-    position: fixed;
-    right: 50px;
-    bottom: 160px;
-    z-index: 8;
-    overflow: hidden;
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-align: end;
-    -ms-flex-align: end;
-    align-items: flex-end;
-    padding: 15px;
-}
-
 .fixed-action-btn {
     position: fixed;
     right: 50px;
