@@ -423,13 +423,16 @@ export class GlobalUi {
                             location.href = prevSignRequestButton.attr('href');
                         }
                         break;
+                    case 13:
+                        event.preventDefault();
+                        let signLaunchButton = $("#signLaunchButton");
+                        if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
+                            signLaunchButton.click();
+                        }
+                        break;
                 }
             } else {
                 if(event.which === 13) {
-                    let signLaunchButton = $("#signLaunchButton");
-                    if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
-                        signLaunchButton.click();
-                    }
                     let saveCommentButton = $("#saveCommentButton");
                     if(saveCommentButton.length && $("#postitComment").val() !== '') {
                         saveCommentButton.click();
