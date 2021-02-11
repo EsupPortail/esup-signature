@@ -284,7 +284,7 @@ export class WorkspacePdf {
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
         this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
-        $("div[id^='sign_']").each((index, e) => this.toggleSign(e));
+        $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         let self = this;
         this.postits.forEach((comment, iterator) => {
             let postitDiv = $('#inDocComment_' + comment.id);
@@ -359,7 +359,7 @@ export class WorkspacePdf {
     toggleSign(e) {
         console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
-        let signRequestParams = this.signPosition.signRequestParamses[signId];
+        let signRequestParams = this.signPosition.signRequestParamses.get(signId);
         console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
         if(signRequestParams.signPageNumber === this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
             $(e).show();

@@ -368,10 +368,9 @@ export class SignPosition extends EventFactory {
         console.debug("update sign pos to : " + this.getCurrentSignParams().xPos + " " + this.getCurrentSignParams().yPos);
         if(this.posX < 0) this.posX = -1;
         if(this.posY < 0) this.posY = -1;
-        // this.cross.css('backgroundColor', 'rgba(0, 255, 0, .5)');
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
-        // this.updateSignSize();
+        this.updateSignSize();
     }
 
     updateOtherSignPosition(sign, scale) {
@@ -381,7 +380,6 @@ export class SignPosition extends EventFactory {
         let newLeft = parseInt($(sign).css("left"), 10) / this.currentScale * scale;
         cross.css('top', newTop + "px");
         cross.css('left', newLeft + "px");
-
         let borders  = $("#borders_" + id);
         let newWidth = parseInt($(sign).css("width"), 10) / this.currentScale * scale;
         let newHeight = parseInt($(sign).css("height"), 10) / this.currentScale * scale;
@@ -413,7 +411,6 @@ export class SignPosition extends EventFactory {
         }
         textExtra.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
         textExtra.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        // this.updateSignButtons();
     }
 
     stopDragSignature() {
