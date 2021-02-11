@@ -58,7 +58,7 @@ export class WorkspacePdf {
                     $('#signModeButton').on('click', e => this.toggleSignMode());
                     let visualButton = $('#visualButton')
                     if (this.currentSignType != "pdfImageStamp") {
-                        visualButton.removeClass("d-none");
+                        $('#visualButtonDiv').removeClass("d-none");
                         visualButton.on('click', e => this.signPosition.toggleVisual());
                     }
                 }

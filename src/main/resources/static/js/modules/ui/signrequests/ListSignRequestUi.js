@@ -21,7 +21,7 @@ export default class ListSignRequestUi {
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
-        $('.idMassSign').on("click", e => this.checkNbCheckboxes());
+        $('.idMassSign').on("change", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         $('#checkCertSignButton').on("click", e => this.launchMassSign(false));
     }
@@ -39,13 +39,13 @@ export default class ListSignRequestUi {
 
     selectAllCheckboxes() {
         $("input[name^='ids']").each(function() {
-            $(this).prop("checked", true);
+            $(this).prop("checked", true).change();
         });
     }
 
     unSelectAllCheckboxes() {
         $("input[name^='ids']").each(function() {
-            $(this).prop("checked", false);
+            $(this).prop("checked", false).change();
         });
     }
 
