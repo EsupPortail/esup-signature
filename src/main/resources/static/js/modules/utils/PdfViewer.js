@@ -4,7 +4,7 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber, forcePageNum) {
+    constructor(url, signable, currentStepNumber, forcePageNum, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
@@ -28,6 +28,7 @@ export class PdfViewer extends EventFactory {
         this.signable = signable;
         this.events = {};
         this.rotation = 0;
+        this.disableAllFields = disableAllFields;
         this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
@@ -202,7 +203,7 @@ export class PdfViewer extends EventFactory {
         return new Promise((resolve, reject) => {
             if (this.page != null) {
                 if (isField) {
-                    if (this.dataFields != null) {
+                    if (this.dataFields != null && !this.disableAllFields) {
                         console.info("render fields");
                         this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
                     }

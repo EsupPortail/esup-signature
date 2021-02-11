@@ -29,6 +29,8 @@ public class LiveWorkflowStep {
     @OneToMany(cascade = CascadeType.REMOVE)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
+    private Boolean isOriginalStep = true;
+
     public Long getId() {
         return id;
     }
@@ -83,5 +85,13 @@ public class LiveWorkflowStep {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public Boolean getOriginalStep() {
+        return isOriginalStep;
+    }
+
+    public void setOriginalStep(Boolean originalStep) {
+        isOriginalStep = originalStep;
     }
 }

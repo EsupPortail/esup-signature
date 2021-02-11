@@ -529,6 +529,7 @@ public class SignBookService {
         SignBook signBook = this.getById(id);
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(repeatable, allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+        liveWorkflowStep.setOriginalStep(false);
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {
@@ -559,5 +560,17 @@ public class SignBookService {
                 }
             }
         }
+    }
+
+    public boolean isRealCurrentStepSigned(Long signBookId) {
+        SignBook signBook = getById(signBookId);
+        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
+        return !test;
+    }
+
+    public int getRealCurrentStepNumber(Long signBookId) {
+        SignBook signBook = getById(signBookId);
+        int test = (int) signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().filter(liveWorkflowStep -> liveWorkflowStep.getOriginalStep() && liveWorkflowStep.getRecipients().stream().anyMatch(Recipient::getSigned)).count() + 1;
+        return test;
     }
 }

@@ -10,7 +10,7 @@ export class CreateDataUi {
         console.log(fields);
         this.data = data;
         if(data) {
-            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0);
+            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, false);
             this.pdfViewer.setDataFields(fields);
             this.pdfViewer.scale = 0.70;
         }
