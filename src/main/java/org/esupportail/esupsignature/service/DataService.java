@@ -126,8 +126,10 @@ public class DataService {
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
-
         for(Field field : fields) {
+            if(!field.getStepNumbers().contains("0")) {
+                field.setDefaultValue("");
+            }
             if (field.getFavorisable()) {
                 fieldPropertieService.createFieldPropertie(authUser, field, formDatas.get(field.getName()));
             }
@@ -135,7 +137,6 @@ public class DataService {
                 formDatas.put(field.getName(), field.getDefaultValue());
             }
         }
-
         for(String savedDataKeys : data.getDatas().keySet()) {
             if(!formDatas.containsKey(savedDataKeys)) {
                 formDatas.put(savedDataKeys, "");
@@ -220,6 +221,9 @@ public class DataService {
             List<Field> fields = new ArrayList<>(form.getFields());
             prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
             for (Field field : prefilledFields) {
+                if(field.getName().equals("Su_DateSign")) {
+                    logger.info("test");
+                }
                 if(!field.getStepNumbers().contains("0")) {
                     field.setDefaultValue("");
                 }
