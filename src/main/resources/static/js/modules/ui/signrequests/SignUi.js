@@ -64,7 +64,7 @@ export class SignUi {
             console.log('launch sign for : ' + this.signRequestId);
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
-            this.submitSignRequest();
+            this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
         } else {
             this.signModal.on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();

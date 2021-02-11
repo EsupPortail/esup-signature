@@ -360,13 +360,11 @@ export class WorkspacePdf {
         console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
         if(signRequestParams.signPageNumber === this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
             $(e).show();
         } else {
             $(e).hide();
         }
-
     }
 
     displayDialogBox() {
