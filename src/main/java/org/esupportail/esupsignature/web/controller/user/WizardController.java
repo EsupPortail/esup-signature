@@ -75,6 +75,7 @@ public class WizardController {
     public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
                        @RequestParam(name="end", required = false) Boolean end,
+                       @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody JsonWorkflowStep step,
                        Model model) {
@@ -92,6 +93,7 @@ public class WizardController {
                 end = true;
             }
             model.addAttribute("signBook", signBook);
+            model.addAttribute("close", close);
             if(end != null && end) {
                 if(signBookService.startLiveWorkflow(signBook, userEppn, authUserEppn, start)) {
                     return "user/wizard/wiz-save";
@@ -186,10 +188,11 @@ public class WizardController {
     }
 
     @PostMapping(value = "/wizend/{id}")
-    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
+    public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="close") String close, Model model) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
+            model.addAttribute("close", close);
             return "user/wizard/wizend";
         } else {
             throw new EsupSignatureException("not authorized");
