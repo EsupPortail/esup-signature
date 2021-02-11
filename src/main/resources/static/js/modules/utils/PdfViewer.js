@@ -237,24 +237,27 @@ export class PdfViewer extends EventFactory {
         console.log("save fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
-                if (inputField.val() != null) {
-                    if (inputField.is(':checkbox')) {
-                        if (!inputField[0].checked) {
-                            this.savedFields.set(items[i].fieldName, 'off');
-                        } else {
-                            this.savedFields.set(items[i].fieldName, 'on');
+                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+                let inputField = $('#' + inputName);
+                if(inputField.length > 0) {
+                    if (inputField.val() != null) {
+                        if (inputField.is(':checkbox')) {
+                            if (!inputField[0].checked) {
+                                this.savedFields.set(items[i].fieldName, 'off');
+                            } else {
+                                this.savedFields.set(items[i].fieldName, 'on');
+                            }
+                            continue;
                         }
-                        continue;
-                    }
-                    if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
-                        if (radio.prop("checked")) {
-                            this.savedFields.set(items[i].fieldName, radio.val());
+                        if (inputField.is(':radio')) {
+                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
+                            if (radio.prop("checked")) {
+                                this.savedFields.set(items[i].fieldName, radio.val());
+                            }
+                            continue;
                         }
-                        continue;
+                        this.savedFields.set(items[i].fieldName, inputField.val());
                     }
-                    this.savedFields.set(items[i].fieldName, inputField.val());
                 }
             }
         }
