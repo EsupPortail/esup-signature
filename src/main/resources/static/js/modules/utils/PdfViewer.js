@@ -4,7 +4,7 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber) {
+    constructor(url, signable, currentStepNumber, forcePageNum) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
@@ -18,6 +18,9 @@ export class PdfViewer extends EventFactory {
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
         this.pageNum = 1;
+        if(forcePageNum != null) {
+            this.pageNum = forcePageNum;
+        }
         this.numPages = 1;
         this.page = null;
         this.dataFields = [];

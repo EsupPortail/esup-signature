@@ -17,15 +17,23 @@ export class WorkspacePdf {
         this.stepRepeatable  = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.forcePageNum = null;
+        for(let i = 0 ; i < fields.length; i++) {
+            let field = fields[i];
+            if(field.stepNumbers.includes(currentStepNumber) && field.required) {
+                this.forcePageNum = field.page;
+                break;
+            }
+        }
+        if(this.isPdf) {
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, this.forcePageNum);
+        }
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams,
             signImageNumber,
             signImages,
-            userName, signable);
-        if(this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
-        }
+            userName, signable, this.forcePageNum);
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
         this.signLaunchButton = $("#signLaunchButton");
@@ -176,10 +184,17 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa" && this.signPosition.visualActive) {
-            bootbox.alert("Merci de placer la signature");
-        } else {
-            if (WorkspacePdf.validateForm()) {
+        if (WorkspacePdf.validateForm()) {
+            if((this.signPosition.cross.css("position") === 'fixed' || this.signPosition.getCurrentSignParams().xPos === -1) && this.signType !== "visa" && this.signPosition.visualActive) {
+                let self = this;
+                bootbox.alert("Merci de placer la signature", function (){
+                    self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                    self.signPosition.cross.css("position", "absolute");
+                    self.signPosition.cross.css("margin-left", "0px");
+                    self.signPosition.cross.css("margin-top", "0px");
+                    self.signPosition.updateCrossPosition();
+                });
+            } else {
                 let signModal;
                 if (this.stepRepeatable) {
                     signModal = $('#stepRepeatableModal');
@@ -187,7 +202,7 @@ export class WorkspacePdf {
                 } else {
                     signModal = $("#signModal");
                 }
-                signModal.on('shown.bs.modal', function(){
+                signModal.on('shown.bs.modal', function () {
                     $("#checkRepeatableButtonEnd").focus();
                     $("#checkRepeatableButtonNext").focus();
                 });
@@ -483,7 +498,11 @@ export class WorkspacePdf {
         }
         this.pdfViewer.rotation = 0;
         if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
-            this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+            if(!this.forcePageNum) {
+                this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+            } else {
+                this.pdfViewer.renderPage(this.forcePageNum);
+            }
         } else {
             this.pdfViewer.renderPage(1);
         }

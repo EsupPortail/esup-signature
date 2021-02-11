@@ -4,7 +4,7 @@ import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, currentSignRequestParams, signImageNumber, signImages, userName, signable) {
+    constructor(signType, currentSignRequestParams, signImageNumber, signImages, userName, signable, forceResetSignPos) {
         super();
         console.info("Starting sign positioning tools");
         this.cross = $('#cross_0');
@@ -18,6 +18,7 @@ export class SignPosition extends EventFactory {
         this.signImageNumber = signImageNumber;
         this.signRequestParamses = new Map();
         this.signable = signable;
+        this.forceResetSignPos = forceResetSignPos;
         if(currentSignRequestParams != null) {
             for (let i = 0; i < currentSignRequestParams.length; i++) {
                 let signRequestParams = new SignRequestParams();
@@ -63,15 +64,15 @@ export class SignPosition extends EventFactory {
             change: color => this.changeSignColor(color)
         });
         this.addSignButton = $('#addSignButton');
-        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1) {
-            this.updateCrossPosition();
+        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
             this.cross.css("position", "absolute");
-            // this.updateSignButtons();
             this.addSignButton.removeAttr("disabled");
         } else {
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
+            this.cross.css("left", "0px");
+            this.cross.css("top", "0px");
         }
         this.confirmEnabled = false;
         this.events = {};
@@ -161,7 +162,6 @@ export class SignPosition extends EventFactory {
             signRequestParams.signPageNumber = this.getCurrentSignParams().signPageNumber;
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
-            this.cross.css("margin-top", "180px");
             this.cross.css("margin-top", "180px");
             this.addSignButton.attr("disabled", "disabled");
 
@@ -367,14 +367,16 @@ export class SignPosition extends EventFactory {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
         $('div[id^="cross_"]').each((index, e) => this.updateOtherSignPosition(e, scale));
         this.currentScale = scale;
-        this.updateCrossPosition();
+        if(this.forceResetSignPos == null) {
+            this.updateCrossPosition();
+        }
     }
 
-        updateCrossPosition() {
+    updateCrossPosition() {
         console.debug("update cross pos to : " + this.getUiXpos() + " " + this.getUiYpos());
         console.debug("update sign pos to : " + this.getCurrentSignParams().xPos + " " + this.getCurrentSignParams().yPos);
-        if(this.posX < 0) this.posX = -1;
-        if(this.posY < 0) this.posY = -1;
+        // if(this.posX < 0) this.posX = -1;
+        // if(this.posY < 0) this.posY = -1;
         this.cross.css('left', this.getUiXpos() + "px");
         this.cross.css('top', this.getUiYpos() + "px");
         this.updateSignSize();
@@ -450,12 +452,12 @@ export class SignPosition extends EventFactory {
         this.cross.css('pointerEvents', "none");
         if(this.cross.css('position') !== 'absolute') {
             this.cross.css('top', window.scrollY);
-            this.posY = window.scrollY;
+            // this.posY = window.scrollY;
         }
         this.cross.css('position', "absolute");
         this.cross.css('margin-left', 0);
         this.cross.css('margin-top', 0);
-        this.posY = window.scrollY;
+        // this.posY = window.scrollY;
         this.pdf.css('pointerEvents', "auto");
         $('body').addClass('disable-div-selection cursor-move');
         this.pointItEnable = true;
