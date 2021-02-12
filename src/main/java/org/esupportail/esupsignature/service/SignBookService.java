@@ -555,7 +555,7 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             int i = 0;
             for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                if(signRequest.getSignRequestParams().size() >= i) {
+                if(signRequest.getSignRequestParams().size() >= i + 1) {
                     liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
                 } else {
                     break;
