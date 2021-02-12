@@ -550,15 +550,12 @@ public class SignBookService {
     }
 
     public void dispatchSignRequestParams(SignBook signBook) {
+        int i = 0;
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            for (int i = 0 ; i < signRequest.getSignRequestParams().size() ; i++) {
-                int size = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size();
-                if (i + 1 >= size) {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(size - 1).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                } else {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                }
+            for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
             }
+            i++;
         }
     }
 
