@@ -88,6 +88,7 @@ public class LiveWorkflowStep {
     }
 
     public Boolean getOriginalStep() {
+        if(isOriginalStep == null) return true;
         return isOriginalStep;
     }
 
