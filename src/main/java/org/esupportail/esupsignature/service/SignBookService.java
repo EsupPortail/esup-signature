@@ -366,6 +366,7 @@ public class SignBookService {
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
+            dispatchSignRequestParams(signBook);
         }
     }
 
