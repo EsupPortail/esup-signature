@@ -683,7 +683,7 @@ export class PdfViewer extends EventFactory {
     }
 
     checkForm() {
-        return new Promise((resolve, reject) => {
+        let p = new Promise((resolve, reject) => {
             let formData = new Map();
             console.info("check data name");
             let self = this;
@@ -693,9 +693,10 @@ export class PdfViewer extends EventFactory {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
                 if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
-                    bootbox.alert("Un champ n'est pas rempli en page " + $(this)[0].page, function () {
+                    let page =  $(this)[0].page;
+                    bootbox.alert("Un champ n'est pas rempli en page " + page, function () {
                         openModal = false;
-                        self.renderPage($(this)[0].page);
+                        self.renderPage(page);
                     });
                     resolveOk = false;
                     return false;
@@ -709,9 +710,10 @@ export class PdfViewer extends EventFactory {
             if(resolveOk) {
                 resolve("ok");
             } else {
-                reject("error");
+                resolve("error");
             }
         });
+        return p;
     }
 
 }

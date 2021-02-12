@@ -184,28 +184,31 @@ export class WorkspacePdf {
         console.info("launch sign modal");
         window.onbeforeunload = null;
         let self = this;
-        this.pdfViewer.checkForm().then(function() {
-            if((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
-                bootbox.alert("Merci de placer la signature", function (){
-                    self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
-                    self.signPosition.cross.css("position", "absolute");
-                    self.signPosition.cross.css("margin-left", "0px");
-                    self.signPosition.cross.css("margin-top", "0px");
-                    self.signPosition.updateCrossPosition();
-                });
-            } else {
-                let signModal;
-                if (this.stepRepeatable) {
-                    signModal = $('#stepRepeatableModal');
-                    $('#launchSignButton').hide();
+        this.pdfViewer.checkForm().then(function(result) {
+            if(result === "ok") {
+                if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
+                    bootbox.alert("Merci de placer la signature", function () {
+                        self.pdfViewer.initSavedValues();
+                        self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                        self.signPosition.cross.css("position", "absolute");
+                        self.signPosition.cross.css("margin-left", "0px");
+                        self.signPosition.cross.css("margin-top", "0px");
+                        self.signPosition.updateCrossPosition();
+                    });
                 } else {
-                    signModal = $("#signModal");
+                    let signModal;
+                    if (self.stepRepeatable) {
+                        signModal = $('#stepRepeatableModal');
+                        $('#launchSignButton').hide();
+                    } else {
+                        signModal = $("#signModal");
+                    }
+                    signModal.on('shown.bs.modal', function () {
+                        $("#checkRepeatableButtonEnd").focus();
+                        $("#checkRepeatableButtonNext").focus();
+                    });
+                    signModal.modal('show');
                 }
-                signModal.on('shown.bs.modal', function () {
-                    $("#checkRepeatableButtonEnd").focus();
-                    $("#checkRepeatableButtonNext").focus();
-                });
-                signModal.modal('show');
             }
         });
     }
