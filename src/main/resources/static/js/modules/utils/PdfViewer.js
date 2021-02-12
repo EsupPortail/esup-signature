@@ -4,7 +4,7 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber, forcePageNum, disableAllFields) {
+    constructor(url, signable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
@@ -23,7 +23,13 @@ export class PdfViewer extends EventFactory {
         }
         this.numPages = 1;
         this.page = null;
-        this.dataFields = [];
+        let jsFields = [];
+        if(fields) {
+            fields.forEach(function (e){
+                jsFields.push(new DataField(e));
+            });
+        }
+        this.dataFields = jsFields;
         this.savedFields = new Map();
         this.signable = signable;
         this.events = {};
@@ -246,29 +252,48 @@ export class PdfViewer extends EventFactory {
 
     saveValues(items) {
         console.log("save fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
-                let inputField = $('#' + inputName);
-                if(inputField.length > 0) {
-                    if (inputField.val() != null) {
-                        if (inputField.is(':checkbox')) {
-                            if (!inputField[0].checked) {
-                                this.savedFields.set(items[i].fieldName, 'off');
-                            } else {
-                                this.savedFields.set(items[i].fieldName, 'on');
-                            }
-                            continue;
+        if(this.dataFields.length > 0) {
+            for (let i = 0; i < this.dataFields.length; i++) {
+                let dataField = this.dataFields[i];
+                let item = items.filter(function (e) {
+                    return e.fieldName != null && e.fieldName === dataField.name
+                })[0];
+                if (item != null && item.fieldName != null) {
+                    this.saveValue(item);
+                } else {
+                    this.savedFields.set(dataField.name, dataField.defaultValue);
+                }
+            }
+        } else {
+            for (let i = 0; i < items.length; i++) {
+                this.saveValue(items[i]);
+            }
+        }
+    }
+
+    saveValue(item) {
+        if(item != null && item.fieldName != null) {
+            let inputName = item.fieldName.split(/\$|#|!/)[0];
+            let inputField = $('#' + inputName);
+            if (inputField.length > 0) {
+                if (inputField.val() != null) {
+                    if (inputField.is(':checkbox')) {
+                        if (!inputField[0].checked) {
+                            this.savedFields.set(item.fieldName, 'off');
+                        } else {
+                            this.savedFields.set(item.fieldName, 'on');
                         }
-                        if (inputField.is(':radio')) {
-                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
-                            if (radio.prop("checked")) {
-                                this.savedFields.set(items[i].fieldName, radio.val());
-                            }
-                            continue;
-                        }
-                        this.savedFields.set(items[i].fieldName, inputField.val());
+                        return;
                     }
+                    if (inputField.is(':radio')) {
+                        let radio = $('input[name=\'' + inputName + '\'][value=\'' + item.buttonValue + '\']');
+                        if (radio.prop("checked")) {
+                            this.savedFields.set(item.fieldName, radio.val());
+                        }
+                        return;
+                    }
+                    let value = inputField.val();
+                    this.savedFields.set(item.fieldName, value);
                 }
             }
         }
@@ -551,6 +576,7 @@ export class PdfViewer extends EventFactory {
             console.debug(inputField);
             if (inputField.length) {
                 inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
                     inputField.val(items[i].buttonValue);
                 }
@@ -558,6 +584,7 @@ export class PdfViewer extends EventFactory {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {
                     inputField.attr('name', inputName);
+                    inputField.attr('id', inputName);
                     inputField.val(items[i].fieldValue);
                 }
             }
@@ -637,18 +664,6 @@ export class PdfViewer extends EventFactory {
         this.renderPage(this.pageNum);
         this.fireEvent('rotate', ['right']);
     }
-
-
-    setDataFields(dataFields) {
-        if(dataFields) {
-            dataFields.forEach(e => this.addDataField(e));
-        }
-    }
-
-    addDataField(dataField) {
-        this.dataFields.push(new DataField(dataField));
-    }
-
 
     printPdf() {
         this.pdfPageView.eventBus.dispatch('print', {

@@ -10,9 +10,7 @@ export class CreateDataUi {
         console.log(fields);
         this.data = data;
         if(data) {
-            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, false);
-            this.pdfViewer.setDataFields(fields);
-            this.pdfViewer.scale = 0.70;
+            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, fields, false);
         }
         this.action = action;
         this.actionEnable = 0;
@@ -104,15 +102,16 @@ export class CreateDataUi {
     simulateSave(command) {
         if((command === "next" && !this.pdfViewer.isLastpage()) || (command === "prev" && !this.pdfViewer.isFirstPage())) {
             this.nextCommand = command;
-            this.pdfViewer.promizeSaveValues().then(e => this.afterSimulate());
+            this.pdfViewer.promizeSaveValues().then(e => this.afterSimulate(command));
         } else {
             this.nextCommand = "none";
         }
     }
 
-    afterSimulate() {
+    afterSimulate(command) {
         //$('#simulateDataSubmit').click();
         this.excuteNextCommand();
+        if(command === "prev") window.scrollTo(0, document.body.scrollHeight);
     }
 
     pushData(redirect) {

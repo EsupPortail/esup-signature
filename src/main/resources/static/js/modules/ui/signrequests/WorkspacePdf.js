@@ -26,7 +26,7 @@ export class WorkspacePdf {
             }
         }
         if(this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, this.forcePageNum, isRealCurrentStepSigned);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, this.forcePageNum, fields, isRealCurrentStepSigned);
         }
         this.signPosition = new SignPosition(
             signType,
@@ -170,9 +170,8 @@ export class WorkspacePdf {
         }
     }
 
-    initDataFields(fields) {
+    initDataFields() {
         if(this.pdfViewer) {
-            this.pdfViewer.setDataFields(fields);
             if (this.pdfViewer.dataFields.length > 0 && this.pdfViewer.dataFields[0].defaultValue != null) {
                 for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
                     this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
