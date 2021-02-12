@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, isRealCurrentStepSigned, signImages, userName, csrf, fields, stepRepeatable, status) {
+    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, isRealCurrentStepSigned, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -24,6 +24,7 @@ export class SignUi {
         this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
         this.gotoNext = false;
+        this.profile = profile;
         this.initListeners();
     }
 
@@ -140,10 +141,14 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = message.text;
             document.getElementById("bar").style.width = 100 + "%";
-            if(this.gotoNext) {
-                document.location.href = $("#nextSignRequestButton").attr('href');
+            if(this.profile !== "dev") {
+                if (this.gotoNext) {
+                    document.location.href = $("#nextSignRequestButton").attr('href');
+                } else {
+                    document.location.href = "/user/";
+                }
             } else {
-                document.location.href = "/user/";
+                document.location.href = "/user/signrequests/" + this.signRequestId;
             }
         } else {
             console.debug("update bar");

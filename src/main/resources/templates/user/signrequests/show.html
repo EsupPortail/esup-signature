@@ -48,7 +48,8 @@
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
             null,
         [/]
-        [[${signRequest.status}]]
+        [[${signRequest.status}]],
+        [[${profile}]]
     );
 
 </script>
