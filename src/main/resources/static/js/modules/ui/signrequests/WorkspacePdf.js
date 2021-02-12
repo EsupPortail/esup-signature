@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
+    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, isRealCurrentStepSigned, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  currentSignRequestParams;
@@ -17,15 +17,24 @@ export class WorkspacePdf {
         this.stepRepeatable  = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.forcePageNum = null;
+        this.first = true;
+        for(let i = 0 ; i < fields.length; i++) {
+            let field = fields[i];
+            if(field.stepNumbers.includes(currentStepNumber) && field.required) {
+                this.forcePageNum = field.page;
+                break;
+            }
+        }
+        if(this.isPdf) {
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, this.forcePageNum, fields, isRealCurrentStepSigned);
+        }
         this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams,
             signImageNumber,
             signImages,
-            userName, signable);
-        if(this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber);
-        }
+            userName, signable, this.forcePageNum);
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
         this.signLaunchButton = $("#signLaunchButton");
@@ -154,17 +163,17 @@ export class WorkspacePdf {
 
     initForm(e) {
         console.info("init form");
+        let self = this;
         $("#signForm :input").each(function () {
-            $(this).on('change', e => WorkspacePdf.launchValidate());
+            $(this).on('change', e => self.launchValidate());
         });
         if(this.mode === 'read' || this.mode === 'comment') {
             this.disableForm();
         }
     }
 
-    initDataFields(fields) {
+    initDataFields() {
         if(this.pdfViewer) {
-            this.pdfViewer.setDataFields(fields);
             if (this.pdfViewer.dataFields.length > 0 && this.pdfViewer.dataFields[0].defaultValue != null) {
                 for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
                     this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
@@ -176,24 +185,37 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if(this.signPosition.getCurrentSignParams().xPos === -1 && this.signType !== "visa" && this.signPosition.visualActive) {
-            bootbox.alert("Merci de placer la signature");
-        } else {
-            if (WorkspacePdf.validateForm()) {
-                let signModal;
-                if (this.stepRepeatable) {
-                    signModal = $('#stepRepeatableModal');
-                    $('#launchSignButton').hide();
+        let self = this;
+        this.pdfViewer.checkForm().then(function(result) {
+            if(result === "ok") {
+                if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
+                    bootbox.alert("Merci de placer la signature", function () {
+                        self.pdfViewer.initSavedValues();
+                        if(self.currentSignRequestParams != null) {
+                            self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                        }
+                        self.signPosition.firstDrag = true;
+                        self.signPosition.cross.css("position", "absolute");
+                        self.signPosition.cross.css("margin-left", "0px");
+                        self.signPosition.cross.css("margin-top", "0px");
+                        self.signPosition.updateCrossPosition();
+                    });
                 } else {
-                    signModal = $("#signModal");
+                    let signModal;
+                    if (self.stepRepeatable) {
+                        signModal = $('#stepRepeatableModal');
+                        $('#launchSignButton').hide();
+                    } else {
+                        signModal = $("#signModal");
+                    }
+                    signModal.on('shown.bs.modal', function () {
+                        $("#checkRepeatableButtonEnd").focus();
+                        $("#checkRepeatableButtonNext").focus();
+                    });
+                    signModal.modal('show');
                 }
-                signModal.on('shown.bs.modal', function(){
-                    $("#checkRepeatableButtonEnd").focus();
-                    $("#checkRepeatableButtonNext").focus();
-                });
-                signModal.modal('show');
             }
-        }
+        });
     }
 
     static validateForm() {
@@ -218,7 +240,7 @@ export class WorkspacePdf {
         });
     }
 
-    static launchValidate() {
+    launchValidate() {
         if(!WorkspacePdf.validateForm()) {
             $("#visaLaunchButton").attr('disabled', true);
         } else {
@@ -283,7 +305,6 @@ export class WorkspacePdf {
 
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
-        this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
         $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         let self = this;
         this.postits.forEach((comment, iterator) => {
@@ -360,13 +381,13 @@ export class WorkspacePdf {
         console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        console.log(signRequestParams.signPageNumber + " = " + this.signPosition.getCurrentSignParams().signPageNumber);
-        if(signRequestParams.signPageNumber === this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
+        if (signRequestParams.xPos === - 1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
+            this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
             $(e).show();
         } else {
             $(e).hide();
         }
-
+        if(this.first) this.first = false;
     }
 
     displayDialogBox() {
@@ -485,13 +506,17 @@ export class WorkspacePdf {
         }
         this.pdfViewer.rotation = 0;
         if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
-            this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+            if(!this.forcePageNum) {
+                this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+            } else {
+                this.pdfViewer.renderPage(this.forcePageNum);
+            }
         } else {
             this.pdfViewer.renderPage(1);
         }
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
-        this.refreshAfterPageChange();
+        // this.refreshAfterPageChange();
         this.showAllPostits();
     }
 

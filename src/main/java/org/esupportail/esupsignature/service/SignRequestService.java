@@ -336,18 +336,22 @@ public class SignRequestService {
 				formDataMap.remove("_csrf");
 				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null) {
-					List<Field> fields = data.getForm().getFields();
+					List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getUserByEppn(userEppn));
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
 						List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
 						if(formfields.size() > 0) {
-							if(formfields.get(0).getExtValueType()!= null && !formfields.get(0).getExtValueType().equals("system")) {
-								List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
-								if (!data.getDatas().containsKey(entry.getKey()) || steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
-									data.getDatas().put(entry.getKey(), entry.getValue());
+							List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
+							if(steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
+								if(formfields.get(0).getExtValueType() != null && !formfields.get(0).getExtValueType().equals("system")) {
+//									if (!data.getDatas().containsKey(entry.getKey())) {
+										data.getDatas().put(entry.getKey(), entry.getValue());
+//									}
+								} else {
+									data.getDatas().put(entry.getKey(), formfields.get(0).getDefaultValue());
 								}
-							} else {
-								toRemoveKeys.add(entry.getKey());
 							}
+						} else {
+							toRemoveKeys.add(entry.getKey());
 						}
 					}
 				}
@@ -436,7 +440,7 @@ public class SignRequestService {
 				}
 			}
 			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
-				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
+//				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
 			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {

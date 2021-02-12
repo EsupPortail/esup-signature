@@ -170,7 +170,7 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-            logger.info("stamp image to " + xAdjusted +", " + yAdjusted);
+            logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, widthAdjusted, heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();

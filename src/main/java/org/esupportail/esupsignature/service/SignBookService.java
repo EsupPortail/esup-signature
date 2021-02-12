@@ -286,6 +286,7 @@ public class SignBookService {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
+                dispatchSignRequestParams(signBook);
                 pendingSignBook(signBook, null, userEppn, authUserEppn);
             }
             return true;
@@ -365,6 +366,7 @@ public class SignBookService {
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
+            dispatchSignRequestParams(signBook);
         }
     }
 
@@ -529,6 +531,7 @@ public class SignBookService {
         SignBook signBook = this.getById(id);
         int currentSetNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(repeatable, allSignToComplete, SignType.valueOf(signType), recipientsEmails);
+        liveWorkflowStep.setOriginalStep(false);
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {
@@ -550,14 +553,27 @@ public class SignBookService {
 
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            for (int i = 0 ; i < signRequest.getSignRequestParams().size() ; i++) {
-                int size = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size();
-                if (i + 1 >= size) {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(size - 1).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+            int i = 0;
+            for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                if(signRequest.getSignRequestParams().size() >= i) {
+                    liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
                 } else {
-                    signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i).getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                    break;
                 }
+                i++;
             }
         }
+    }
+
+    public boolean isRealCurrentStepSigned(Long signBookId) {
+        SignBook signBook = getById(signBookId);
+        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
+        return !test;
+    }
+
+    public int getRealCurrentStepNumber(Long signBookId) {
+        SignBook signBook = getById(signBookId);
+        int test = (int) signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().filter(liveWorkflowStep -> liveWorkflowStep.getOriginalStep() && liveWorkflowStep.getRecipients().stream().anyMatch(Recipient::getSigned)).count() + 1;
+        return test;
     }
 }

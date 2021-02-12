@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-    url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+    src: url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.woff') format('woff'),
+    url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
 html {
@@ -1260,6 +1260,7 @@ height: 100%;
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+    z-index: 4 !important;
 }
 
 .disable-selection {
