@@ -18,6 +18,7 @@ export class WorkspacePdf {
         this.status = status;
         this.csrf = csrf;
         this.forcePageNum = null;
+        this.first = true;
         for(let i = 0 ; i < fields.length; i++) {
             let field = fields[i];
             if(field.stepNumbers.includes(currentStepNumber) && field.required) {
@@ -300,7 +301,6 @@ export class WorkspacePdf {
 
     refreshAfterPageChange() {
         console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
-        this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
         $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         let self = this;
         this.postits.forEach((comment, iterator) => {
@@ -377,11 +377,13 @@ export class WorkspacePdf {
         console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        if(signRequestParams.signPageNumber === this.signPosition.getCurrentSignParams().signPageNumber && this.mode === 'sign') {
+        if (this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
+            this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
             $(e).show();
         } else {
             $(e).hide();
         }
+        if(this.first) this.first = false;
     }
 
     displayDialogBox() {
@@ -510,7 +512,7 @@ export class WorkspacePdf {
         }
         this.signPosition.updateScale(this.pdfViewer.scale);
         //this.pdfViewer.promizeToggleFields(false);
-        this.refreshAfterPageChange();
+        // this.refreshAfterPageChange();
         this.showAllPostits();
     }
 

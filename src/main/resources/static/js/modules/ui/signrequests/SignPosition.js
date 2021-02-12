@@ -19,6 +19,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses = new Map();
         this.signable = signable;
         this.forceResetSignPos = forceResetSignPos;
+        this.firstDrag = false;
         if(currentSignRequestParams != null) {
             for (let i = 0; i < currentSignRequestParams.length; i++) {
                 let signRequestParams = new SignRequestParams();
@@ -448,7 +449,7 @@ export class SignPosition extends EventFactory {
 
     dragSignature() {
         console.info("start drag");
-        this.fireEvent('startDrag', ['ok']);
+        this.firstDrag = true;
         this.cross.css('pointerEvents', "none");
         if(this.cross.css('position') !== 'absolute') {
             this.cross.css('top', window.scrollY);
@@ -466,6 +467,7 @@ export class SignPosition extends EventFactory {
             this.enableConfirmLeaveSign();
             this.confirmEnabled = true;
         }
+        this.fireEvent('startDrag', ['ok']);
     }
 
     hideButtons() {
