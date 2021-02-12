@@ -191,7 +191,9 @@ export class WorkspacePdf {
                 if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
                     bootbox.alert("Merci de placer la signature", function () {
                         self.pdfViewer.initSavedValues();
-                        self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                        if(self.currentSignRequestParams != null) {
+                            self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                        }
                         self.signPosition.firstDrag = true;
                         self.signPosition.cross.css("position", "absolute");
                         self.signPosition.cross.css("margin-left", "0px");

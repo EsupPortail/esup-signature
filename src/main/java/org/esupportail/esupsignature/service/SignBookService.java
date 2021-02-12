@@ -286,6 +286,7 @@ public class SignBookService {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
+                dispatchSignRequestParams(signBook);
                 pendingSignBook(signBook, null, userEppn, authUserEppn);
             }
             return true;
@@ -550,12 +551,16 @@ public class SignBookService {
     }
 
     public void dispatchSignRequestParams(SignBook signBook) {
-        int i = 0;
         for(SignRequest signRequest : signBook.getSignRequests()) {
+            int i = 0;
             for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                if(signRequest.getSignRequestParams().size() >= i) {
+                    liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                } else {
+                    break;
+                }
+                i++;
             }
-            i++;
         }
     }
 
