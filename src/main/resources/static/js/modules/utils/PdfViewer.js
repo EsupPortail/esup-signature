@@ -681,4 +681,37 @@ export class PdfViewer extends EventFactory {
             minLength:0
         }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }
+
+    checkForm() {
+        return new Promise((resolve, reject) => {
+            let formData = new Map();
+            console.info("check data name");
+            let self = this;
+            let openModal = true
+            let resolveOk = true;
+            $(self.dataFields).each(function() {
+                let savedField = self.savedFields.get($(this)[0].name)
+                formData[$(this)[0].name] = savedField;
+                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
+                    bootbox.alert("Un champ n'est pas rempli en page " + $(this)[0].page, function () {
+                        openModal = false;
+                        self.renderPage($(this)[0].page);
+                    });
+                    resolveOk = false;
+                    return false;
+                }
+            })
+            if (openModal) {
+                $('#sendModal').modal('show');
+            } else {
+                $('#sendModal').modal('hide');
+            }
+            if(resolveOk) {
+                resolve("ok");
+            } else {
+                reject("error");
+            }
+        });
+    }
+
 }

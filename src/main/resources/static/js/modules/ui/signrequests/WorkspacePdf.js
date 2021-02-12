@@ -183,9 +183,9 @@ export class WorkspacePdf {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        if (WorkspacePdf.validateForm()) {
-            if((this.signPosition.cross.css("position") === 'fixed' || this.signPosition.getCurrentSignParams().xPos === -1) && this.signType !== "visa" && this.signPosition.visualActive) {
-                let self = this;
+        let self = this;
+        this.pdfViewer.checkForm().then(function() {
+            if((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
                 bootbox.alert("Merci de placer la signature", function (){
                     self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
                     self.signPosition.cross.css("position", "absolute");
@@ -207,7 +207,7 @@ export class WorkspacePdf {
                 });
                 signModal.modal('show');
             }
-        }
+        });
     }
 
     static validateForm() {
