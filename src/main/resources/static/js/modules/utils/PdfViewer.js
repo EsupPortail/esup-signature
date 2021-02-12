@@ -261,7 +261,9 @@ export class PdfViewer extends EventFactory {
                 if (item != null && item.fieldName != null) {
                     this.saveValue(item);
                 } else {
-                    this.savedFields.set(dataField.name, dataField.defaultValue);
+                    if(this.savedFields.get(dataField.name) == null) {
+                        this.savedFields.set(dataField.name, dataField.defaultValue);
+                    }
                 }
             }
         } else {
@@ -687,7 +689,6 @@ export class PdfViewer extends EventFactory {
             let formData = new Map();
             console.info("check data name");
             let self = this;
-            let openModal = true
             let resolveOk = true;
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
@@ -695,18 +696,13 @@ export class PdfViewer extends EventFactory {
                 if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
                     let page =  $(this)[0].page;
                     bootbox.alert("Un champ n'est pas rempli en page " + page, function () {
-                        openModal = false;
                         self.renderPage(page);
                     });
                     resolveOk = false;
+                    $('#sendModal').modal('hide');
                     return false;
                 }
             })
-            if (openModal) {
-                $('#sendModal').modal('show');
-            } else {
-                $('#sendModal').modal('hide');
-            }
             if(resolveOk) {
                 resolve("ok");
             } else {

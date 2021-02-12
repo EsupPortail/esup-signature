@@ -163,8 +163,9 @@ export class WorkspacePdf {
 
     initForm(e) {
         console.info("init form");
+        let self = this;
         $("#signForm :input").each(function () {
-            $(this).on('change', e => WorkspacePdf.launchValidate());
+            $(this).on('change', e => self.launchValidate());
         });
         if(this.mode === 'read' || this.mode === 'comment') {
             this.disableForm();
@@ -191,6 +192,7 @@ export class WorkspacePdf {
                     bootbox.alert("Merci de placer la signature", function () {
                         self.pdfViewer.initSavedValues();
                         self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
+                        self.signPosition.firstDrag = true;
                         self.signPosition.cross.css("position", "absolute");
                         self.signPosition.cross.css("margin-left", "0px");
                         self.signPosition.cross.css("margin-top", "0px");
@@ -236,7 +238,7 @@ export class WorkspacePdf {
         });
     }
 
-    static launchValidate() {
+    launchValidate() {
         if(!WorkspacePdf.validateForm()) {
             $("#visaLaunchButton").attr('disabled', true);
         } else {
@@ -377,7 +379,7 @@ export class WorkspacePdf {
         console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        if (this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
+        if (signRequestParams.xPos === - 1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
             this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
             $(e).show();
         } else {

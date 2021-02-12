@@ -30,8 +30,6 @@ export class CreateDataUi {
 
     initListeners() {
         if(this.pdfViewer) {
-            $('#prev').on('click', e => this.simulateSave("prev"));
-            $('#next').on('click', e => this.simulateSave("next"));
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
             this.pdfViewer.addEventListener('change', e => this.enableSave());
@@ -39,12 +37,22 @@ export class CreateDataUi {
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
             this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
             this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
+            $('#prev').on('click', e => this.simulateSave("prev"));
+            $('#next').on('click', e => this.simulateSave("next"));
         }
         if (document.getElementById('sendModalButton') != null) {
-            document.getElementById('sendModalButton').addEventListener('click', e => this.pdfViewer.checkForm());
+            document.getElementById('sendModalButton').addEventListener('click', e => this.openSendModal());
         }
         $('#saveButton').on('click', e => this.submitForm());
         $('#newData').on('submit', e => this.launchSave());
+    }
+
+    openSendModal() {
+        this.pdfViewer.checkForm().then(function(result) {
+            if(result === "ok") {
+                $('#sendModal').modal('show');
+            }
+        });
     }
 
     launchSave() {
