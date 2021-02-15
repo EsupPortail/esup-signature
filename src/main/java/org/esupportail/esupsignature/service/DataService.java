@@ -72,7 +72,8 @@ public class DataService {
         return dataRepository.findById(dataId).get();
     }
 
-    public void delete(Data data) {
+    public void delete(Long id) {
+        Data data = getById(id);
         if (data.getSignBook() != null) {
             signBookService.delete(data.getSignBook().getId());
         }
@@ -260,10 +261,12 @@ public class DataService {
         return cloneData(data, authUser);
     }
 
-    public List<Field> setFieldsDefaultsValues(Data data, Form form) {
-        List<Field> fields = form.getFields();
+    public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {
+        List<Field> fields = getPrefilledFields(form, user);
         for (Field field : fields) {
-            field.setDefaultValue(data.getDatas().get(field.getName()));
+            if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+                field.setDefaultValue(data.getDatas().get(field.getName()));
+            }
         }
         return fields;
     }
@@ -278,6 +281,23 @@ public class DataService {
             data = new Data();
         }
         return updateDatas(form, data, datas, user, authUser);
+    }
+
+    @Transactional
+    public Data addData(Long id, User user, User authUser) {
+        Form form = formService.getById(id);
+        Data data = new Data();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        data.setName(form.getTitle() + "_" + format.format(new Date()));
+        data.setForm(form);
+        data.setFormName(form.getName());
+        data.setFormVersion(form.getVersion());
+        data.setStatus(SignRequestStatus.draft);
+        data.setCreateBy(authUser);
+        data.setOwner(user);
+        data.setCreateDate(new Date());
+        dataRepository.save(data);
+        return data;
     }
 
     public void nullifyForm(Form form) {

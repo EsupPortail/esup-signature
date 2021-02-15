@@ -4,6 +4,10 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <!--/*@thymesVar id="datas" type="org.springframework.data.domain.Page<org.esupportail.esupsignature.entity.Data>"*/-->
 <head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import ListDataUi from "/static/js/modules/ui/datas/ListDataUi.js";
+    new ListDataUi([[${_csrf}]]);
+</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -15,33 +19,59 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn" >
+            <div class="fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                <li>
+                    <a type="button" id="deleteMultipleButton"
+                       class="btn-floating btn-lg bg-danger wave-effect d-none">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </li>
+                <li>
                 <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newFomModal" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
+                </li>
+                </ul>
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Documents en cours de saisie</b></h5>
-                    <div class="table-responsive">
+                    <div id="listSignRequestTable" class="tableFixHead">
                         <table th:if="${datas.getContent().size() > 0}" class="table table-sm table-hover">
-                            <thead class="d-none thead-dark">
+                            <thead class="thead-dark">
                             <tr>
-                                <th></th>
-                                <th class="w-30">Type</th>
-                                <th class="w-30">Nom</th>
-                                <th class="w-30"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                                <th class="w-10"></th>
+                                <th class="w-20 d-none d-lg-table-cell">
+                                    <div class="position-relative">
+                                        <button type="button" id="menu-toggle-multiple" class="btn text-light toggle-mini-menu" title="Menu global" data-target="#menu-multiple" aria-controls="menu-multiple" data-toggle="collapse">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
+                                            <div class="card-body">
+                                                <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                    <i class="far fa-check-square"></i> Tout sélectionner
+                                                </button>
+                                                <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                    <i class="far fa-minus-square"></i> Tout dé-sélectionner
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Nom</th>
+                                <th class="text-center"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
+                                <th class="text-center"></th>
                             </tr>
                             </thead>
                             <tbody>
                             <th:block th:each="data : ${datas}">
                             <tr th:data-href="'/user/datas/' + ${data.id} + '/update'">
-                                <td class="w-10 text-dark clickable-td"><i class="fab fa-firstdraft"></i></td>
+                                <td class="w-20 d-none d-lg-table-cell"><input type="checkbox" class="datas-ids" name="ids[]" th:value="${data.id}"></td>
+                                <td class="clickable-td" th:text="${data.form.name}"></td>
                                 <td class="clickable-td" th:text="${data.name}"></td>
                                 <td class="clickable-td" th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td>
+                                <td class="">
                                     <button type="button" th:id="'menu-toggle-' + ${data.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${data.name}" th:data-target="'#menu-' + ${data.id}" th:aria-controls="'menu-' + ${data.id}" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>

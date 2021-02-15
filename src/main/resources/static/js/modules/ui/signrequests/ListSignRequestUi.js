@@ -21,13 +21,13 @@ export default class ListSignRequestUi {
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
-        $('.idMassSign').on("change", e => this.checkNbCheckboxes());
+        $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         $('#checkCertSignButton').on("click", e => this.launchMassSign(false));
     }
 
     checkNbCheckboxes() {
-        let idDom = $('.idMassSign:checked');
+        let idDom = $('.sign-requests-ids:checked');
         if (idDom.length > 0) {
             $('#deleteMultipleButton').removeClass('d-none');
         } else {
@@ -121,7 +121,7 @@ export default class ListSignRequestUi {
         }
         $('#wait').modal('show');
         $('#wait').modal({backdrop: 'static', keyboard: false});
-        let idDom = $('.idMassSign:checked');
+        let idDom = $('.sign-requests-ids:checked');
         let ids = [];
         for (let i = 0; i < idDom.length ; i++) {
             ids.push(idDom.eq(i).val());
@@ -180,7 +180,7 @@ export default class ListSignRequestUi {
     }
 
     checkCertSign() {
-        let idDom = $('.idMassSign:checked');
+        let idDom = $('.sign-requests-ids:checked');
         let ids = [];
         for (let i = 0; i < idDom.length ; i++) {
             ids.push(idDom.eq(i).val());

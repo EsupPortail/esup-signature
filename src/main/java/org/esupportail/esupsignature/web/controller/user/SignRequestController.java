@@ -352,7 +352,7 @@ public class SignRequestController {
         return "redirect:" + request.getHeader("referer");
     }
 
-    @PostMapping(value = "delete-multiple", consumes = {"application/json"})
+    @PostMapping(value = "/delete-multiple", consumes = {"application/json"})
     @ResponseBody
     public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
         for(Long id : ids) {

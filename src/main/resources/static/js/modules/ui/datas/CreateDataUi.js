@@ -32,7 +32,7 @@ export class CreateDataUi {
         if(this.pdfViewer) {
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
-            this.pdfViewer.addEventListener('change', e => this.enableSave());
+            this.pdfViewer.addEventListener('change', e => this.saveData());
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
             this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
@@ -43,8 +43,12 @@ export class CreateDataUi {
         if (document.getElementById('sendModalButton') != null) {
             document.getElementById('sendModalButton').addEventListener('click', e => this.openSendModal());
         }
-        $('#saveButton').on('click', e => this.submitForm());
-        $('#newData').on('submit', e => this.launchSave());
+        // $('#saveButton').on('click', e => this.submitForm());
+        // $('#newData').on('submit', e => this.launchSave());
+        // let self = this;
+        // $("input").each(function(){
+        //     $(this).on("change", e => self.launchSave());
+        // });
     }
 
     openSendModal() {
@@ -55,13 +59,13 @@ export class CreateDataUi {
         });
     }
 
-    launchSave() {
-        if(this.nextCommand === "none") {
-            this.saveData();
-        } else {
-            this.pushData(false);
-        }
-    }
+    // launchSave() {
+    //     if(this.nextCommand === "none") {
+    //         this.saveData();
+    //     } else {
+    //         this.pushData(false);
+    //     }
+    // }
 
     initChangeControl() {
         console.info("init change control")
@@ -78,7 +82,7 @@ export class CreateDataUi {
     }
 
     listenForChange(input) {
-        $(input).change(e => this.enableSave());
+        $(input).change(e => this.saveData());
     }
 
     enableSave() {
@@ -99,13 +103,13 @@ export class CreateDataUi {
     }
 
     saveData() {
-        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(true));
+        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false));
     }
 
-    submitForm() {
-        this.nextCommand = "none";
-        this.launchSave();
-    }
+    // submitForm() {
+    //     this.nextCommand = "none";
+    //     this.launchSave();
+    // }
 
     simulateSave(command) {
         if((command === "next" && !this.pdfViewer.isLastpage()) || (command === "prev" && !this.pdfViewer.isFirstPage())) {
@@ -166,6 +170,7 @@ export class CreateDataUi {
         } else if(this.nextCommand === "prev") {
             this.pdfViewer.prevPage()
         }
+        this.nextCommand = "none";
     }
 
     startRender() {

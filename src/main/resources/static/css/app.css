@@ -1304,7 +1304,7 @@ height: 100%;
     z-index:2;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 785px) {
     #returnButton {
         display: none;
     }

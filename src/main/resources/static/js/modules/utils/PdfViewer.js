@@ -338,7 +338,7 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 let textareaField = $('textarea[name=\'' + inputName + '\']');
-                if (inputField.val() != null) {
+                if (textareaField.val() != null) {
                     if (savedValue != null) {
                         textareaField.val(savedValue);
                         continue;
