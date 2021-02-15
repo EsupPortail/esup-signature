@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -23,9 +24,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import java.util.Arrays;
 
-@RequestMapping("/user/signbooks")
+@Hidden
 @Controller
-
+@RequestMapping("/user/signbooks")
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
@@ -31,9 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+@Hidden
 @Controller
 @RequestMapping("/admin/forms")
-
 public class FormAdminController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);

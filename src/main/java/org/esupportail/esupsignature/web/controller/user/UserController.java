@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
@@ -34,6 +35,7 @@ import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Hidden
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
 @Controller

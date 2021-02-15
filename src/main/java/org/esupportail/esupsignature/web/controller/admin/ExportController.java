@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.service.FormService;
@@ -18,13 +17,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+@Hidden
 @Controller
 @RequestMapping(value = "/admin/export")
 public class ExportController {
@@ -49,9 +48,6 @@ public class ExportController {
 		return "admin/export/list";
 	}
 
-	@ApiResponses( value = {
-			@ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-	})
 	@GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
 		List<Form> forms = formService.getFormByNameAndActiveVersion(name, true);
