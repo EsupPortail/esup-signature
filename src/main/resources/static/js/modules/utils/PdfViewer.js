@@ -689,25 +689,25 @@ export class PdfViewer extends EventFactory {
             let formData = new Map();
             console.info("check data name");
             let self = this;
-            let resolveOk = true;
+            let resolveOk = "ok";
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
                 if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
                     let page =  $(this)[0].page;
+                    let name = $(this)[0].name;
                     bootbox.alert("Un champ n'est pas rempli en page " + page, function () {
-                        self.renderPage(page);
+                        if(page !== self.pageNum) {
+                            self.renderPage(page);
+                        }
+                        $('#' + name).focus();
                     });
-                    resolveOk = false;
+                    resolveOk = $(this)[0].name;
                     $('#sendModal').modal('hide');
                     return false;
                 }
             })
-            if(resolveOk) {
-                resolve("ok");
-            } else {
-                resolve("error");
-            }
+            resolve(resolveOk);
         });
         return p;
     }
