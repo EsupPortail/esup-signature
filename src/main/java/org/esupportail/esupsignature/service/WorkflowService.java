@@ -119,32 +119,41 @@ public class WorkflowService {
                 toUpdateWorkflow.setManagers(classWorkflow.getManagers());
             }
         }
+        List<Workflow> toRemoveWorkflows = new ArrayList<>();
         for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
             try {
-                List<WorkflowStep> generatedWorkflowSteps = ((DefaultWorkflow) getWorkflowByClassName(workflow.getName())).generateWorkflowSteps(userService.getSystemUser(), null);
-                int i = 0;
-                for (WorkflowStep generatedWorkflowStep : generatedWorkflowSteps) {
-                    if (workflow.getWorkflowSteps().size() > i) {
-                        WorkflowStep toUdateWorkflowStep = workflow.getWorkflowSteps().get(i);
-                        toUdateWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
-                        toUdateWorkflowStep.getUsers().clear();
-                        toUdateWorkflowStep.getUsers().addAll(generatedWorkflowStep.getUsers());
-                    } else {
-                        WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(generatedWorkflowStep.getName(), generatedWorkflowStep.getAllSignToComplete(), generatedWorkflowStep.getSignType());
-                        for (User user : generatedWorkflowStep.getUsers()) {
-                            userService.save(user);
-                            newWorkflowStep.getUsers().add(user);
+                DefaultWorkflow defaultWorkflow = (DefaultWorkflow) getWorkflowByClassName(workflow.getName());
+                if (defaultWorkflow != null) {
+                    List<WorkflowStep> generatedWorkflowSteps = defaultWorkflow.generateWorkflowSteps(userService.getSystemUser(), null);
+                    int i = 0;
+                    for (WorkflowStep generatedWorkflowStep : generatedWorkflowSteps) {
+                        if (workflow.getWorkflowSteps().size() > i) {
+                            WorkflowStep toUdateWorkflowStep = workflow.getWorkflowSteps().get(i);
+                            toUdateWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
+                            toUdateWorkflowStep.getUsers().clear();
+                            toUdateWorkflowStep.getUsers().addAll(generatedWorkflowStep.getUsers());
+                        } else {
+                            WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(generatedWorkflowStep.getName(), generatedWorkflowStep.getAllSignToComplete(), generatedWorkflowStep.getSignType());
+                            for (User user : generatedWorkflowStep.getUsers()) {
+                                userService.save(user);
+                                newWorkflowStep.getUsers().add(user);
+                            }
+                            newWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
+                            newWorkflowStep.setChangeable(generatedWorkflowStep.getChangeable());
+                            workflow.getWorkflowSteps().add(newWorkflowStep);
+                            workflowRepository.save(workflow);
                         }
-                        newWorkflowStep.setDescription(generatedWorkflowStep.getDescription());
-                        newWorkflowStep.setChangeable(generatedWorkflowStep.getChangeable());
-                        workflow.getWorkflowSteps().add(newWorkflowStep);
-                        workflowRepository.save(workflow);
+                        i++;
                     }
-                    i++;
+                } else {
+                    toRemoveWorkflows.add(workflow);
                 }
-            } catch (EsupSignatureUserException e) {
+            } catch(EsupSignatureUserException e){
                 logger.warn("already exist");
             }
+        }
+        for(Workflow workflow : toRemoveWorkflows) {
+            workflowRepository.delete(workflow);
         }
     }
 
