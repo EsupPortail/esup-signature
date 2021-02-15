@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -36,9 +37,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/user/datas")
+@Hidden
 @Controller
-
+@RequestMapping("/user/datas")
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);

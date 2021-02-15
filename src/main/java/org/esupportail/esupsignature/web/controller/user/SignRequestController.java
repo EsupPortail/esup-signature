@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -53,9 +54,9 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@RequestMapping("/user/signrequests")
+@Hidden
 @Controller
-
+@RequestMapping("/user/signrequests")
 @EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestController {
 
