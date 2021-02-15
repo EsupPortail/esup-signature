@@ -176,7 +176,7 @@
                         <hr>
                         <th:block th:each="step, iterator : ${steps}">
                             <div th:if="${step.changeable == true}" class="form-group">
-                                <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
+                                <label><span th:text="'Merci de saisir l\' étape ' + ${iterator.index + 1} + ' ' + ${step.description}"></span><span
                                         th:if="${step.name}" th:text="' : ' + ${step.name}"></span></label>
                                 <select class="select-users" th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                         multiple="multiple" name="recipientEmails" required="required">

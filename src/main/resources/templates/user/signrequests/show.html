@@ -535,7 +535,7 @@
                                     th:each="workFlowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps}">
                                 <div th:if="${workFlowStep.changeable == true}" class="form-group">
                                     <label><span
-                                            th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span
+                                            th:text="'Merci de saisir l\' étape ' + ${iterator.index + 1} + ' ' + ${workFlowStep.description}"></span><span
                                             th:if="${workFlowStep.name}" th:text="' : ' + ${workFlowStep.name}"></span></label>
                                     <select class="select-users"
                                             th:data-signrequest-id="${signRequest.id}"
