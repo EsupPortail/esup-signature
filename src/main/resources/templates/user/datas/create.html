@@ -33,7 +33,7 @@
         <div id="content" class="content">
             <div th:if="${data.status == null && (data.signBook == null || data.signBook.signRequests.size() == 0)}"
                  class="fixed-action-btn-simple">
-                <a id="saveButton" type="button" title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
+                <a id="saveButton" type="button" title="Enregistrer les modifications" class="btn-floating btn-lg d-none bg-success wave-effect">
                     <i class="fas fa-save"></i><br/>
                 </a>
             </div>
@@ -45,7 +45,7 @@
                            class="btn-lg btn-floating bg-success wave-effect">
                             <i class="fas fa-play"></i></a>
                     </li>
-                    <li>
+                    <li class="d-none">
                         <a id="saveButton"
                            title="Enregistrer les modifications" class="btn-floating btn-lg bg-success wave-effect">
                             <i class="fas fa-save"></i>

@@ -255,7 +255,6 @@ export class GlobalUi {
     disableSideBarButton() {
         console.debug("disable side button");
         $("#sidebarCollapse").attr("disabled", true).addClass('d-none');
-
         $('#returnButton').removeClass('d-none');
     }
 

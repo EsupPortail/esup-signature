@@ -8,6 +8,8 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -68,7 +70,10 @@ public class DataController {
 	private UserService userService;
 
 	@Resource
-	private UserPropertieService userPropertieService;
+	private EventService eventService;
+
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
 
 	@Resource
 	private FieldPropertieService fieldPropertieService;
@@ -106,6 +111,7 @@ public class DataController {
 							 @PathVariable("id") Long id,
 							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
 		User user = (User) model.getAttribute("user");
+		User authUser = (User) model.getAttribute("authUser");
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			if (page == null) {
 				page = 1;
@@ -120,7 +126,8 @@ public class DataController {
 			if(message != null) {
 				model.addAttribute("message", new JsonMessage("help", message));
 			}
-			return "user/datas/create";
+			Data data = dataService.addData(id, user, authUser);
+			return "redirect:/user/datas/" + data.getId() + "/update";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
@@ -135,7 +142,7 @@ public class DataController {
 		model.addAttribute("data", data);
 		if(data.getStatus().equals(SignRequestStatus.draft)) {
 			Form form = data.getForm();
-			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form));
+			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form, userService.getUserByEppn(userEppn)));
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
@@ -199,31 +206,29 @@ public class DataController {
 							   @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails,
 							   @RequestParam(required = false) List<String> targetEmails,
-							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
+							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-
+			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
+				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande envoyée"));
+				return "redirect:/user/";
+			}
 		} catch (EsupSignatureException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
-		return "redirect:/user/signrequests/";
+		return "redirect:/user/datas/" + id + "/update";
 	}
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		Data data = dataService.getById(id);
-		User user = userService.getByEppn(userEppn);
-		if(user.equals(data.getCreateBy()) || user.equals(data.getOwner())) {
-			dataService.delete(data);
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-		} else {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Suppression impossible"));
-		}
+		dataService.delete(id);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		return "redirect:/user/datas/";
 	}
 
@@ -290,6 +295,19 @@ public class DataController {
 	@ResponseBody
 	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
 		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
+	}
+
+	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})
+	@ResponseBody
+	public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+		for(Long id : ids) {
+			if(preAuthorizeService.dataUpdate(id, authUserEppn)) {
+				dataService.delete(id);
+			}
+		}
+//		eventService.publishEvent(new JsonMessage("info", "Brouillon(s) supprimé(s)"), "user", eventService.getClientIdByEppn(authUserEppn));
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
 }
