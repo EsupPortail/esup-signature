@@ -268,6 +268,9 @@ export class SignPosition extends EventFactory {
     changeSignImage(imageNum) {
         if(this.signImages != null) {
             console.debug("change sign image to " + imageNum);
+            if(imageNum == null) {
+                imageNum = 0;
+            }
             let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
             this.getCurrentSignParams().signImageNumber = imageNum;
             this.cross.css("background-image", "url('" + img + "')");
