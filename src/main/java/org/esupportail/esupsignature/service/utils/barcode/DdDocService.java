@@ -141,7 +141,7 @@ public class DdDocService {
     }
 
     private PrivateKey getPrivateKey() throws Exception {
-        File keyFile = fileService.inputStreamToTempFile(DdDocService.class.getResourceAsStream("/2ddoc.key"), "2sdoc.key");
+        File keyFile = fileService.inputStreamToTempFile(DdDocService.class.getResourceAsStream("/2ddoc.key"), "2ddoc.key");
         BufferedReader br = new BufferedReader(new FileReader(keyFile));
         PEMParser pp = new PEMParser(br);
         PEMKeyPair pemKeyPair = (PEMKeyPair) pp.readObject();

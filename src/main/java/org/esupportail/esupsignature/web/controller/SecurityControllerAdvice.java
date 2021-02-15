@@ -33,7 +33,9 @@ public class SecurityControllerAdvice {
             String eppn = auth.getName();
             if(ldapPersonService != null) {
                 List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
-                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if(personLdaps.size() > 0) {
+                    eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                }
             }
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = (String) httpSession.getAttribute("suEppn");
@@ -52,8 +54,9 @@ public class SecurityControllerAdvice {
             String eppn = auth.getName();
             if(ldapPersonService != null) {
                 List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
-                eppn = personLdaps.get(0).getEduPersonPrincipalName();
-            }
+                if(personLdaps.size() > 0) {
+                    eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                }            }
             logger.debug("eppn used is : " + eppn);
             return userService.buildEppn(eppn);
         } else {

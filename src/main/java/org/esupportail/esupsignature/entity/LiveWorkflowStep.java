@@ -26,6 +26,11 @@ public class LiveWorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    private Boolean isOriginalStep = true;
+
     public Long getId() {
         return id;
     }
@@ -72,5 +77,22 @@ public class LiveWorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return signRequestParams;
+    }
+
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
+    }
+
+    public Boolean getOriginalStep() {
+        if(isOriginalStep == null) return true;
+        return isOriginalStep;
+    }
+
+    public void setOriginalStep(Boolean originalStep) {
+        isOriginalStep = originalStep;
     }
 }

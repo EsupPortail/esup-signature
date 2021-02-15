@@ -19,11 +19,27 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-simple-btn" >
-                <a data-toggle="modal" data-target="#newFomModal" type="button"
-                   class="btn-floating btn-lg bg-primary wave-effect">
-                    <i class="fas fa-plus"></i>
-                </a>
+            <div id="signButtons" class="fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a type="button" id="massSignButton"
+                           class="btn-floating btn-lg bg-success wave-effect d-none">
+                            <i class="fas fa-file-signature"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a type="button" id="deleteMultipleButton"
+                           class="btn-floating btn-lg bg-danger wave-effect d-none">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a data-toggle="modal" data-target="#newFomModal" type="button"
+                           class="btn-floating btn-lg bg-primary wave-effect">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <div class="card col-lg-11">
                 <div id="myDocs" class="card-body">
@@ -31,7 +47,7 @@
                         <table class="table table-borderless table-hover">
                         <thead class="thead-dark">
                         <tr>
-                            <th class="w-20 d-none d-xxl-table-cell">
+                            <th class="w-20 d-none d-lg-table-cell">
                                 <div class="position-relative">
                                     <button type="button" id="menu-toggle-multiple" class="btn text-light toggle-mini-menu" title="Menu global" data-target="#menu-multiple" aria-controls="menu-multiple" data-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
@@ -44,16 +60,36 @@
                                             <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
                                                 <i class="far fa-minus-square"></i> Tout dé-sélectionner
                                             </button>
-                                            <button id="deleteMultipleButton" class="btn btn-transparent text-dark text-left col-12"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
                                         </div>
                                     </div>
                                 </div>
                             </th>
-                            <th class="w-20 d-none d-xxl-table-cell">Circuit</th>
-                            <th class="w-20">Titre des documents</th>
+                            <th class="w-20 d-none d-lg-table-cell text-center">
+                                <select id="workflowFilter" class="slim-select-simple sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="workflow : ${signRequestWorkflow}">
+                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
+                            <th class="w-20 text-center">
+                                <select id="docTitleFilter" class="slim-select-simple sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="docTitle : ${docTitles}">
+                                        <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
                             <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                            <th class="d-none d-lg-table-cell">Participants</th>
+                            <th class="d-none d-lg-table-cell">
+                                <select id="recipientsFilter" class="slim-select-simple sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
+                                        <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>
+                                    </th:block>
+                                </select>
+                            </th>
                             <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
                             <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
                             <th>Actions</th>
@@ -62,7 +98,7 @@
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" name="ids[]" th:value="${signRequest.parentSignBook.id}"></td>
+                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-id-signbook="${signRequest.parentSignBook.id}"></td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                 <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
@@ -165,6 +201,33 @@
         </div>
     </div>
 </main>
+<div class="modal fade" id="checkCertSignModal"
+     tabindex="-1" role="dialog" aria-labelledby="checkCertSignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">Nous avons détecté une signature électronique parmi les demandes sélectionnées</div>
+                <div class="modal-body">
+                    <input class="form-control" type="password" id="password" name="password" value=""
+                           placeholder="Mot de passe du keystore"/>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button id="checkCertSignButton"
+                        class="btn btn-success" title="Signer" autofocus>
+                    Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
      aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -179,6 +242,33 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <h5>Signature en cours</h5>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;"
+                         id="bar">
+                    </div>
+                </div>
+                <span id="bar-text"></span>
+                <div id="passwordError" class="alert alert-danger" role="alert">
+                    Mauvais mot de passe
+                </div>
+                <div id="signError" class="alert alert-danger" role="alert">
+                    Erreur du système de signature
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                    Fermer
+                </button>
+                <button id="validModal" onclick="location.reload();" class="btn btn-secondary">Terminer</button>
             </div>
         </div>
     </div>

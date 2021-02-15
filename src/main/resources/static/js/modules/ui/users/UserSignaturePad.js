@@ -1,26 +1,26 @@
 export class UserSignaturePad {
 
-    constructor(lastSign, signWidth, signHeight) {
+    constructor() {
         console.info("Starting user signature pad tool");
-        this.canvas = document.getElementById("canvas");
+        this.canvas = $('#canvas');
         this.signImageBase64 = $("#signImageBase64");
-        this.signaturePad = new SignaturePad(this.canvas, {
+        this.signaturePad = new SignaturePad(this.canvas[0], {
             minWidth: 1,
             maxWidth: 2,
             throttle: 0,
             minDistance: 5,
             velocityFilterWeight: 0.1
         });
-
         this.firstClear = true;
         this.lastSign = null;
         this.initListeners();
         this.resizeCanvas();
+        this.canvas.mousedown();
     }
 
     initListeners() {
-        this.canvas.addEventListener('mousedown', e => this.firstClearSignaturePad());
-        this.canvas.addEventListener('touchstart', e => this.firstClearSignaturePad());
+        this.canvas.on('mousedown', e => this.firstClearSignaturePad());
+        this.canvas.on('touchstart', e => this.firstClearSignaturePad());
         $('#erase').click(e => this.clear());
         // $('#validate').click(e => this.saveSignaturePad());
         // $('#reset').click(e => this.resetSignaturePad());
@@ -55,7 +55,7 @@ export class UserSignaturePad {
 
     save() {
         this.signImageBase64.val(this.signaturePad.toDataURL("image/png"));
-        this.canvas.style.background = "rgba(0, 255, 0, .5)";
+        this.canvas.css("background", "rgba(0, 255, 0, .5)");
     }
 
     clear() {
@@ -74,9 +74,9 @@ export class UserSignaturePad {
     resizeCanvas() {
         console.info("resize sign pad");
         let ratio = Math.max(window.devicePixelRatio || 1, 1);
-        this.canvas.width = this.canvas.offsetWidth * ratio;
-        this.canvas.height = this.canvas.offsetHeight * ratio;
-        this.canvas.getContext("2d").scale(ratio, ratio);
+        this.canvas[0].width = this.canvas[0].offsetWidth * ratio;
+        this.canvas[0].height = this.canvas[0].offsetHeight * ratio;
+        this.canvas[0].getContext("2d").scale(ratio, ratio);
         //this.resetSignaturePad();
     }
 }

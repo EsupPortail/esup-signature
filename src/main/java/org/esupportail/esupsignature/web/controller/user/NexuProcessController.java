@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.model.ToBeSigned;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -22,6 +23,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.Serializable;
 
+@Hidden
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
 @RequestMapping("/user/nexu-sign")

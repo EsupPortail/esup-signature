@@ -3,7 +3,7 @@ export class SignRequestParams {
     constructor(signRequestParams) {
         this.pdSignatureFieldName;
         this.signImageNumber = 0;
-        this.signPageNumber;
+        this.signPageNumber = 1;
         this.signWidth;
         this.signHeight;
         this.xPos = -1;

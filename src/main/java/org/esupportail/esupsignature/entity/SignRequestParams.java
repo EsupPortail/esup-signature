@@ -15,9 +15,9 @@ public class SignRequestParams {
 
 	private String pdSignatureFieldName;
 
-	private int signImageNumber;
+	private int signImageNumber = 0;
 
-	private int signPageNumber;
+	private int signPageNumber = 1;
 
     private int signWidth = 150;
 

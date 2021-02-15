@@ -5,8 +5,7 @@
 <script th:inline="javascript" type="module">
     import {default as UserUi} from "/static/js/modules/ui/users/UserUi.js";
     import {UserParamsHelp} from "/static/js/modules/help/UserParamsHelp.js";
-    new UserUi("data:image/png;base64, " + [[${signFile}]], [[${signWidth}]], [[${signHeight}]]);
-
+    new UserUi();
     let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();
 </script>
@@ -41,6 +40,7 @@
                                         <thead class="thead-dark">
                                         <tr>
                                             <th class="text-left">Aperçu</th>
+                                            <th class="text-left">Préférée</th>
                                             <th>Supprimer</th>
                                         </tr>
                                         </thead>
@@ -49,6 +49,11 @@
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
                                                     <img class="thumbnail" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
+                                                </td>
+                                                <td>
+                                                    <a th:href="'/user/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
+                                                        <i class="fas fa-star"></i>
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     <a th:id="'deleteSign_' + ${signImageId}" th:href="'/user/users/delete-sign/' + ${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
@@ -213,19 +218,19 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group" id="emailAlertHour" style="display: none;">
+                        <div class="form-group" id="emailAlertHourDiv" style="display: none;">
                             <label class="col-form-label" for="emailAlertHour"> <strong>Heure d'alerte</strong>
                             </label>
 <!--                            <input name="emailAlertHour" step="3600000" class="form-control" type="time"-->
 <!--                                   th:value="${authUser.emailAlertHour}" autocomplete="off"/>-->
-                            <select name="emailAlertHour" class="form-control">
+                            <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
                                 <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i}" th:selected="${i==authUser.emailAlertHour}"></option>
                             </select>
                         </div>
                         <div class="form-group" id="emailAlertDay" style="display: none;">
                             <label class="col-form-label" for="_emailAlertDay_id"> <strong>Jour de
                                 l'alerte</strong></label>
-                            <select class="form-control" id="_emailAlertDay_id" name="emailAlertDay">
+                            <select class="slim-select-simple" id="_emailAlertDay_id" name="emailAlertDay">
                                 <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
                                     <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
                                             th:value="${emailAlertDay}"

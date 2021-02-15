@@ -5,8 +5,9 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(csrf) {
+    constructor(authUserEppn, csrf) {
         console.info("Starting global UI");
+        this.checkBrowser();
         this.csrf = csrf;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
@@ -14,18 +15,20 @@ export class GlobalUi {
         this.sideBarLabels = $('.sidebar-label');
         this.content = $('#content');
         this.breadcrumb = $('#breadcrumb');
-        this.inputFile = $(".custom-file-input");
+        this.inputFiles = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
         this.clickableTd = $(".clickable-td");
         this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
+        if(authUserEppn != null) {
+            sessionStorage.setItem("sseId", this.csrf.token)
+            this.sseSubscribe = new SseSubscribe(this.csrf.token);
+        }
         this.initListeners();
+        this.initBootBox();
         this.initSideBar();
         this.checkCurrentPage();
-        this.sseId = this.uuidv4();
-        sessionStorage.setItem("sseId", this.sseId);
-        this.sseSubscribe = new SseSubscribe(this.sseId);
     }
 
     initListeners() {
@@ -68,7 +71,7 @@ export class GlobalUi {
                 window.location = $(this).closest('tr').attr('data-href');
             }
         });
-        this.inputFile.on('change', e => this.changeFileInputName(e));
+        this.inputFiles.on('change', e => this.changeFileInputName(e));
         let delay = 0;
         let offset = 300;
 
@@ -109,8 +112,27 @@ export class GlobalUi {
         this.bindKeyboardKeys();
     }
 
-    enableIframe() {
+    initBootBox() {
+        bootbox.setDefaults({
+            locale: "fr",
+            show: true,
+                backdrop: true,
+            closeButton: true,
+            animate: true,
+            className: "my-modal"
 
+        });
+    }
+
+    checkBrowser() {
+        let ua = window.navigator.userAgent;
+        let msie = ua.indexOf("MSIE ");
+        let isIE = /*@cc_on!@*/false || !!document.documentMode;
+        if (isIE || msie > 0) {
+            document.body.innerHTML = "";
+            alert("Votre navigateur n'est pas compatible");
+            window.location.href="https://www.google.com/intl/fr_fr/chrome/";
+        }
     }
 
     checkUserCertificate() {
@@ -149,7 +171,7 @@ export class GlobalUi {
 
     checkCurrentPage() {
         let url = window.location.pathname;
-        if(!url.match("/user/signrequests/+[\\w\\W]+") || !url.match("/user/signbooks/+[\\w\\W]+")) {
+        if(!url.match("/user/signrequests/+[\\w\\W]+")) {
             this.resetMode();
         }
     }
@@ -202,9 +224,8 @@ export class GlobalUi {
             console.info("auto adjust : hide");
             this.hideSideBar();
         } else {
-            console.info("auto adjust : display");
+            console.debug("auto adjust : display");
             let url = window.location.pathname;
-            console.info("auto display side bar : " + url);
             if(this.sideBarStatus === 'on') {
                 this.showSideBar();
             } else {
@@ -234,7 +255,6 @@ export class GlobalUi {
     disableSideBarButton() {
         console.debug("disable side button");
         $("#sidebarCollapse").attr("disabled", true).addClass('d-none');
-
         $('#returnButton').removeClass('d-none');
     }
 
@@ -327,16 +347,17 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
-        $("select[class='slim-select-simple']").each(function () {
+        $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
+            let allowDeselect = new Boolean($(this).attr('data-allow-deselect'));
             new SlimSelect({
                 select: '#' + selectName,
                 showSearch: false,
                 searchHighlight: false,
                 hideSelectedOption: false,
-                allowDeselect: true,
-                placeholder: ' ',
+                allowDeselect: allowDeselect.valueOf(),
+                placeholder: $(this).attr('data-placeholder'),
                 closeOnSelect: true,
                 ajax: function (search, callback) {
                     callback(false)
@@ -363,12 +384,6 @@ export class GlobalUi {
                 ]
             });
         });
-    }
-
-    uuidv4() {
-        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-        );
     }
 
     onDocumentLoad() {
@@ -407,12 +422,26 @@ export class GlobalUi {
                             location.href = prevSignRequestButton.attr('href');
                         }
                         break;
+                    case 13:
+                        event.preventDefault();
+                        let signLaunchButton = $("#signLaunchButton");
+                        if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
+                            signLaunchButton.click();
+                        }
+                        break;
                 }
             } else {
                 if(event.which === 13) {
-                    let signLaunchButton = $("#signLaunchButton");
-                    if(signLaunchButton.length && $(".bootbox-alert").length === 0) {
-                        signLaunchButton.click();
+                    let saveCommentButton = $("#saveCommentButton");
+                    if(saveCommentButton.length && $("#postitComment").val() !== '') {
+                        saveCommentButton.click();
+                    }
+
+                }
+                if(event.which === 27) {
+                    let hideCommentButton = $("#hideCommentButton");
+                    if(hideCommentButton.length) {
+                        hideCommentButton.click();
                     }
                 }
             }

@@ -134,7 +134,10 @@ export default class SelectUser {
         let typeValues = [];
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
-            typeValues[j] = {text : value};
+            typeValues[j] = {
+                text : value,
+                value : this.valuePrefix + value,
+            };
         }
         this.favorites = typeValues;
         console.log(this.favorites);

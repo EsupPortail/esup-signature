@@ -3,8 +3,8 @@ package org.esupportail.esupsignature.web.ws;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -34,7 +34,6 @@ import javax.annotation.Resource;
 import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -237,7 +236,7 @@ public class WsController {
     }
 
 @ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
+            @ApiResponse(responseCode = "200")
             }
     )@GetMapping(value = "/get-signed-file")
     public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response) {
@@ -269,10 +268,6 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-            }
-    )
     @GetMapping(value = "/get-last-file-by-token/{token}")
     public void getLastFileByToken(@PathVariable("token") String token, HttpServletResponse response) {
         SignRequest signRequest = signRequestRepository.findByToken(token).get(0);
@@ -291,10 +286,7 @@ public class WsController {
         }
     }
 
-    @ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-            }
-    )@GetMapping(value = "/get-last-file-from-signrequest")
+    @GetMapping(value = "/get-last-file-from-signrequest")
     public ResponseEntity<Void> getLastFileFromSignRequest(@ModelAttribute("userEppn") String userEppn, @RequestParam String token, HttpServletResponse response) {
         try {
             if (signRequestRepository.countByToken(token) > 0) {
@@ -316,10 +308,7 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-@ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-            }
-    )@GetMapping(value = "/get-last-file-from-signbook")
+    @GetMapping(value = "/get-last-file-from-signbook")
     public ResponseEntity<Void> getLastFileFromSignBook(@RequestParam String name, HttpServletResponse response) {
         try {
             SignBook signBook = signBookRepository.findByName(name).get(0);
@@ -350,10 +339,7 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-@ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-            }
-    )@GetMapping(value = "/get-last-file")
+    @GetMapping(value = "/get-last-file")
     public ResponseEntity<Void> getLastFile(@RequestParam String token, HttpServletResponse response) {
         try {
             SignRequest signRequest = signRequestRepository.findByToken(token).get(0);

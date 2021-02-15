@@ -72,7 +72,8 @@ public class DataService {
         return dataRepository.findById(dataId).get();
     }
 
-    public void delete(Data data) {
+    public void delete(Long id) {
+        Data data = getById(id);
         if (data.getSignBook() != null) {
             signBookService.delete(data.getSignBook().getId());
         }
@@ -97,9 +98,8 @@ public class DataService {
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
         SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
-        signBookService.importWorkflow(signBook, computedWorkflow);
         InputStream inputStream = generateFile(data);
-        if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() == 0) {
+        if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
                 inputStream = pdfService.convertGS(inputStream);
             } catch (IOException e) {
@@ -108,6 +108,7 @@ public class DataService {
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+        signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
             signBook.getLiveWorkflow().setTargetType(form.getTargetType());
@@ -126,8 +127,10 @@ public class DataService {
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
-
         for(Field field : fields) {
+            if(!field.getStepNumbers().contains("0")) {
+                field.setDefaultValue("");
+            }
             if (field.getFavorisable()) {
                 fieldPropertieService.createFieldPropertie(authUser, field, formDatas.get(field.getName()));
             }
@@ -135,7 +138,6 @@ public class DataService {
                 formDatas.put(field.getName(), field.getDefaultValue());
             }
         }
-
         for(String savedDataKeys : data.getDatas().keySet()) {
             if(!formDatas.containsKey(savedDataKeys)) {
                 formDatas.put(savedDataKeys, "");
@@ -220,6 +222,9 @@ public class DataService {
             List<Field> fields = new ArrayList<>(form.getFields());
             prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
             for (Field field : prefilledFields) {
+                if(field.getName().equals("Su_DateSign")) {
+                    logger.info("test");
+                }
                 if(!field.getStepNumbers().contains("0")) {
                     field.setDefaultValue("");
                 }
@@ -256,10 +261,12 @@ public class DataService {
         return cloneData(data, authUser);
     }
 
-    public List<Field> setFieldsDefaultsValues(Data data, Form form) {
-        List<Field> fields = form.getFields();
+    public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {
+        List<Field> fields = getPrefilledFields(form, user);
         for (Field field : fields) {
-            field.setDefaultValue(data.getDatas().get(field.getName()));
+            if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
+                field.setDefaultValue(data.getDatas().get(field.getName()));
+            }
         }
         return fields;
     }
@@ -274,6 +281,23 @@ public class DataService {
             data = new Data();
         }
         return updateDatas(form, data, datas, user, authUser);
+    }
+
+    @Transactional
+    public Data addData(Long id, User user, User authUser) {
+        Form form = formService.getById(id);
+        Data data = new Data();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
+        data.setName(form.getTitle() + "_" + format.format(new Date()));
+        data.setForm(form);
+        data.setFormName(form.getName());
+        data.setFormVersion(form.getVersion());
+        data.setStatus(SignRequestStatus.draft);
+        data.setCreateBy(authUser);
+        data.setOwner(user);
+        data.setCreateDate(new Date());
+        dataRepository.save(data);
+        return data;
     }
 
     public void nullifyForm(Form form) {

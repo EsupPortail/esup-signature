@@ -21,7 +21,7 @@
                                     <a th:href="'/user/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fas fa-download"></i></a>
                                 </td>
                                 <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                    <a th:id="'deleteAttachement_' + ${attachment.id}" th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+                                    <a th:id="'deleteAttachement-' + ${attachment.id}" th:href="'/user/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"  class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
                                 </td>
                             </tr>
                         </th:block>

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import java.util.Arrays;
 
+@Hidden
 @Controller
 @RequestMapping("/user/workflows")
 
@@ -114,7 +116,7 @@ public class WorkflowController {
         return "redirect:/";
     }
 
-    @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
+    @DeleteMapping(value = "/silent-delete/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody
     public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {

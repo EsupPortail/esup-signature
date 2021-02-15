@@ -44,6 +44,30 @@ export default class Toast {
         toast.css('z-index', 10000);
         toast.toast('show');
         new Notification(message.text);
+        let start = new Date();
+        let end = new Date();
+        end.setSeconds(start.getSeconds() + (toast.attr('data-delay') / 1000));
+        this.setUpProgressBar("#progress-" + message.type, start.getTime(), end.getTime(), 50)
+    }
+
+    setUpProgressBar(selector, startTime, endTime, update) {
+
+        let timer;
+        let elem = $(selector);
+        let max = endTime - startTime;
+        elem.attr('max', max);
+        elem.attr('value', max);
+        let setValue = function() {
+            let currentTime = new Date().getTime();
+            let ellasped = endTime - currentTime;
+            if (ellasped < 0) {
+                ellasped = 0
+                window.clearTimeout(timer)
+            }
+            elem.attr('value', ellasped);
+        }
+        setValue();
+        timer = window.setInterval(setValue, update);
     }
 
 }

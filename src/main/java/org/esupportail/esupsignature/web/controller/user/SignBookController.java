@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -23,9 +24,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import java.util.Arrays;
 
-@RequestMapping("/user/signbooks")
+@Hidden
 @Controller
-
+@RequestMapping("/user/signbooks")
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
@@ -117,7 +118,7 @@ public class SignBookController {
         try {
             String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
             recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber() - 1, step.getAllSignToComplete(), step.getSignType(), true);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;

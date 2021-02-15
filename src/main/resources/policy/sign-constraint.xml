@@ -35,7 +35,7 @@
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="FAIL" />
+			<ProspectiveCertificateChain Level="WARN" />
 			<!-- 			<TrustedServiceTypeIdentifier Level="WARN"> -->
 			<!-- 				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
 			<!-- 			</TrustedServiceTypeIdentifier> -->
@@ -54,7 +54,7 @@
 				<RevocationInfoAccessPresent Level="WARN" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<KeyUsage Level="INFORM">
 					<Id>nonRepudiation</Id>
 				</KeyUsage>
@@ -97,7 +97,7 @@
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<Cryptographic Level="FAIL">
@@ -176,7 +176,7 @@
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="FAIL" />
+			<ProspectiveCertificateChain Level="WARN" />
 			<!-- 			<TrustedServiceTypeIdentifier Level="WARN"> -->
 			<!-- 				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
 			<!-- 			</TrustedServiceTypeIdentifier> -->
@@ -195,7 +195,7 @@
 				<RevocationInfoAccessPresent Level="WARN" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<KeyUsage Level="INFORM">
 					<Id>nonRepudiation</Id>
 				</KeyUsage>
@@ -238,7 +238,7 @@
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<Cryptographic Level="FAIL">
@@ -317,14 +317,14 @@
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="FAIL" />
+			<ProspectiveCertificateChain Level="WARN" />
 			<SigningCertificate>
 				<Recognition Level="FAIL" />
 				<Signature Level="FAIL" />
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<NotSelfSigned Level="WARN" />
@@ -358,7 +358,7 @@
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="WARN" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<Cryptographic Level="FAIL">
@@ -413,19 +413,19 @@
 		</BasicSignatureConstraints>
 	</Timestamp>
 	<Revocation>
-		<RevocationFreshness Level="FAIL" Unit="DAYS" Value="356" />
+		<RevocationFreshness Level="WARN" Unit="DAYS" Value="356" />
 		<BasicSignatureConstraints>
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />
 			<SignatureIntact Level="FAIL" />
-			<ProspectiveCertificateChain Level="FAIL" />
+			<ProspectiveCertificateChain Level="WARN" />
 			<SigningCertificate>
 				<Recognition Level="FAIL" />
 				<Signature Level="FAIL" />
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="FAIL" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<Cryptographic Level="WARN">
@@ -458,7 +458,7 @@
 				<NotExpired Level="FAIL" />
 				<RevocationDataAvailable Level="WARN" />
 				<RevocationDataNextUpdatePresent Level="WARN" />
-				<RevocationDataFreshness Level="FAIL" />
+				<RevocationDataFreshness Level="WARN" />
 				<NotRevoked Level="FAIL" />
 				<NotOnHold Level="FAIL" />
 				<Cryptographic Level="FAIL">
@@ -520,7 +520,7 @@
 
 	<!-- eIDAS REGL 910/EU/2014 -->
 	<eIDAS>
-		<TLFreshness Level="WARN" Unit="HOURS" Value="6" />
+		<TLFreshness Level="WARN" Unit="HOURS" Value="24" />
 		<TLNotExpired Level="WARN" />
 		<TLWellSigned Level="FAIL" />
 		<TLVersion Level="FAIL" value="5" />

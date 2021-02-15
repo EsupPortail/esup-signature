@@ -1,7 +1,5 @@
 package org.esupportail.esupsignature.web.ws;
 
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -39,9 +36,6 @@ public class WsExportController {
     @Resource
     private DataExportService dataExportService;
 
-    @ApiResponses( value = {
-            @ApiResponse(code = 200, message = "OK", response = ByteArrayInputStream.class)
-            })
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
         List<Form> forms = formRepository.findFormByName(name);

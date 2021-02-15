@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.WorkflowService;
@@ -28,10 +30,11 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
+@Hidden
 @Controller
 @RequestMapping("/admin/forms")
-
 public class FormAdminController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
@@ -60,6 +63,9 @@ public class FormAdminController {
 
 	@Resource
 	private FieldService fieldService;
+
+	@Resource
+	private DocumentService documentService;
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
@@ -119,7 +125,7 @@ public class FormAdminController {
 		return "admin/forms/list";
 	}
 	
-	@PutMapping()
+	@PutMapping
 	public String updateForm(@ModelAttribute Form updateForm,
 							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
@@ -128,7 +134,15 @@ public class FormAdminController {
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
-	
+
+	@PostMapping("/update-model/{id}")
+	public String updateFormmodel(@PathVariable("id") Long id,
+								  @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
+		formService.updateFormModel(id, multipartModel);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+		return "redirect:/admin/forms/update/" + id;
+	}
+
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
@@ -187,6 +201,23 @@ public class FormAdminController {
 		}
 		fieldService.updateField(id, Boolean.parseBoolean(favorisable), Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/get-file/{id}")
+	public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
+		try {
+			Map<String, Object> attachmentResponse = formService.getModel(id);
+			if (attachmentResponse != null) {
+				httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
+				httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+				IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
+				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+			}
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
 	}
 
 }

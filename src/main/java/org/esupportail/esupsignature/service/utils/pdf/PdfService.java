@@ -42,6 +42,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,11 +95,15 @@ public class PdfService {
             List<String> addText = getSignatureStrings(user, signType, newDate, dateFormat);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), addText, true, signRequestParams);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), addText, true, signRequestParams);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
             } else {
-                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
+                    signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");
+                } else {
+                    signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                }
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
@@ -165,7 +170,7 @@ public class PdfService {
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-            logger.info("stamp image to " + xAdjusted +", " + yAdjusted);
+            logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, widthAdjusted, heightAdjusted);
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -392,6 +397,7 @@ public class PdfService {
                     logger.debug(output.toString());
                 } else {
                     logger.warn("Convert fail");
+                    logger.warn(cmd);
                     logger.warn(output.toString());
                     throw new EsupSignatureSignException("PDF/A convertion failure");
                 }

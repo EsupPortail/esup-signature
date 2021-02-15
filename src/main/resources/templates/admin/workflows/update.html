@@ -91,7 +91,7 @@
                             <label for="sourceTypeSelect">
                                 <strong> Protocole pour la source des documents </strong>
                             </label>
-                            <select class="form-control" id="sourceTypeSelect" th:field="*{sourceType}" size="1">
+                            <select class="slim-select-simple" id="sourceTypeSelect" th:field="*{sourceType}" size="1">
                                 <th:block th:each="sourceType : ${sourceTypes}">
                                     <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}"
                                             th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
@@ -109,7 +109,7 @@
                             <label for="targetTypeSelect">
                                 <strong> Protocole pour la destination des documents </strong>
                             </label>
-                            <select class="form-control" id="targetTypeSelect" th:field="*{targetType}" size="1">
+                            <select class="slim-select-simple" id="targetTypeSelect" th:field="*{targetType}" size="1">
                                 <th:block th:each="targetType : ${targetTypes}">
                                     <option th:selected="${workflow.targetType == targetType}" th:value="${targetType}"
                                             th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
@@ -131,6 +131,5 @@
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
-<div th:replace="fragments/message :: message"></div>
 </body>
 </html>

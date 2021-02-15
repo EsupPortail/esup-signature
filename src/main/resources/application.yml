@@ -135,7 +135,7 @@ dss:
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
-    trusted-certificat-url-list: https://services.renater.fr/_media/tcs/geant_personal_ca_4.pem, https://cacerts.digicert.com/DigiCertAssuredIDRootG3.crt, https://cacerts.digicert.com/DigiCertAssuredIDRootCA.crt, https://cacerts.digicert.com/TERENAPersonalCA3.crt, https://www.certinomis.fr/publi/cer/AC_Racine_G3.cer
+    trusted-certificat-url-list:
 
 fs:
 #    smb-login: esup-signature
@@ -169,7 +169,7 @@ security:
         group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:
             for.esup-signature.admin: ROLE_ADMIN
-            for.esup-signature.test: ROLE_USER
+            for.esup-signature.user: ROLE_USER
         ws-access-authorize-ips: 127.0.0.1
 #        group-mapping-spel:
 #            for.esup-signature.user: "true"

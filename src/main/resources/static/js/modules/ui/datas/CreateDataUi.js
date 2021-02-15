@@ -10,9 +10,7 @@ export class CreateDataUi {
         console.log(fields);
         this.data = data;
         if(data) {
-            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0);
-            this.pdfViewer.setDataFields(fields);
-            this.pdfViewer.scale = 0.70;
+            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, fields, false);
         }
         this.action = action;
         this.actionEnable = 0;
@@ -23,7 +21,6 @@ export class CreateDataUi {
                 this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
             }
         }
-        this.newData = $('#newData');
         this.nextCommand = "none";
         this.wheelDetector = new WheelDetector();
         this.sseDispatcher = new SseDispatcher();
@@ -33,31 +30,42 @@ export class CreateDataUi {
 
     initListeners() {
         if(this.pdfViewer) {
-            document.getElementById('prev').addEventListener('click', e => this.simulateSave("prev"));
-            document.getElementById('next').addEventListener('click', e => this.simulateSave("next"));
             this.pdfViewer.addEventListener('ready', e => this.startRender());
             this.pdfViewer.addEventListener('render', e => this.initChangeControl());
-            this.pdfViewer.addEventListener('change', e => this.enableSave());
+            this.pdfViewer.addEventListener('change', e => this.saveData());
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
             this.wheelDetector.addEventListener("pagetop", e => this.simulateSave("prev"));
             this.wheelDetector.addEventListener("pagebottom", e => this.simulateSave("next"));
+            $('#prev').on('click', e => this.simulateSave("prev"));
+            $('#next').on('click', e => this.simulateSave("next"));
         }
         if (document.getElementById('sendModalButton') != null) {
-            document.getElementById('sendModalButton').addEventListener('click', e => this.checkForm());
+            document.getElementById('sendModalButton').addEventListener('click', e => this.openSendModal());
         }
-        document.getElementById('saveButton').addEventListener('click', e => this.submitForm());
-        document.getElementById('newData').addEventListener('submit', e => this.launchSave());
+        // $('#saveButton').on('click', e => this.submitForm());
+        // $('#newData').on('submit', e => this.launchSave());
+        // let self = this;
+        // $("input").each(function(){
+        //     $(this).on("change", e => self.launchSave());
+        // });
     }
 
-    launchSave() {
-        //e.preventDefault()
-        if(this.nextCommand === "none") {
-            this.saveData();
-        } else {
-            this.pushData(false);
-        }
+    openSendModal() {
+        this.pdfViewer.checkForm().then(function(result) {
+            if(result === "ok") {
+                $('#sendModal').modal('show');
+            }
+        });
     }
+
+    // launchSave() {
+    //     if(this.nextCommand === "none") {
+    //         this.saveData();
+    //     } else {
+    //         this.pushData(false);
+    //     }
+    // }
 
     initChangeControl() {
         console.info("init change control")
@@ -74,7 +82,7 @@ export class CreateDataUi {
     }
 
     listenForChange(input) {
-        $(input).change(e => this.enableSave());
+        $(input).change(e => this.saveData());
     }
 
     enableSave() {
@@ -95,26 +103,27 @@ export class CreateDataUi {
     }
 
     saveData() {
-        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(true));
+        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false));
     }
 
-    submitForm() {
-        this.nextCommand = "none";
-        this.launchSave();
-    }
+    // submitForm() {
+    //     this.nextCommand = "none";
+    //     this.launchSave();
+    // }
 
     simulateSave(command) {
         if((command === "next" && !this.pdfViewer.isLastpage()) || (command === "prev" && !this.pdfViewer.isFirstPage())) {
             this.nextCommand = command;
-            this.pdfViewer.promizeSaveValues().then(e => this.afterSimulate());
+            this.pdfViewer.promizeSaveValues().then(e => this.afterSimulate(command));
         } else {
             this.nextCommand = "none";
         }
     }
 
-    afterSimulate() {
+    afterSimulate(command) {
         //$('#simulateDataSubmit').click();
         this.excuteNextCommand();
+        if(command === "prev") window.scrollTo(0, document.body.scrollHeight);
     }
 
     pushData(redirect) {
@@ -161,32 +170,12 @@ export class CreateDataUi {
         } else if(this.nextCommand === "prev") {
             this.pdfViewer.prevPage()
         }
+        this.nextCommand = "none";
     }
 
     startRender() {
         this.pdfViewer.renderPage(1);
         this.pdfViewer.adjustZoom();
-    }
-
-    checkForm() {
-        let formData  = new Map();
-        console.info("check data name");
-        let pdfViewer = this.pdfViewer;
-        let openModal = true
-        pdfViewer.dataFields.forEach(function(dataField){
-            let savedField = pdfViewer.savedFields.get(dataField.name)
-            formData[dataField.name]= savedField;
-            if(dataField.required && (savedField === "" || savedField == null)) {
-                bootbox.alert("Un champ n'est pas rempli en page " + dataField.page);
-                openModal = false;
-                pdfViewer.renderPage(dataField.page);
-            }
-        })
-        if (openModal) {
-            $('#sendModal').modal('show');
-        } else {
-            $('#sendModal').modal('hide');
-        }
     }
 
 }

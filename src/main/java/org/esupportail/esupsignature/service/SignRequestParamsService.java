@@ -67,10 +67,6 @@ public class SignRequestParamsService {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             List<SignRequestParams> signRequestParamses = pdSignatureFieldsToSignRequestParams(pdDocument);
-            if(signRequestParamses.size() == 0) {
-                SignRequestParams signRequestParams = SignRequest.getEmptySignRequestParams();
-                signRequestParamses.add(signRequestParams);
-            }
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParamsRepository.save(signRequestParams);
             }
@@ -114,12 +110,31 @@ public class SignRequestParamsService {
     }
 
     public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
-        SignRequestParams signRequestParams = signRequest.getCurrentSignRequestParams();
-        signRequestParams.setSignPageNumber(signRequestParamses.get(0).getSignPageNumber());
-        signRequestParams.setxPos(signRequestParamses.get(0).getxPos());
-        signRequestParams.setyPos(signRequestParamses.get(0).getyPos());
-        signRequestParams.setSignWidth(signRequestParamses.get(0).getSignWidth());
-        signRequestParams.setSignHeight(signRequestParamses.get(0).getSignHeight());
-        signRequestParams.setAddExtra(signRequestParamses.get(0).getAddExtra());
+        List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+        for (int i = 0 ; i < signRequestParamses.size() ; i++) {
+            if (liveWfSignRequestParams.size() < i + 1) {
+                SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
+                signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
+                signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
+                signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
+                liveWfSignRequestParams.add(signRequestParams);
+            } else {
+                liveWfSignRequestParams.get(i).setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+                liveWfSignRequestParams.get(i).setxPos(signRequestParamses.get(i).getxPos());
+                liveWfSignRequestParams.get(i).setyPos(signRequestParamses.get(i).getyPos());
+                liveWfSignRequestParams.get(i).setSignWidth(signRequestParamses.get(i).getSignWidth());
+                liveWfSignRequestParams.get(i).setSignHeight(signRequestParamses.get(i).getSignHeight());
+                liveWfSignRequestParams.get(i).setAddExtra(signRequestParamses.get(i).getAddExtra());
+            }
+        }
+    }
+
+    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
+        SignRequestParams signRequestParams = new SignRequestParams();
+        signRequestParams.setSignPageNumber(signPageNumber);
+        signRequestParams.setxPos(xPos);
+        signRequestParams.setyPos(yPos);
+        signRequestParamsRepository.save(signRequestParams);
+        return signRequestParams;
     }
 }

@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable) {
+    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, isRealCurrentStepSigned, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -14,8 +14,8 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable);
         this.csrf = new CsrfToken(csrf);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, isRealCurrentStepSigned, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -24,6 +24,7 @@ export class SignUi {
         this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
         this.gotoNext = false;
+        this.profile = profile;
         this.initListeners();
     }
 
@@ -64,7 +65,7 @@ export class SignUi {
             console.log('launch sign for : ' + this.signRequestId);
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
-            this.submitSignRequest();
+            this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
         } else {
             this.signModal.on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();
@@ -140,10 +141,14 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = message.text;
             document.getElementById("bar").style.width = 100 + "%";
-            if(this.gotoNext) {
-                document.location.href = $("#nextSignRequestButton").attr('href');
+            if(this.profile !== "dev") {
+                if (this.gotoNext) {
+                    document.location.href = $("#nextSignRequestButton").attr('href');
+                } else {
+                    document.location.href = "/user/";
+                }
             } else {
-                document.location.href = "/user/signrequests";
+                document.location.href = "/user/signrequests/" + this.signRequestId;
             }
         } else {
             console.debug("update bar");

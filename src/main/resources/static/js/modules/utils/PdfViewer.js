@@ -4,7 +4,7 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber) {
+    constructor(url, signable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
@@ -14,29 +14,39 @@ export class PdfViewer extends EventFactory {
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
         }
-        this.zoomStep = 0.10;
+        this.zoomStep = 0.1;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
         this.pageNum = 1;
+        if(forcePageNum != null) {
+            this.pageNum = forcePageNum;
+        }
         this.numPages = 1;
         this.page = null;
-        this.dataFields = [];
+        let jsFields = [];
+        if(fields) {
+            fields.forEach(function (e){
+                jsFields.push(new DataField(e));
+            });
+        }
+        this.dataFields = jsFields;
         this.savedFields = new Map();
         this.signable = signable;
         this.events = {};
         this.rotation = 0;
-        pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
+        this.disableAllFields = disableAllFields;
+        this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
 
     initListeners() {
-        document.getElementById('zoomin').addEventListener('click', e => this.zoomIn());
-        document.getElementById('zoomout').addEventListener('click', e => this.zoomOut());
-        document.getElementById('fullwidth').addEventListener('click', e => this.fullWidth());
-        document.getElementById('fullheight').addEventListener('click', e => this.fullHeight());
-        document.getElementById('rotateleft').addEventListener('click', e => this.rotateLeft());
-        document.getElementById('rotateright').addEventListener('click', e => this.rotateRight());
-        window.addEventListener('resize', e => this.adjustZoom());
+        $('#zoomin').on('click', e => this.zoomIn());
+        $('#zoomout').on('click', e => this.zoomOut());
+        $('#fullwidth').on('click', e => this.fullWidth());
+        $('#fullheight').on('click', e => this.fullHeight());
+        $('#rotateleft').on('click', e => this.rotateLeft());
+        $('#rotateright').on('click', e => this.rotateRight());
+        $(window).on('resize', e => this.adjustZoom());
         this.addEventListener("render", e => this.listenToSearchCompletion());
    }
 
@@ -163,7 +173,7 @@ export class PdfViewer extends EventFactory {
         console.info("launch render task" + this.scale);
         this.page = page;
         let scale = this.scale;
-        localStorage.setItem('scale', scale);
+        localStorage.setItem('scale', scale.toPrecision(2) + "");
         let rotation = this.rotation;
         let viewport = page.getViewport({scale, rotation});
         if(this.pdfPageView == null) {
@@ -186,7 +196,10 @@ export class PdfViewer extends EventFactory {
     }
 
     postRender() {
-        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue());
+        let self = this;
+        this.promiseRenderForm(false).then(e => this.promiseRenderForm(true)).then(e => this.promizeRestoreValue()).then(function(){
+            self.fireEvent("renderFinished", ['ok']);
+        });
         this.canvas.style.width = Math.round(this.pdfPageView.viewport.width) +"px";
         this.canvas.style.height = Math.round(this.pdfPageView.viewport.height) + "px";
         console.groupEnd();
@@ -196,7 +209,7 @@ export class PdfViewer extends EventFactory {
         return new Promise((resolve, reject) => {
             if (this.page != null) {
                 if (isField) {
-                    if (this.dataFields != null) {
+                    if (this.dataFields != null && !this.disableAllFields) {
                         console.info("render fields");
                         this.page.getAnnotations().then(items => this.renderPdfFormWithFields(items)).then(this.annotationLinkTargetBlank());
                     }
@@ -228,6 +241,10 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    initSavedValues() {
+
+    }
+
     promizeSaveValues() {
         console.info("launch save values");
         return this.page.getAnnotations().then(items => this.saveValues(items));
@@ -235,26 +252,50 @@ export class PdfViewer extends EventFactory {
 
     saveValues(items) {
         console.log("save fields " + items.length);
-        for (let i = 0; i < items.length; i++) {
-            if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+        if(this.dataFields.length > 0) {
+            for (let i = 0; i < this.dataFields.length; i++) {
+                let dataField = this.dataFields[i];
+                let item = items.filter(function (e) {
+                    return e.fieldName != null && e.fieldName === dataField.name
+                })[0];
+                if (item != null && item.fieldName != null) {
+                    this.saveValue(item);
+                } else {
+                    if(this.savedFields.get(dataField.name) == null) {
+                        this.savedFields.set(dataField.name, dataField.defaultValue);
+                    }
+                }
+            }
+        } else {
+            for (let i = 0; i < items.length; i++) {
+                this.saveValue(items[i]);
+            }
+        }
+    }
+
+    saveValue(item) {
+        if(item != null && item.fieldName != null) {
+            let inputName = item.fieldName.split(/\$|#|!/)[0];
+            let inputField = $('#' + inputName);
+            if (inputField.length > 0) {
                 if (inputField.val() != null) {
                     if (inputField.is(':checkbox')) {
                         if (!inputField[0].checked) {
-                            this.savedFields.set(items[i].fieldName, 'off');
+                            this.savedFields.set(item.fieldName, 'off');
                         } else {
-                            this.savedFields.set(items[i].fieldName, 'on');
+                            this.savedFields.set(item.fieldName, 'on');
                         }
-                        continue;
+                        return;
                     }
                     if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
+                        let radio = $('input[name=\'' + inputName + '\'][value=\'' + item.buttonValue + '\']');
                         if (radio.prop("checked")) {
-                            this.savedFields.set(items[i].fieldName, radio.val());
+                            this.savedFields.set(item.fieldName, radio.val());
                         }
-                        continue;
+                        return;
                     }
-                    this.savedFields.set(items[i].fieldName, inputField.val());
+                    let value = inputField.val();
+                    this.savedFields.set(item.fieldName, value);
                 }
             }
         }
@@ -271,29 +312,41 @@ export class PdfViewer extends EventFactory {
         console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+                let savedValue = this.savedFields.get(items[i].fieldName);
+                let inputField = $('input[name=\'' + inputName + '\']');
                 if (inputField.val() != null) {
-                    if (inputField.is(':checkbox')) {
-                        if(this.savedFields.get(items[i].fieldName) === 'on') {
-                            inputField.prop( "checked", true);
-                        } else {
-                            inputField.prop( "checked", false);
+                    if(savedValue != null) {
+                        if (inputField.is(':checkbox')) {
+                            if (savedValue === 'on') {
+                                inputField.prop("checked", true);
+                            } else {
+                                inputField.prop("checked", false);
+                            }
+                            continue;
                         }
+                        if (inputField.is(':radio')) {
+                            let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
+                            console.log("test " + items[i].fieldName + " " + savedValue + " = " + inputField.val());
+                            if (savedValue === radio.val()) {
+                                radio.prop("checked", true);
+                            }
+                            continue;
+                        }
+                        inputField.val(savedValue);
                         continue;
                     }
-                    if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'][value=\'' + items[i].buttonValue + '\']');
-                        console.log("test "+ items[i].fieldName + " " + this.savedFields.get(items[i].fieldName) + " = " + inputField.val());
-                        if (this.savedFields.get(items[i].fieldName) === radio.val()) {
-                            radio.prop("checked", true);
-                        }
-                        continue;
-                    }
-                    inputField.val(this.savedFields.get(items[i].fieldName));
                 }
-                let selectField = $('select[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                let textareaField = $('textarea[name=\'' + inputName + '\']');
+                if (textareaField.val() != null) {
+                    if (savedValue != null) {
+                        textareaField.val(savedValue);
+                        continue;
+                    }
+                }
+                let selectField = $('select[name=\'' + inputName + '\']');
                 if (selectField.val() != null) {
-                    $('#' + items[i].fieldName.split(/\\$|#|!/)[0] + ' option').each(function()
+                    $('#' + inputName + ' option').each(function()
                     {
                         if(this.savedFields.get(items[i].fieldName) === $(this).value) {
                             $(this).prop("selected", true);
@@ -309,28 +362,31 @@ export class PdfViewer extends EventFactory {
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
-            console.debug(">>Start compute field");
+            if(items[i].fieldType === undefined) {
+                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                    signFieldNumber = signFieldNumber + 1;
+                    $('.popupWrapper').remove();
+                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.append('Champ signature ' + signFieldNumber + '<br>');
+                    signField.addClass("sign-field");
+                    // signField.addClass("d-none");
+                    // signField.parent().remove();
+                }
+                continue;
+            }
+            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             let dataField;
             if(this.dataFields != null && items[i].fieldName != null) {
                 dataField = this.dataFields.filter(obj => {
-                    return obj.name === items[i].fieldName.split(/\$|#|!/)[0]
+                    return obj.name === inputName
                 })[0];
             }
-            if(items[i].fieldType === undefined && items[i].title && items[i].title.toLowerCase().startsWith('sign')) {
-                console.debug("found sign field");
-                signFieldNumber = signFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber + '<br>');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
-            }
+
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
                     $.ajax({
@@ -343,8 +399,7 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
                 }
-
-                console.log(dataField);
+                console.debug(dataField);
                 if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
                     inputField.val(items[i].fieldValue);
                     inputField.prop('required', false);
@@ -457,8 +512,8 @@ export class PdfViewer extends EventFactory {
                         success : response => this.autocomplete(response, sendField)
                     });
                 }
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                 }
@@ -476,8 +531,8 @@ export class PdfViewer extends EventFactory {
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if(inputField.length) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
-                inputField.attr('id', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
@@ -505,28 +560,33 @@ export class PdfViewer extends EventFactory {
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
-            if (items[i].fieldType === undefined) {
-                console.debug("sign field found");
-                signFieldNumber = signFieldNumber + 1;
-                $('.popupWrapper').remove();
-                let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                signField.append('Champ signature ' + signFieldNumber + '<br>');
-                //signField.append('Vous pourrez signer le document après avoir lancé le processus de signature');
-                signField.addClass("sign-field");
-                signField.addClass("d-none");
-                signField.parent().remove();
+            if(items[i].fieldType === undefined) {
+                console.log(items[i]);
+                // if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                //     signFieldNumber = signFieldNumber + 1;
+                //     $('.popupWrapper').remove();
+                //     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                //     signField.append('Champ signature ' + signFieldNumber + '<br>');
+                //     signField.addClass("sign-field");
+                //     // signField.addClass("d-none");
+                //     // signField.parent().remove();
+                // }
+                continue;
             }
+            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
-                inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                inputField.attr('name', inputName);
+                inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
                     inputField.val(items[i].buttonValue);
                 }
             } else {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {
-                    inputField.attr('name', items[i].fieldName.split(/\$|#|!/)[0]);
+                    inputField.attr('name', inputName);
+                    inputField.attr('id', inputName);
                     inputField.val(items[i].fieldValue);
                 }
             }
@@ -569,7 +629,7 @@ export class PdfViewer extends EventFactory {
         if (this.scale >= 2) {
             return;
         }
-        this.scale = this.scale + this.zoomStep;
+        this.scale = Math.round((this.scale + this.zoomStep) * 10) / 10;
         console.info('zoom in, scale = ' + this.scale);
         this.renderPage(this.pageNum);
         this.fireEvent('scaleChange', ['in']);
@@ -607,18 +667,6 @@ export class PdfViewer extends EventFactory {
         this.fireEvent('rotate', ['right']);
     }
 
-
-    setDataFields(dataFields) {
-        if(dataFields) {
-            dataFields.forEach(e => this.addDataField(e));
-        }
-    }
-
-    addDataField(dataField) {
-        this.dataFields.push(new DataField(dataField));
-    }
-
-
     printPdf() {
         this.pdfPageView.eventBus.dispatch('print', {
             source: self
@@ -635,4 +683,33 @@ export class PdfViewer extends EventFactory {
             minLength:0
         }).bind('focus', function(){ $(this).autocomplete("search"); } );
     }
+
+    checkForm() {
+        let p = new Promise((resolve, reject) => {
+            let formData = new Map();
+            console.info("check data name");
+            let self = this;
+            let resolveOk = "ok";
+            $(self.dataFields).each(function() {
+                let savedField = self.savedFields.get($(this)[0].name)
+                formData[$(this)[0].name] = savedField;
+                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
+                    let page =  $(this)[0].page;
+                    let name = $(this)[0].name;
+                    bootbox.alert("Un champ n'est pas rempli en page " + page, function () {
+                        if(page !== self.pageNum) {
+                            self.renderPage(page);
+                        }
+                        $('#' + name).focus();
+                    });
+                    resolveOk = $(this)[0].name;
+                    $('#sendModal').modal('hide');
+                    return false;
+                }
+            })
+            resolve(resolveOk);
+        });
+        return p;
+    }
+
 }
