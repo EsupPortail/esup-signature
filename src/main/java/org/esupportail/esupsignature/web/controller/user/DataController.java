@@ -206,18 +206,22 @@ public class DataController {
 							   @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails,
 							   @RequestParam(required = false) List<String> targetEmails,
-							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException{
+							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		try {
 			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", signBook.getComment()));
-			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-
+			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
+				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande envoyée"));
+				return "redirect:/user/";
+			}
 		} catch (EsupSignatureException e) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
-		return "redirect:/user/signrequests/";
+		return "redirect:/user/datas/" + id + "/update";
 	}
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
