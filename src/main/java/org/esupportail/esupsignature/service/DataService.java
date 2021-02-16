@@ -84,6 +84,7 @@ public class DataService {
         dataRepository.delete(data);
     }
 
+    @Transactional
     public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientEmails == null) {
             recipientEmails = new ArrayList<>();

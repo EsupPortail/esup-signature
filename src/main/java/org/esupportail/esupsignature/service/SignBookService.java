@@ -233,7 +233,6 @@ public class SignBookService {
         if(!(workflow instanceof DefaultWorkflow)) {
             signBook.getLiveWorkflow().setWorkflow(workflow);
         }
-        signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
         dispatchSignRequestParams(signBook);
     }
 
@@ -571,7 +570,11 @@ public class SignBookService {
 
     public boolean isRealCurrentStepSigned(Long signBookId) {
         SignBook signBook = getById(signBookId);
-        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
+        int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
+        if(currentStepNumber < 0) {
+            return true;
+        }
+        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentStepNumber - 1).getOriginalStep();
         return !test;
     }
 

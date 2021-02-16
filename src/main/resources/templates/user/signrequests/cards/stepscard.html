@@ -76,14 +76,14 @@
                             </div>
                             <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.documentsTargetUri != null}">
+                        <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                             <div class="bs-stepper-line"></div>
                             <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
                                 <div th:classappend="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
                                 Export vers :<br/>
-                                <div class="bs-stepper-label text-break" th:text="#{'signbook.documentiotype.' + ${signRequest.parentSignBook.liveWorkflow.targetType.name()}}"></div>
+                                <div class="bs-stepper-label text-break" th:text="#{'signbook.documentiotype.' + ${target.targetType.name()}}"></div>
                                 <br/>
-                                <span th:text="${signRequest.parentSignBook.liveWorkflow.documentsTargetUri}" ></span>
+                                <span th:text="${target.targetUri}" ></span>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
