@@ -16,7 +16,9 @@ export class DataField {
         this.searchServiceName;
         this.searchType;
         this.searchReturn;
-        this.stepNumbers;
+        // this.stepNumbers;
+        this.stepZero;
+        this.workflowSteps;
         this.topPos;
         this.type;
         this.action;

@@ -10,12 +10,13 @@ export class CreateDataUi {
         console.log(fields);
         this.data = data;
         if(data) {
-            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, fields, false);
+            this.pdfViewer = new PdfViewer('/user/datas/get-model/' + id, true, 0, null, false, fields, false);
         }
         this.action = action;
         this.actionEnable = 0;
         this.formId = id;
         this.csrf = csrf;
+        let test = this.pdfViewer.dataFields;
         if (this.pdfViewer.dataFields[0].defaultValue != null) {
             for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
                 this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);

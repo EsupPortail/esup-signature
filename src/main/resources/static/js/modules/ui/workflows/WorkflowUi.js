@@ -2,17 +2,29 @@ export class WorkflowUi {
 
     constructor() {
         console.info("Starting workflow UI");
-        this.sourceTypeSelect = document.getElementById("sourceTypeSelect");
-        this.targetTypeSelect = document.getElementById("targetTypeSelect");
+        this.sourceTypeSelect = $("#sourceTypeSelect");
+        this.targetTypeSelect = $("#targetTypeSelect");
         this.sourceUri = document.getElementById("documentsSourceUriDiv");
-        if (this.sourceTypeSelect.value === "none") {
+        if (this.sourceTypeSelect != null && this.sourceTypeSelect.value === "none") {
             this.sourceUri.style.display = "none";
         }
         this.initListeners();
     }
 
     initListeners() {
-        this.sourceTypeSelect.addEventListener('change', e => this.toggleSourceSelector());
+        this.sourceTypeSelect.on('change', e => this.toggleSourceSelector());
+        let self = this;
+        $(".del-step-btn").each(function(){
+           $(this).on("click", e => self.launchDelete(e));
+        });
+    }
+
+    launchDelete(e) {
+        bootbox.confirm('Voulez-vous vraiment supprimer cette étape ?<br>Tous les liens avec les champs de formulaires seront supprimés', function(result){
+            if(result) {
+                $('#del_' + $(e.currentTarget).attr("id")).submit();
+            }
+        });
     }
 
     toggleSourceSelector() {

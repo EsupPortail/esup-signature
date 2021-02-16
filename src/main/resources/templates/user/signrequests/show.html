@@ -24,7 +24,8 @@
     if (signable && currentSignType === 'nexuSign') {
         new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
     }
-    new SignUi([[${signRequest.id}]],
+    new SignUi(
+        [[${signRequest.id}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
             [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
         [/]
@@ -36,8 +37,8 @@
         signable,
         [[${signRequest.comments}]],
         [[${toSignDocument.contentType == 'application/pdf'}]],
-        [[${realCurrentStepNumber}]],
-        [[${isRealCurrentStepSigned}]],
+        [[${currentStepNumber}]],
+        [[${currentStepId}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${_csrf}]],
