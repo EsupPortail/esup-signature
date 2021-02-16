@@ -75,6 +75,9 @@ public class WorkflowService {
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
 
+    @Resource
+    private TargetService targetService;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
@@ -88,7 +91,7 @@ public class WorkflowService {
             workflow.setCreateDate(new Date());
             workflow.setCreateBy(userService.getSystemUser());
             workflow.setSourceType(DocumentIOType.none);
-            workflow.setTargetType(DocumentIOType.none);
+//            workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, creator.getEmail());
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
@@ -112,8 +115,7 @@ public class WorkflowService {
                 toUpdateWorkflow.setTitle(classWorkflow.getTitle());
                 toUpdateWorkflow.setSourceType(classWorkflow.getSourceType());
                 toUpdateWorkflow.setDocumentsSourceUri(classWorkflow.getDocumentsSourceUri());
-                toUpdateWorkflow.setTargetType(classWorkflow.getTargetType());
-                toUpdateWorkflow.setDocumentsTargetUri(classWorkflow.getDocumentsTargetUri());
+                toUpdateWorkflow.getTargets().addAll(classWorkflow.getTargets());
                 toUpdateWorkflow.setAuthorizedShareTypes(classWorkflow.getAuthorizedShareTypes());
                 toUpdateWorkflow.setScanPdfMetadatas(classWorkflow.getScanPdfMetadatas());
                 toUpdateWorkflow.setManagers(classWorkflow.getManagers());
@@ -209,7 +211,6 @@ public class WorkflowService {
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
             workflow.setSourceType(DocumentIOType.none);
-            workflow.setTargetType(DocumentIOType.none);
             workflowRepository.save(workflow);
             return workflow;
         } else {
@@ -266,8 +267,7 @@ public class WorkflowService {
                                 documentName = metadatas.get("Title");
                             }
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
-                            signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
-                            signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+                            signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
                             SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
@@ -297,11 +297,11 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                         String target = metadatas.get(metadataKey);
                                         if (target.contains("://")) {
-                                            signBook.getLiveWorkflow().setDocumentsTargetUri(target.replace("\\", "/"));
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.valueOf(target.split("://")[0]), target.replace("\\", "/")));
                                         } else {
-                                            signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri() + "/" + target.replace("\\", "/"));
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.vfs, "/" + target.replace("\\", "/")));
                                         }
-                                        logger.info("target set to : " + signBook.getLiveWorkflow().getDocumentsTargetUri());
+                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0));
                                     }
                                 }
                             } else {
@@ -385,7 +385,6 @@ public class WorkflowService {
     public Workflow initWorkflow(User user, Long id, String name) {
         Workflow workflow = getById(id);
         workflow.setSourceType(DocumentIOType.none);
-        workflow.setTargetType(DocumentIOType.none);
         workflow.setCreateBy(user);
         workflow.setName(name);
         workflow.setDescription(name);
@@ -509,9 +508,8 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.setSourceType(workflow.getSourceType());
-        workflowToUpdate.setTargetType(workflow.getTargetType());
+        workflowToUpdate.getTargets().addAll(workflow.getTargets());
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
-        workflowToUpdate.setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
@@ -523,11 +521,6 @@ public class WorkflowService {
         return workflowToUpdate;
     }
 
-    public void setUpdateByAndUpdateDate(Workflow workflow, String updateBy) {
-        workflow.setUpdateBy(updateBy);
-        workflow.setUpdateDate(new Date());
-    }
-
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
@@ -535,6 +528,21 @@ public class WorkflowService {
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;
+    }
+
+    @Transactional
+    public void addTarget(Long id, String targetType, String documentsTargetUri) {
+        Workflow workflow = getById(id);
+        Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
+        workflow.getTargets().add(target);
+    }
+
+    @Transactional
+    public void deleteTarget(Long id, Long targetId) {
+        Workflow workflow = getById(id);
+        Target target = targetService.getById(targetId);
+        workflow.getTargets().remove(target);
+        targetService.delete(target);
     }
 }
 

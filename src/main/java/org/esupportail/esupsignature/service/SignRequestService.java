@@ -664,31 +664,35 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, DocumentIOType documentIOType, String targetUrl, String authUserEppn) throws EsupSignatureException {
-		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-			if (documentIOType.equals(DocumentIOType.mail)) {
-				logger.info("send by email to " + targetUrl);
-				try {
+	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
+		for(Target target : targets) {
+			DocumentIOType documentIOType = target.getTargetType();
+			String targetUrl = target.getTargetUri();
+			if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+				if (documentIOType.equals(DocumentIOType.mail)) {
+					logger.info("send by email to " + targetUrl);
+					try {
+						for (SignRequest signRequest : signRequests) {
+							for (String email : targetUrl.split(";")) {
+								signRequest.getViewers().add(userService.getUserByEmail(email));
+							}
+						}
+						mailService.sendFile(title, signRequests, targetUrl);
+					} catch (MessagingException | IOException e) {
+						throw new EsupSignatureException("unable to send mail", e);
+					}
+				} else {
 					for (SignRequest signRequest : signRequests) {
-						for(String email : targetUrl.split(";")) {
-							signRequest.getViewers().add(userService.getUserByEmail(email));
+						Document signedFile = signRequest.getLastSignedDocument();
+						if (signRequest.getAttachments().size() > 0) {
+							targetUrl += "/" + signRequest.getTitle();
+							for (Document attachment : signRequest.getAttachments()) {
+								documentService.exportDocument(documentIOType, targetUrl, attachment);
+							}
 						}
+						documentService.exportDocument(documentIOType, targetUrl, signedFile);
+						updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 					}
-					mailService.sendFile(title, signRequests, targetUrl);
-				} catch (MessagingException | IOException e) {
-					throw new EsupSignatureException("unable to send mail", e);
-				}
-			} else {
-				for (SignRequest signRequest : signRequests) {
-					Document signedFile = signRequest.getLastSignedDocument();
-					if(signRequest.getAttachments().size() > 0) {
-						targetUrl += "/" + signRequest.getTitle();
-						for(Document attachment : signRequest.getAttachments()) {
-							documentService.exportDocument(documentIOType, targetUrl, attachment);
-						}
-					}
-					documentService.exportDocument(documentIOType, targetUrl, signedFile);
-					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 				}
 			}
 		}
