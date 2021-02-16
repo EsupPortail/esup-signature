@@ -30,7 +30,6 @@ public class Report {
     @ManyToMany
     private List<SignRequest> signRequestUserNotInCurrentStep = new ArrayList<>();
 
-
     @ManyToMany
     private List<SignRequest> signRequestForbid = new ArrayList<>();
 

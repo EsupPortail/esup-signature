@@ -136,7 +136,9 @@ public class SignBookService {
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
-        signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
+        for(Target target : workflow.getTargets()) {
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri()));
+        }
     }
 
     public List<SignBook> getByCreateBy(String userEppn) {
@@ -316,7 +318,7 @@ public class SignBookService {
     @Transactional
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        return (!liveWorkflowStep.getAllSignToComplete() || workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) && !nextWorkFlowStep(signBook);
+        return (!liveWorkflowStep.getAllSignToComplete() || workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) && !isMoreWorkflowStep(signBook);
     }
 
     public boolean nextWorkFlowStep(SignBook signBook) {

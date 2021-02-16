@@ -24,7 +24,7 @@ public class LiveWorkflow {
     @OneToOne(fetch = FetchType.LAZY)
     private LiveWorkflowStep currentStep;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.REMOVE)
     private List<Target> targets = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
