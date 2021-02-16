@@ -316,10 +316,7 @@ public class SignBookService {
     @Transactional
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        if (liveWorkflowStep.getAllSignToComplete() && !workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) {
-            return false;
-        }
-        return true;
+        return (!liveWorkflowStep.getAllSignToComplete() || workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) && !nextWorkFlowStep(signBook);
     }
 
     public boolean nextWorkFlowStep(SignBook signBook) {
@@ -570,12 +567,10 @@ public class SignBookService {
 
     public boolean isRealCurrentStepSigned(Long signBookId) {
         SignBook signBook = getById(signBookId);
-        int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        if(currentStepNumber < 0) {
+        if(signBook.getLiveWorkflow().getCurrentStepNumber() <0 ) {
             return true;
         }
-        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(currentStepNumber - 1).getOriginalStep();
-        return !test;
+        return !signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
     }
 
     public int getRealCurrentStepNumber(Long signBookId) {

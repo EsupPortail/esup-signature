@@ -343,9 +343,7 @@ public class SignRequestService {
 							List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
 							if(steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
 								if(formfields.get(0).getExtValueType() != null && !formfields.get(0).getExtValueType().equals("system")) {
-//									if (!data.getDatas().containsKey(entry.getKey())) {
-										data.getDatas().put(entry.getKey(), entry.getValue());
-//									}
+									data.getDatas().put(entry.getKey(), entry.getValue());
 								} else {
 									data.getDatas().put(entry.getKey(), formfields.get(0).getDefaultValue());
 								}
@@ -389,7 +387,6 @@ public class SignRequestService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
-//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 		}
 		return false;
 	}
@@ -439,8 +436,8 @@ public class SignRequestService {
 					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 				}
 			}
-			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
-//				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
+			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()))) {
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
 			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {

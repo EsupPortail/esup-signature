@@ -39,6 +39,7 @@ public class RecipientService {
 
     public void validateRecipient(SignRequest signRequest, String userEppn) {
         Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
+
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
         signRequest.getRecipientHasSigned().get(validateRecipient).setUserIp(webUtilsService.getClientIp());
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
