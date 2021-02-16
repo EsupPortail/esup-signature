@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DataService {
@@ -68,6 +65,12 @@ public class DataService {
     @Resource
     private FieldPropertieService fieldPropertieService;
 
+    @Resource
+    private TargetService targetService;
+
+    @Resource
+    private UserPropertieService userPropertieService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
     }
@@ -81,19 +84,20 @@ public class DataService {
         dataRepository.delete(data);
     }
 
-    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
-        if (recipientEmails == null) {
-            recipientEmails = new ArrayList<>();
+    @Transactional
+    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+        if (recipientsEmails == null) {
+            recipientsEmails = new ArrayList<>();
         }
         Form form = data.getForm();
-        if (form.getTargetType().equals(DocumentIOType.mail)) {
+        if (form.getTargets().contains(DocumentIOType.mail)) {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");
             }
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientEmails, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
@@ -110,18 +114,21 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
-        if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
-            signBook.getLiveWorkflow().setTargetType(form.getTargetType());
-            if(form.getTargetType().equals(DocumentIOType.mail)) {
-                signBook.getLiveWorkflow().setDocumentsTargetUri(targetEmails.get(0));
-            } else {
-                signBook.getLiveWorkflow().setDocumentsTargetUri(form.getTargetUri());
+        if (form.getTargets().size() > 0) {
+            signBook.getLiveWorkflow().getTargets().addAll(form.getTargets());
+            for(Target target : form.getTargets()) {
+                if (target.getTargetType().equals(DocumentIOType.mail)) {
+                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
+                }
             }
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
+        for (String recipientEmail : recipientsEmails) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+        }
         return signBook;
     }
 

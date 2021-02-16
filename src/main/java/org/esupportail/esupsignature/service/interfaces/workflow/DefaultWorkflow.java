@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow;
 
+import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -42,8 +43,8 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
     }
 
     @Override
-    public DocumentIOType getTargetType() {
-        return DocumentIOType.none;
+    public List<Target> getTargets() {
+        return new ArrayList<>();
     }
 
     public List<WorkflowStep> getWorkflowSteps(User user) {

@@ -1,8 +1,7 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
-<!--/*@thymesVar id="data" type="org.esupportail.esupsignature.entity.Data"*/-->
-<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<!--/*@thymesVar id="datas" type="org.springframework.data.domain.Page<org.esupportail.esupsignature.entity.Data>"*/-->
+<!--/*@thymesVar id="report" type="org.esupportail.esupsignature.entity.Report"*/-->
+<!--/*@thymesVar id="reportsMap" type="java.util.Map<org.esupportail.esupsignature.entity.Report, java.util.Map<org.esupportail.esupsignature.entity.enums.ReportStatus, java.util.Set<java.lang.Long>>>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -25,13 +24,13 @@
                 <div class="card-body">
                     <h5 class="text-center"><b>Mes rapports</b></h5>
                     <div id="accordion">
-                        <th:block th:each="report, status : ${reports}">
+                        <th:block th:each="report, iterator : ${reports}">
                             <div class="card">
-                                <div class="card-header" th:id="'heading' + ${status.index}">
+                                <div class="card-header" th:id="'heading' + ${iterator.index}">
                                     <div class="row">
                                         <div class="col-md-10">
                                             <h5 class="mb-0">
-                                                <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-toggle="collapse" th:data-target="'#collapse' + ${status.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${status.index}">
+                                                <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-toggle="collapse" th:data-target="'#collapse' + ${iterator.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${iterator.index}">
                                                 </button>
                                             </h5>
                                         </div>
@@ -45,24 +44,22 @@
                                     </div>
                                 </div>
 
-                                <div th:id="'collapse'  + ${status.index}" class="collapse" th:classappend="${status.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${status.index}" data-parent="#accordion">
+                                <div th:id="'collapse'  + ${iterator.index}" class="collapse" th:classappend="${iterator.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${iterator.index}" data-parent="#accordion">
                                     <div class="card-body">
                                         <ul>
-                                            <li>
-                                                Signatures effectuées avec succès : <span th:text="${report.signRequestsSigned.size()}"></span><span th:if="${report.signRequestsSigned.size() > 0}">  (<th:block th:each="sr, status2 : ${report.signRequestsSigned}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
-                                            </li>
-                                            <li>
-                                                Signatures non effectuées (vous n'êtes pas l'un des signataires de l'étape) : <span th:text="${report.signRequestUserNotInCurrentStep.size()}"></span><span th:if="${report.signRequestUserNotInCurrentStep.size() > 0}">  (<th:block th:each="sr, status2 : ${report.signRequestUserNotInCurrentStep}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestUserNotInCurrentStep.size() - 1} ? ', '"></span></th:block>)</span>
-                                            </li>
-                                            <li>
-                                                Signatures non effectuées (emplacement de signature manquant) : <span th:text="${report.signRequestsNoField.size()}"></span><span th:if="${report.signRequestsNoField.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestsNoField}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
-                                            </li>
-                                            <li>
-                                                Signatures non effectuées (Signature Nexu interdite) : <span th:text="${report.signRequestForbid.size()}"></span><span th:if="${report.signRequestForbid.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestForbid}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestForbid.size() - 1} ? ', '"></span></th:block>)</span>
-                                            </li>
-                                            <li>
-                                                Signatures non effectuées (erreur) : <span th:text="${report.signRequestsError.size()}"></span><span th:if="${report.signRequestsError.size() > 0}"> (<th:block th:each="sr, status2 : ${report.signRequestsError}"><a th:href="${'/user/signrequests/' + sr.id}" th:text="${sr.id}"></a><span th:text="${status2.index != report.signRequestsNoField.size() - 1} ? ', '"></span></th:block>)</span>
-                                            </li>
+                                            <th:block th:each="reportMap : ${reportsMap.get(report)}">
+                                                <li>
+                                                    <span th:text="#{'report.reportstatus.' + ${reportMap.getKey()}}"></span> :
+                                                    <span th:text="${reportMap.value.size()} + ' demande(s)'"></span>
+                                                    <span th:if="${reportMap.value.size() > 0}">
+                                                        (<th:block th:each="signRequestId, iterator2 : ${reportMap.value}">
+                                                            <a th:href="'/user/signrequests/' + ${signRequestId}" th:text="${signRequestId}">
+                                                            </a>
+                                                            <span th:text="${iterator2.index != reportMap.value.size() - 1} ? ', '"></span>
+                                                        </th:block>)
+                                                    </span>
+                                                </li>
+                                            </th:block>
                                         </ul>
                                     </div>
                                 </div>

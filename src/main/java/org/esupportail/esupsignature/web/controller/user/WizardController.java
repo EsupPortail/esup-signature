@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -37,12 +36,6 @@ public class WizardController {
 
     @Resource
     private EventService eventService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private UserService userService;
 
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
@@ -84,8 +77,7 @@ public class WizardController {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
                 String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
                 recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmailsArray));
-                liveWorkflowStepService.addNewStepToSignBook(SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, id);
+                liveWorkflowStepService.addNewStepToSignBook(SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, id, authUserEppn);
                 if (addNew != null) {
                     model.addAttribute("signTypes", SignType.values());
                 }
@@ -139,7 +131,6 @@ public class WizardController {
         User user = (User) model.getAttribute("user");
         String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
         recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(userEppn), Arrays.asList(recipientsEmailsArray));
         Workflow  workflow = workflowService.addStepToWorkflow(step.getWorkflowId(), SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, user);
         model.addAttribute("workflow", workflow);
         if(end != null && end) {

@@ -1,11 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 public class Report {
@@ -21,21 +20,8 @@ public class Report {
     @ManyToOne
     private User user;
 
-    @ManyToMany
-    private List<SignRequest> signRequestsSigned = new ArrayList<>();
-
-    @ManyToMany
-    private List<SignRequest> signRequestsNoField = new ArrayList<>();
-
-    @ManyToMany
-    private List<SignRequest> signRequestUserNotInCurrentStep = new ArrayList<>();
-
-
-    @ManyToMany
-    private List<SignRequest> signRequestForbid = new ArrayList<>();
-
-    @ManyToMany
-    private List<SignRequest> signRequestsError = new ArrayList<>();
+    @ElementCollection
+    private Map<Long, ReportStatus> signRequestReportStatusMap = new HashMap<>();
 
     public Long getId() {
         return id;
@@ -61,43 +47,11 @@ public class Report {
         this.user = user;
     }
 
-    public List<SignRequest> getSignRequestsSigned() {
-        return signRequestsSigned;
+    public Map<Long, ReportStatus> getSignRequestReportStatusMap() {
+        return signRequestReportStatusMap;
     }
 
-    public void setSignRequestsSigned(List<SignRequest> signRequestsSigned) {
-        this.signRequestsSigned = signRequestsSigned;
-    }
-
-    public List<SignRequest> getSignRequestsNoField() {
-        return signRequestsNoField;
-    }
-
-    public void setSignRequestsNoField(List<SignRequest> signRequestsNoField) {
-        this.signRequestsNoField = signRequestsNoField;
-    }
-
-    public List<SignRequest> getSignRequestUserNotInCurrentStep() {
-        return signRequestUserNotInCurrentStep;
-    }
-
-    public void setSignRequestUserNotInCurrentStep(List<SignRequest> signRequestUserNotInCurrentStep) {
-        this.signRequestUserNotInCurrentStep = signRequestUserNotInCurrentStep;
-    }
-
-    public List<SignRequest> getSignRequestForbid() {
-        return signRequestForbid;
-    }
-
-    public void setSignRequestForbid(List<SignRequest> signRequestForbid) {
-        this.signRequestForbid = signRequestForbid;
-    }
-
-    public List<SignRequest> getSignRequestsError() {
-        return signRequestsError;
-    }
-
-    public void setSignRequestsError(List<SignRequest> signRequestsError) {
-        this.signRequestsError = signRequestsError;
+    public void setSignRequestReportStatusMap(Map<Long, ReportStatus> signRequestReportStatusMap) {
+        this.signRequestReportStatusMap = signRequestReportStatusMap;
     }
 }

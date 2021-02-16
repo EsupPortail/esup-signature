@@ -31,6 +31,9 @@ public class LiveWorkflowStepService {
     @Resource
     private SignBookService signBookService;
 
+    @Resource
+    private UserPropertieService userPropertieService;
+
     public LiveWorkflowStep createWorkflowStep(Boolean repeatable, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         if(repeatable == null) {
@@ -71,11 +74,12 @@ public class LiveWorkflowStepService {
     }
 
     @Transactional
-    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmail, Long signBookId) {
+    public void addNewStepToSignBook(SignType signType, Boolean allSignToComplete, String[] recipientsEmails, Long signBookId, String authUserEppn) {
         SignBook signBook = signBookService.getById(signBookId);
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-        LiveWorkflowStep liveWorkflowStep = createWorkflowStep(false, allSignToComplete, signType, recipientsEmail);
+        LiveWorkflowStep liveWorkflowStep = createWorkflowStep(false, allSignToComplete, signType, recipientsEmails);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
     }
 
     public void addRecipients(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {

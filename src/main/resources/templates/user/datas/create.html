@@ -190,11 +190,13 @@
                                 </p>
                             </div>
                         </th:block>
-                        <div th:if="${form.targetType.name() == 'mail'}" class="form-group">
+                        <th:block th:each="target : ${form.targets}">
+                        <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
                             <label>Etape finale : Envoi par mail à </label>
                             <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
                             </select>
                         </div>
+                        </th:block>
                     </div>
                 </div>
                 <div class="modal-footer">
