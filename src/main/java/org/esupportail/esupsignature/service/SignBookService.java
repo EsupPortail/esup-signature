@@ -569,8 +569,11 @@ public class SignBookService {
 
     public boolean isRealCurrentStepSigned(Long signBookId) {
         SignBook signBook = getById(signBookId);
-        boolean test = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
-        return !test;
+        if(signBook.getLiveWorkflow().getCurrentStepNumber() <0 ) {
+            return true;
+        }
+        return !signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
+
     }
 
     public int getRealCurrentStepNumber(Long signBookId) {
