@@ -316,10 +316,7 @@ public class SignBookService {
     @Transactional
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
-        if (liveWorkflowStep.getAllSignToComplete() && !workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) {
-            return false;
-        }
-        return true;
+        return (!liveWorkflowStep.getAllSignToComplete() || workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) && !nextWorkFlowStep(signBook);
     }
 
     public boolean nextWorkFlowStep(SignBook signBook) {
