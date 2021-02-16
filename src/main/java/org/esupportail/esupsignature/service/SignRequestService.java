@@ -151,7 +151,8 @@ public class SignRequestService {
 	}
 
 	public SignRequest getById(long id) {
-		return signRequestRepository.findById(id).get();
+		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		return signRequest.orElse(null);
 	}
 
 	public List<SignRequest> getSignRequestsByToken(String token) {

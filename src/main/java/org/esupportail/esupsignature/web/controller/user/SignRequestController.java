@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -556,15 +557,15 @@ public class SignRequestController {
         for (Long id : idsLong) {
             SignRequest signRequest = signRequestService.getById(id);
             if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
-                reportService.addsignRequestForbid(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
-                reportService.addsignRequestUserNotInCurrentStep(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()){
-                reportService.addsignRequestsNoField(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
             } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
-                reportService.addsignRequestsSigned(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
             } else {
-                reportService.addsignRequestsError(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
             }
             if (idsLong.get(idsLong.size() - 1).equals(id)) {
                 eventService.publishEvent(new JsonMessage("nextSign", "Signature suivante", null), "massSign", sseId);

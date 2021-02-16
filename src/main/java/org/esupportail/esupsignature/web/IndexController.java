@@ -114,7 +114,7 @@ public class IndexController {
 						}
 					} else {
 						redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande non trouvée"));
-						return "redirect:/user/signrequests";
+						return "redirect:/user/";
 					}
 				} catch (Exception e) {
 					return "redirect:/user/";

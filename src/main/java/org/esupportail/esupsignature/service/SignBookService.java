@@ -190,16 +190,6 @@ public class SignBookService {
         for (Long liveWorkflowStepId : liveWorkflowStepIds) {
             liveWorkflowStepService.delete(liveWorkflowStepId);
         }
-        for (SignRequest signRequest : signBook.getSignRequests()) {
-            List<Report> reports = reportService.getForDelete(signRequest);
-            for (Report report : reports) {
-                report.getSignRequestsNoField().remove(signRequest);
-                report.getSignRequestsSigned().remove(signRequest);
-                report.getSignRequestsError().remove(signRequest);
-                report.getSignRequestUserNotInCurrentStep().remove(signRequest);
-                report.getSignRequestForbid().remove(signRequest);
-            }
-        }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId);
