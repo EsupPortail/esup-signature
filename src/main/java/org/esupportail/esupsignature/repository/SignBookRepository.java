@@ -16,8 +16,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     @Query("select count(s.id) from SignBook s join s.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed is false")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
-    @Query("select s from SignBook s where s.status = :signRequestStatus and s.liveWorkflow.documentsTargetUri is not null")
-    List<SignBook> findByStatusAndDocumentsTargetUriIsNotNull(SignRequestStatus signRequestStatus);
     @Query("select s from SignBook s where s.status = :signRequestStatus and s.liveWorkflow.workflow.id = :workflowId")
     List<SignBook> findByWorkflowId(Long workflowId);
     @Query("select s from SignBook s where s.status = :signRequestStatus and s.liveWorkflow.workflow.name = :workflowName")

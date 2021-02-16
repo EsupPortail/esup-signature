@@ -163,15 +163,6 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/" + id;
 	}
 
-	@PostMapping(value = "/add-params/{id}")
-	public String addParams(@ModelAttribute("authUserEppn") String authUserEppn,
-							@PathVariable("id") Long id, Model model) {
-		User authUser = (User) model.getAttribute("authUser");
-		Workflow workflow = workflowService.getById(id);
-		workflowService.setUpdateByAndUpdateDate(workflow, authUser.getEppn());
-		return "redirect:/admin/workflows/" + id;
-	}
-
 	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
 		User authUser = (User) model.getAttribute("authUser");
@@ -182,6 +173,25 @@ public class WorkflowAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
 		return "redirect:/admin/workflows/" + id;
+	}
+
+	@PostMapping(value = "/add-target/{id}")
+	public String addTarget(@PathVariable("id") Long id,
+							@RequestParam("targetType") String targetType,
+							@RequestParam("documentsTargetUri") String documentsTargetUri,
+							RedirectAttributes redirectAttributes) {
+		workflowService.addTarget(id, targetType, documentsTargetUri);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+		return "redirect:/admin/workflows/update/" + id;
+	}
+
+	@GetMapping(value = "/delete-target/{id}/{targetId}")
+	public String deleteTarget(@PathVariable("id") Long id,
+							   @PathVariable("targetId") Long targetId,
+							   RedirectAttributes redirectAttributes) {
+		workflowService.deleteTarget(id, targetId);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
+		return "redirect:/admin/workflows/update/" + id;
 	}
 
 }

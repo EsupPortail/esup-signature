@@ -80,6 +80,9 @@ public class SignBookService {
     @Resource
     private ReportService reportService;
 
+    @Resource
+    private TargetService targetService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(list::add);
@@ -133,8 +136,7 @@ public class SignBookService {
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
-        signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
-        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
+        signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
     }
 
     public List<SignBook> getByCreateBy(String userEppn) {
@@ -231,8 +233,6 @@ public class SignBookService {
         if(!(workflow instanceof DefaultWorkflow)) {
             signBook.getLiveWorkflow().setWorkflow(workflow);
         }
-        signBook.getLiveWorkflow().setTargetType(workflow.getTargetType());
-        signBook.getLiveWorkflow().setDocumentsTargetUri(workflow.getDocumentsTargetUri());
         dispatchSignRequestParams(signBook);
     }
 
@@ -263,8 +263,8 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
-        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getDocumentsTargetUri() != null && !signBook.getLiveWorkflow().getTargetType().equals(DocumentIOType.none)) {
-            signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargetType(), signBook.getLiveWorkflow().getDocumentsTargetUri(), authUserEppn);
+        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+            signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);
         }
     }
@@ -356,10 +356,11 @@ public class SignBookService {
                 importWorkflow(signBook, workflow);
                 nextWorkFlowStep(signBook);
                 if(targetEmails != null && targetEmails.size() > 0) {
-                    signBook.getLiveWorkflow().setDocumentsTargetUri("");
+                    StringBuilder targetEmailsToAdd = new StringBuilder();
                     for (String targetEmail : targetEmails) {
-                        signBook.getLiveWorkflow().setDocumentsTargetUri(signBook.getLiveWorkflow().getDocumentsTargetUri() + targetEmail + ";");
+                        targetEmailsToAdd.append(targetEmail).append(";");
                     }
+                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
@@ -570,7 +571,6 @@ public class SignBookService {
             return true;
         }
         return !signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber() - 1).getOriginalStep();
-
     }
 
     public int getRealCurrentStepNumber(Long signBookId) {

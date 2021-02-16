@@ -6,9 +6,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -62,10 +60,8 @@ public class Workflow {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-    
-    private String documentsTargetUri;
+    @OneToMany
+    private List<Target> targets = new ArrayList<>();
 
     private Boolean fromCode;
 
@@ -165,6 +161,14 @@ public class Workflow {
         this.documentsSourceUri = documentsSourceUri;
     }
 
+    public List<Target> getTargets() {
+        return targets;
+    }
+
+    public void setTargets(List<Target> targets) {
+        this.targets = targets;
+    }
+
     public List<String> getManagers() {
         return managers;
     }
@@ -181,21 +185,21 @@ public class Workflow {
         this.workflowSteps = workflowSteps;
     }
 
-    public DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
-    }
+//    public DocumentIOType getTargetType() {
+//        return targetType;
+//    }
+//
+//    public void setTargetType(DocumentIOType targetType) {
+//        this.targetType = targetType;
+//    }
+//
+//    public String getDocumentsTargetUri() {
+//        return documentsTargetUri;
+//    }
+//
+//    public void setDocumentsTargetUri(String documentsTargetUri) {
+//        this.documentsTargetUri = documentsTargetUri;
+//    }
 
     public String getRole() {
         return role;

@@ -48,10 +48,8 @@ public class Form {
 
 	private Boolean activeVersion = false;
 
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-
-    private String targetUri;
+	@OneToMany
+	private List<Target> targets = new ArrayList<>();
 
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -176,20 +174,12 @@ public class Form {
 		this.activeVersion = activeVersion;
 	}
 
-	public DocumentIOType getTargetType() {
-		return targetType;
+	public List<Target> getTargets() {
+		return targets;
 	}
 
-	public void setTargetType(DocumentIOType targetType) {
-		this.targetType = targetType;
-	}
-
-	public String getTargetUri() {
-		return targetUri;
-	}
-
-	public void setTargetUri(String targetUri) {
-		this.targetUri = targetUri;
+	public void setTargets(List<Target> targets) {
+		this.targets = targets;
 	}
 
 	public Document getDocument() {
@@ -215,4 +205,14 @@ public class Form {
 	public void setAction(String action) {
 		this.action = action;
 	}
+
+	public boolean getTargetOfType(DocumentIOType documentIOType) {
+		for(Target target : getTargets()) {
+			if(target.getTargetType().equals(documentIOType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

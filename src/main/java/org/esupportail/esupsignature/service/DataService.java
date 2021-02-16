@@ -68,6 +68,9 @@ public class DataService {
     @Resource
     private FieldPropertieService fieldPropertieService;
 
+    @Resource
+    private TargetService targetService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
     }
@@ -81,12 +84,13 @@ public class DataService {
         dataRepository.delete(data);
     }
 
+    @Transactional
     public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientEmails == null) {
             recipientEmails = new ArrayList<>();
         }
         Form form = data.getForm();
-        if (form.getTargetType().equals(DocumentIOType.mail)) {
+        if (form.getTargets().contains(DocumentIOType.mail)) {
             if (targetEmails == null || targetEmails.size() == 0) {
                 throw new EsupSignatureException("Target email empty");
             }
@@ -110,12 +114,12 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
-        if (form.getTargetType() != null && !form.getTargetType().equals(DocumentIOType.none)) {
-            signBook.getLiveWorkflow().setTargetType(form.getTargetType());
-            if(form.getTargetType().equals(DocumentIOType.mail)) {
-                signBook.getLiveWorkflow().setDocumentsTargetUri(targetEmails.get(0));
-            } else {
-                signBook.getLiveWorkflow().setDocumentsTargetUri(form.getTargetUri());
+        if (form.getTargets().size() > 0) {
+            signBook.getLiveWorkflow().getTargets().addAll(form.getTargets());
+            for(Target target : form.getTargets()) {
+                if (target.getTargetType().equals(DocumentIOType.mail)) {
+                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
+                }
             }
         }
         data.setSignBook(signBook);

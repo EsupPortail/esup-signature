@@ -3,12 +3,10 @@ package org.esupportail.esupsignature.web.controller.admin;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.FieldService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -29,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class FormAdminController {
 	private FieldService fieldService;
 
 	@Resource
-	private DocumentService documentService;
+	private TargetService targetService;
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
@@ -73,7 +72,9 @@ public class FormAdminController {
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, publicUsage, fieldNames);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(documentIOType, targetUri));
+		Form form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -89,7 +90,9 @@ public class FormAdminController {
 
 	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(targetType, targetUri));
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targets, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
