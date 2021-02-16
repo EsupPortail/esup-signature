@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DataService {
@@ -71,6 +68,9 @@ public class DataService {
     @Resource
     private TargetService targetService;
 
+    @Resource
+    private UserPropertieService userPropertieService;
+
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).get();
     }
@@ -85,9 +85,9 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Data data, List<String> recipientEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
-        if (recipientEmails == null) {
-            recipientEmails = new ArrayList<>();
+    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+        if (recipientsEmails == null) {
+            recipientsEmails = new ArrayList<>();
         }
         Form form = data.getForm();
         if (form.getTargets().contains(DocumentIOType.mail)) {
@@ -97,7 +97,7 @@ public class DataService {
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientEmails, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
         docName += user.getName().substring(0, 1).toUpperCase();
@@ -126,6 +126,9 @@ public class DataService {
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
+        for (String recipientEmail : recipientsEmails) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+        }
         return signBook;
     }
 

@@ -177,7 +177,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmail, User user) {
+    public Workflow addStepToWorkflow(Long id, SignType signType, Boolean allSignToComplete, String[] recipientsEmails, User user) {
         Workflow workflow;
         if (id != null) {
             workflow = getById(id);
@@ -185,10 +185,12 @@ public class WorkflowService {
             workflow = createWorkflow(user);
         }
         if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
-            if(recipientsEmail != null && recipientsEmail.length > 0) {
+            if(recipientsEmails != null && recipientsEmails.length > 0) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
-                WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmail);
+                WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmails);
                 workflow.getWorkflowSteps().add(workflowStep);
+                userPropertieService.createUserPropertieFromMails(user, Arrays.asList(recipientsEmails));
+
             }
         }
         return workflow;

@@ -1057,15 +1057,9 @@ public class SignRequestService {
 		}
 	}
 
-	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
+	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		liveWorkflowStepService.addRecipientsToWorkflowStep(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), recipientsEmails);
-		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
-		if (allSignToComplete != null && allSignToComplete) {
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(true);
-		} else {
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(false);
-		}
+		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, authUserEppn);
 	}
 
 	@Transactional
