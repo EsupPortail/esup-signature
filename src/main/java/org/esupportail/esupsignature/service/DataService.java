@@ -135,7 +135,7 @@ public class DataService {
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
         for(Field field : fields) {
-            if(!field.getStepNumbers().contains("0")) {
+            if(!field.getStepZero()) {
                 field.setDefaultValue("");
             }
             if (field.getFavorisable()) {
@@ -232,7 +232,7 @@ public class DataService {
                 if(field.getName().equals("Su_DateSign")) {
                     logger.info("test");
                 }
-                if(!field.getStepNumbers().contains("0")) {
+                if(!field.getStepZero()) {
                     field.setDefaultValue("");
                 }
             }

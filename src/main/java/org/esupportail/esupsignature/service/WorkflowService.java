@@ -288,13 +288,15 @@ public class WorkflowService {
                                     signRequest.setCreateBy(userService.getSystemUser());
                                     signBook.setCreateBy(userService.getSystemUser());
                                 }
+                                int i = 0;
                                 for (String metadataKey : metadatas.keySet()) {
                                     String[] keySplit = metadataKey.split("_");
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createWorkflowStep(false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflow.getWorkflowSteps().get(i), false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+                                        i++;
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                         String target = metadatas.get(metadataKey);

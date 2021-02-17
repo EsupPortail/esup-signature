@@ -87,7 +87,15 @@ export default class FormUi {
     }
 
     saveFields() {
-        $('form[name^="field-update"]').each(function() {
+        let message = new Message();
+        message.type = "info";
+        message.text = "Enregistrement en cours";
+        message.object = null;
+        this.sseDispatcher.dispatchEvent("user", message);
+        let self = this;
+        let fieldsUpdates = $('form[name^="field-update"]');
+        let i = 1;
+        fieldsUpdates.each(function() {
             let fd = new FormData($(this)[0]);
             console.log(fd.get("_csrf"));
             $.ajax({
@@ -97,15 +105,23 @@ export default class FormUi {
                 processData: false,
                 contentType: false,
                 success: function(data,status) {
+                    if(i === fieldsUpdates.length) {
+                        let message = new Message();
+                        message.type = "success";
+                        message.text = "Modifications enregistrées";
+                        message.object = null;
+                        self.sseDispatcher.dispatchEvent("user", message);
+                    }
+                    i++;
                 },
                 error: function(data, status) {
+                    let message = new Message();
+                    message.type = "error";
+                    message.text = "Problème lors de l'enregistrement";
+                    message.object = null;
+                    this.sseDispatcher.dispatchEvent("user", message);
                 },
             });
         });
-        let message = new Message();
-        message.type = "success";
-        message.text = "Modifications enregistrées";
-        message.object = null;
-        this.sseDispatcher.dispatchEvent("user", message);
     }
 }
