@@ -341,8 +341,7 @@ public class SignRequestService {
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
 						List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
 						if(formfields.size() > 0) {
-							List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
-							if(steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
+							if(formfields.get(0).getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 								if(formfields.get(0).getExtValueType() != null && !formfields.get(0).getExtValueType().equals("system")) {
 									data.getDatas().put(entry.getKey(), entry.getValue());
 								} else {
@@ -988,7 +987,7 @@ public class SignRequestService {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
-								|| !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
+								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 							field.setDefaultValue("");
 						}
 						if (data.getDatas().get(field.getName()) != null

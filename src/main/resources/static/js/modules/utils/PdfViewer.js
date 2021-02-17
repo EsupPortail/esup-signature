@@ -4,12 +4,13 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
+        this.currentStepId = currentStepId;
         this.scale = 1;
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
@@ -400,13 +401,7 @@ export class PdfViewer extends EventFactory {
                     inputField.prop('disabled', true);
                 }
                 console.debug(dataField);
-                if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
-                    inputField.val(items[i].fieldValue);
-                    inputField.prop('required', false);
-                    inputField.prop('disabled', true);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.parent().addClass('disable-div-selection');
-                } else {
+                if(this.isFieldEnable(dataField)) {
                     inputField.prop('disabled', false);
                     inputField.removeClass('disabled-field disable-selection');
                     inputField.val(items[i].fieldValue);
@@ -417,6 +412,12 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                } else {
+                    inputField.val(items[i].fieldValue);
+                    inputField.prop('required', false);
+                    inputField.prop('disabled', true);
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.parent().addClass('disable-div-selection');
                 }
                 if(dataField.searchServiceName) {
                     inputField.addClass("search-completion");
@@ -517,16 +518,16 @@ export class PdfViewer extends EventFactory {
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                 }
-                if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
-                    inputField.prop('required', false);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.parent().addClass('disable-div-selection');
-                } else {
+                if(this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                } else {
+                    inputField.prop('required', false);
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.parent().addClass('disable-div-selection');
                 }
             }
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
@@ -537,22 +538,33 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
                 }
-                if(!dataField.stepNumbers.includes("" + this.currentStepNumber) || !this.signable) {
-                    inputField.prop('required', false);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
-                    inputField.parent().addClass('disable-div-selection');
-                } else {
+                if(this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                } else {
+                    inputField.prop('required', false);
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
+                    inputField.parent().addClass('disable-div-selection');
                 }
             }
 
         }
         console.debug(">>End compute field");
+    }
+
+    isFieldEnable(dataField) {
+        let isIncludeCurrentStep = false;
+        for(let i = 0; i < dataField.workflowSteps.length; i++) {
+            if(dataField.workflowSteps[0].id === this.currentStepId) {
+                isIncludeCurrentStep = true;
+                break;
+            }
+        }
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable
     }
 
     renderPdfForm(items) {
@@ -693,7 +705,7 @@ export class PdfViewer extends EventFactory {
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
-                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && $(this)[0].stepNumbers.includes(self.currentStepNumber)) {
+                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && self.isFieldEnable($(this)[0])) {
                     let page =  $(this)[0].page;
                     let name = $(this)[0].name;
                     bootbox.alert("Un champ n'est pas rempli en page " + page, function () {
@@ -711,5 +723,4 @@ export class PdfViewer extends EventFactory {
         });
         return p;
     }
-
 }

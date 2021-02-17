@@ -82,6 +82,7 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
+		model.addAttribute("workflow", workflowService.getWorkflowByName(form.getWorkflowType()));
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
 		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
@@ -176,15 +177,16 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
-											  @RequestParam(value = "required", required = false) String required,
-											  @RequestParam(value = "favorisable", required = false) String favorisable,
-											  @RequestParam(value = "readOnly", required = false) String readOnly,
-											  @RequestParam(value = "prefill", required = false) String prefill,
-											  @RequestParam(value = "search", required = false) String search,
+											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
+											  @RequestParam(value = "favorisable", required = false, defaultValue = "false") Boolean favorisable,
+											  @RequestParam(value = "readOnly", required = false, defaultValue = "false") Boolean readOnly,
+											  @RequestParam(value = "prefill", required = false, defaultValue = "false") Boolean prefill,
+											  @RequestParam(value = "search", required = false, defaultValue = "false") Boolean search,
 											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
 											  @RequestParam(value = "valueType", required = false) String valueType,
 											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
-											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+											  @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
+											  @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
 
 		String extValueServiceName = "";
 		String extValueType = "";
@@ -192,17 +194,17 @@ public class FormAdminController {
 		String searchServiceName = "";
 		String searchType = "";
 		String searchReturn = "";
-		if(Boolean.parseBoolean(prefill)) {
+		if(prefill) {
 			extValueServiceName = valueServiceName;
 			extValueType = valueType;
 			extValueReturn = valueReturn;
 		}
-		if(Boolean.parseBoolean(search)) {
+		if(search) {
 			searchServiceName = valueServiceName;
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, Boolean.parseBoolean(favorisable), Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(id, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
