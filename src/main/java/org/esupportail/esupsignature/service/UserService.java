@@ -115,16 +115,15 @@ public class UserService {
         if (eppn.equals("creator")) {
             return getCreatorUser();
         }
-        eppn = buildEppn(eppn);
         User user = getByEppn(eppn);
         if (user != null) {
             user.setKeystoreFileName(this.getKeystoreFileName(user));
             user.setSignImagesIds(this.getSignImagesIds(user));
             return user;
         }
-		if(!eppn.startsWith("anonymousUser")) {
+	if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
-		}
+	}
         return null;
     }
 
