@@ -40,8 +40,11 @@ public class SecurityControllerAdvice {
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = (String) httpSession.getAttribute("suEppn");
             }
-            logger.debug("eppn used is : " + eppn);
-            return userService.buildEppn(eppn);
+//            if(!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_OTP"))) {
+//                eppn = userService.buildEppn(eppn);
+//            }
+            logger.debug("userEppn used is : " + eppn);
+            return eppn;
         } else {
             return null;
         }
@@ -56,9 +59,13 @@ public class SecurityControllerAdvice {
                 List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
                 if(personLdaps.size() > 0) {
                     eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                }            }
-            logger.debug("eppn used is : " + eppn);
-            return userService.buildEppn(eppn);
+                }
+            }
+//            if(!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_OTP"))) {
+//                eppn = userService.buildEppn(eppn);
+//            }
+            logger.debug("authUserEppn used is : " + eppn);
+            return eppn;
         } else {
             return null;
         }
