@@ -45,6 +45,12 @@ public class OVHSmsService implements SmsService {
 
     }
 
+    @Override
+    public boolean testSms() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(getSmsAccount(), String[].class).length > 0;
+    }
+
     private String getSmsAccount() throws IOException {
         String METHOD = "GET";
         URL    QUERY  = new URL("https://eu.api.ovh.com/1.0/sms/");
