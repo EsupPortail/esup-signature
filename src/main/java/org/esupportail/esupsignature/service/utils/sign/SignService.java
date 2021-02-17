@@ -347,7 +347,7 @@ public class SignService {
 			}
 			abstractSignatureForm = signatureDocumentForm;
 		}
-		if(environment.getActiveProfiles()[0].equals("dev")) {
+		if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
 			abstractSignatureForm.setSignWithExpiredCertificate(true);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
