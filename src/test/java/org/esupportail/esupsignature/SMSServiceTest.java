@@ -5,11 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import javax.annotation.Resource;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -21,12 +20,12 @@ public class SMSServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SMSServiceTest.class);
 
-    @Resource
+    @Autowired(required = false)
     private SmsService smsService;
 
     @Test
     public void testSms() {
-        assumeTrue("ldap not configured",  smsService != null);
+        assumeTrue("SMS not configured",  smsService != null);
         try {
             smsService.testSms();
         } catch (Exception e) {

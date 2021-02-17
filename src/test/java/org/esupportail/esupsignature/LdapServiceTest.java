@@ -28,7 +28,7 @@ public class LdapServiceTest {
 
     @Test(timeout = 5000)
     public void testLdap() {
-        assumeTrue("ldap not configured", ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().equals(""));
+        assumeTrue("LDAP not configured", ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().equals(""));
         ldapOrganizationalUnitService.getOrganizationalUnitLdap("0");
     }
 
