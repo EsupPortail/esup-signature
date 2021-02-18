@@ -1,5 +1,5 @@
 build:
-  script: export JAVA_HOME='/opt/jdk-13.0.2/' && mvn clean initialize && mvn-Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
+  script: export JAVA_HOME='/opt/jdk-13.0.2/' && mvn clean initialize && mvn -Dspring.config.location=/opt/tomcat-dematag/conf/app_config/application.yml package && cp -rf target/esup-signature.war /opt/tomcat-dematag/webapps/ROOT.war
   only:
     - test
   tags:
