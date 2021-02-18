@@ -444,11 +444,21 @@
 			<version>5.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>de.schlichtherle.io</groupId>
+			<groupId>de.schlichtherle.truezip</groupId>
 			<artifactId>truezip</artifactId>
-			<version>6.6</version>
+			<version>7.7.10</version>
+			<type>pom</type>
 		</dependency>
-
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-file</artifactId>
+			<version>7.7.10</version>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-driver-zip</artifactId>
+			<version>7.7.10</version>
+		</dependency>
 		<!-- Other dependencies -->
 
 		<dependency>
