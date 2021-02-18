@@ -690,7 +690,7 @@
 				<executions>
 					<execution>
 						<id>droid-core</id>
-						<phase>compile</phase>
+						<phase>initialize</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
@@ -704,7 +704,7 @@
 					</execution>
 					<execution>
 						<id>droid-contenaire</id>
-						<phase>compile</phase>
+						<phase>initialize</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
@@ -718,7 +718,7 @@
 					</execution>
 					<execution>
 						<id>droid-core-interface</id>
-						<phase>compile</phase>
+						<phase>initialize</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
@@ -732,7 +732,7 @@
 					</execution>
 					<execution>
 						<id>sedalib</id>
-						<phase>compile</phase>
+						<phase>initialize</phase>
 						<goals>
 							<goal>install-file</goal>
 						</goals>
