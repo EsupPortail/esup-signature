@@ -28,7 +28,7 @@
                         <li><a class="btn-floating bg-primary waves-effect" th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank" title="Enregistrer le document signé sous">
                             <i class="fas fa-download"></i>
                         </a></li>
-                        <li><a title="Export SEDA" class="btn-floating bg-primary    waves-effect" th:href="'/user/signrequests/get-last-file-seda/' + ${id}">
+                        <li><a title="Export SEDA" class="btn-floating bg-primary aves-effect" th:href="'/user/signrequests/get-seda/' + ${id}">
                             <i class="fas fa-file-export"></i>
                         </a></li>
                         <li><a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn-floating bg-primary waves-effect" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">

@@ -48,7 +48,7 @@ public class ValidationService {
             documentValidator.setDetachedContents(detachedContents);
             Reports reports = null;
             try (InputStream is = defaultPolicy.getInputStream()) {
-                reports = documentValidator.validateDocument(is);
+                reports = documentValidator.validateDocument();
                 for(String id : reports.getSimpleReport().getSignatureIdList()) {
                     reports.getSimpleReport().getErrors(id).remove("Unable to build a certificate chain until a trusted list!");
                 }

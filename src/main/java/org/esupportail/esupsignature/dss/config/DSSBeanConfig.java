@@ -1,9 +1,12 @@
 package org.esupportail.esupsignature.dss.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import eu.europa.esig.dss.DomUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.jaxb.ValidatorConfigurator;
+import eu.europa.esig.dss.jaxb.XmlDefinerUtils;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
@@ -57,6 +60,7 @@ import org.springframework.core.io.ClassPathResource;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -262,7 +266,11 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public ClassPathResource defaultPolicy() {
+	public ClassPathResource defaultPolicy() throws IOException {
+		ClassPathResource classPathResource = new ClassPathResource(dssProperties.getDefaultValidationPolicy());
+		if(!classPathResource.exists()) {
+			logger.error("Default Validation Policy doesn't exist");
+		}
 		return new ClassPathResource(dssProperties.getDefaultValidationPolicy());
 	}
 
@@ -330,6 +338,15 @@ public class DSSBeanConfig {
 		service.setAsicWithXAdESService(asicWithXadesService());
 		service.setXadesService(xadesService());
 		return service;
+	}
+
+	@Bean
+	public XmlDefinerUtils xmlDefinerUtils() throws ParserConfigurationException {
+		XmlDefinerUtils xmlDefinerUtils = XmlDefinerUtils.getInstance();
+		ValidatorConfigurator.getSecureValidatorConfigurator();
+		DomUtils.enableFeature("http://xml.org/sax/features/external-general-entities");
+		DomUtils.disableFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd");
+		return xmlDefinerUtils;
 	}
 
 	@Bean

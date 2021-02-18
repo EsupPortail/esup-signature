@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -110,9 +111,8 @@ public class SignRequestController {
     @Resource
     private EventService eventService;
 
-//
-//    @Resource
-//    private SedaExportService sedaExportService;
+    @Resource
+    private SedaExportService sedaExportService;
 
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -584,4 +584,16 @@ public class SignRequestController {
     public boolean checkCertSign(@RequestBody List<Long> ids) throws JsonProcessingException {
         return signRequestService.checkCertSign(ids);
     }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-seda/{id}")
+    public ResponseEntity<Void> getSeda(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+        SignRequest signRequest = signRequestService.getById(id);
+        InputStream inputStream = sedaExportService.generateSip(id);
+        httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
+        httpServletResponse.setContentType("application/zip");
+        IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }
