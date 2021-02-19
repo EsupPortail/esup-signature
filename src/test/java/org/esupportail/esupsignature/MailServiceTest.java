@@ -27,7 +27,7 @@ public class MailServiceTest {
 
     @Test
     public void testMail() {
-        assumeTrue("ldap not configured",  mailService.getMailConfig() != null && mailService.getMailConfig().getMailFrom()!= null && mailService.getMailSender() != null);
+        assumeTrue("SMTP not configured",  mailService.getMailConfig() != null && mailService.getMailConfig().getMailFrom()!= null && mailService.getMailSender() != null);
         try {
             mailService.sendTest(Arrays.asList(mailService.getMailConfig().getMailFrom()));
         } catch (Exception e) {

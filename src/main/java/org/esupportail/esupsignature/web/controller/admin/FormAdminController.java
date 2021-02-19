@@ -3,12 +3,10 @@ package org.esupportail.esupsignature.web.controller.admin;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.FieldService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -29,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +64,7 @@ public class FormAdminController {
 	private FieldService fieldService;
 
 	@Resource
-	private DocumentService documentService;
+	private TargetService targetService;
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
@@ -73,7 +72,9 @@ public class FormAdminController {
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, publicUsage, fieldNames);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(documentIOType, targetUri));
+		Form form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -81,6 +82,7 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
+		model.addAttribute("workflow", workflowService.getWorkflowByName(form.getWorkflowType()));
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
 		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
@@ -89,7 +91,9 @@ public class FormAdminController {
 
 	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(targetType, targetUri));
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targets, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -173,15 +177,16 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
-											  @RequestParam(value = "required", required = false) String required,
-											  @RequestParam(value = "favorisable", required = false) String favorisable,
-											  @RequestParam(value = "readOnly", required = false) String readOnly,
-											  @RequestParam(value = "prefill", required = false) String prefill,
-											  @RequestParam(value = "search", required = false) String search,
+											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
+											  @RequestParam(value = "favorisable", required = false, defaultValue = "false") Boolean favorisable,
+											  @RequestParam(value = "readOnly", required = false, defaultValue = "false") Boolean readOnly,
+											  @RequestParam(value = "prefill", required = false, defaultValue = "false") Boolean prefill,
+											  @RequestParam(value = "search", required = false, defaultValue = "false") Boolean search,
 											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
 											  @RequestParam(value = "valueType", required = false) String valueType,
 											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
-											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+											  @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
+											  @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
 
 		String extValueServiceName = "";
 		String extValueType = "";
@@ -189,17 +194,17 @@ public class FormAdminController {
 		String searchServiceName = "";
 		String searchType = "";
 		String searchReturn = "";
-		if(Boolean.parseBoolean(prefill)) {
+		if(prefill) {
 			extValueServiceName = valueServiceName;
 			extValueType = valueType;
 			extValueReturn = valueReturn;
 		}
-		if(Boolean.parseBoolean(search)) {
+		if(search) {
 			searchServiceName = valueServiceName;
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, Boolean.parseBoolean(favorisable), Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(id, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

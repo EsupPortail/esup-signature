@@ -15,7 +15,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
@@ -90,9 +89,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targets, publicUsage);
 		return form;
 	}
 
@@ -125,8 +124,7 @@ public class FormService {
 		form.setRole(updateForm.getRole());
 		form.setPreFillType(updateForm.getPreFillType());
 		form.setWorkflowType(updateForm.getWorkflowType());
-		form.setTargetUri(updateForm.getTargetUri());
-		form.setTargetType(updateForm.getTargetType());
+		form.getTargets().addAll(updateForm.getTargets());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -188,7 +186,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage, String... fieldNames) throws IOException {
+	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -210,8 +208,7 @@ public class FormService {
 			}
 		}
 		form.setDocument(document);
-		form.setTargetType(targetType);
-		form.setTargetUri(targetUri);
+		form.getTargets().addAll(targets);
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
@@ -349,14 +346,14 @@ public class FormService {
 					field.setSearchType(nameValues[2].trim());
 					field.setSearchReturn(nameValues[3].trim().replace(")", ""));
 				}
-				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
-					for (int i = 2; i < nameValues.length; i++) {
-						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
-					}
-				}
-				if(field.getSearchType() == null) {
-					field.setStepNumbers("0");
-				}
+//				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
+//					for (int i = 2; i < nameValues.length; i++) {
+//						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
+//					}
+//				}
+//				if(field.getSearchType() == null) {
+//					field.setStepNumbers("0");
+//				}
 			}
 		}
 	}

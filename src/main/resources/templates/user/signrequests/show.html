@@ -24,7 +24,8 @@
     if (signable && currentSignType === 'nexuSign') {
         new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
     }
-    new SignUi([[${signRequest.id}]],
+    new SignUi(
+        [[${signRequest.id}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
             [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
         [/]
@@ -36,8 +37,8 @@
         signable,
         [[${signRequest.comments}]],
         [[${toSignDocument.contentType == 'application/pdf'}]],
-        [[${realCurrentStepNumber}]],
-        [[${isRealCurrentStepSigned}]],
+        [[${currentStepNumber}]],
+        [[${currentStepId}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${_csrf}]],
@@ -432,43 +433,60 @@
                         <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).getRecipients()}">
                             <span th:text="${recipient.user.firstname + ' ' + recipient.user.name} + ' '"></span>
                         </th:block>
+                        pour l'étape
+                        <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description != null}"
+                              th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
+
+                        </span>
+                        <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description != null}"
+                              th:text="${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber().workflowStep.description + 1}">
+                        </span>
                         .
                     </span>
                 </p>
-                <label for="signTypeInfinite">Choisir un type de signature</label>
-                <select name="signType" id="signTypeInfinite" class="form-control">
-                    <th:block th:each="signType : ${signTypes}">
-                        <option th:value="${signType}"
-                                th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
-                    </th:block>
-                </select>
-                <br>
-                <label for="recipientsEmails">Choisir les participants</label>
-                <div class="form-group">
-                    <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
-                    </select>
-                </div>
-                <div class="form-group" id="allSignToComplete_div_id">
-                    <label for="allSignToComplete">
-                        Tous les participants doivent-ils signer ?
-                    </label>
-                    <label class="switch">
-                        <input type="checkbox" name="allSignToComplete" id="allSignToCompleteInfinite"/>
-                        <span class="slider round"></span>
-                    </label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
-                        th:value="${signRequest.parentSignBook.id}">
+                <button id="enableInfinite" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <th:block th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <i class="fas fa-signature"></i> Signer et envoyer au(x) personne(s) sélectionnée(s)
                     </th:block>
                     <th:block th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                    <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
+                        <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
                     </th:block>
                 </button>
-                <button id="launchAllSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
+                <form id="infinitForm" class="d-none">
+                    <input type="submit" id="infinitFormSubmit" class="d-none">
+                    <label for="recipientsEmailsInfinite">Choisir les participants</label>
+                    <div class="form-group">
+                        <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                    <label for="signTypeInfinite">Choisir un type de signature</label>
+                        <select name="signType" id="signTypeInfinite" class="form-control">
+                            <th:block th:each="signType : ${signTypes}">
+                                <option th:value="${signType}"
+                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-group" id="allSignToComplete_div_id">
+                        <label for="allSignToCompleteInfinite">
+                            Tous les participants doivent-ils signer ?
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" name="allSignToComplete" id="allSignToCompleteInfinite"/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+                    </div>
+                    <button id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                        <i class="fas fa-check"></i> Confirmer l'envoi
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <i class="fas fa-signature"></i> Signer sans modification du circuit
@@ -589,14 +607,16 @@
                             </th:block>
                         </th:block>
                         <div id="tempUsers"></div>
-                        <div th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.targetType.name() == 'mail'}" class="form-group">
+                        <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
+                        <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
                             <label>Etape finale : Envoi par mail à </label>
                             <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
-                                <th:block th:each="targetEmail : ${signRequest.parentSignBook.liveWorkflow.workflow.documentsTargetUri.split(';')}">
+                                <th:block th:each="targetEmail : ${target.targetUri.split(';')}">
                                     <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                                 </th:block>
                             </select>
                         </div>
+                        </th:block>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -14,6 +15,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.event.EventService;
+import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -104,17 +106,13 @@ public class SignRequestController {
     private TemplateEngine templateEngine;
 
     @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
     private ReportService reportService;
 
     @Resource
     private EventService eventService;
 
-//
-//    @Resource
-//    private SedaExportService sedaExportService;
+    @Resource
+    private SedaExportService sedaExportService;
 
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -166,8 +164,12 @@ public class SignRequestController {
         model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
         model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
-        model.addAttribute("realCurrentStepNumber", signBookService.getRealCurrentStepNumber(signRequest.getParentSignBook().getId()));
-        model.addAttribute("isRealCurrentStepSigned", signBookService.isRealCurrentStepSigned(signRequest.getParentSignBook().getId()));
+//        model.addAttribute("realCurrentStepNumber", signBookService.getRealCurrentStepNumber(signRequest.getParentSignBook().getId()));
+//        model.addAttribute("isRealCurrentStepSigned", signBookService.isRealCurrentStepSigned(signRequest.getParentSignBook().getId()));
+        model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+            model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
+        }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
         model.addAttribute("attachments", signRequestService.getAttachments(id));
@@ -314,7 +316,6 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
-                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
                 Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
@@ -476,9 +477,6 @@ public class SignRequestController {
         if(comment != null && !comment.isEmpty()) {
             signRequestService.addPostit(id, comment, userEppn, authUserEppn);
         }
-        if(recipientEmails != null) {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientEmails);
-        }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Votre demande à bien été transmise"));
         return "redirect:/user/signrequests/" + id;
     }
@@ -488,9 +486,8 @@ public class SignRequestController {
     public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                 @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                                 @RequestParam(name = "signType") SignType signType,
-                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) {
-        signRequestService.addStep(id, recipientsEmails, signType, allSignToComplete);
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureException {
+        signRequestService.addStep(id, recipientsEmails, signType, allSignToComplete, authUserEppn);
         return "redirect:/user/signrequests/" + id + "/?form";
     }
 
@@ -564,15 +561,15 @@ public class SignRequestController {
         for (Long id : idsLong) {
             SignRequest signRequest = signRequestService.getById(id);
             if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
-                reportService.addsignRequestForbid(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
-                reportService.addsignRequestUserNotInCurrentStep(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
             } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()){
-                reportService.addsignRequestsNoField(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
             } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
-                reportService.addsignRequestsSigned(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
             } else {
-                reportService.addsignRequestsError(report.getId(), signRequest);
+                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
             }
             if (idsLong.get(idsLong.size() - 1).equals(id)) {
                 eventService.publishEvent(new JsonMessage("nextSign", "Signature suivante", null), "massSign", sseId);
@@ -587,4 +584,16 @@ public class SignRequestController {
     public boolean checkCertSign(@RequestBody List<Long> ids) throws JsonProcessingException {
         return signRequestService.checkCertSign(ids);
     }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-seda/{id}")
+    public ResponseEntity<Void> getSeda(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+        SignRequest signRequest = signRequestService.getById(id);
+        InputStream inputStream = sedaExportService.generateSip(id);
+        httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
+        httpServletResponse.setContentType("application/zip");
+        IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 }

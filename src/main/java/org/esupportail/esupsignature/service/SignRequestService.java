@@ -151,7 +151,8 @@ public class SignRequestService {
 	}
 
 	public SignRequest getById(long id) {
-		return signRequestRepository.findById(id).get();
+		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		return signRequest.orElse(null);
 	}
 
 	public List<SignRequest> getSignRequestsByToken(String token) {
@@ -340,12 +341,9 @@ public class SignRequestService {
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
 						List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
 						if(formfields.size() > 0) {
-							List<String> steps = Arrays.asList(formfields.get(0).getStepNumbers().split(" "));
-							if(steps.contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
+							if(formfields.get(0).getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 								if(formfields.get(0).getExtValueType() != null && !formfields.get(0).getExtValueType().equals("system")) {
-//									if (!data.getDatas().containsKey(entry.getKey())) {
-										data.getDatas().put(entry.getKey(), entry.getValue());
-//									}
+									data.getDatas().put(entry.getKey(), entry.getValue());
 								} else {
 									data.getDatas().put(entry.getKey(), formfields.get(0).getDefaultValue());
 								}
@@ -389,7 +387,6 @@ public class SignRequestService {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
-//			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 		}
 		return false;
 	}
@@ -439,8 +436,8 @@ public class SignRequestService {
 					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
 				}
 			}
-			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()) && !signBookService.isNextWorkFlowStep(signRequest.getParentSignBook()))) {
-//				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
+			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()))) {
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
 			}
 			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
@@ -664,31 +661,35 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, DocumentIOType documentIOType, String targetUrl, String authUserEppn) throws EsupSignatureException {
-		if(documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-			if (documentIOType.equals(DocumentIOType.mail)) {
-				logger.info("send by email to " + targetUrl);
-				try {
+	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
+		for(Target target : targets) {
+			DocumentIOType documentIOType = target.getTargetType();
+			String targetUrl = target.getTargetUri();
+			if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+				if (documentIOType.equals(DocumentIOType.mail)) {
+					logger.info("send by email to " + targetUrl);
+					try {
+						for (SignRequest signRequest : signRequests) {
+							for (String email : targetUrl.split(";")) {
+								signRequest.getViewers().add(userService.getUserByEmail(email));
+							}
+						}
+						mailService.sendFile(title, signRequests, targetUrl);
+					} catch (MessagingException | IOException e) {
+						throw new EsupSignatureException("unable to send mail", e);
+					}
+				} else {
 					for (SignRequest signRequest : signRequests) {
-						for(String email : targetUrl.split(";")) {
-							signRequest.getViewers().add(userService.getUserByEmail(email));
+						Document signedFile = signRequest.getLastSignedDocument();
+						if (signRequest.getAttachments().size() > 0) {
+							targetUrl += "/" + signRequest.getTitle();
+							for (Document attachment : signRequest.getAttachments()) {
+								documentService.exportDocument(documentIOType, targetUrl, attachment);
+							}
 						}
+						documentService.exportDocument(documentIOType, targetUrl, signedFile);
+						updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 					}
-					mailService.sendFile(title, signRequests, targetUrl);
-				} catch (MessagingException | IOException e) {
-					throw new EsupSignatureException("unable to send mail", e);
-				}
-			} else {
-				for (SignRequest signRequest : signRequests) {
-					Document signedFile = signRequest.getLastSignedDocument();
-					if(signRequest.getAttachments().size() > 0) {
-						targetUrl += "/" + signRequest.getTitle();
-						for(Document attachment : signRequest.getAttachments()) {
-							documentService.exportDocument(documentIOType, targetUrl, attachment);
-						}
-					}
-					documentService.exportDocument(documentIOType, targetUrl, signedFile);
-					updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 				}
 			}
 		}
@@ -986,7 +987,7 @@ public class SignRequestService {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
-								|| !field.getStepNumbers().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber().toString())) {
+								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 							field.setDefaultValue("");
 						}
 						if (data.getDatas().get(field.getName()) != null
@@ -1056,15 +1057,9 @@ public class SignRequestService {
 		}
 	}
 
-	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete) {
+	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		liveWorkflowStepService.addRecipientsToWorkflowStep(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep(), recipientsEmails);
-		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
-		if (allSignToComplete != null && allSignToComplete) {
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(true);
-		} else {
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setAllSignToComplete(false);
-		}
+		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, authUserEppn);
 	}
 
 	@Transactional

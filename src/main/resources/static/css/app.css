@@ -59,15 +59,19 @@ td {
     font-size: 0.9em;
 }
 
-.tableFixHead {
+.table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 172px);
+    height: calc(100vh - 250px);
 }
 
-.tableFixHead thead th {
+.table-fix-head thead th {
     vertical-align: middle;
     position: sticky;
     top: 0;
+}
+
+.th-fixed{
+    z-index: 1 !important;
 }
 
 .footer {
@@ -101,7 +105,7 @@ code {
 }
 
 .nav-item {
-    margin: 5px;
+    margin-right: 5px;
 }
 
 .loader {
@@ -1231,7 +1235,7 @@ height: 100%;
 }
 
 .annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    font-size: 11px !important;
+    /*font-size: 11px !important;*/
 }
 
 .annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {

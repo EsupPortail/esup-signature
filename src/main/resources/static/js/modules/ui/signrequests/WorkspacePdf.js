@@ -5,7 +5,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, isRealCurrentStepSigned, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
+    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.currentSignRequestParams =  currentSignRequestParams;
@@ -21,13 +21,13 @@ export class WorkspacePdf {
         this.first = true;
         for(let i = 0 ; i < fields.length; i++) {
             let field = fields[i];
-            if(field.stepNumbers.includes(currentStepNumber) && field.required) {
+            if(field.workflowSteps.includes(currentStepNumber) && field.required) {
                 this.forcePageNum = field.page;
                 break;
             }
         }
         if(this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, this.forcePageNum, fields, isRealCurrentStepSigned);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields);
         }
         this.signPosition = new SignPosition(
             signType,
@@ -201,10 +201,16 @@ export class WorkspacePdf {
                         self.signPosition.updateCrossPosition();
                     });
                 } else {
+                    let enableInfinite = $("#enableInfinite");
+                    enableInfinite.unbind();
+                    enableInfinite.on("click", function(){
+                       $("#infinitForm").toggleClass("d-none");
+                       $("#launchSignButton").toggle();
+                    });
                     let signModal;
                     if (self.stepRepeatable) {
                         signModal = $('#stepRepeatableModal');
-                        $('#launchSignButton').hide();
+                        // $('#launchSignButton').hide();
                     } else {
                         signModal = $("#signModal");
                     }

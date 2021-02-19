@@ -17,7 +17,9 @@ public class Field {
     private Integer version;
 	
 	private String name;
-	
+
+	private String description;
+
 	private String label;
 	
 	private Integer fillOrder;
@@ -32,7 +34,10 @@ public class Field {
 
 	private Boolean readOnly = false;
 
-	private String stepNumbers = "0";
+	@ManyToMany
+	private List<WorkflowStep> workflowSteps = new ArrayList<>();
+
+	private Boolean stepZero = true;
 
 	private String extValueServiceName;
 
@@ -78,7 +83,15 @@ public class Field {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	public String getLabel() {
 		return label;
 	}
@@ -159,12 +172,20 @@ public class Field {
 		this.readOnly = disabled;
 	}
 
-	public String getStepNumbers() {
-		return stepNumbers;
+	public List<WorkflowStep> getWorkflowSteps() {
+		return workflowSteps;
 	}
 
-	public void setStepNumbers(String stepNumbers) {
-		this.stepNumbers = stepNumbers;
+	public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+		this.workflowSteps = workflowSteps;
+	}
+
+	public Boolean getStepZero() {
+		return stepZero;
+	}
+
+	public void setStepZero(Boolean stepZero) {
+		this.stepZero = stepZero;
 	}
 
 	public String getExtValueServiceName() {

@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, isRealCurrentStepSigned, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
+    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -15,7 +15,7 @@ export class SignUi {
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, isRealCurrentStepSigned, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -31,11 +31,8 @@ export class SignUi {
     initListeners() {
         $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
         $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
-        $("#launchSignButton").on('click', e => this.insertStep());
-        $("#launchAllSignButton").on('click', e => this.launchSign());
-        $("#stepRepeatableModal").find(".close").on('click', function () {
-            window.location.href = "/";
-        })
+        $("#launchInfiniteSignButton").on('click', e => this.insertStep());
+        $("#launchSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -194,7 +191,12 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        let selectedRecipents = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        if(selectedRecipents.length == 0 ) {
+            $("#infinitFormSubmit").click();
+            return;
+        }
+        step.recipientsEmails = selectedRecipents;
         step.stepNumber = this.currentStepNumber + 1;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signTypeInfinite').val();

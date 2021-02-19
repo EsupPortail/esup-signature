@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -25,10 +24,8 @@ public class LiveWorkflow {
     @OneToOne(fetch = FetchType.LAZY)
     private LiveWorkflowStep currentStep;
 
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
-
-    private String documentsTargetUri;
+    @OneToMany(cascade = CascadeType.REMOVE)
+    private List<Target> targets = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Workflow workflow;
@@ -65,20 +62,12 @@ public class LiveWorkflow {
         this.currentStep = currentStep;
     }
 
-    public DocumentIOType getTargetType() {
-        return targetType;
+    public List<Target> getTargets() {
+        return targets;
     }
 
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
-    }
-
-    public String getDocumentsTargetUri() {
-        return documentsTargetUri;
-    }
-
-    public void setDocumentsTargetUri(String documentsTargetUri) {
-        this.documentsTargetUri = documentsTargetUri;
+    public void setTargets(List<Target> targets) {
+        this.targets = targets;
     }
 
     public Workflow getWorkflow() {

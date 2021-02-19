@@ -116,23 +116,19 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	public FileObject cd(String path) {
+		FileObject returnValue = null;
 		try {
 			this.open();
-			FileObject returnValue = null;
-			
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
 			} else {
 				returnValue = root.resolveFile(getUri() + "/" + path);
 			}
 			returnValue.refresh();
-			if(returnValue.exists()) {
-				return returnValue;
-			}
 		} catch(FileSystemException e) {
 			logger.error("unable to open directory");
 		}
-		return null;
+		return returnValue;
 	}
 	
 	@Override

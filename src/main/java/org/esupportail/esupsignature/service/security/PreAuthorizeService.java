@@ -66,7 +66,11 @@ public class PreAuthorizeService {
 
     public boolean signRequestView(Long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
-        return signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn) || signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn);
+        if(signRequest != null) {
+            return signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn) || signRequestService.checkUserSignRights(signRequest, userEppn, authUserEppn);
+        } else {
+            return false;
+        }
     }
 
     public boolean signRequestSign(Long id, String userEppn, String authUserEppn) {

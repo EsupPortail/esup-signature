@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,42 +48,14 @@ public class ReportService {
     }
 
     @Transactional
-    public void addsignRequestsSigned(Long id, SignRequest signRequest) {
-        reportRepository.findById(id).get().getSignRequestsSigned().add(signRequest);
-    }
-
-    @Transactional
-    public void addsignRequestsNoField(Long id, SignRequest signRequest) {
-        reportRepository.findById(id).get().getSignRequestsNoField().add(signRequest);
-    }
-
-    @Transactional
-    public void addsignRequestsError(Long id, SignRequest signRequest) {
-        reportRepository.findById(id).get().getSignRequestsError().add(signRequest);
-    }
-
-    @Transactional
-    public void addsignRequestUserNotInCurrentStep(Long id, SignRequest signRequest) {
-        reportRepository.findById(id).get().getSignRequestUserNotInCurrentStep().add(signRequest);
-    }
-
-    @Transactional
-    public void addsignRequestForbid(Long id, SignRequest signRequest) {
-        reportRepository.findById(id).get().getSignRequestForbid().add(signRequest);
+    public void addSignRequestToReport(Long id, SignRequest signRequest, ReportStatus reportStatus) {
+        reportRepository.findById(id).get().getSignRequestReportStatusMap().put(signRequest.getId(), reportStatus);
     }
 
     @Transactional
     public void delete(Long id) {
         Report report = reportRepository.findById(id).get();
-        report.getSignRequestForbid().clear();
-        report.getSignRequestsError().clear();
-        report.getSignRequestUserNotInCurrentStep().clear();
-        report.getSignRequestsNoField().clear();
-        report.getSignRequestsSigned().clear();
         reportRepository.delete(report);
     }
 
-    public List<Report> getForDelete(SignRequest signRequest) {
-        return reportRepository.findBySignRequestForbidContainsOrSignRequestsErrorContainsOrSignRequestsNoFieldContainsOrSignRequestsSignedContainsOrSignRequestUserNotInCurrentStepContains(signRequest, signRequest, signRequest, signRequest, signRequest);
-    }
 }

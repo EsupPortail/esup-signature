@@ -38,11 +38,10 @@
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
-<!--		<repository>-->
-<!--			<id>vitam</id>-->
-<!--			<name>Vitam Repository</name>-->
-<!--			<url>https://download.programmevitam.fr/vitam_repository/3.6.0/mvn_repo/</url>-->
-<!--		</repository>-->
+		<repository>
+			<id>localrepository</id>
+			<url>file:///${pom.basedir}/src/libs</url>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
@@ -384,10 +383,81 @@
 			<artifactId>dss-pades-openpdf</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
+
+		<!-- SEDA dependencies -->
+
 		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-cookbook</artifactId>
-			<version>${dss.framework.version}</version>
+			<groupId>fr.gouv.vitam.tools</groupId>
+			<artifactId>sedalib</artifactId>
+			<version>2.5.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.opengis.cite.xerces</groupId>
+					<artifactId>xercesImpl-xsd11</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-core</artifactId>
+			<version>6.5-VITAM</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-core-interfaces</artifactId>
+			<version>6.5-VITAM</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-container</artifactId>
+			<version>6.5-VITAM</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.byteseek</groupId>
+			<artifactId>byteseek</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip</artifactId>
+			<version>7.7.10</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-file</artifactId>
+			<version>7.7.10</version>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-driver-zip</artifactId>
+			<version>7.7.10</version>
 		</dependency>
 
 		<!-- Other dependencies -->
@@ -447,10 +517,10 @@
 					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
+<!--				<exclusion>-->
+<!--					<groupId>xml-apis</groupId>-->
+<!--					<artifactId>xml-apis</artifactId>-->
+<!--				</exclusion>-->
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -541,16 +611,6 @@
 			<version>2.4.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>2.3.0.1</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.2</version>
-		</dependency>
-		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
 			<version>2.1.5</version>
@@ -608,27 +668,12 @@
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
+<!--				<exclusion>-->
+<!--					<groupId>xml-apis</groupId>-->
+<!--					<artifactId>xml-apis</artifactId>-->
+<!--				</exclusion>-->
 			</exclusions>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>fr.gouv.vitam</groupId>-->
-<!--			<artifactId>sedalib</artifactId>-->
-<!--			<version>2.3.0-SNAPSHOT</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>uk.gov.nationalarchives</groupId>-->
-<!--			<artifactId>droid-core</artifactId>-->
-<!--			<version>6.5-VITAM</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>uk.gov.nationalarchives</groupId>-->
-<!--			<artifactId>droid-container</artifactId>-->
-<!--			<version>6.5-VITAM</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
@@ -650,6 +695,69 @@
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.5.2</version>
+				<executions>
+					<execution>
+						<id>droid-core</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-core-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-core</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>droid-contenaire</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-container-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-container</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>droid-core-interface</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-core-interfaces-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-core-interfaces</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>sedalib</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/sedalib-2.5.0-SNAPSHOT.jar</file>
+							<groupId>fr.gouv.vitam.tools</groupId>
+							<artifactId>sedalib</artifactId>
+							<version>2.5.0-SNAPSHOT</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.19.1</version>
