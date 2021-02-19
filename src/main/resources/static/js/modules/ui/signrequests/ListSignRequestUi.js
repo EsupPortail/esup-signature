@@ -13,7 +13,8 @@ export default class ListSignRequestUi {
     }
 
     initListeners() {
-        $('#massSignButton').on('click', e => this.checkCertSign());
+        $('#massSignButton').on('click', e => this.launchMassSign(false));
+        $('#checkCertSignButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
@@ -23,7 +24,7 @@ export default class ListSignRequestUi {
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
         $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
-        $('#checkCertSignButton').on("click", e => this.launchMassSign(false));
+        document.addEventListener("sign", e => this.updateErrorWaitModal(e));
     }
 
     checkNbCheckboxes() {
@@ -35,10 +36,10 @@ export default class ListSignRequestUi {
         }
 
         if (idDom.length > 1 && this.massSignButtonHide) {
-            $('#massSignButton').removeClass('d-none');
+            $('#checkCertSignButton').removeClass('d-none');
             this.massSignButtonHide = false;
         } else if (idDom.length < 2 && !this.massSignButtonHide) {
-            $('#massSignButton').addClass('d-none');
+            $('#checkCertSignButton').addClass('d-none');
             this.massSignButtonHide = true;
         }
     }
@@ -92,8 +93,9 @@ export default class ListSignRequestUi {
         if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
             console.info("Add to page");
             this.page++;
+            let self = this;
             $.get("/user/signrequests/list-ws?" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
-                $('#signRequestTable').append(data);
+                self.signRequestTable.append(data);
             });
         }
     }
@@ -117,19 +119,40 @@ export default class ListSignRequestUi {
 
     launchMassSign(comeFromDispatcher) {
         if (!comeFromDispatcher) {
+            let passwordInput = $('#password');
+            if(passwordInput.val() == null || passwordInput.val() === "") {
+                $("#passwordSubmit").click();
+                return;
+            }
             $('#checkCertSignModal').modal('hide');
         }
-        $('#wait').modal('show');
-        $('#wait').modal({backdrop: 'static', keyboard: false});
-        let idDom = $('.sign-requests-ids:checked');
+        let signRequestIds = $('.sign-requests-ids:checked');
         let ids = [];
-        for (let i = 0; i < idDom.length ; i++) {
-            ids.push(idDom.eq(i).val());
+        for (let i = 0; i < signRequestIds.length ; i++) {
+            let checkbox = signRequestIds.eq(i);
+            if(checkbox.attr("data-status") === 'pending') {
+                ids.push(signRequestIds.eq(i).val());
+            }
         }
+        if(ids.length > 0) {
+            let self = this;
+            bootbox.confirm("Vous êtes sur le point de signer " + ids.length + " documents sans consultation préalable.<br/>Cette action est irrevocable !<br/>Voulez-vous continuer ?", function (result) {
+                if (result) {
+                    self.massSign(ids, comeFromDispatcher);
+                }
+            });
+        } else {
+            bootbox.alert("Aucune demande à signer dans la selection", function (){});
+        }
+    }
+
+    massSign(ids, comeFromDispatcher) {
+        let waitModal = $("#wait");
+        waitModal.modal('show');
+        waitModal.modal({backdrop: 'static', keyboard: false});
         let signRequestUrlParams = "sseId=" + sessionStorage.getItem("sseId") +
             "&ids=" + JSON.stringify(ids) +
-            "&" + this.csrf.parameterName + "=" + this.csrf.token
-        ;
+            "&" + this.csrf.parameterName + "=" + this.csrf.token;
         if (!comeFromDispatcher) {
             signRequestUrlParams += "&password=" + $('#password').val();
         }
@@ -145,59 +168,87 @@ export default class ListSignRequestUi {
         let message = e.detail
         console.info(message);
         this.percent = this.percent + 1;
-        if(message.type === "sign_system_error" || message.type === "not_authorized") {
-            console.error("sign error : system error");
-            document.getElementById("signError").style.display = "block";
-            document.getElementById("signError").innerHTML =" Erreur du système de signature : <br>" + message.text;
-            document.getElementById("closeModal").style.display = "block";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-        } else if(message.type === "initNexu") {
-            console.info("redirect to NexU sign proccess");
-            document.location.href="/user/nexu-sign/" + this.signRequestId;
-        }else if(message.type === "end") {
+        let bar = $("#bar");
+        let barText = $("#bar-text");
+        if(message.type === "end") {
             console.info("mass-sign end");
-            document.getElementById("bar-text").innerHTML = "";
-            document.getElementById("bar").classList.remove("progress-bar-animated");
-            document.getElementById("bar-text").innerHTML = message.text;
-            document.getElementById("bar").style.width = 100 + "%";
-            document.location.href = "/user/reports";
+            let cloneBarText = barText.clone();
+            cloneBarText.attr("id", "");
+            barText.after(cloneBarText);
+            cloneBarText.before("<br>");
+            bar.removeClass("progress-bar-animated");
+            barText.html(message.text);
+            bar.css("width", 100 + "%");
+            $("#closeModal").show();
+            $("#validModal").show();
+        } else if(message.type === "nextSuccess") {
+            let cloneBarText = barText.clone();
+            cloneBarText.attr("id", "");
+            cloneBarText.css("color", "green");
+            barText.after(cloneBarText);
+            cloneBarText.before("<br>");
+            // barText.html("");
+        } else if(message.type === "nextError") {
+            let cloneBarText = barText.clone();
+            cloneBarText.attr("id", "");
+            cloneBarText.css("color", "red");
+            barText.after(cloneBarText);
+            barText.css("color", "red");
+            cloneBarText.before("<br>");
+            if(message.text !== "") {
+                cloneBarText.html(message.text);
+            }
         } else {
             console.debug("update bar");
-            document.getElementById("bar").style.display = "block";
-            document.getElementById("bar").style.width = this.percent + "%";
-            document.getElementById("bar-text").innerHTML = message.text;
+            bar.css("display", "block");
+            bar.css("width", this.percent + "%");
+            barText.html(message.text);
+        }
+    }
+
+    updateErrorWaitModal(e) {
+        console.info("update wait modal");
+        let message = e.detail
+        console.info(message);
+        this.percent = this.percent + 1;
+        let barText = $("#bar-text");
+        if(message.type === "sign_system_error" || message.type === "not_authorized") {
+            console.error("sign error : system error");
+            let cloneBarText = barText.clone();
+            cloneBarText.attr("id", "");
+            cloneBarText.css("color", "red");
+            barText.after(cloneBarText);
+            cloneBarText.before("<br>");
+            cloneBarText.html(message.text);
         }
     }
 
     reset() {
         this.percent = 0;
-        document.getElementById("passwordError").style.display = "none";
-        document.getElementById("signError").style.display = "none";
-        document.getElementById("closeModal").style.display = "none";
-        document.getElementById("validModal").style.display = "none";
-        document.getElementById("bar").style.display = "none";
-        document.getElementById("bar").classList.add("progress-bar-animated");
+        $("#passwordError").hide();
+        $("#signError").hide();
+        $("#closeModal").hide();
+        $("#validModal").hide();
+        let bar = $("#bar");
+        bar.hide();
+        bar.addClass("progress-bar-animated");
     }
 
     checkCertSign() {
-        let idDom = $('.sign-requests-ids:checked');
+        let signRequestIds = $('.sign-requests-ids:checked');
         let ids = [];
-        for (let i = 0; i < idDom.length ; i++) {
-            ids.push(idDom.eq(i).val());
+        let isCertSign = false;
+        for (let i = 0; i < signRequestIds.length ; i++) {
+            let checkbox = signRequestIds.eq(i);
+            ids.push(checkbox.val());
+            if(checkbox.attr("data-sign-type") === 'certSign' && checkbox.attr("data-status") === 'pending') {
+                isCertSign = true;
+            }
         }
-        let csrf = this.csrf
-        $.ajax({
-            url: "/user/signrequests/check-cert-sign?" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            dataType: 'json',
-            contentType: "application/json",
-            data: JSON.stringify(ids),
-            success: response => this.dispatcher(response)
-        });
-    }
-
-    dispatcher(response) {
-        if (response) {
+        if (isCertSign) {
+            $("#passwordForm").on("submit", function (e){
+               e.preventDefault();
+            });
             $('#checkCertSignModal').modal('show');
         } else {
             this.launchMassSign(true)

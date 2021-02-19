@@ -22,7 +22,7 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a type="button" id="massSignButton"
+                        <a type="button" id="checkCertSignButton"
                            class="btn-floating btn-lg bg-success wave-effect d-none">
                             <i class="fas fa-file-signature"></i>
                         </a>
@@ -98,7 +98,9 @@
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td class="w-20 d-none d-xxl-table-cell"><input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-id-signbook="${signRequest.parentSignBook.id}"></td>
+                                <td class="w-20 d-none d-xxl-table-cell">
+                                    <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}" th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep.signType}" th:data-id-signbook="${signRequest.parentSignBook.id}">
+                                </td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                 <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
@@ -214,13 +216,15 @@
             <div class="modal-body">
                 <div class="alert alert-warning">Nous avons détecté une signature électronique parmi les demandes sélectionnées</div>
                 <div class="modal-body">
-                    <input class="form-control" type="password" id="password" name="password" value=""
-                           placeholder="Mot de passe du keystore"/>
+                    <form id="passwordForm">
+                        <input type="submit" id="passwordSubmit" class="d-none">
+                        <input class="form-control" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" required/>
+                    </form>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button id="checkCertSignButton"
+                <button id="massSignButton"
                         class="btn btn-success" title="Signer" autofocus>
                     Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
                 </button>
@@ -249,7 +253,7 @@
 <div id="wait" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-body text-center">
+            <div class="modal-body">
                 <h5>Signature en cours</h5>
                 <div class="progress">
                     <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;"
@@ -265,10 +269,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal" onclick="location.reload();">
                     Fermer
                 </button>
-                <button id="validModal" onclick="location.reload();" class="btn btn-secondary">Terminer</button>
+                <button id="validModal" onclick="location.href = '/user/reports';" class="btn btn-secondary">Voir le rapport complet</button>
             </div>
         </div>
     </div>
