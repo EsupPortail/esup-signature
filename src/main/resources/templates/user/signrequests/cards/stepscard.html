@@ -40,7 +40,7 @@
                                 <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-right"><i class="fas fa-users"></i></span>
                                 <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-right"><i class="fas fa-user"></i></span>
                                 <div class="bs-stepper-label">
-                                    <th:block th:if="${liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
+                                    <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
                                         <br/>
                                     </th:block>
