@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -43,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.beans.support.SortDefinition;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -57,6 +59,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -103,9 +106,6 @@ public class SignRequestService {
 	private SignBookService signBookService;
 
 	@Resource
-	private LiveWorkflowStepService liveWorkflowStepService;
-
-	@Resource
 	private SignService signService;
 
 	@Resource
@@ -143,6 +143,12 @@ public class SignRequestService {
 
 	@Resource
 	private SignRequestParamsService signRequestParamsService;
+
+	@Resource
+	private ReportService reportService;
+
+	@Autowired
+	private MessageSource messageSource;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -321,13 +327,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userShareId, String userEppn, String authUserEppn, Boolean massSign) {
-		String channel;
-		if (massSign) {
-			channel = "massSign";
-		} else {
-			channel = "sign";
-		}
+	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userShareId, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -369,30 +369,71 @@ public class SignRequestService {
 			}
 			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), channel, sseId);
+				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
 				return true;
 			}
-			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), channel, sseId);
+			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
 			User user = userService.getByEppn(userEppn);
 			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment, channel);
-			if (!massSign) {
-				TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 					public void afterCommit() {
-						eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), channel, sseId);
-					}
+					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
+				}
 				});
-			}
 			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", sseId);
 		}
 		return false;
 	}
 
 	@Transactional
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment, String channel) throws EsupSignatureException, IOException, InterruptedException {
+	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password) throws JsonProcessingException, InterruptedException {
+		eventService.publishEvent(new JsonMessage("", "Démarrage de la signature en masse", null), "massSign", sseId);
+		List<String> idsString = objectMapper.readValue(ids, List.class);
+		List<Long> idsLong = new ArrayList<>();
+		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
+		Object userShareString = httpSession.getAttribute("userShareId");
+		Report report = reportService.createReport(authUserEppn);
+		Long userShareId = null;
+		if(userShareString != null) {
+			userShareId = Long.valueOf(userShareString.toString());
+		}
+		for (Long id : idsLong) {
+			SignRequest signRequest = getById(id);
+			eventService.publishEvent(new JsonMessage("nextSign", "Document : " + signRequest.getTitle(), null), "massSign", sseId);
+			String error = "";
+			if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
+			} else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
+			} else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
+				error = messageSource.getMessage("report.reportstatus." + ReportStatus.userNotInCurrentStep, null, Locale.FRENCH);
+			} else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()) {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
+				error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
+			}
+			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn)) {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
+				error = null;
+			}
+			else {
+				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
+			}
+			if(error != null) {
+				eventService.publishEvent(new JsonMessage("nextError", error, null), "massSign", sseId);
+			} else {
+				eventService.publishEvent(new JsonMessage("nextSuccess", "Succès", null), "massSign", sseId);
+			}
+		}
+		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
+	}
+
+	@Transactional
+	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -419,7 +460,7 @@ public class SignRequestService {
 			}
 		}
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), channel, sseId);
+			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", sseId);
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
@@ -430,7 +471,7 @@ public class SignRequestService {
 			String fileName = toSignDocuments.get(0).getFileName();
 
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), channel, sseId);
+				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
 					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
 					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
@@ -445,7 +486,7 @@ public class SignRequestService {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
-			certSign(signRequest, signerUser, password, visual, sseId, channel);
+			certSign(signRequest, signerUser, password, visual, sseId, "sign");
 		}
 		if (signType.equals(SignType.visa)) {
 			if(comment != null && !comment.isEmpty()) {
@@ -462,7 +503,7 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user.getEppn(), authUser.getEppn());
 			}
 		}
-		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), channel, sseId);
+		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
 		applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
@@ -827,13 +868,9 @@ public class SignRequestService {
 	@Transactional
 	public boolean delete(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-//		List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-//		for (Log log : logs) {
-//			logService.delete(log);
-//		}
-		List<Comment> comments = signRequest.getComments();
-		for( Comment comment : comments) {
-			commentService.deleteComment(comment.getId());
+		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
+		for(Long commentId : commentsIds) {
+			commentService.deleteComment(commentId);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
@@ -1257,18 +1294,5 @@ public class SignRequestService {
 		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
 		outputStream.close();
 		return file;
-	}
-
-	@Transactional
-	public boolean checkCertSign(List<Long> ids) {
-		boolean check = false;
-		for (Long id : ids) {
-			SignRequest signRequest = this.getById(id);
-			SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
-			if (signType.equals(SignType.certSign)) {
-				check = true;
-			}
-		}
-		return check;
 	}
 }

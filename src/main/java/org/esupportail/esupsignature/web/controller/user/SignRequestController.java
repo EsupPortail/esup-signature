@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -14,7 +13,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
@@ -73,9 +71,6 @@ public class SignRequestController {
     private UserService userService;
 
     @Resource
-    private ObjectMapper objectMapper;
-
-    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     @Resource
@@ -104,12 +99,6 @@ public class SignRequestController {
 
     @Resource
     private TemplateEngine templateEngine;
-
-    @Resource
-    private ReportService reportService;
-
-    @Resource
-    private EventService eventService;
 
     @Resource
     private SedaExportService sedaExportService;
@@ -238,7 +227,7 @@ public class SignRequestController {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn, false)) {
+        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
             new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -550,39 +539,9 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/mass-sign")
     public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String ids, HttpSession httpSession,
-                                           @RequestParam(value = "sseId") String sseId, @RequestParam(value = "password", required = false) String password) throws JsonProcessingException {
-        List<String> idsString = objectMapper.readValue(ids, List.class);
-        List<Long> idsLong = new ArrayList<>();
-        idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
-        Object userShareString = httpSession.getAttribute("userShareId");
-        Report report = reportService.createReport(authUserEppn);
-        Long userShareId = null;
-        if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        for (Long id : idsLong) {
-            SignRequest signRequest = signRequestService.getById(id);
-            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signTypeNotCompliant);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEppn().equals(authUserEppn))) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.userNotInCurrentStep);
-            } else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().isEmpty()){
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
-            } else if (signRequest.getStatus().equals(SignRequestStatus.pending) && signRequestService.initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn, true)) {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
-            } else {
-                reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
-            }
-            if (idsLong.get(idsLong.size() - 1).equals(id)) {
-                eventService.publishEvent(new JsonMessage("nextSign", "Signature suivante", null), "massSign", sseId);
-            }
-        }
-        eventService.publishEvent(new JsonMessage("end", "Signature suivante", null), "massSign", sseId);
+                                           @RequestParam(value = "sseId") String sseId, @RequestParam(value = "password", required = false) String password) throws JsonProcessingException, InterruptedException {
+        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, sseId, password);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @ResponseBody
-    @PostMapping(value = "/check-cert-sign")
-    public boolean checkCertSign(@RequestBody List<Long> ids) throws JsonProcessingException {
-        return signRequestService.checkCertSign(ids);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
