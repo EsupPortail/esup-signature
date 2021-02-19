@@ -389,7 +389,9 @@ export class WorkspacePdf {
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
         if (signRequestParams.xPos === - 1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
             this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
-            $(e).show();
+            if(this.signPosition.visualActive) {
+                $(e).show();
+            }
         } else {
             $(e).hide();
         }
@@ -508,7 +510,7 @@ export class WorkspacePdf {
         $('#infos').show();
         if(this.signPosition.visualActive) {
             $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
-            this.signPosition.cross.show();
+            // this.signPosition.cross.show();
         }
         this.pdfViewer.rotation = 0;
         if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
