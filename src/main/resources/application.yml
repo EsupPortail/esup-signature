@@ -154,16 +154,16 @@ pdf:
     pdf-to-image-dpi: 72
 
 security:
-#    cas:
-#        service: https://esup-signature.univ-ville.fr/login/cas
-#        title: Compte Université (CAS)
-#        url: https://cas.univ-ville.fr
-    shib:
-        credentials-request-header: MEMBER
-        idp-url: https://idp.univ-ville.fr
-        principal-request-header: REMOTE_USER
-        title: Compte d’un autre établissement (Shibboleth)
-        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+    cas:
+        service: https://esup-signature.univ-ville.fr/login/cas
+        title: Compte Université (CAS)
+        url: https://cas.univ-ville.fr
+#    shib:
+#        credentials-request-header: MEMBER
+#        idp-url: https://idp.univ-ville.fr
+#        principal-request-header: REMOTE_USER
+#        title: Compte d’un autre établissement (Shibboleth)
+#        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
         group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:
