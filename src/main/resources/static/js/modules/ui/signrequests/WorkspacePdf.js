@@ -201,10 +201,16 @@ export class WorkspacePdf {
                         self.signPosition.updateCrossPosition();
                     });
                 } else {
+                    let enableInfinite = $("#enableInfinite");
+                    enableInfinite.unbind();
+                    enableInfinite.on("click", function(){
+                       $("#infinitForm").toggleClass("d-none");
+                       $("#launchSignButton").toggle();
+                    });
                     let signModal;
                     if (self.stepRepeatable) {
                         signModal = $('#stepRepeatableModal');
-                        $('#launchSignButton').hide();
+                        // $('#launchSignButton').hide();
                     } else {
                         signModal = $("#signModal");
                     }

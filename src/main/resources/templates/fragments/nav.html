@@ -38,6 +38,8 @@
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-folder-open"></i> <span class="nav-item-label d-none d-xl-inline">Mes documents</span>
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
+                              class="badge badge-info mt-1" th:text="${nbDatas}"></span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
                     <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
