@@ -37,7 +37,7 @@ export class SignPosition extends EventFactory {
             }
         } else {
             let signRequestParams = new SignRequestParams();
-            if(this.signImageNumber != null) {
+            if(this.signImageNumber != null && signType !== 'visa') {
                 signRequestParams.signImageNumber = this.signImageNumber;
             }
             this.signRequestParamses.set("0", signRequestParams);
