@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.service.export;
 
-import eu.europa.esig.dss.detailedreport.DetailedReport;
-import eu.europa.esig.dss.detailedreport.jaxb.XmlSignature;
+import eu.europa.esig.dss.simplereport.SimpleReport;
 import eu.europa.esig.dss.validation.reports.Reports;
 import fr.gouv.vitam.tools.sedalib.core.ArchiveUnit;
 import fr.gouv.vitam.tools.sedalib.core.BinaryDataObject;
 import fr.gouv.vitam.tools.sedalib.core.DataObjectPackage;
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
+import fr.gouv.vitam.tools.sedalib.metadata.management.*;
 import fr.gouv.vitam.tools.sedalib.utils.SEDALibProgressLogger;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.*;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -49,6 +50,7 @@ public class SedaExportService {
 
     @Transactional
     public InputStream generateSip(Long signRequestId) {
+        Date date = new Date();
         SignRequest signRequest = signRequestService.getById(signRequestId);
         try {
             File targetFile = fileService.getTempFile(signRequest.getTitle() + "-seda.zip");
@@ -74,23 +76,31 @@ public class SedaExportService {
 
             ArchiveUnit id1ArchiveUnit = sb.createRootArchiveUnit("ID1", "File", signRequest.getTitle(), "");
             List<Log> logs = logRepository.findBySignRequestId(signRequest.getId());
+            Management management = new Management();
+            LogBook logBook = new LogBook();
             for (Log log : logs) {
                 Event event = new Event(log.getId().toString(), log.getFinalStatus(), convertToLocalDateTimeViaInstant(log.getLogDate()), log.getReturnCode());
                 event.addNewMetadata("EventTypeCode", log.getFinalStatus() + " by " + log.getEppn());
                 event.addNewMetadata("EventDetail", log.getComment());
-                id1ArchiveUnit.getContent().addMetadata(event);
+                logBook.addMetadata(event);
             }
-            ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
-            DetailedReport simpleReport = reports.getDetailedReport();
+            management.addMetadata(logBook);
+            management.addMetadata(new AccessRule("ACC-00001", convertToLocalDateViaInstant(date)));
+            ReuseRule reuseRule = new ReuseRule();
+            reuseRule.setPreventInheritance(true);
+            management.addMetadata(reuseRule);
+            management.addMetadata(new ClassificationRule());
+            id1ArchiveUnit.setManagement(management);
 
+            ArchiveUnit id2ArchiveUnit = sb.addNewSubArchiveUnit("ID1", "ID2", "Item", "validation.xml", "");
             BinaryDataObject docBinaryDataObject = new BinaryDataObject(dataObjectPackage, Paths.get(file.getAbsolutePath()), file.getName(), "BinaryMaster_1");
             docBinaryDataObject.extractTechnicalElements(pl);
 
-            for(XmlSignature xmlSignature : simpleReport.getSignatures()) {
-                //UserUi user = userRepository.findByEppn(xmlSignature.getSignedBy()).get(0);
+            SimpleReport simpleReport = reports.getSimpleReport();
+            for(String signatureId : simpleReport.getSignatureIdList()) {
                 Signature signature = new Signature();
-                signature.addMetadata(new Signer(simpleReport.getInfos(xmlSignature.getId()).toString(), convertToLocalDateTimeViaInstant(simpleReport.getBestSignatureTime(xmlSignature.getId()))));
-                Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(simpleReport.getBestSignatureTime(xmlSignature.getId())));
+                signature.addMetadata(new Signer(simpleReport.getSignedBy(signatureId), convertToLocalDateTimeViaInstant(simpleReport.getBestSignatureTime(signatureId))));
+                Validator validator = new Validator("DSS Validator", convertToLocalDateTimeViaInstant(date));
                 validator.addNewMetadata("Identifier", "DSS");
                 signature.addMetadata(validator);
                 ReferencedObject referencedObject = new ReferencedObject(
@@ -119,6 +129,12 @@ public class SedaExportService {
         return dateToConvert.toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
+    }
+
+    public LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
+        return dateToConvert.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
     }
 
 }

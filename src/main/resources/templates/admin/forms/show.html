@@ -38,24 +38,24 @@
                 </li>
             </ul>
             <br>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card col-lg-11">
                 <div class="card-body">
-                    <div id="listSignRequestTable" class="tableFixHead">
+                    <div id="listSignRequestTable" class="table-fix-head">
                         <table class="table table-borderless table-hover">
                     <thead class="thead-dark">
                         <tr>
-                            <th class="align-middle">Nom</th>
-                            <th class="align-middle">Type</th>
-                            <th class="align-middle">Favorisable</th>
-                            <th class="align-middle">Requis</th>
-                            <th class="align-middle">Lecture seule</th>
-                            <th class="align-middle">Pré-remplissage</th>
-                            <th class="align-middle">Auto-completion</th>
-                            <th class="align-middle">Nom du service</th>
-                            <th class="align-middle">Type de données</th>
-                            <th class="align-middle">Attribut retourné</th>
-                            <th class="align-middle">Étape brouillon</th>
-                            <th class="align-middle">Étapes autorisées</th>
+                            <th class="align-middle th-fixed">Nom</th>
+                            <th class="align-middle th-fixed">Type</th>
+                            <th class="align-middle th-fixed">Favorisable</th>
+                            <th class="align-middle th-fixed">Requis</th>
+                            <th class="align-middle th-fixed">Lecture seule</th>
+                            <th class="align-middle th-fixed">Pré-remplissage</th>
+                            <th class="align-middle th-fixed">Auto-completion</th>
+                            <th class="align-middle th-fixed">Nom du service</th>
+                            <th class="align-middle th-fixed">Type de données</th>
+                            <th class="align-middle th-fixed">Attribut retourné</th>
+                            <th class="align-middle th-fixed">Étape brouillon</th>
+                            <th class="align-middle th-fixed">Étapes autorisées</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,7 +100,7 @@
                             </td>
                             <td><input type="checkbox" name="stepZero" th:value="true" th:checked="${field.stepZero}"/></td>
                             <td>
-                                <select name="workflowStepsIds" class="form-control" multiple size="3">
+                                <select th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple" multiple size="3" data-placeholder="Choisir des étapes">
                                     <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
                                         <option th:value="${workflow.id}" th:text="${iterator.index + 1}" th:selected="${field.workflowSteps.contains(workflow)}"></option>
                                     </th:block>

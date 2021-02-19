@@ -59,15 +59,19 @@ td {
     font-size: 0.9em;
 }
 
-.tableFixHead {
+.table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 172px);
+    height: calc(100vh - 250px);
 }
 
-.tableFixHead thead th {
+.table-fix-head thead th {
     vertical-align: middle;
     position: sticky;
     top: 0;
+}
+
+.th-fixed{
+    z-index: 1 !important;
 }
 
 .footer {
