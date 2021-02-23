@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.otp;
 
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -121,7 +122,7 @@ public class OtpService {
             for (Integer i : set) {
                 builder.append(i);
             }
-            return builder.toString() + (1000 - randomGenerator.nextInt(999));
+            return builder.toString() + Strings.padStart((1000 - randomGenerator.nextInt(999)) + "", 3, '0');
         } catch (NoSuchAlgorithmException e) {
             logger.error(e.getMessage());
         }
