@@ -25,7 +25,7 @@ public class LogoutHandlerImpl implements LogoutHandler {
     @Resource
     List<SecurityService> securityServices;
 
-    private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Override
     public void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
@@ -39,11 +39,15 @@ public class LogoutHandlerImpl implements LogoutHandler {
             }
         }
         try {
-            String securityServiceName = httpServletRequest.getSession().getAttribute("securityServiceName").toString();
-            for(SecurityService securityService : securityServices) {
-                if(securityService.getClass().getSimpleName().equals(securityServiceName)) {
-                    redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, securityService.getLogoutUrl());
+            if(httpServletRequest.getSession().getAttribute("securityServiceName") != null) {
+                String securityServiceName = httpServletRequest.getSession().getAttribute("securityServiceName").toString();
+                for (SecurityService securityService : securityServices) {
+                    if (securityService.getClass().getSimpleName().equals(securityServiceName)) {
+                        redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, securityService.getLogoutUrl());
+                    }
                 }
+            } else {
+                redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, "/logged-out");
             }
         } catch (IOException e) {
             logger.error("error on logout", e);

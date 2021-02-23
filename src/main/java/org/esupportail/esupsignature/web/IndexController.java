@@ -33,10 +33,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
@@ -138,6 +135,18 @@ public class IndexController {
 			}
 		}
 		return user;
+	}
+
+	@GetMapping("/logged-out")
+	public String loggedOut() {
+		return "logged-out";
+	}
+
+	@RequestMapping(value={"/robots.txt", "/robot.txt"})
+	@ResponseBody
+	public String getRobotsTxt() {
+		return "User-agent: *\n" +
+				"Disallow: /\n";
 	}
 
 }
