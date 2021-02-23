@@ -99,7 +99,9 @@
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                 <td class="w-20 d-none d-xxl-table-cell">
-                                    <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}" th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep.signType}" th:data-id-signbook="${signRequest.parentSignBook.id}">
+                                    <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
+                                           th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
+                                           th:data-id-signbook="${signRequest.parentSignBook.id}">
                                 </td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>

@@ -294,16 +294,18 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflow.getWorkflowSteps().get(i), false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        WorkflowStep workflowStep = null;
+                                        if(workflow.getWorkflowSteps().size() > i) {
+                                            workflowStep = workflow.getWorkflowSteps().get(i);
+                                        }
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                         i++;
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                        String target = metadatas.get(metadataKey);
-                                        if (target.contains("://")) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.valueOf(target.split("://")[0]), target.replace("\\", "/")));
-                                        } else {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.vfs, "/" + target.replace("\\", "/")));
+                                        String metadataTarget = metadatas.get(metadataKey);
+                                        for(Target target : workflow.getTargets()) {
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri() + "/" + metadataTarget));
                                         }
                                         logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0));
                                     }

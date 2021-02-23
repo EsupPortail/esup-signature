@@ -258,7 +258,7 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
-        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);
         }
