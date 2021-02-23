@@ -48,12 +48,17 @@ public class WsOtpSignController {
     private SmsService smsService;
 
     @GetMapping(value = "/{urlId}")
-    public String signin(@PathVariable String urlId, Model model) throws EsupSignatureException {
+    public String signin(@PathVariable String urlId, Model model) {
         Otp otp = otpService.getOtp(urlId);
         if(otp != null) {
             if(!otp.isSmsSended() && smsService != null) {
                 String password = otpService.generateOtpPassword(urlId);
-                smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup-signature " + password);
+                logger.info("sending password by sms : " + password);
+                try {
+                    smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup-signature " + password);
+                } catch (EsupSignatureException e) {
+                    logger.error(e.getMessage(), e);
+                }
                 otp.setSmsSended(true);
             }
             model.addAttribute("urlid", urlId);
