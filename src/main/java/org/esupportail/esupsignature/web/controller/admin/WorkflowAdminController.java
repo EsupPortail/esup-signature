@@ -117,7 +117,7 @@ public class WorkflowAdminController {
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, authUserEppn);
+		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, authUserEppn, false);
 		return "redirect:/admin/workflows/" + id;
 	}
 
