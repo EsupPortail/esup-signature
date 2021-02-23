@@ -1,15 +1,13 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import eu.europa.esig.dss.model.identifier.Identifier;
-import eu.europa.esig.dss.spi.tsl.*;
-import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
+import eu.europa.esig.dss.spi.tsl.LOTLInfo;
+import eu.europa.esig.dss.spi.tsl.TLInfo;
+import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
-import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.utils.Utils;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.esupportail.esupsignature.service.dss.DSSService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,17 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 import java.util.Collections;
-import java.util.List;
 
 @Controller
 @RequestMapping(value = "/admin/dss" )
 @ConditionalOnBean(DSSBeanConfig.class)
 public class DSSController {
-
-	private static final String TL_SUMMARY = "tl-summary";
-	private static final String PIVOT_CHANGES = "pivot-changes";
-	private static final String TL_DATA = "tl-info-country";
-	private static final String LOTL_DATA = "lotl-info";
 
 	@ModelAttribute("adminMenu")
 	String getCurrentMenu() {
@@ -43,40 +35,31 @@ public class DSSController {
 	}
 
 	@Resource
-	@Qualifier("european-lotl-source")
-	private LOTLSource lotlSource;
-
-	@Resource
-	@Qualifier("european-trusted-list-certificate-source")
-	private TrustedListsCertificateSource trustedListsCertificateSource;
-
-	@Resource
-	private CommonTrustedCertificateSource myTrustedCertificateSource;
+	private DSSService dssService;
 
 	@Resource
 	private KeystoreService keystoreService;
 
-	@GetMapping(value = "/oj")
-	public String showCertificates(Model model) {
-		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(trustedListsCertificateSource.getCertificates()));
-		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) lotlSource.getSigningCertificatesAnnouncementPredicate();
-		model.addAttribute("currentOjUrl", ojUriInfo.getOfficialJournalURL());
-		model.addAttribute("actualOjUrl", getActualOjUrl());
-		model.addAttribute("customCertificates", keystoreService.getCertificatesDTOFromKeyStore(myTrustedCertificateSource.getCertificates()));
-		return "admin/dss/oj-certificates";
-	}
-
 	@GetMapping
 	public String tlInfoPage(Model model) {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+		TLValidationJobSummary summary = dssService.getTrustedListsCertificateSource().getSummary();
 		model.addAttribute("summary", summary);
 		return "admin/dss/tl-summary";
 	}
 
+	@GetMapping(value = "/oj")
+	public String showCertificates(Model model) {
+		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getTrustedListsCertificateSource().getCertificates()));
+		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) dssService.getLotlSource().getSigningCertificatesAnnouncementPredicate();
+		model.addAttribute("currentOjUrl", ojUriInfo.getOfficialJournalURL());
+		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
+		model.addAttribute("customCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getMyTrustedCertificateSource().getCertificates()));
+		return "admin/dss/oj-certificates";
+	}
 
 	@GetMapping(value = "/lotl/{id}")
 	public String lotlInfoPage(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
-		LOTLInfo lotlInfo = getLOTLInfoById(id);
+		LOTLInfo lotlInfo = dssService.getLOTLInfoById(id);
 		if (lotlInfo == null) {
 			throw new EsupSignatureException(String.format("The LOTL with the specified id [%s] is not found!", id));
 		}
@@ -86,7 +69,7 @@ public class DSSController {
 
 	@GetMapping(value = "/tl/{id}")
 	public String tlInfoPageByCountry(@PathVariable(value = "id") String id, Model model) throws EsupSignatureException {
-		TLInfo tlInfo = getTLInfoById(id);
+		TLInfo tlInfo = dssService.getTLInfoById(id);
 		if (tlInfo == null) {
 			throw new EsupSignatureException(String.format("The TL with the specified id [%s] is not found!", id));
 		}
@@ -97,7 +80,7 @@ public class DSSController {
 
 	@GetMapping(value = "/pivot-changes/{lotlId}")
 	public String getPivotChangesPage(@PathVariable("lotlId") String lotlId, Model model) throws EsupSignatureException {
-		LOTLInfo lotlInfo = getLOTLInfoById(lotlId);
+		LOTLInfo lotlInfo = dssService.getLOTLInfoById(lotlId);
 		if (lotlInfo != null) {
 			model.addAttribute("lotl", lotlInfo);
 			model.addAttribute("originalKeystore", lotlInfo.getValidationCacheInfo().isResultExist() ?
@@ -108,59 +91,5 @@ public class DSSController {
 		}
 	}
 
-	private LOTLInfo getLOTLInfoById(String lotlId) {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
-		List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
-		for (LOTLInfo lotlInfo : lotlInfos) {
-			Identifier identifier = lotlInfo.getIdentifier();
-			String xmlId = identifier.asXmlId();
-			if (xmlId.equals(lotlId)) {
-				return lotlInfo;
-			}
-		}
-		return null;
-	}
-
-	private TLInfo getTLInfoById(String tlId) {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
-		List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
-		for (LOTLInfo lotlInfo : lotlInfos) {
-			TLInfo tlInfo = getTLInfoByIdFromList(tlId, lotlInfo.getTLInfos());
-			if (tlInfo != null) {
-				return tlInfo;
-			}
-		}
-		List<TLInfo> otherTLInfos = summary.getOtherTLInfos();
-		TLInfo tlInfo = getTLInfoByIdFromList(tlId, otherTLInfos);
-		if (tlInfo != null) {
-			return tlInfo;
-		}
-		return null;
-	}
-
-	private TLInfo getTLInfoByIdFromList(String tlId, List<TLInfo> tlInfos) {
-		for (TLInfo tlInfo: tlInfos) {
-			if (tlInfo.getIdentifier().asXmlId().equals(tlId)) {
-				return tlInfo;
-			}
-		}
-		return null;
-	}
-
-	private String getActualOjUrl() {
-		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
-		if (summary != null) {
-			List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
-			for (LOTLInfo lotlInfo : lotlInfos) {
-				if (Utils.areStringsEqual(lotlSource.getUrl(), lotlInfo.getUrl())) {
-					ParsingInfoRecord parsingCacheInfo = lotlInfo.getParsingCacheInfo();
-					if (parsingCacheInfo != null) {
-						return parsingCacheInfo.getSigningCertificateAnnouncementUrl();
-					}
-				}
-			}
-		}
-		return null;
-	}
 
 }

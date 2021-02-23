@@ -1,12 +1,10 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
@@ -43,9 +41,6 @@ public class UserService {
 
     @Autowired
     private ObjectProvider<LdapPersonService> ldapPersonService;
-
-    @Resource
-    private WebSecurityProperties webSecurityProperties;
 
     @Resource
     private GlobalProperties globalProperties;
@@ -121,19 +116,16 @@ public class UserService {
             user.setSignImagesIds(this.getSignImagesIds(user));
             return user;
         }
-	if(!eppn.startsWith("anonymousUser")) {
+		if(!eppn.startsWith("anonymousUser")) {
             logger.error("unable to find user : " + eppn);
-	}
+		}
         return null;
     }
 
     public String buildEppn(String uid) {
-        for (SecurityService securityService : securityServices) {
-            if (securityService instanceof CasSecurityServiceImpl
-                    && uid.split("@").length == 1
-                    && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
-                uid = uid + "@" + globalProperties.getDomain();
-            }
+        if (uid.split("@").length == 1
+                && !(uid.equals("creator") || uid.equals("system") || uid.equals("scheduler") || uid.equals("generic") )) {
+            uid = uid + "@" + globalProperties.getDomain();
         }
         return uid;
     }
@@ -183,17 +175,14 @@ public class UserService {
 
     @Transactional
     public User createUserWithAuthentication(Authentication authentication) {
-        if(ldapPersonService.getIfAvailable() == null) {
-            throw new EsupSignatureRuntimeException("Creation of user not implemented without ldap configuration");
-        }
-        String uid;
+        String authName;
         if (authentication.getName().contains("@")) {
-            uid = authentication.getName().substring(0, authentication.getName().indexOf("@"));
+            authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
         } else {
-            uid = authentication.getName();
+            authName = authentication.getName();
         }
-        logger.info("controle de l'utilisateur " + uid);
-        List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdap(uid);
+        logger.info("controle de l'utilisateur " + authName);
+        List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService.getIfAvailable()).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(personLdaps.get(0).getUid());
@@ -466,5 +455,11 @@ public class UserService {
         User user = getUserByEppn(authUserEppn);
         Map<UiParams, String> uiParamsStringMap = new HashMap<>(user.getUiParams());
         return uiParamsStringMap;
+    }
+
+    @Transactional
+    public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
+        User user = getUserByEppn(authUserEppn);
+        user.setDefaultSignImageNumber(signImaeNumber);
     }
 }

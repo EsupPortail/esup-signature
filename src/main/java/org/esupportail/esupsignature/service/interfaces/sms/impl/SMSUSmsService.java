@@ -39,11 +39,9 @@ public class SMSUSmsService implements SmsService {
         CredentialsProvider provider = new BasicCredentialsProvider();
         UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword());
         provider.setCredentials(AuthScope.ANY, credentials);
-
         HttpClient client = HttpClientBuilder.create()
                 .setDefaultCredentialsProvider(provider)
                 .build();
-
         try {
             HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl() + "/?action=SendSms&phoneNumber=" + phoneNumber + "&message=" + URLEncoder.encode(message, Charset.defaultCharset())));
             int statusCode = response.getStatusLine().getStatusCode();
@@ -56,5 +54,17 @@ public class SMSUSmsService implements SmsService {
             throw new EsupSignatureException("Problème d'envoi sms : " + e.getMessage(), e);
         }
 
+    }
+
+    @Override
+    public boolean testSms() throws IOException {
+        CredentialsProvider provider = new BasicCredentialsProvider();
+        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(smsProperties.getUsername(), smsProperties.getPassword());
+        provider.setCredentials(AuthScope.ANY, credentials);
+        HttpClient client = HttpClientBuilder.create()
+                .setDefaultCredentialsProvider(provider)
+                .build();
+        HttpResponse response = client.execute(new HttpGet(smsProperties.getUrl()));
+        return response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
     }
 }

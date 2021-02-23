@@ -15,10 +15,10 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +64,9 @@ public class FormService {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private FileService fileService;
+
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
 		return obj;
@@ -85,9 +89,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
+		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targets, publicUsage);
 		return form;
 	}
 
@@ -120,8 +124,7 @@ public class FormService {
 		form.setRole(updateForm.getRole());
 		form.setPreFillType(updateForm.getPreFillType());
 		form.setWorkflowType(updateForm.getWorkflowType());
-		form.setTargetUri(updateForm.getTargetUri());
-		form.setTargetType(updateForm.getTargetType());
+		form.getTargets().addAll(updateForm.getTargets());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -135,11 +138,27 @@ public class FormService {
 				shareTypes.add(shareType);
 			}
 		}
+
 		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
 		for(UserShare userShare : userShares) {
 			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
 		}
 		formRepository.save(form);
+	}
+
+	@Transactional
+	public void updateFormModel(Long id, MultipartFile multipartModel) {
+		Form form = getById(id);
+		if(multipartModel != null) {
+			Document document = form.getDocument();
+			form.setDocument(null);
+			documentService.delete(document.getId());
+			try {
+				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType()));
+			} catch (IOException e) {
+				logger.error("unable to modif model", e);
+			}
+		}
 	}
 
 	public void deleteForm(Long formId) {
@@ -167,7 +186,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage, String... fieldNames) throws IOException {
+	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -189,8 +208,7 @@ public class FormService {
 			}
 		}
 		form.setDocument(document);
-		form.setTargetType(targetType);
-		form.setTargetUri(targetUri);
+		form.getTargets().addAll(targets);
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
 		form.setWorkflowType(workflowType);
@@ -328,14 +346,14 @@ public class FormService {
 					field.setSearchType(nameValues[2].trim());
 					field.setSearchReturn(nameValues[3].trim().replace(")", ""));
 				}
-				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
-					for (int i = 2; i < nameValues.length; i++) {
-						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
-					}
-				}
-				if(field.getSearchType() == null) {
-					field.setStepNumbers("0");
-				}
+//				if(nameValues[0].equals("step") && nameValues[1].equals("update")) {
+//					for (int i = 2; i < nameValues.length; i++) {
+//						field.setStepNumbers(field.getStepNumbers() + " " + nameValues[i].replace(")", "").trim());
+//					}
+//				}
+//				if(field.getSearchType() == null) {
+//					field.setStepNumbers("0");
+//				}
 			}
 		}
 	}
@@ -368,4 +386,13 @@ public class FormService {
 		return messsage;
 	}
 
+	@Transactional
+	public Map<String, Object> getModel(Long id) throws SQLException, IOException {
+		Form form = getById(id);
+		Document attachement = documentService.getById(form.getDocument().getId());
+		if (attachement != null) {
+			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
+		}
+		return null;
+	}
 }

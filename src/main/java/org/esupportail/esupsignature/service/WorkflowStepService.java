@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
@@ -10,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class WorkflowStepService {
@@ -22,6 +21,15 @@ public class WorkflowStepService {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserPropertieService userPropertieService;
+
+    @Resource
+    private FieldService fieldService;
+
+    @Resource
+    private LiveWorkflowStepService liveWorkflowStepService;
 
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
@@ -102,18 +110,27 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete) {
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, String authUserEppn) {
         Workflow workflow = workflowService.getById(workflowId);
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflow.getWorkflowSteps().add(workflowStep);
+        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
     }
 
     @Transactional
     public void removeStep(Workflow workflow, Integer stepNumber) {
         WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
         workflow.getWorkflowSteps().remove(workflowStep);
+        List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
+        for(Field field : fields) {
+            field.getWorkflowSteps().remove(workflowStep);
+        }
+        List<LiveWorkflowStep> liveWorkflowSteps = liveWorkflowStepService.getLiveWorkflowStepByWorkflowStep(workflowStep);
+        for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
+            liveWorkflowStep.setWorkflowStep(null);
+        }
         delete(workflowStep);
     }
 

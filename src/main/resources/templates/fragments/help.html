@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<div th:fragment="help" id="help">
+<div id="help">
     <h5>Bienvenue sur l'application Esup-Signature.</h5>
     <br>
     <div th:if="${#httpServletRequest == null || (#httpServletRequest.requestURI == '/user/' || (signRequest != null &&#httpServletRequest.requestURI == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">

@@ -6,10 +6,6 @@
 <!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
-<script th:inline="javascript" type="module">
-    import {GlobalUi} from "../../static/js/modules/ui/GlobalUi.js";
-    new GlobalUi([[${_csrf}]]);
-</script>
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
@@ -31,30 +27,42 @@
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
-                    <a
-                       th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                       href="/" class="btn btn-transparent text-left">
+                    <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
+                            href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger mt-1 d-none d-md-inline"
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneCreateShare}">
-                    <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
-                       href="/user/datas" class="btn btn-transparent text-left">
-                        <i class="fab fa-firstdraft"></i> <span
-                            class="nav-item-label d-none d-xl-inline">Brouillons</span>
+                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
+                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
+                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-folder-open"></i> <span class="nav-item-label d-none d-xl-inline">Mes documents</span>
                         <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
                               class="badge badge-info mt-1" th:text="${nbDatas}"></span>
-
                     </a>
-                </li>
-                <li class="nav-item text-white" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}" >
+                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
                     <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
-                       href="/user/signrequests" class="btn btn-transparent text-left">
+                       th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
+                       href="/user/signrequests" class="btn btn-transparent text-left" style="width: 250px;">
                         <i class="fas fa-paste"></i> <span
-                            class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
+                            class="nav-item-label d-inline">Tableau de bord</span>
                     </a>
+                    <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
+                       th:if="${userEppn == authUserEppn || isOneCreateShare}"
+                       href="/user/datas" class="btn btn-transparent text-left" style="width: 250px;">
+                        <i class="fab fa-firstdraft"></i> <span
+                            class="nav-item-label d-inline">Brouillons</span>
+                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
+                              class="badge badge-info mt-1" th:text="${nbDatas}"></span>
+                    </a>
+                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary'" title="Rapport"
+                       th:if="${userEppn == authUserEppn && reportNumber > 0}"
+                       href="/user/reports" class="btn btn-transparent text-left" style="width: 250px;">
+                        <i class="fas fa-file-contract"></i> <span
+                            class="nav-item-label d-inline">Rapports</span>
+                    </a>
+                    </div>
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
@@ -102,11 +110,11 @@
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
                        role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-md-inline">Délégation</span>
+                        <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-lg-inline">Délégation</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarShareDropdown" >
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
-                            <i class="fas fa-users-cog"></i> Gérer mes délégations
+                            <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Gérer mes délégations</span>
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
@@ -150,7 +158,7 @@
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                     <a rel="noreferrer" data-toggle="modal"
-                       data-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-right mt-1 mr-1" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
+                       data-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-right mt-1 mr-1 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
@@ -165,10 +173,9 @@
                 <b>Délégations</b>
             </h5>
             <form id="changeSuEppn" th:action="'/user/users/shares/change'" method="post">
-                <select class="form-control" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
+                <select id="suEppn" class="slim-select-simple" name="suEppn" onchange="document.getElementById('changeSuEppn').submit();">
                     <option th:if="${isUserOnSu}" value="" selected>Désactiver la délégation en cours</option>
-                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un
-                        mandant
+                    <option th:unless="${isUserOnSu}" selected disabled>Choisir un mandant
                     </option>
                     <th:block th:each="suUser : ${suUsers}">
                         <option th:if="${user.eppn == suUser.eppn}" th:value="${suUser.eppn}"
@@ -292,7 +299,7 @@
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
-                        <select name="signType" id="signType" class="form-control">
+                        <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
@@ -349,10 +356,10 @@
                     </div>
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
-                        <select name="signType" id="signType2" class="form-control">
+                        <select class="slim-select-simple" name="signType" id="signType2">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
+                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                         <br>
@@ -372,7 +379,7 @@
                         </div>
                         <div class="form-group" id="_userSignFirst_div_id">
                             <label for="_userSignFirst">
-                                Je dois signer ce document avent l'envoi ?
+                                Je dois signer ce document avant l'envoi ?
                             </label>
                             <label class="switch">
                                 <input type="checkbox" name="userSignFirst" id="_userSignFirst"/>

@@ -1,10 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.service.UserPropertieService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
+@Hidden
 @Controller
 @RequestMapping("/user/workflows")
 
@@ -27,12 +26,6 @@ public class WorkflowController {
 
     @Resource
     private WorkflowStepService workflowStepService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
@@ -53,8 +46,7 @@ public class WorkflowController {
                           @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(userEppn), Arrays.asList(recipientsEmails));
-        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete);
+        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, userEppn);
         return "redirect:/user/workflows/" + id;
     }
 
@@ -114,7 +106,7 @@ public class WorkflowController {
         return "redirect:/";
     }
 
-    @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
+    @DeleteMapping(value = "/silent-delete/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody
     public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {

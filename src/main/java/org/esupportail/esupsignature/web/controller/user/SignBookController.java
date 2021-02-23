@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -21,11 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
 
-@RequestMapping("/user/signbooks")
+@Hidden
 @Controller
-
+@RequestMapping("/user/signbooks")
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
@@ -41,12 +41,6 @@ public class SignBookController {
 
     @Resource
     private SignRequestService signRequestService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private UserService userService;
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
     @GetMapping(value = "/{id}")
@@ -96,10 +90,9 @@ public class SignBookController {
                           @RequestParam("recipientsEmails") String[] recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                          @RequestParam("signType") String signType, RedirectAttributes redirectAttributes) {
+                          @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) {
         try {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
-            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false);
+            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false, authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -117,7 +110,7 @@ public class SignBookController {
         try {
             String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
             recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), step.getSignType(), true);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber() - 1, step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
             return HTTPResponse.SC_SERVER_ERROR;

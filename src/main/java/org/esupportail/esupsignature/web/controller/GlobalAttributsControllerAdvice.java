@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -42,6 +43,12 @@ public class GlobalAttributsControllerAdvice {
     @Resource
     private UserService userService;
 
+    @Resource
+    private ReportService reportService;
+
+    @Autowired
+    private Environment environment;
+
     private final BuildProperties buildProperties;
 
     private final ValidationService validationService;
@@ -75,7 +82,11 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("formManaged", formService.getFormByManagersContains(authUser.getEmail()));
         model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
+        model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
         model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
+        if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
+            model.addAttribute("profile", environment.getActiveProfiles()[0]);
+        }
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
         }

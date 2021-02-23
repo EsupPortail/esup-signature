@@ -39,7 +39,7 @@ public class FsAccessServiceTest {
     @Order(1)
     public void testSmbAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
-        assumeTrue("smb not configured", fsAccessService != null && fsAccessService.getUri() != null);
+        assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");

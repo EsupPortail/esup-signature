@@ -27,7 +27,7 @@
                         <div class="form-group">
                             <div class="form-group">
                                 <label for="targetType" class="col-form-label">Type de destination</label>
-                                <select class="form-control" id="targetType" name="targetType">
+                                <select class="slim-select-simple" id="targetType" name="targetType">
                                     <th:block th:each="targetType : ${targetTypes}">
                                         <option th:value="${targetType}"
                                                 th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>

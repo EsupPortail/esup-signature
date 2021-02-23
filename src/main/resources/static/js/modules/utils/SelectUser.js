@@ -26,15 +26,15 @@ export default class SelectUser {
     }
 
     displayTempUsers(e) {
-        if (this.selectField.attr('id') === 'recipientsEmailsInfinite') {
-            if (this.slimSelect.selected().length > 0) {
-                $('#launchAllSignButton').hide();
-                $('#launchSignButton').show();
-            } else {
-                $('#launchAllSignButton').show();
-                $('#launchSignButton').hide();
-            }
-        }
+        // if (this.selectField.attr('id') === 'recipientsEmailsInfinite') {
+        //     if (this.slimSelect.selected().length > 0) {
+        //         $('#launchAllSignButton').hide();
+        //         $('#launchSignButton').show();
+        //     } else {
+        //         $('#launchAllSignButton').show();
+        //         $('#launchSignButton').hide();
+        //     }
+        // }
         if (this.signRequestId != null) {
             let recipientEmails = this.slimSelect.selected()
             $.ajax({
@@ -134,7 +134,10 @@ export default class SelectUser {
         let typeValues = [];
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
-            typeValues[j] = {text : value};
+            typeValues[j] = {
+                text : value,
+                value : this.valuePrefix + value,
+            };
         }
         this.favorites = typeValues;
         console.log(this.favorites);

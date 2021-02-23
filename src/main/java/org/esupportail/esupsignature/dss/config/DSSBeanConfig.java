@@ -1,9 +1,12 @@
 package org.esupportail.esupsignature.dss.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import eu.europa.esig.dss.DomUtils;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.jaxb.ValidatorConfigurator;
+import eu.europa.esig.dss.jaxb.XmlDefinerUtils;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
@@ -25,10 +28,15 @@ import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.tsl.alerts.LOTLAlert;
+import eu.europa.esig.dss.tsl.alerts.TLAlert;
 import eu.europa.esig.dss.tsl.alerts.detections.LOTLLocationChangeDetection;
 import eu.europa.esig.dss.tsl.alerts.detections.OJUrlChangeDetection;
+import eu.europa.esig.dss.tsl.alerts.detections.TLExpirationDetection;
+import eu.europa.esig.dss.tsl.alerts.detections.TLSignatureErrorDetection;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogLOTLLocationChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
+import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLExpirationAlertHandler;
+import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLSignatureErrorAlertHandler;
 import eu.europa.esig.dss.tsl.function.GrantedTrustService;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
@@ -52,12 +60,14 @@ import org.springframework.core.io.ClassPathResource;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -194,10 +204,13 @@ public class DSSBeanConfig {
 	@Bean
 	public TLValidationJob job() throws IOException {
 		TLValidationJob job = new TLValidationJob();
+		LOTLSource lotlSource = europeanLOTL();
 		job.setTrustedListCertificateSource(trustedListSource());
-		job.setListOfTrustedListSources(europeanLOTL());
+		job.setListOfTrustedListSources(lotlSource);
 		job.setOfflineDataLoader(offlineLoader());
 		job.setOnlineDataLoader(onlineLoader());
+		job.setLOTLAlerts(Arrays.asList(ojUrlAlert(lotlSource), lotlLocationAlert(lotlSource)));
+		job.setTLAlerts(Arrays.asList(tlSigningAlert(), tlExpirationDetection()));
 		return job;
 	}
 
@@ -217,10 +230,8 @@ public class DSSBeanConfig {
 		lotlSource.setUrl(dssProperties.getLotlUrl());
 		lotlSource.setCertificateSource(ojContentKeyStore());
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
-//		lotlSource.setPivotSupport(true);
-//		lotlSource.setLotlPredicate(new EULOTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
-//		lotlSource.setTlPredicate(new EUTLOtherTSLPointer().and(new XMLOtherTSLPointer()));
 		lotlSource.setTrustServicePredicate(new GrantedTrustService());
+		lotlSource.setPivotSupport(true);
 		return lotlSource;
 	}
 
@@ -250,13 +261,16 @@ public class DSSBeanConfig {
 		List<CertificateSource> trustedCertSources = new ArrayList<>();
 		trustedCertSources.add(trustedListSource());
 		trustedCertSources.add(myTrustedCertificateSource());
-		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
-		certificateVerifier.setCheckRevocationForUntrustedChains(false);
-		return certificateVerifier;
+		CommonCertificateVerifier commonCertificateVerifier = new CommonCertificateVerifier(trustedCertSources, cachedCRLSource(), cachedOCSPSource(), dataLoader());
+		return commonCertificateVerifier;
 	}
 
 	@Bean
-	public ClassPathResource defaultPolicy() {
+	public ClassPathResource defaultPolicy() throws IOException {
+		ClassPathResource classPathResource = new ClassPathResource(dssProperties.getDefaultValidationPolicy());
+		if(!classPathResource.exists()) {
+			logger.error("Default Validation Policy doesn't exist");
+		}
 		return new ClassPathResource(dssProperties.getDefaultValidationPolicy());
 	}
 
@@ -327,6 +341,15 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
+	public XmlDefinerUtils xmlDefinerUtils() throws ParserConfigurationException {
+		XmlDefinerUtils xmlDefinerUtils = XmlDefinerUtils.getInstance();
+		ValidatorConfigurator.getSecureValidatorConfigurator();
+		DomUtils.enableFeature("http://xml.org/sax/features/external-general-entities");
+		DomUtils.disableFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd");
+		return xmlDefinerUtils;
+	}
+
+	@Bean
 	public RemoteDocumentValidationService remoteValidationService() throws Exception {
 		RemoteDocumentValidationService service = new RemoteDocumentValidationService();
 		service.setVerifier(certificateVerifier());
@@ -349,14 +372,24 @@ public class DSSBeanConfig {
 		return ds;
 	}
 
-	@Bean
+	public TLAlert tlSigningAlert() {
+		TLSignatureErrorDetection signingDetection = new TLSignatureErrorDetection();
+		LogTLSignatureErrorAlertHandler handler = new LogTLSignatureErrorAlertHandler();
+		return new TLAlert(signingDetection, handler);
+	}
+
+	public TLAlert tlExpirationDetection() {
+		TLExpirationDetection expirationDetection = new TLExpirationDetection();
+		LogTLExpirationAlertHandler handler = new LogTLExpirationAlertHandler();
+		return new TLAlert(expirationDetection, handler);
+	}
+
 	public LOTLAlert ojUrlAlert(LOTLSource source) {
 		OJUrlChangeDetection ojUrlDetection = new OJUrlChangeDetection(source);
 		LogOJUrlChangeAlertHandler handler = new LogOJUrlChangeAlertHandler();
 		return new LOTLAlert(ojUrlDetection, handler);
 	}
 
-	@Bean
 	public LOTLAlert lotlLocationAlert(LOTLSource source) {
 		LOTLLocationChangeDetection lotlLocationDetection = new LOTLLocationChangeDetection(source);
 		LogLOTLLocationChangeAlertHandler handler = new LogLOTLLocationChangeAlertHandler();

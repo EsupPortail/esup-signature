@@ -159,7 +159,7 @@
                     </div>
                     <div class="form-group">
                         <label for="workflowType" class="col-form-label">Type de workflow</label>
-                        <select class="form-control" id="workflowType" name="workflowType">
+                        <select class="slim-select-simple" id="workflowType" name="workflowType">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.name}"
                                         th:text="${workflowType.description}"></option>
@@ -168,7 +168,7 @@
                     </div>
                     <div class="form-group">
                         <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
-                        <select class="form-control" id="prefillType" name="prefillType">
+                        <select class="slim-select-simple" id="prefillType" name="prefillType">
                             <th:block th:each="preFillType : ${preFillTypes}">
                                 <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"
                                         th:text="${preFillType.description}"></option>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="form-group">
                         <label for="targetType" class="col-form-label">Type de destination</label>
-                        <select class="form-control" id="targetType" name="targetType">
+                        <select class="slim-select-simple" id="targetType" name="targetType">
                             <th:block th:each="targetType : ${targetTypes}">
                                 <option th:value="${targetType}"
                                         th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>

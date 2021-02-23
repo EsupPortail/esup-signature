@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, currentSignType, signable, postits, isPdf, currentStepNumber, signImages, userName, csrf, fields, stepRepeatable) {
+    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -14,8 +14,8 @@ export class SignUi {
         this.passwordError = document.getElementById("passwordError");
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, currentSignType, signable, postits, currentStepNumber, signImages, userName, currentSignType, fields, stepRepeatable);
         this.csrf = new CsrfToken(csrf);
+        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -24,17 +24,15 @@ export class SignUi {
         this.currentStepNumber = currentStepNumber;
         this.printDocument = new PrintDocument();
         this.gotoNext = false;
+        this.profile = profile;
         this.initListeners();
     }
 
     initListeners() {
         $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
         $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
-        $("#launchSignButton").on('click', e => this.insertStep());
-        $("#launchAllSignButton").on('click', e => this.launchSign());
-        $("#stepRepeatableModal").find(".close").on('click', function () {
-            window.location.href = "/";
-        })
+        $("#launchInfiniteSignButton").on('click', e => this.insertStep());
+        $("#launchSignButton").on('click', e => this.launchSign());
         //$("#launchAllSignButton").on('click', e => this.launchAllSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
@@ -64,7 +62,7 @@ export class SignUi {
             console.log('launch sign for : ' + this.signRequestId);
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
-            this.submitSignRequest();
+            this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
         } else {
             this.signModal.on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();
@@ -140,10 +138,14 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = message.text;
             document.getElementById("bar").style.width = 100 + "%";
-            if(this.gotoNext) {
-                document.location.href = $("#nextSignRequestButton").attr('href');
+            if(this.profile !== "dev") {
+                if (this.gotoNext) {
+                    document.location.href = $("#nextSignRequestButton").attr('href');
+                } else {
+                    document.location.href = "/user/";
+                }
             } else {
-                document.location.href = "/user/signrequests";
+                document.location.href = "/user/signrequests/" + this.signRequestId;
             }
         } else {
             console.debug("update bar");
@@ -189,7 +191,12 @@ export class SignUi {
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        step.recipientsEmails = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        let selectedRecipents = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        if(selectedRecipents.length == 0 ) {
+            $("#infinitFormSubmit").click();
+            return;
+        }
+        step.recipientsEmails = selectedRecipents;
         step.stepNumber = this.currentStepNumber + 1;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signTypeInfinite').val();

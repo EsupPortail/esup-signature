@@ -133,7 +133,7 @@ public class DdDocService {
         dsa.initVerify(pub);
         dsa.update(hash);
         if(!dsa.verify(signature)) {
-            throw new EsupSignatureException("2ddoc signature ok, please check private key and certificate (/resources/2ddoc.key and /resources/2ddoc.cert)");
+            throw new EsupSignatureException("2ddoc signature error, please check private key and certificate (/resources/2ddoc.key and /resources/2ddoc.cert)");
         }
 
         Base32 base32 = new Base32();
@@ -141,7 +141,7 @@ public class DdDocService {
     }
 
     private PrivateKey getPrivateKey() throws Exception {
-        File keyFile = fileService.inputStreamToTempFile(DdDocService.class.getResourceAsStream("/2ddoc.key"), "2sdoc.key");
+        File keyFile = fileService.inputStreamToTempFile(DdDocService.class.getResourceAsStream("/2ddoc.key"), "2ddoc.key");
         BufferedReader br = new BufferedReader(new FileReader(keyFile));
         PEMParser pp = new PEMParser(br);
         PEMKeyPair pemKeyPair = (PEMKeyPair) pp.readObject();

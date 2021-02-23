@@ -38,22 +38,24 @@
                 </li>
             </ul>
             <br>
-            <div class="card col-lg-10 mx-auto">
+            <div class="card col-lg-11">
                 <div class="card-body">
-                <table class="table table-borderless table-hover">
+                    <div id="listSignRequestTable" class="table-fix-head">
+                        <table class="table table-borderless table-hover">
                     <thead class="thead-dark">
                         <tr>
-                            <th class="align-middle">Nom</th>
-                            <th class="align-middle">Type</th>
-                            <th class="align-middle">Favorisable</th>
-                            <th class="align-middle">Requis</th>
-                            <th class="align-middle">Lecture seule</th>
-                            <th class="align-middle">Pré-remplissage</th>
-                            <th class="align-middle">Auto-completion</th>
-                            <th class="align-middle">Nom du service</th>
-                            <th class="align-middle">Type de données</th>
-                            <th class="align-middle">Attribut retourné</th>
-                            <th class="align-middle">Etapes autorisées</th>
+                            <th class="align-middle th-fixed">Nom</th>
+                            <th class="align-middle th-fixed">Type</th>
+                            <th class="align-middle th-fixed">Favorisable</th>
+                            <th class="align-middle th-fixed">Requis</th>
+                            <th class="align-middle th-fixed">Lecture seule</th>
+                            <th class="align-middle th-fixed">Pré-remplissage</th>
+                            <th class="align-middle th-fixed">Auto-completion</th>
+                            <th class="align-middle th-fixed">Nom du service</th>
+                            <th class="align-middle th-fixed">Type de données</th>
+                            <th class="align-middle th-fixed">Attribut retourné</th>
+                            <th class="align-middle th-fixed">Étape brouillon</th>
+                            <th class="align-middle th-fixed">Étapes autorisées</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,10 +67,10 @@
                             <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
                             <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
                             <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
-                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != ''}"/></td>
-                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" name="search" th:value="true" th:checked="${field.searchServiceName != ''}"/></td>
+                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
+                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
                             <td>
-                                <select class="slim-select-simple" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${field.extValueServiceName == '' && field.searchServiceName == ''}">
+                                <select class="slim-select-simple" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
                                     <option value=""></option>
                                     <th:block th:each="service : ${preFillTypes}">
                                         <option th:selected="${field.extValueServiceName == service.key || field.searchServiceName == service.key}" th:value="${service.key}" th:text="${service.key}"></option>
@@ -76,7 +78,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="slim-select-simple" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${field.extValueServiceName == '' && field.searchServiceName == ''}">
+                                <select class="slim-select-simple" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
                                     <th:block th:if="${field.extValueType != ''}">
                                         <option th:value="${field.extValueType}" th:text="${field.extValueType}" selected></option>
                                     </th:block>
@@ -96,12 +98,20 @@
                                     <input type="text" class="form-control" name="valueReturn" size="7"/>
                                 </th:block>
                             </td>
-                            <td><input type="text" class="form-control" name="stepNumbers" th:value="${field.stepNumbers}"  size="7"/></td>
+                            <td><input type="checkbox" name="stepZero" th:value="true" th:checked="${field.stepZero}"/></td>
+                            <td>
+                                <select th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple" multiple size="3" data-placeholder="Choisir des étapes">
+                                    <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
+                                        <option th:value="${workflow.id}" th:text="${iterator.index + 1}" th:selected="${field.workflowSteps.contains(workflow)}"></option>
+                                    </th:block>
+                                </select>
+                            </td>
                             </form>
                         </tr>
                     </th:block>
                     </tbody>
                 </table>
+                    </div>
                 </div>
             </div>
         </div>

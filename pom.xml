@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.1</version>
+		<version>2.4.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.7.1-SNAPSHOT</version>
+	<version>1.8-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -20,11 +20,12 @@
 		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
-		<dss.framework.version>5.7</dss.framework.version>
+		<dss.framework.version>5.8</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
 		<nexu.version>1.23</nexu.version>
-		<pdfbox.version>2.0.21</pdfbox.version>
-		<swagger.version>2.10.5</swagger.version>
+		<pdfbox.version>2.0.22</pdfbox.version>
+		<pdfjs.version>2.6.347</pdfjs.version>
+		<swagger.version>3.0.0</swagger.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -37,11 +38,10 @@
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
-<!--		<repository>-->
-<!--			<id>vitam</id>-->
-<!--			<name>Vitam Repository</name>-->
-<!--			<url>https://download.programmevitam.fr/vitam_repository/3.6.0/mvn_repo/</url>-->
-<!--		</repository>-->
+		<repository>
+			<id>localrepository</id>
+			<url>file:///${pom.basedir}/src/libs</url>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
@@ -91,12 +91,10 @@
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-client</artifactId>
 		</dependency>
-
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-oauth2-jose</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -125,161 +123,39 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
-
 		<dependency>
-			<groupId>io.github.jpenren</groupId>
-			<artifactId>thymeleaf-spring-data-dialect</artifactId>
-			<version>3.4.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
-
 		<dependency>
-		   <groupId>org.webjars</groupId>
-		   <artifactId>popper.js</artifactId>
-		   <version>2.5.4</version>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.webjars.npm/pdfjs-dist -->
-		<dependency>
-			<groupId>org.webjars.npm</groupId>
-			<artifactId>pdfjs-dist</artifactId>
-			<version>2.5.207</version>
-		</dependency>
-
-		<dependency>
-		    <groupId>org.webjars</groupId>
-		    <artifactId>jquery</artifactId>
-		    <version>3.5.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jquery-ui</artifactId>
-			<version>1.12.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>momentjs</artifactId>
-			<version>2.24.0</version>
-		</dependency>
-
-		<dependency>
-		   <groupId>org.webjars</groupId>
-		   <artifactId>bootstrap</artifactId>
-		   <version>4.5.2</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>org.webjars</groupId>
-		    <artifactId>font-awesome</artifactId>
-		    <version>5.13.0</version>
-		</dependency>
-
-		<dependency>
-		    <groupId>org.webjars.bower</groupId>
-		    <artifactId>croppie</artifactId>
-		    <version>2.6.3</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>org.webjars.bower</groupId>
-		    <artifactId>bootstrap-fileinput</artifactId>
-		    <version>5.0.1</version>
-		</dependency>
-			
-		<dependency>
-		    <groupId>org.webjars</groupId>
-		    <artifactId>webjars-locator</artifactId>
-		    <version>0.40</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
-			<artifactId>ace-builds</artifactId>
-			<version>1.4.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
-			<version>4.17.47</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars.bower</groupId>
-			<artifactId>bootbox.js</artifactId>
-			<version>5.3.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>summernote</artifactId>
-			<version>0.8.10</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.imgscalr/imgscalr-lib -->
-		<dependency>
-		    <groupId>org.imgscalr</groupId>
-		    <artifactId>imgscalr-lib</artifactId>
-		    <version>4.2</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>${bouncycastle.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>${bouncycastle.version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>net.sf.flexjson</groupId>
-			<artifactId>flexjson</artifactId>
-			<version>3.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>20200518</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-mock</artifactId>
-			<version>2.0.8</version>
+			<artifactId>spring-orm</artifactId>
+			<version>5.3.2</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.springframework</groupId>
-		    <artifactId>spring-jdbc</artifactId>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.hsqldb</groupId>
-		    <artifactId>hsqldb</artifactId>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>
 			<artifactId>HikariCP</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-        </dependency>
-   		<dependency>
-		    <groupId>org.postgresql</groupId>
-		    <artifactId>postgresql</artifactId>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
@@ -287,126 +163,97 @@
 			<version>2.7.1</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.2</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-digester</groupId>
-			<artifactId>commons-digester</artifactId>
-			<version>2.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.3.3</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-mock</artifactId>
+			<version>2.0.8</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.glassfish.web</groupId>
-			<artifactId>jstl-impl</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>el-api</artifactId>
-			<version>2.2</version>
-			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
-			<groupId>commons-discovery</groupId>
-			<artifactId>commons-discovery</artifactId>
-			<version>0.5</version>
-		</dependency>
+		<!-- Webjars dependencies -->
 
 		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-	<dependency>
-	    <groupId>org.apache.xmlgraphics</groupId>
-	    <artifactId>xmlgraphics-commons</artifactId>
-	    <version>2.4</version>
-	</dependency>
-		
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>${pdfbox.version}</version>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery</artifactId>
+			<version>3.5.1</version>
 		</dependency>
 		<dependency>
-		    <groupId>org.apache.pdfbox</groupId>
-		    <artifactId>fontbox</artifactId>
-		    <version>${pdfbox.version}</version>
+			<groupId>org.webjars</groupId>
+			<artifactId>jquery-ui</artifactId>
+			<version>1.12.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox-tools</artifactId>
-			<version>${pdfbox.version}</version>
-		</dependency>
-		
-		<dependency>
-		  <groupId>org.verapdf</groupId>
-		  <artifactId>validation-model</artifactId>
-		  <version>1.16.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>3.4.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-			<version>3.4.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>2.10.6</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>xmpbox</artifactId>
-			<version>${pdfbox.version}</version>
+		   <groupId>org.webjars</groupId>
+		   <artifactId>popper.js</artifactId>
+		   <version>2.5.4</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.supercsv</groupId>
-			<artifactId>super-csv</artifactId>
-			<version>2.4.0</version>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>pdfjs-dist</artifactId>
+			<version>2.6.347</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>intro.js</artifactId>
+			<version>3.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>momentjs</artifactId>
+			<version>2.29.1</version>
+		</dependency>
+		<dependency>
+		   <groupId>org.webjars</groupId>
+		   <artifactId>bootstrap</artifactId>
+		   <version>4.6.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>font-awesome</artifactId>
+		    <version>5.15.2</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.npm</groupId>
+		    <artifactId>croppie</artifactId>
+		    <version>2.6.5</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars.bower</groupId>
+		    <artifactId>bootstrap-fileinput</artifactId>
+		    <version>5.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
+			<artifactId>ace-builds</artifactId>
+			<version>1.4.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
+			<version>4.17.47</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>bootbox</artifactId>
+			<version>5.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>summernote</artifactId>
+			<version>0.8.18</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>slim-select</artifactId>
+			<version>1.24.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>spectrum-seballot</artifactId>
+			<version>2.0.5</version>
 		</dependency>
 
 		<!-- DSS Framework dependencies -->
@@ -426,18 +273,11 @@
 			<artifactId>dss-token</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>eu.europa.ec.joinup.sd-dss</groupId>-->
-<!--			<artifactId>dss-reports</artifactId>-->
-<!--			<version>${dss.framework.version}</version>-->
-<!--		</dependency>-->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-service</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-
-		<!-- Web Services -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-signature-remote</artifactId>
@@ -518,35 +358,21 @@
 			<artifactId>dss-timestamp-remote-rest-client</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-tsl-validation</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-
-		<!-- 			<dependency> -->
-		<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
-		<!-- 				<artifactId>dss-utils-apache-commons</artifactId> -->
-		<!-- 				<version>${dss.framework.version}</version> -->
-		<!-- 			</dependency> -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-utils-google-guava</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-
-		<!-- 			<dependency> -->
-		<!-- 				<groupId>eu.europa.ec.joinup.sd-dss</groupId> -->
-		<!-- 				<artifactId>dss-crl-parser-x509crl</artifactId> -->
-		<!-- 				<version>${dss.framework.version}</version> -->
-		<!-- 			</dependency> -->
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-crl-parser-stream</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pades-pdfbox</artifactId>
@@ -558,80 +384,277 @@
 			<version>${dss.framework.version}</version>
 		</dependency>
 
+		<!-- SEDA dependencies -->
+
 		<dependency>
-			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
-			<artifactId>dss-cookbook</artifactId>
-			<version>${dss.framework.version}</version>
+			<groupId>fr.gouv.vitam.tools</groupId>
+			<artifactId>sedalib</artifactId>
+			<version>2.5.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.opengis.cite.xerces</groupId>
+					<artifactId>xercesImpl-xsd11</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-core</artifactId>
+			<version>6.5-VITAM</version>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-core-interfaces</artifactId>
+			<version>6.5-VITAM</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.nationalarchives</groupId>
+			<artifactId>droid-container</artifactId>
+			<version>6.5-VITAM</version>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.byteseek</groupId>
+			<artifactId>byteseek</artifactId>
+			<version>2.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip</artifactId>
+			<version>7.7.10</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-file</artifactId>
+			<version>7.7.10</version>
+		</dependency>
+		<dependency>
+			<groupId>de.schlichtherle.truezip</groupId>
+			<artifactId>truezip-driver-zip</artifactId>
+			<version>7.7.10</version>
 		</dependency>
 
-<!--		OTHER dependencies -->
-		
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>2.3.0.1</version>
-		</dependency>
-		
-		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.3.2</version>
-		</dependency>
+		<!-- Other dependencies -->
 
+		<dependency>
+		    <groupId>org.imgscalr</groupId>
+		    <artifactId>imgscalr-lib</artifactId>
+		    <version>4.2</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.jpenren</groupId>
+			<artifactId>thymeleaf-spring-data-dialect</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>${bouncycastle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>${bouncycastle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.flexjson</groupId>
+			<artifactId>flexjson</artifactId>
+			<version>3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20200518</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+<!--				<exclusion>-->
+<!--					<groupId>xml-apis</groupId>-->
+<!--					<artifactId>xml-apis</artifactId>-->
+<!--				</exclusion>-->
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<version>2.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>commons-fileupload</groupId>
+			<artifactId>commons-fileupload</artifactId>
+			<version>1.3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>jstl-impl</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.el</groupId>
+			<artifactId>el-api</artifactId>
+			<version>2.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-discovery</groupId>
+			<artifactId>commons-discovery</artifactId>
+			<version>0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>xmlgraphics-commons</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.pdfbox</groupId>
+		    <artifactId>fontbox</artifactId>
+		    <version>${pdfbox.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox-tools</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>xmpbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.verapdf</groupId>
+		  <artifactId>validation-model</artifactId>
+		  <version>1.16.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+			<version>2.10.6</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.supercsv</groupId>
+			<artifactId>super-csv</artifactId>
+			<version>2.4.0</version>
+		</dependency>
 		<dependency>
 			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
 			<version>2.1.5</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.chemistry.opencmis</groupId>
 			<artifactId>chemistry-opencmis-client-impl</artifactId>
 			<version>1.1.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
 			<version>1.8</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.4</version>
 		</dependency>
-
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>3.6</version>
 		</dependency>
-
 		<dependency>
 			<groupId>ch.rasc</groupId>
 			<artifactId>sse-eventbus</artifactId>
 			<version>1.1.9</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
 			<version>0.1.55</version>
 		</dependency>
-
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-client</artifactId>
 			<version>2.3.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-model</artifactId>
 			<version>3.6.3</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>fop</artifactId>
@@ -645,49 +668,16 @@
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
+<!--				<exclusion>-->
+<!--					<groupId>xml-apis</groupId>-->
+<!--					<artifactId>xml-apis</artifactId>-->
+<!--				</exclusion>-->
 			</exclusions>
 		</dependency>
-
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
-		</dependency>
-
-<!--		<dependency>-->
-<!--			<groupId>fr.gouv.vitam</groupId>-->
-<!--			<artifactId>sedalib</artifactId>-->
-<!--			<version>2.3.0-SNAPSHOT</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>uk.gov.nationalarchives</groupId>-->
-<!--			<artifactId>droid-core</artifactId>-->
-<!--			<version>6.5-VITAM</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>uk.gov.nationalarchives</groupId>-->
-<!--			<artifactId>droid-container</artifactId>-->
-<!--			<version>6.5-VITAM</version>-->
-<!--		</dependency>-->
-
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>${swagger.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>${swagger.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-spring-webmvc</artifactId>
-			<version>${swagger.version}</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -701,34 +691,73 @@
 			<version>19.0.0</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-jdbc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>intro.js</artifactId>
-			<version>3.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-			<version>5.3.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>spectrum-seballot</artifactId>
-			<version>2.0.5</version>
-		</dependency>
-
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.5.2</version>
+				<executions>
+					<execution>
+						<id>droid-core</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-core-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-core</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>droid-contenaire</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-container-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-container</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>droid-core-interface</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/droid-core-interfaces-6.5-VITAM.jar</file>
+							<groupId>uk.gov.nationalarchives</groupId>
+							<artifactId>droid-core-interfaces</artifactId>
+							<version>6.5-VITAM</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+					<execution>
+						<id>sedalib</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${pom.basedir}/src/libs/sedalib-2.5.0-SNAPSHOT.jar</file>
+							<groupId>fr.gouv.vitam.tools</groupId>
+							<artifactId>sedalib</artifactId>
+							<version>2.5.0-SNAPSHOT</version>
+							<packaging>jar</packaging>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.19.1</version>

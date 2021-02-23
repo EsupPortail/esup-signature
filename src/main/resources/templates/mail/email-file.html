@@ -2,25 +2,31 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style th:text="${css}"></style>
 </head>
-<body class="bg-light" style="box-sizing:border-box;margin-top:0;margin-bottom:0;margin-right:0;margin-left:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;text-align:left;background-color:#f8f9fa!important;" >
-<div class="container" style="box-sizing:border-box;width:100%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto;" >
-    <div class="card m-4" style="box-sizing:border-box;position:relative;display:flex;-ms-flex-direction:column;flex-direction:column;min-width:0;word-wrap:break-word;background-color:#fff;background-clip:border-box;border-width:1px;border-style:solid;border-color:rgba(0,0,0,.125);border-radius:.25rem;margin-top:1.5rem !important;margin-bottom:1.5rem !important;margin-right:1.5rem !important;margin-left:1.5rem !important;" >
-        <div class="card-header bg-dark" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;margin-bottom:0;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:rgba(0,0,0,.125);background-color:#343a40!important;" >
-            <img class="mx-auto" th:src="@{|data:image/png;base64, ${logo}|}" style="box-sizing:border-box;vertical-align:middle;border-style:none;margin-right:auto!important;margin-left:auto!important;" />
+<body class="bg-light">
+<div class="container">
+    <div class="card m-4">
+        <div class="card-header rounded-0 bg-dark">
+            <img height="40" class="mx-auto float-left" th:src="@{|data:image/png;base64, ${logo}|}" />
+            <img height="40" class="mx-auto float-right" th:src="@{|data:image/png;base64, ${logoUrn}|}" />
         </div>
         <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
-            <h4 style="box-sizing:border-box;margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2;font-size:1.5rem;" >Bonjour</h4>
-            <h5 style="box-sizing:border-box;margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2;font-size:1.25rem;" >En pièce jointe vos documents signés</h5>
-            <table style="box-sizing:border-box;border-collapse:collapse;" >
-                <tr style="box-sizing:border-box;" >
-                    <th style="box-sizing:border-box;text-align:inherit;" >Titre du document</th>
-                    <th style="box-sizing:border-box;text-align:inherit;" >Auteur</th>
+            <p>Bonjour</p>
+            <p>Un document signé vous est destiné, pour y accéder cliquez sur le lien ci-dessous</p>
+            <table class="table table-borderless">
+                <thead class="thead-dark">
+                <tr>
+                    <th class="text-white" >Titre du document</th>
+                    <th class="text-white" >Auteur</th>
                 </tr>
-                <th:block th:each="signRequest : ${signRequests}" style="box-sizing:border-box;" >
-                    <tr style="box-sizing:border-box;" >
-                        <td th:text="${signRequest.title}" style="box-sizing:border-box;" ></td>
-                        <td th:text="${user.name}" style="box-sizing:border-box;" ></td>
+                </thead>
+                <th:block th:each="signRequest : ${signRequests}">
+                    <tr>
+                        <td th:text="${signRequest.title}"></td>
+                        <td>
+                            <a class="btn btn-sm btn-dark mx-auto" th:href="@{|${rootUrl}/user/signrequests/${signRequest.id}|}">Accéder au document</a>
+                        </td>
                     </tr>
                 </th:block>
             </table>

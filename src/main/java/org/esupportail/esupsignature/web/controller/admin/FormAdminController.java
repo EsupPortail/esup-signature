@@ -1,12 +1,12 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.FieldService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -27,11 +27,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@Hidden
 @Controller
 @RequestMapping("/admin/forms")
-
 public class FormAdminController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
@@ -61,13 +63,18 @@ public class FormAdminController {
 	@Resource
 	private FieldService fieldService;
 
+	@Resource
+	private TargetService targetService;
+
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
 		DocumentIOType documentIOType = null;
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
-		Form form = formService.createForm(null, name, null, null, null, null, documentIOType, targetUri, publicUsage, fieldNames);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(documentIOType, targetUri));
+		Form form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
@@ -75,6 +82,7 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
+		model.addAttribute("workflow", workflowService.getWorkflowByName(form.getWorkflowType()));
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
 		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
@@ -83,7 +91,9 @@ public class FormAdminController {
 
 	@PostMapping("generate")
 	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targetType, targetUri, publicUsage);
+		List<Target> targets = new ArrayList<>();
+		targets.add(targetService.createTarget(targetType, targetUri));
+		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targets, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -119,7 +129,7 @@ public class FormAdminController {
 		return "admin/forms/list";
 	}
 	
-	@PutMapping()
+	@PutMapping
 	public String updateForm(@ModelAttribute Form updateForm,
 							 @RequestParam(required = false) List<String> managers,
 							 @RequestParam(value = "types", required = false) String[] types,
@@ -128,7 +138,15 @@ public class FormAdminController {
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + updateForm.getId();
 	}
-	
+
+	@PostMapping("/update-model/{id}")
+	public String updateFormmodel(@PathVariable("id") Long id,
+								  @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
+		formService.updateFormModel(id, multipartModel);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
+		return "redirect:/admin/forms/update/" + id;
+	}
+
 	@DeleteMapping("{id}")
 	public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
@@ -159,15 +177,16 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
-											  @RequestParam(value = "required", required = false) String required,
-											  @RequestParam(value = "favorisable", required = false) String favorisable,
-											  @RequestParam(value = "readOnly", required = false) String readOnly,
-											  @RequestParam(value = "prefill", required = false) String prefill,
-											  @RequestParam(value = "search", required = false) String search,
+											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
+											  @RequestParam(value = "favorisable", required = false, defaultValue = "false") Boolean favorisable,
+											  @RequestParam(value = "readOnly", required = false, defaultValue = "false") Boolean readOnly,
+											  @RequestParam(value = "prefill", required = false, defaultValue = "false") Boolean prefill,
+											  @RequestParam(value = "search", required = false, defaultValue = "false") Boolean search,
 											  @RequestParam(value = "valueServiceName", required = false) String valueServiceName,
 											  @RequestParam(value = "valueType", required = false) String valueType,
 											  @RequestParam(value = "valueReturn", required = false) String valueReturn,
-											  @RequestParam(value = "stepNumbers", required = false) String stepNumbers) {
+											  @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
+											  @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
 
 		String extValueServiceName = "";
 		String extValueType = "";
@@ -175,18 +194,35 @@ public class FormAdminController {
 		String searchServiceName = "";
 		String searchType = "";
 		String searchReturn = "";
-		if(Boolean.parseBoolean(prefill)) {
+		if(prefill) {
 			extValueServiceName = valueServiceName;
 			extValueType = valueType;
 			extValueReturn = valueReturn;
 		}
-		if(Boolean.parseBoolean(search)) {
+		if(search) {
 			searchServiceName = valueServiceName;
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, Boolean.parseBoolean(favorisable), Boolean.parseBoolean(required), Boolean.parseBoolean(readOnly), extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepNumbers);
+		fieldService.updateField(id, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/get-file/{id}")
+	public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
+		try {
+			Map<String, Object> attachmentResponse = formService.getModel(id);
+			if (attachmentResponse != null) {
+				httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
+				httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+				IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
+			} else {
+				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));
+				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+			}
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
 	}
 
 }

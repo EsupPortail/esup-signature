@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
+<!--/*@thymesVar id="report" type="org.esupportail.esupsignature.entity.Report"*/-->
+<!--/*@thymesVar id="reportsMap" type="java.util.Map<org.esupportail.esupsignature.entity.Report, java.util.Map<org.esupportail.esupsignature.entity.enums.ReportStatus, java.util.Set<java.lang.Long>>>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb col-12">
+                <li class="breadcrumb-item active">Mes rapports</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn" >
+                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newFomModal" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Mes rapports</b></h5>
+                    <div id="accordion">
+                        <th:block th:each="report, iterator : ${reports}">
+                            <div class="card">
+                                <div class="card-header" th:id="'heading' + ${iterator.index}">
+                                    <div class="row">
+                                        <div class="col-md-10">
+                                            <h5 class="mb-0">
+                                                <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-toggle="collapse" th:data-target="'#collapse' + ${iterator.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${iterator.index}">
+                                                </button>
+                                            </h5>
+                                        </div>
+                                        <div class="col-md-2 text-right">
+                                            <form id="reportDelete" th:action="'/user/reports/'+ ${report.id}" th:method="delete">
+                                                <button class="btn btn-danger" type="submit">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div th:id="'collapse'  + ${iterator.index}" class="collapse" th:classappend="${iterator.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${iterator.index}" data-parent="#accordion">
+                                    <div class="card-body">
+                                        <ul>
+                                            <th:block th:each="reportMap : ${reportsMap.get(report)}">
+                                                <li>
+                                                    <span th:text="#{'report.reportstatus.' + ${reportMap.getKey()}}"></span> :
+                                                    <span th:text="${reportMap.value.size()} + ' demande(s)'"></span>
+                                                    <span th:if="${reportMap.value.size() > 0}">
+                                                        (<th:block th:each="signRequestId, iterator2 : ${reportMap.value}">
+                                                            <a th:href="'/user/signrequests/' + ${signRequestId}" th:text="${signRequestId}">
+                                                            </a>
+                                                            <span th:text="${iterator2.index != reportMap.value.size() - 1} ? ', '"></span>
+                                                        </th:block>)
+                                                    </span>
+                                                </li>
+                                            </th:block>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div th:replace="fragments/new"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="fragments/footer"></div>
+</body>
+</html>

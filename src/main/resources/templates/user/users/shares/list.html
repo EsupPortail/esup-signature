@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from "/static/js/modules/ui/users/ShareUi.js";
 
@@ -56,7 +56,7 @@
                                 </td>
                                 <td>
                                     <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
-                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec ça propre signature</span>
+                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec sa propre signature</span>
                                         <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
                                     </div>
                                 </td>
@@ -139,7 +139,7 @@
 
                         <div class="form-group">
                             <label for="selectTarget">Type d'élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
-                            <select id="selectTarget" class="form-control" name="target" required="required">
+                            <select class="slim-select-simple" id="selectTarget" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="all">Toutes les demandes</option>
                                 <option value="workflow">Circuit</option>
@@ -149,7 +149,7 @@
 
                         <div id="selectFormDiv" class="form-group d-none">
                             <label for="selectForm">Formulaires à déléguer</label>
-                            <select id="selectForm" class="form-control" name="form">
+                            <select class="slim-select-simple" id="selectForm" name="form">
                                 <option value="" data-placeholder="true">Choisir un formulaire</option>
                                 <th:block th:each="form : ${forms}">
                                     <option th:data="${form.authorizedShareTypes}" th:value="${form.id}" th:text="${form.title}"></option>
@@ -159,7 +159,7 @@
 
                         <div id="selectWorkflowDiv" class="form-group d-none">
                             <label for="selectWorkflow">Circuits à déléguer</label>
-                            <select id="selectWorkflow" class="form-control" name="workflow">
+                            <select class="slim-select-simple" id="selectWorkflow" name="workflow">
                                 <option value="" data-placeholder="true">Choisir un circuit</option>
                                 <th:block th:each="workflow : ${workflows}">
                                     <option th:data="${workflow.authorizedShareTypes}" th:value="${workflow.id}" th:text="${workflow.description}"></option>
@@ -179,9 +179,9 @@
 
                         <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
                             <label for="signWithOwnSign">Modalité de signature</label>
-                            <select id="signWithOwnSign" class="form-control" name="signWithOwnSign">
+                            <select class="slim-select-simple" id="signWithOwnSign" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
-                                <option value="true">Le délégué signe avec ça propre signature</option>
+                                <option value="true">Le délégué signe avec sa propre signature</option>
                                 <option value="false">Le délégué signe avec votre signature</option>
                             </select>
                         </div>
