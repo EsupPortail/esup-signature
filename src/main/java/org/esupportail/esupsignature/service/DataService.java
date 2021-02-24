@@ -115,7 +115,7 @@ public class DataService {
         signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargets().size() > 0) {
-            signBook.getLiveWorkflow().getTargets().addAll(form.getTargets());
+            targetService.copyTargets(form.getTargets(), signBook);
             for(Target target : form.getTargets()) {
                 if (target.getTargetType().equals(DocumentIOType.mail)) {
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
