@@ -303,11 +303,9 @@ public class WorkflowService {
                                         i++;
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                        String target = metadatas.get(metadataKey);
-                                        if (target.contains("://")) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.valueOf(target.split("://")[0]), target.replace("\\", "/")));
-                                        } else {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.vfs, "/" + target.replace("\\", "/")));
+                                        String metadataTarget = metadatas.get(metadataKey);
+                                        for(Target target : workflow.getTargets()) {
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri() + "/" + metadataTarget));
                                         }
                                         logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0));
                                     }
