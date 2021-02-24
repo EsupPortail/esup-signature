@@ -516,9 +516,6 @@ export class SignPosition extends EventFactory {
         } else {
             this.getCurrentSignParams().addExtra = true;
             let signTypeText = "";
-            if(this.signType === "certSign" || this.signType === "nexuSign") {
-                signTypeText = "Signature électronique<br/>";
-            }
             let textSign = "Signé";
             if(this.signType === "visa") textSign = "Visé";
             let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
