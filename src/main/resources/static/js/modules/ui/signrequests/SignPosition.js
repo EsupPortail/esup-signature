@@ -69,6 +69,7 @@ export class SignPosition extends EventFactory {
             this.addSignButton.removeAttr("disabled");
             this.lockCurrentSign(false);
         } else {
+            this.cross.attr("data-current", "true");
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");

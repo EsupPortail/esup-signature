@@ -388,8 +388,8 @@ export class WorkspacePdf {
     }
 
     toggleSign(e) {
-        console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
+        console.log("toggle sign_ " + signId);
         let isCurrentSign = $(e).attr("data-current");
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
         let pageNum = this.pdfViewer.pageNum;
