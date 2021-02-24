@@ -72,7 +72,6 @@ public class IndexController {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		if(authUser != null && !authUser.getEppn().equals("system")) {
-			logger.info("utilisateur " + authUser.getEppn() + " connecté");
 			model.asMap().clear();
 			return "redirect:/user/";
 		} else {
