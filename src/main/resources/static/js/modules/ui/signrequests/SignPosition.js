@@ -46,7 +46,6 @@ export class SignPosition extends EventFactory {
         this.pdf = $('#pdf');
         this.pointItEnable = true;
         this.fontSize = 12;
-        this.pointItMove = false;
         this.visualActive = true;
         this.signUndoButton = $('#signUndo_0');
         this.signZoomOutButton = $('#signZoomOut_0');
@@ -68,6 +67,7 @@ export class SignPosition extends EventFactory {
         if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
             this.cross.css("position", "absolute");
             this.addSignButton.removeAttr("disabled");
+            this.lockCurrentSign(false);
         } else {
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
@@ -93,8 +93,8 @@ export class SignPosition extends EventFactory {
     initCrossListeners() {
         this.borders.on('mousedown', e => this.dragSignature());
         this.borders.on('touchstart', e => this.dragSignature());
-        this.borders.on('mouseup', e => this.stopDragSignature());
-        this.borders.on('touchend', e => this.stopDragSignature());
+        this.borders.on('mouseup', e => this.stopDragSignature(false));
+        this.borders.on('touchend', e => this.stopDragSignature(false));
     }
 
     initCrossToolsListeners() {
@@ -150,6 +150,7 @@ export class SignPosition extends EventFactory {
         let okSign = this.cross.clone();
         okSign.css( "z-index", "2");
         okSign.children().removeClass("anim-border");
+        okSign.attr("data-current", "false");
         okSign.appendTo(this.pdf);
         okSign.on("click", e => this.switchSignToTarget(e));
         console.info("add sign");
@@ -232,11 +233,10 @@ export class SignPosition extends EventFactory {
 
     switchSign(currentSign) {
         console.info("switch to " + currentSign);
-        this.borders.removeClass("anim-border");
-        this.borders.unbind();
-        this.cross.on("click", e => this.switchSignToTarget(e));
+        if(this.signRequestParamses.lenght > 1) this.lockCurrentSign();
         this.currentSign = currentSign;
         this.cross = $('#cross_' + currentSign);
+        this.cross.attr("data-current", "true");
         this.cross.unbind();
         this.borders = $('#borders_' + currentSign);
         this.borders.addClass("anim-border");
@@ -252,6 +252,15 @@ export class SignPosition extends EventFactory {
         this.signDropButton = $('#signDrop_' + currentSign);
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.initCrossToolsListeners();
+    }
+
+    lockCurrentSign() {
+        console.info("lock current sign");
+        this.borders.removeClass("anim-border");
+        this.cross.attr("data-current", "false");
+        this.borders.unbind();
+        this.cross.on("click", e => this.switchSignToTarget(e));
+        this.hideButtons();
     }
 
     removeSign(e) {
@@ -336,8 +345,7 @@ export class SignPosition extends EventFactory {
 
     pointIt(e) {
         if(this.pointItEnable) {
-            this.pointItMove = true;
-            var offset = $("#pdf").offset();
+            let offset = $("#pdf").offset();
             this.getCurrentSignParams().setxPos( (e.pageX - offset.left) / this.currentScale * this.fixRatio);
             this.getCurrentSignParams().setyPos( (e.pageY - offset.top) / this.currentScale * this.fixRatio);
             this.updateCrossPosition();
@@ -357,7 +365,6 @@ export class SignPosition extends EventFactory {
     touchIt(e) {
         if (this.pointItEnable) {
             e.preventDefault();
-            this.pointItMove = true;
             console.debug("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
@@ -436,7 +443,7 @@ export class SignPosition extends EventFactory {
         textExtra.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
     }
 
-    stopDragSignature() {
+    stopDragSignature(lock) {
         console.info("stop drag");
         this.fireEvent('stopDrag', ['ok']);
         this.cross.css('pointerEvents', "auto");
@@ -445,36 +452,43 @@ export class SignPosition extends EventFactory {
             this.showButtons();
         }
         this.pointItEnable = false;
-        this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
+        if(lock) this.lockCurrentSign();
     }
 
     dragSignature() {
         console.info("start drag");
-        this.firstDrag = true;
-        this.cross.css('pointerEvents', "none");
-        if(this.cross.css('position') !== 'absolute') {
-            this.cross.css('top', window.scrollY);
+        if(this.cross.attr("data-current") === "true") {
+            this.firstDrag = true;
+            this.cross.css('pointerEvents', "none");
+            if (this.cross.css('position') !== 'absolute') {
+                this.cross.css('top', window.scrollY);
+                // this.posY = window.scrollY;
+            }
+            this.cross.css('position', "absolute");
+            this.cross.css('margin-left', 0);
+            this.cross.css('margin-top', 0);
             // this.posY = window.scrollY;
+            this.pdf.css('pointerEvents', "auto");
+            $('body').addClass('disable-div-selection cursor-move');
+            this.pointItEnable = true;
+            this.hideButtons();
+            if (!this.confirmEnabled && this.signable) {
+                this.enableConfirmLeaveSign();
+                this.confirmEnabled = true;
+            }
+            this.fireEvent('startDrag', ['ok']);
+        } else {
+            this.cross.attr("data-current", "true");
+            this.borders.addClass("anim-border");
+            this.showButtons();
         }
-        this.cross.css('position', "absolute");
-        this.cross.css('margin-left', 0);
-        this.cross.css('margin-top', 0);
-        // this.posY = window.scrollY;
-        this.pdf.css('pointerEvents', "auto");
-        $('body').addClass('disable-div-selection cursor-move');
-        this.pointItEnable = true;
-        this.hideButtons();
-        if(!this.confirmEnabled && this.signable) {
-            this.enableConfirmLeaveSign();
-            this.confirmEnabled = true;
-        }
-        this.fireEvent('startDrag', ['ok']);
     }
 
     hideButtons() {
         this.crossTools.addClass('d-none');
+
     }
 
     showButtons() {
