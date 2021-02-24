@@ -269,7 +269,6 @@ public class WorkflowService {
                                 documentName = metadatas.get("Title");
                             }
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
-                            signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
                             SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
@@ -277,7 +276,6 @@ public class WorkflowService {
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
                             signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
                                 User creator = userService.createUserWithEppn(metadatas.get("Creator"));
@@ -307,10 +305,11 @@ public class WorkflowService {
                                         for(Target target : workflow.getTargets()) {
                                             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri() + "/" + metadataTarget));
                                         }
-                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0));
+                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
                                     }
                                 }
                             } else {
+                                targetService.copyTargets(workflow.getTargets(), signBook);
                                 signBookService.importWorkflow(signBook, workflow);
                             }
                             signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
