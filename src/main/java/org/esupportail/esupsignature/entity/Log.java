@@ -27,6 +27,9 @@ public class Log {
 	private String eppn;
 
 	@Transient
+	private String userName;
+
+	@Transient
     @JsonIgnore
 	private User user;
 
@@ -85,6 +88,14 @@ public class Log {
 
 	public void setEppn(String eppn) {
         this.eppn = eppn;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public User getUser() {
