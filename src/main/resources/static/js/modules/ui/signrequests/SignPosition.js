@@ -290,7 +290,6 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        let currentSignParams = this.getCurrentSignParams();
         this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
         this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
         this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
@@ -533,32 +532,27 @@ export class SignPosition extends EventFactory {
             let signTypeText = "";
             let textSign = "Signé";
             if(this.signType === "visa") textSign = "Visé";
-            let textExtra = $("<textarea id='textExtra_" + this.currentSign + "' class='sign-textarea align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
+            let defaultText = signTypeText +
+                textSign + " par " + this.userName +
+                "\n" +
+                "Le " + moment().format('DD/MM/YYYY HH:mm:ss');
+            if(this.getCurrentSignParams().extraText != null) {
+                defaultText = this.getCurrentSignParams().extraText;
+            }
+            let fontSize = this.fontSize * this.currentScale * this.getCurrentSignParams().signScale;
+            let textExtra = $("<textarea id='textExtra_" + this.currentSign + "' class='sign-textarea align-top visa-text' style='font-size:" + fontSize + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
                 "                        -khtml-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
-                signTypeText +
-                textSign + " par " + this.userName +
-                "\n" +
-                "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
+                defaultText +
                 "</textarea>");
-            let self = this;
-            textExtra.on("input", function(){
-                var text = $(this).val();
-                var lines = text.split(/\r|\r\n|\n/);
-                var count = lines.length;
-                $(this).attr("rows", count);
-                if(self.getCurrentSignParams().extraOnTop) {
-                    let textExtraHeight = $(this).height() * self.currentScale;
-                    self.getCurrentSignParams().extraHeight = textExtraHeight;
-                    self.getCurrentSignParams().signHeight = self.getCurrentSignParams().signHeight + textExtraHeight;
-                    self.changeSignImage(self.getCurrentSignParams().signImageNumber);
-                }
-            });
+            let lines = defaultText.split(/\r|\r\n|\n/);
+            let count = lines.length;
+            textExtra.attr("rows", count);
             if(this.getCurrentSignParams().extraOnTop) {
                 this.borders.append(textExtra);
-                let textExtraHeight = textExtra.height() * this.fixRatio * this.currentScale;
+                let textExtraHeight = textExtra.height();
                 this.getCurrentSignParams().extraHeight = textExtraHeight;
                 this.getCurrentSignParams().extraWidth = 0;
                 this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
@@ -571,8 +565,27 @@ export class SignPosition extends EventFactory {
                 this.getCurrentSignParams().extraWidth = textExtraWidth;
                 this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + textExtraWidth;
             }
+            textExtra.on("input", e => this.refreshExtraText(e));
+            textExtra.on("click mouseup mousedown", function (e){
+                e.stopPropagation();
+            });
         }
         this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+    }
+
+    refreshExtraText(e) {
+        let target = $(e.target);
+        let text = target.val();
+        let lines = text.split(/\r|\r\n|\n/);
+        let count = lines.length;
+        target.attr("rows", count);
+        if(this.getCurrentSignParams().extraOnTop) {
+            let textExtraHeight = target.height();
+            this.getCurrentSignParams().extraHeight = textExtraHeight;
+            this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
+            this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+            this.getCurrentSignParams().extraText = target.val();
+        }
     }
 
     toggleExtraPosition() {

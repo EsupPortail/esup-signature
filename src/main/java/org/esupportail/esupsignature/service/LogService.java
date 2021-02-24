@@ -2,9 +2,11 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -53,8 +55,18 @@ public class LogService {
         return logs;
     }
 
-    public List<Log> getById(Long id) {
+    public List<Log> getBySignRequest(Long id) {
         return logRepository.findBySignRequestId(id);
+    }
+
+    @Transactional
+    public List<Log> getFullBySignRequest(Long id) {
+        List<Log> logs = logRepository.findBySignRequestId(id);
+        for (Log log : logs) {
+            User user = userService.getUserByEppn(log.getEppn());
+            log.setUserName(user.getFirstname() + " " + user.getName());
+        }
+        return logs;
     }
 
     public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {

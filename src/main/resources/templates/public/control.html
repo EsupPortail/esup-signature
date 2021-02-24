@@ -38,7 +38,7 @@
                             <thead class="thead-dark">
                             <tr>
                                 <th>Date</th>
-                                <th>Identifiant</th>
+                                <th>Nom</th>
                                 <th>Action</th>
                                 <th>Caratéristiques de la signature</th>
                                 <th>Statut</th>
@@ -49,7 +49,7 @@
                                 <tr>
                                     <td class="text-left"><span
                                             th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                    <td class="text-left"><span th:text="${log.eppn}"></span></td>
+                                    <td class="text-left"><span th:text="${log.userName}"></span></td>
                                     <td class="text-left"><span th:text="${log.action}"></span></td>
                                     <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
                                                                 th:text="'Signé en page ' + ${log.pageNumber} + ' aux coordonées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
