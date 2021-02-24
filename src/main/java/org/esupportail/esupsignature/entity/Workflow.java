@@ -60,7 +60,7 @@ public class Workflow {
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     private List<WorkflowStep> workflowSteps = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.REMOVE)
+    @OneToMany(cascade = CascadeType.REMOVE)
     private List<Target> targets = new ArrayList<>();
 
     private Boolean fromCode;

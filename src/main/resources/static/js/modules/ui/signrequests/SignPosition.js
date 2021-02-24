@@ -533,20 +533,32 @@ export class SignPosition extends EventFactory {
             let signTypeText = "";
             let textSign = "Signé";
             if(this.signType === "visa") textSign = "Visé";
-            let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
+            let textExtra = $("<textarea id='textExtra_" + this.currentSign + "' class='sign-textarea align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
                 "                        -khtml-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
                 signTypeText +
                 textSign + " par " + this.userName +
-                "<br>" +
+                "\n" +
                 "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
-                "</span>");
-
+                "</textarea>");
+            let self = this;
+            textExtra.on("input", function(){
+                var text = $(this).val();
+                var lines = text.split(/\r|\r\n|\n/);
+                var count = lines.length;
+                $(this).attr("rows", count);
+                if(self.getCurrentSignParams().extraOnTop) {
+                    let textExtraHeight = $(this).height() * self.currentScale;
+                    self.getCurrentSignParams().extraHeight = textExtraHeight;
+                    self.getCurrentSignParams().signHeight = self.getCurrentSignParams().signHeight + textExtraHeight;
+                    self.changeSignImage(self.getCurrentSignParams().signImageNumber);
+                }
+            });
             if(this.getCurrentSignParams().extraOnTop) {
                 this.borders.append(textExtra);
-                let textExtraHeight = textExtra.height() * this.fixRatio;
+                let textExtraHeight = textExtra.height() * this.fixRatio * this.currentScale;
                 this.getCurrentSignParams().extraHeight = textExtraHeight;
                 this.getCurrentSignParams().extraWidth = 0;
                 this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
@@ -554,6 +566,7 @@ export class SignPosition extends EventFactory {
                 this.borders.append(textExtra);
                 console.log(textExtra);
                 let textExtraWidth = textExtra.width();
+                textExtra.width(textExtra.width());
                 this.getCurrentSignParams().extraHeight = 0;
                 this.getCurrentSignParams().extraWidth = textExtraWidth;
                 this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + textExtraWidth;
@@ -574,7 +587,9 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().extraWidth = 0;
         this.getCurrentSignParams().extraHeight = 0;
         this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
-        $("#textExtra_" + this.currentSign).remove();
+        let textExtra = $("#textExtra_" + this.currentSign);
+        this.getCurrentSignParams().extraText = textExtra.val();
+        textExtra.remove();
     }
 
     changeSignColor(color) {
