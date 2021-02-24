@@ -92,12 +92,11 @@ public class PdfService {
 
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
-            List<String> addText = getSignatureStrings(user, signType, newDate, dateFormat);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), addText, true, signRequestParams);
+                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), signRequestParams);
             } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
             } else {
                 if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
                     signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");

@@ -204,8 +204,8 @@ public class SignService {
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss ", Locale.FRENCH);
-		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
+//		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);

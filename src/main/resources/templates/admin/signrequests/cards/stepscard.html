@@ -66,7 +66,7 @@
                             <div class="step border border-dark rounded" th:title="${target.targetUri}" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
                                 <div title="Export" th:classappend="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></div>
                                 Export vers :
-                                <div class="bs-stepper-label text-break" th:text="#{'signbook.documentiotype.' + ${target.targetType}}"></div>
+                                <div class="bs-stepper-label text-break" th:text="${target.targetUri}"></div>
                             </div>
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
