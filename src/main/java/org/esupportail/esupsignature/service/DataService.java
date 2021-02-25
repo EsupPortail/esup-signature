@@ -96,7 +96,7 @@ public class DataService {
             }
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+        Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
@@ -126,8 +126,10 @@ public class DataService {
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
-        for (String recipientEmail : recipientsEmails) {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+        if(recipientsEmails != null) {
+            for (String recipientEmail : recipientsEmails) {
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+            }
         }
         return signBook;
     }

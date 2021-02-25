@@ -147,7 +147,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
-			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()).getId(), null, userEppn, true);
+			Workflow workflow = workflowService.computeWorkflow(data.getForm().getWorkflow().getId(), null, userEppn, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());

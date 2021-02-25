@@ -92,8 +92,8 @@ public class SignBookService {
         return list;
     }
 
-    public List<SignBook> getSignBooksByWorkflowName(String workFlowName) {
-        return signBookRepository.findByWorkflowNameAndStatus(workFlowName, SignRequestStatus.completed);
+    public List<SignBook> getSignBooksByWorkflow(Workflow workflow) {
+        return signBookRepository.findByLiveWorkflowWorkflow(workflow);
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
@@ -357,8 +357,10 @@ public class SignBookService {
                     }
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }
-                for (String recipientEmail : recipientsEmails) {
-                    userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                if(recipientsEmails != null) {
+                    for (String recipientEmail : recipientsEmails) {
+                        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                    }
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
@@ -540,7 +542,9 @@ public class SignBookService {
                 throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
             }
         }
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        if(recipientsEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        }
     }
 
     public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus) {
