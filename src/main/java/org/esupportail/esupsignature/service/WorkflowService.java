@@ -185,12 +185,11 @@ public class WorkflowService {
             workflow = createWorkflow(user);
         }
         if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
-            if(recipientsEmails != null && recipientsEmails.length > 0) {
+            if(recipientsEmails != null) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmails);
                 workflow.getWorkflowSteps().add(workflowStep);
                 userPropertieService.createUserPropertieFromMails(user, Arrays.asList(recipientsEmails));
-
             }
         }
         return workflow;
@@ -382,9 +381,9 @@ public class WorkflowService {
         return workflowRepository.findById(id).get();
     }
 
-    public Workflow getWorkflowByName(String name) {
-        return workflowRepository.findByName(name);
-    }
+//    public Workflow getWorkflowByName(String name) {
+//        return workflowRepository.findByName(name);
+//    }
 
     @Transactional
     public Workflow initWorkflow(User user, Long id, String name) {
@@ -529,7 +528,7 @@ public class WorkflowService {
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()).getId(), null, userEppn, true);
+            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;

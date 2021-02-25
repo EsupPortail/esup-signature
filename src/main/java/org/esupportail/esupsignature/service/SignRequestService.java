@@ -450,9 +450,8 @@ public class SignRequestService {
 				for (Field field : form.getFields()) {
 					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
 						if (field.getExtValueReturn().equals("id")) {
-							List<SignBook> signBooks = signBookService.getSignBooksByWorkflowName(form.getWorkflowType());
-							data.getDatas().put(field.getName(), "" + (signBooks.size() + 1));
-							formDataMap.put(field.getName(), "" + (signBooks.size() + 1));
+							data.getDatas().put(field.getName(), "" + signRequest.getToken());
+							formDataMap.put(field.getName(), "" + signRequest.getToken());
 						}
 					}
 				}
