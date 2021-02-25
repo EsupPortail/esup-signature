@@ -357,8 +357,10 @@ public class SignBookService {
                     }
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }
-                for (String recipientEmail : recipientsEmails) {
-                    userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                if(recipientsEmails != null) {
+                    for (String recipientEmail : recipientsEmails) {
+                        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                    }
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
