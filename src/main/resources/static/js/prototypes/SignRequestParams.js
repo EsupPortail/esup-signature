@@ -12,8 +12,7 @@ export class SignRequestParams {
         this.extraOnTop = true;
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.addName;
-        this.addDate;
+        this.extraText = "";
         this.signScale = 1;
         this.red = 0;
         this.green = 0;

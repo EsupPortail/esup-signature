@@ -138,14 +138,10 @@ export class SignUi {
             document.getElementById("bar").classList.remove("progress-bar-animated");
             document.getElementById("bar-text").innerHTML = message.text;
             document.getElementById("bar").style.width = 100 + "%";
-            if(this.profile !== "dev") {
-                if (this.gotoNext) {
-                    document.location.href = $("#nextSignRequestButton").attr('href');
-                } else {
-                    document.location.href = "/user/";
-                }
+            if (this.gotoNext) {
+                document.location.href = $("#nextSignRequestButton").attr('href');
             } else {
-                document.location.href = "/user/signrequests/" + this.signRequestId;
+                document.location.href = "/user/";
             }
         } else {
             console.debug("update bar");

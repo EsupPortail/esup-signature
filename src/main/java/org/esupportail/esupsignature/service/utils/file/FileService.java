@@ -23,6 +23,7 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.*;
 
 @Service
@@ -218,8 +219,10 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, java.util.List<String> text, boolean visa, SignRequestParams signRequestParams) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams) throws IOException {
 		InputStream textAddedInputStream = imageStream;
+		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
+		List<String> text = Arrays.asList(arr);
 		if(text.size() > 0) {
 			final BufferedImage signImage = ImageIO.read(imageStream);
 			int widthOffset = 0;

@@ -40,7 +40,7 @@ public class Log {
 	
 	private String returnCode;
 	
-	private String ip;
+	private String ip = "";
 
     @Column(columnDefinition = "TEXT")
 	private String comment;

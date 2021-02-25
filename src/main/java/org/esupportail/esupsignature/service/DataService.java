@@ -96,7 +96,7 @@ public class DataService {
             }
         }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
-        Workflow modelWorkflow = workflowService.getWorkflowByName(data.getForm().getWorkflowType());
+        Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
         String docName = user.getFirstname().substring(0, 1).toUpperCase();
@@ -105,7 +105,7 @@ public class DataService {
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
-                inputStream = pdfService.convertGS(inputStream);
+                inputStream = pdfService.convertGS(inputStream, signRequest.getToken());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -115,7 +115,7 @@ public class DataService {
         signBookService.importWorkflow(signBook, computedWorkflow);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargets().size() > 0) {
-            signBook.getLiveWorkflow().getTargets().addAll(form.getTargets());
+            targetService.copyTargets(form.getTargets(), signBook);
             for(Target target : form.getTargets()) {
                 if (target.getTargetType().equals(DocumentIOType.mail)) {
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
@@ -126,8 +126,10 @@ public class DataService {
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
-        for (String recipientEmail : recipientsEmails) {
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+        if(recipientsEmails != null) {
+            for (String recipientEmail : recipientsEmails) {
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+            }
         }
         return signBook;
     }

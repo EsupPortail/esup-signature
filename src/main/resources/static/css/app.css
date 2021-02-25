@@ -19,8 +19,9 @@ body {
 }
 
 label {
-    margin-top: .5rem;
+    padding-top: .5rem;
 }
+
 #actionDiv {
     position: relative;
     width: 100%;
@@ -400,16 +401,16 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
-.sign-text {
+.sign-textarea {
     font-family: "DejaVu Sans Condensed", serif;
     color: black;
-    position : relative; float: left; clear: left;
-}
-
-.visa-text {
-    font-family: "DejaVu Sans Condensed", serif;
-    color: black;
-    float: left; clear: left;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width:100%;
+    /*border: transparent;*/
+    background: rgba(255, 255, 255, .5);
+    resize: none;
 }
 
 .wrapper {

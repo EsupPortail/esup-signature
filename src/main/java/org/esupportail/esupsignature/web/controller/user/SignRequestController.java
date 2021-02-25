@@ -156,7 +156,7 @@ public class SignRequestController {
 //        model.addAttribute("realCurrentStepNumber", signBookService.getRealCurrentStepNumber(signRequest.getParentSignBook().getId()));
 //        model.addAttribute("isRealCurrentStepSigned", signBookService.isRealCurrentStepSigned(signRequest.getParentSignBook().getId()));
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
             model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
@@ -195,7 +195,7 @@ public class SignRequestController {
         User user = (User) model.getAttribute("user");
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
-        List<Log> logs = logService.getById(signRequest.getId());
+        List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));

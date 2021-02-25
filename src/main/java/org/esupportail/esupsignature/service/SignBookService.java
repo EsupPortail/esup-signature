@@ -258,7 +258,7 @@ public class SignBookService {
     }
 
     public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
-        if(!signBook.getStatus().equals(SignRequestStatus.exported) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+        if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);
         }
@@ -357,8 +357,10 @@ public class SignBookService {
                     }
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }
-                for (String recipientEmail : recipientsEmails) {
-                    userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                if(recipientsEmails != null) {
+                    for (String recipientEmail : recipientsEmails) {
+                        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
+                    }
                 }
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn);
@@ -540,7 +542,9 @@ public class SignBookService {
                 throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
             }
         }
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        if(recipientsEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        }
     }
 
     public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus) {

@@ -46,7 +46,6 @@ export class SignPosition extends EventFactory {
         this.pdf = $('#pdf');
         this.pointItEnable = true;
         this.fontSize = 12;
-        this.pointItMove = false;
         this.visualActive = true;
         this.signUndoButton = $('#signUndo_0');
         this.signZoomOutButton = $('#signZoomOut_0');
@@ -68,7 +67,9 @@ export class SignPosition extends EventFactory {
         if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
             this.cross.css("position", "absolute");
             this.addSignButton.removeAttr("disabled");
+            this.lockCurrentSign(false);
         } else {
+            this.cross.attr("data-current", "true");
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
             this.cross.css("margin-top", "180px");
@@ -93,8 +94,8 @@ export class SignPosition extends EventFactory {
     initCrossListeners() {
         this.borders.on('mousedown', e => this.dragSignature());
         this.borders.on('touchstart', e => this.dragSignature());
-        this.borders.on('mouseup', e => this.stopDragSignature());
-        this.borders.on('touchend', e => this.stopDragSignature());
+        this.borders.on('mouseup', e => this.stopDragSignature(false));
+        this.borders.on('touchend', e => this.stopDragSignature(false));
     }
 
     initCrossToolsListeners() {
@@ -150,6 +151,7 @@ export class SignPosition extends EventFactory {
         let okSign = this.cross.clone();
         okSign.css( "z-index", "2");
         okSign.children().removeClass("anim-border");
+        okSign.attr("data-current", "false");
         okSign.appendTo(this.pdf);
         okSign.on("click", e => this.switchSignToTarget(e));
         console.info("add sign");
@@ -232,11 +234,10 @@ export class SignPosition extends EventFactory {
 
     switchSign(currentSign) {
         console.info("switch to " + currentSign);
-        this.borders.removeClass("anim-border");
-        this.borders.unbind();
-        this.cross.on("click", e => this.switchSignToTarget(e));
+        if(this.signRequestParamses.lenght > 1) this.lockCurrentSign();
         this.currentSign = currentSign;
         this.cross = $('#cross_' + currentSign);
+        this.cross.attr("data-current", "true");
         this.cross.unbind();
         this.borders = $('#borders_' + currentSign);
         this.borders.addClass("anim-border");
@@ -252,6 +253,15 @@ export class SignPosition extends EventFactory {
         this.signDropButton = $('#signDrop_' + currentSign);
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.initCrossToolsListeners();
+    }
+
+    lockCurrentSign() {
+        console.info("lock current sign");
+        this.borders.removeClass("anim-border");
+        this.cross.attr("data-current", "false");
+        this.borders.unbind();
+        this.cross.on("click", e => this.switchSignToTarget(e));
+        this.hideButtons();
     }
 
     removeSign(e) {
@@ -280,7 +290,6 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        let currentSignParams = this.getCurrentSignParams();
         this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
         this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
         this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
@@ -336,8 +345,7 @@ export class SignPosition extends EventFactory {
 
     pointIt(e) {
         if(this.pointItEnable) {
-            this.pointItMove = true;
-            var offset = $("#pdf").offset();
+            let offset = $("#pdf").offset();
             this.getCurrentSignParams().setxPos( (e.pageX - offset.left) / this.currentScale * this.fixRatio);
             this.getCurrentSignParams().setyPos( (e.pageY - offset.top) / this.currentScale * this.fixRatio);
             this.updateCrossPosition();
@@ -357,7 +365,6 @@ export class SignPosition extends EventFactory {
     touchIt(e) {
         if (this.pointItEnable) {
             e.preventDefault();
-            this.pointItMove = true;
             console.debug("touch");
             let rect = pdf.getBoundingClientRect();
             let touch = e.touches[0] || e.changedTouches[0];
@@ -436,7 +443,7 @@ export class SignPosition extends EventFactory {
         textExtra.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
     }
 
-    stopDragSignature() {
+    stopDragSignature(lock) {
         console.info("stop drag");
         this.fireEvent('stopDrag', ['ok']);
         this.cross.css('pointerEvents', "auto");
@@ -445,36 +452,43 @@ export class SignPosition extends EventFactory {
             this.showButtons();
         }
         this.pointItEnable = false;
-        this.pointItMove = false
         $('body').removeClass('disable-div-selection cursor-move');
         this.addSignButton.removeAttr("disabled");
+        if(lock) this.lockCurrentSign();
     }
 
     dragSignature() {
         console.info("start drag");
-        this.firstDrag = true;
-        this.cross.css('pointerEvents', "none");
-        if(this.cross.css('position') !== 'absolute') {
-            this.cross.css('top', window.scrollY);
+        if(this.cross.attr("data-current") === "true") {
+            this.firstDrag = true;
+            this.cross.css('pointerEvents', "none");
+            if (this.cross.css('position') !== 'absolute') {
+                this.cross.css('top', window.scrollY);
+                // this.posY = window.scrollY;
+            }
+            this.cross.css('position', "absolute");
+            this.cross.css('margin-left', 0);
+            this.cross.css('margin-top', 0);
             // this.posY = window.scrollY;
+            this.pdf.css('pointerEvents', "auto");
+            $('body').addClass('disable-div-selection cursor-move');
+            this.pointItEnable = true;
+            this.hideButtons();
+            if (!this.confirmEnabled && this.signable) {
+                this.enableConfirmLeaveSign();
+                this.confirmEnabled = true;
+            }
+            this.fireEvent('startDrag', ['ok']);
+        } else {
+            this.cross.attr("data-current", "true");
+            this.borders.addClass("anim-border");
+            this.showButtons();
         }
-        this.cross.css('position', "absolute");
-        this.cross.css('margin-left', 0);
-        this.cross.css('margin-top', 0);
-        // this.posY = window.scrollY;
-        this.pdf.css('pointerEvents', "auto");
-        $('body').addClass('disable-div-selection cursor-move');
-        this.pointItEnable = true;
-        this.hideButtons();
-        if(!this.confirmEnabled && this.signable) {
-            this.enableConfirmLeaveSign();
-            this.confirmEnabled = true;
-        }
-        this.fireEvent('startDrag', ['ok']);
     }
 
     hideButtons() {
         this.crossTools.addClass('d-none');
+
     }
 
     showButtons() {
@@ -516,25 +530,29 @@ export class SignPosition extends EventFactory {
         } else {
             this.getCurrentSignParams().addExtra = true;
             let signTypeText = "";
-            if(this.signType === "certSign" || this.signType === "nexuSign") {
-                signTypeText = "Signature électronique<br/>";
-            }
             let textSign = "Signé";
             if(this.signType === "visa") textSign = "Visé";
-            let textExtra = $("<span id='textExtra_" + this.currentSign + "' class='align-top visa-text' style='font-size:" + this.fontSize * this.currentScale * this.signScale + "px;user-select: none;\n" +
+            let defaultText = signTypeText +
+                textSign + " par " + this.userName +
+                "\n" +
+                "Le " + moment().format('DD/MM/YYYY HH:mm:ss');
+            if(this.getCurrentSignParams().extraText != null && this.getCurrentSignParams().extraText !== "") {
+                defaultText = this.getCurrentSignParams().extraText;
+            }
+            let fontSize = this.fontSize * this.currentScale * this.getCurrentSignParams().signScale;
+            let textExtra = $("<textarea id='textExtra_" + this.currentSign + "' class='sign-textarea align-top visa-text' style='font-size:" + fontSize + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
                 "                        -khtml-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
-                signTypeText +
-                textSign + " par " + this.userName +
-                "<br>" +
-                "Le " + moment().format('DD/MM/YYYY HH:mm:ss') +
-                "</span>");
-
+                defaultText +
+                "</textarea>");
+            let lines = defaultText.split(/\r|\r\n|\n/);
+            let count = lines.length;
+            textExtra.attr("rows", count);
             if(this.getCurrentSignParams().extraOnTop) {
                 this.borders.append(textExtra);
-                let textExtraHeight = textExtra.height() * this.fixRatio;
+                let textExtraHeight = textExtra.height();
                 this.getCurrentSignParams().extraHeight = textExtraHeight;
                 this.getCurrentSignParams().extraWidth = 0;
                 this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
@@ -542,12 +560,32 @@ export class SignPosition extends EventFactory {
                 this.borders.append(textExtra);
                 console.log(textExtra);
                 let textExtraWidth = textExtra.width();
+                textExtra.width(textExtra.width());
                 this.getCurrentSignParams().extraHeight = 0;
                 this.getCurrentSignParams().extraWidth = textExtraWidth;
                 this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth + textExtraWidth;
             }
+            textExtra.on("input", e => this.refreshExtraText(e));
+            textExtra.on("click mouseup mousedown", function (e){
+                e.stopPropagation();
+            });
         }
         this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+    }
+
+    refreshExtraText(e) {
+        let target = $(e.target);
+        let text = target.val();
+        let lines = text.split(/\r|\r\n|\n/);
+        let count = lines.length;
+        target.attr("rows", count);
+        if(this.getCurrentSignParams().extraOnTop) {
+            let textExtraHeight = target.height();
+            this.getCurrentSignParams().extraHeight = textExtraHeight;
+            this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
+            this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+            this.getCurrentSignParams().extraText = target.val();
+        }
     }
 
     toggleExtraPosition() {
@@ -562,7 +600,9 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().extraWidth = 0;
         this.getCurrentSignParams().extraHeight = 0;
         this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
-        $("#textExtra_" + this.currentSign).remove();
+        let textExtra = $("#textExtra_" + this.currentSign);
+        this.getCurrentSignParams().extraText = textExtra.val();
+        textExtra.remove();
     }
 
     changeSignColor(color) {

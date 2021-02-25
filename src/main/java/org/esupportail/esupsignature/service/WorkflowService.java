@@ -185,12 +185,11 @@ public class WorkflowService {
             workflow = createWorkflow(user);
         }
         if(workflow.getCreateBy().getEppn().equals(user.getEppn())) {
-            if(recipientsEmails != null && recipientsEmails.length > 0) {
+            if(recipientsEmails != null) {
                 logger.info("add new workflow step to Workflow " + workflow.getId());
                 WorkflowStep workflowStep = workflowStepService.createWorkflowStep("", allSignToComplete, signType, recipientsEmails);
                 workflow.getWorkflowSteps().add(workflowStep);
                 userPropertieService.createUserPropertieFromMails(user, Arrays.asList(recipientsEmails));
-
             }
         }
         return workflow;
@@ -269,7 +268,6 @@ public class WorkflowService {
                                 documentName = metadatas.get("Title");
                             }
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
-                            signBook.getLiveWorkflow().getTargets().addAll(workflow.getTargets());
                             SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
@@ -277,7 +275,6 @@ public class WorkflowService {
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
                             signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
-
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
                                 User creator = userService.createUserWithEppn(metadatas.get("Creator"));
@@ -294,21 +291,24 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
                                         List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflow.getWorkflowSteps().get(i), false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        WorkflowStep workflowStep = null;
+                                        if(workflow.getWorkflowSteps().size() > i) {
+                                            workflowStep = workflow.getWorkflowSteps().get(i);
+                                        }
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                         i++;
                                     }
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
-                                        String target = metadatas.get(metadataKey);
-                                        if (target.contains("://")) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.valueOf(target.split("://")[0]), target.replace("\\", "/")));
-                                        } else {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.vfs, "/" + target.replace("\\", "/")));
+                                        String metadataTarget = metadatas.get(metadataKey);
+                                        for(Target target : workflow.getTargets()) {
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri() + "/" + metadataTarget));
                                         }
-                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0));
+                                        logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
                                     }
                                 }
                             } else {
+                                targetService.copyTargets(workflow.getTargets(), signBook);
                                 signBookService.importWorkflow(signBook, workflow);
                             }
                             signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
@@ -381,9 +381,9 @@ public class WorkflowService {
         return workflowRepository.findById(id).get();
     }
 
-    public Workflow getWorkflowByName(String name) {
-        return workflowRepository.findByName(name);
-    }
+//    public Workflow getWorkflowByName(String name) {
+//        return workflowRepository.findByName(name);
+//    }
 
     @Transactional
     public Workflow initWorkflow(User user, Long id, String name) {
@@ -528,7 +528,7 @@ public class WorkflowService {
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(getWorkflowByName(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName()).getId(), null, userEppn, true);
+            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;

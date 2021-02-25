@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Target;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.*;
@@ -82,7 +83,7 @@ public class FormAdminController {
 	public String getFormById(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
-		model.addAttribute("workflow", workflowService.getWorkflowByName(form.getWorkflowType()));
+		model.addAttribute("workflow", form.getWorkflow());
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
 		model.addAttribute("preFillTypes", preFill.getTypes());
 		model.addAttribute("document", form.getDocument());
@@ -90,10 +91,10 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Workflow workflow, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
 		List<Target> targets = new ArrayList<>();
 		targets.add(targetService.createTarget(targetType, targetUri));
-		Form form = formService.generateForm(multipartFile, name, title, workflowType, prefillType, roleName, targets, publicUsage);
+		Form form = formService.generateForm(multipartFile, name, title, workflow, prefillType, roleName, targets, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 

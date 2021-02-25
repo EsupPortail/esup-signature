@@ -432,7 +432,6 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
 	}
 
-	@Transactional
 	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException {
 		User signerUser = user;
 		if(userShareId != null) {
@@ -451,9 +450,8 @@ public class SignRequestService {
 				for (Field field : form.getFields()) {
 					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
 						if (field.getExtValueReturn().equals("id")) {
-							List<SignBook> signBooks = signBookService.getSignBooksByWorkflowName(form.getWorkflowType());
-							data.getDatas().put(field.getName(), "" + (signBooks.size() + 1));
-							formDataMap.put(field.getName(), "" + (signBooks.size() + 1));
+							data.getDatas().put(field.getName(), "" + signRequest.getToken());
+							formDataMap.put(field.getName(), "" + signRequest.getToken());
 						}
 					}
 				}
@@ -470,15 +468,16 @@ public class SignRequestService {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 
+			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
 					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
-					updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
+					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
 				}
 			}
 			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()))) {
-				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest));
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
 			}
 			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
@@ -809,8 +808,8 @@ public class SignRequestService {
 		updateStatus(signRequest, signRequestStatus, action, returnCode, pageNumber, posX, posY, null, userEppn, authUserEppn);
 	}
 
-	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
-		logService.create(signRequest, signRequestStatus, action, null, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
+	public Log updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+		return logService.create(signRequest, signRequestStatus, action, null, returnCode, pageNumber, posX, posY, stepNumber, userEppn, authUserEppn);
 	}
 
 	public void updateStatus(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {

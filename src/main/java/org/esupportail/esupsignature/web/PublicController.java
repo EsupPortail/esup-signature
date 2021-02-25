@@ -43,7 +43,7 @@ public class PublicController {
         List<SignRequest> signRequestOptional = signRequestService.getSignRequestsByToken(token);
         if(signRequestOptional.size() > 0) {
             SignRequest signRequest = signRequestOptional.get(0);
-            List<Log> logs = logService.getById(signRequest.getId());
+            List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
             AbstractMap.SimpleEntry<List<User>, List<User>> userResponse = signRequestService.checkUserResponse(signRequest);
             model.addAttribute("usersHasSigned", userResponse.getValue());
             model.addAttribute("usersHasRefused", userResponse.getKey());
