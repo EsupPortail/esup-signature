@@ -542,7 +542,9 @@ public class SignBookService {
                 throw new EsupSignatureException("L'étape ne peut pas être ajoutée");
             }
         }
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        if(recipientsEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        }
     }
 
     public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus) {
