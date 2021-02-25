@@ -78,7 +78,9 @@ public class LiveWorkflowStepService {
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(null,false, allSignToComplete, signType, recipientsEmails);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-        userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        if(recipientsEmails != null) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));
+        }
     }
 
     public void addRecipients(LiveWorkflowStep liveWorkflowStep, String... recipientsEmail) {
