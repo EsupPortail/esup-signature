@@ -72,11 +72,11 @@
         <div id="content" class="content">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signable && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
+                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Signer"><i class="fas fa-file-signature"></i></a>
                     </li>
-                    <li th:unless="${!signable || currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
+                    <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
