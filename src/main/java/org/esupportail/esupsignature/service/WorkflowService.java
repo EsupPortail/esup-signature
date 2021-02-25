@@ -102,13 +102,13 @@ public class WorkflowService {
     public void copyClassWorkflowsIntoDatabase() throws EsupSignatureException {
         for (Workflow classWorkflow : getClassesWorkflows()) {
             logger.info("workflow class found : " + classWorkflow.getName());
-            if (!isWorkflowExist(classWorkflow.getClass().getSimpleName(), "system")) {
+            if (!isWorkflowExist(classWorkflow.getName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
-                Workflow newWorkflow = createWorkflow(classWorkflow.getClass().getSimpleName(), classWorkflow.getDescription(), userService.getSystemUser());
+                Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser());
                 newWorkflow.setFromCode(true);
             } else {
                 logger.info("update " + classWorkflow.getName() + " on database");
-                Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getClass().getSimpleName());
+                Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getClass().getName());
                 toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
                 toUpdateWorkflow.setRole(classWorkflow.getRole());
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
@@ -195,6 +195,7 @@ public class WorkflowService {
         return workflow;
     }
 
+    @Transactional
     public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureException {
         String name;
         if (userService.getSystemUser().equals(user)) {
@@ -370,7 +371,7 @@ public class WorkflowService {
 
     public Workflow getWorkflowByClassName(String className) {
         for (Workflow workflow : workflows) {
-            if (workflow.getClass().getSimpleName().equals(className)) {
+            if (className.equals(workflow.getName())) {
                 return workflow;
             }
         }
