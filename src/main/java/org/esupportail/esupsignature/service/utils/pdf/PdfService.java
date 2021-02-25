@@ -281,7 +281,6 @@ public class PdfService {
             XMPMetadata xmpMetadata = XMPMetadata.createXMPMetadata();
 
             AdobePDFSchema pdfSchema = xmpMetadata.createAndAddAdobePDFSchema();
-            pdfSchema.setKeywords(info.getKeywords());
             pdfSchema.setProducer(info.getProducer());
 
             DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
@@ -311,7 +310,7 @@ public class PdfService {
             for(Log log : logs) {
                 i++;
                 String signatureInfos =
-                    log.getAction() + pdfTextStripper.getLineSeparator() +
+                    pdfTextStripper.getLineSeparator() + log.getAction() + pdfTextStripper.getLineSeparator() +
                     "De : " + log.getUser().getFirstname() + " " + log.getUser().getName() + pdfTextStripper.getLineSeparator() +
                     "Le : " + dateFormat.format(log.getLogDate()) + pdfTextStripper.getLineSeparator() +
                     "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
@@ -325,6 +324,8 @@ public class PdfService {
                 pdfSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
 
             }
+
+            pdfSchema.setKeywords(info.getKeywords());
 
             XmpSerializer serializer = new XmpSerializer();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
