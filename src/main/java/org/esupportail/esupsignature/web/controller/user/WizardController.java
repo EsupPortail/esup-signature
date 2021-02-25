@@ -210,7 +210,11 @@ public class WizardController {
         if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
-            workflowService.delete(workflow);
+            if(workflowService.delete(workflow)) {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Circuit supprimé"));
+            } else {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de supprimer ce circuit car il contient des demandes"));
+            }
         }
         return "redirect:/user/";
     }

@@ -108,7 +108,7 @@ public class WorkflowService {
                 newWorkflow.setFromCode(true);
             } else {
                 logger.info("update " + classWorkflow.getName() + " on database");
-                Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getClass().getName());
+                Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
                 toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
                 toUpdateWorkflow.setRole(classWorkflow.getRole());
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
@@ -454,17 +454,22 @@ public class WorkflowService {
         }
    }
 
-    public void delete(Workflow workflow) {
-        List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
-        List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
-        List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
-        for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
-            List<SignBook> signBooks = signBookService.getByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
-            signBooks.forEach(s -> signBookService.delete(s.getId()));
+    public boolean delete(Workflow workflow) {
+        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow);
+        if(signBooks.stream().filter(signBook -> signBook.getStatus() != SignRequestStatus.draft).count() == 0 ) {
+            List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
+            List<LiveWorkflow> deleteLiveWorkflows = liveWorkflows.stream().filter(l -> l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
+            List<LiveWorkflow> noneDeleteLiveWorkflows = liveWorkflows.stream().filter(l -> !l.getLiveWorkflowSteps().isEmpty()).collect(Collectors.toList());
+            for (LiveWorkflow liveWorkflow : deleteLiveWorkflows) {
+                List<SignBook> signBooksToDelete = signBookService.getByLiveWorkflowAndStatus(liveWorkflow, SignRequestStatus.draft);
+                signBooksToDelete.forEach(s -> signBookService.delete(s.getId()));
+            }
+            deleteLiveWorkflows.forEach(l -> liveWorkflowService.delete(l));
+            noneDeleteLiveWorkflows.forEach(l -> l.setWorkflow(null));
+            workflowRepository.delete(workflow);
+            return true;
         }
-        deleteLiveWorkflows.forEach(l -> liveWorkflowService.delete(l));
-        noneDeleteLiveWorkflows.forEach(l -> l.setWorkflow(null));
-        workflowRepository.delete(workflow);
+        return false;
     }
 
     public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {

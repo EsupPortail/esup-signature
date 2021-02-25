@@ -92,8 +92,8 @@ public class SignBookService {
         return list;
     }
 
-    public List<SignBook> getSignBooksByWorkflowName(String workFlowName) {
-        return signBookRepository.findByWorkflowNameAndStatus(workFlowName, SignRequestStatus.completed);
+    public List<SignBook> getSignBooksByWorkflow(Workflow workflow) {
+        return signBookRepository.findByLiveWorkflowWorkflow(workflow);
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
