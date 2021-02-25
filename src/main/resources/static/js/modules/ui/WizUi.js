@@ -144,12 +144,21 @@ export class WizUi {
 
     exit() {
         let csrf = this.csrf;
-        let signBookId = this.signBookId;
-        $.ajax({
-            url: "/user/wizard/wizend/" + signBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            success: html => this.initWiz2(html)
-        });
+        let self = this;
+        if(this.signBookId !== ""){
+            $.ajax({
+                url: "/user/wizard/wizend/" + self.signBookId + "?name=" + name + "&close=" + $('#close').val() + "&" + csrf.parameterName + "=" + csrf.token,
+                type: 'POST',
+                success: html => this.initWiz2(html)
+            });
+        } else {
+            $.ajax({
+                url: "/user/wizard/wiz-save-workflow/" + $('#wizWorkflowId').val(),
+                type: 'GET',
+                success: html => this.initWiz2(html)
+            });
+        }
+
     }
 
 }

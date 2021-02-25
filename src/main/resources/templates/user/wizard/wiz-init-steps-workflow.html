@@ -43,7 +43,7 @@
 <button type="button" id="addNew" name="addNew" value="true" class="btn btn-primary" style="position: absolute;right: 10px;bottom: 10px;">
     <i class="fas fa-save"></i> Enregistrer l'étape
 </button>
-<button formnovalidate id="end" name="end" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="button" class="btn btn-success">
+<button formnovalidate id="exitWiz" name="exitWiz" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" style="position: absolute;right: 200px;bottom: 10px;" type="button" class="btn btn-success">
     <i class="fas fa-flag-checkered"></i> Terminer
 </button>
 <form id="wiz4Form" th:if="${workflow != null}" th:action="'/delete-workflow/' + ${workflow.id}" method="post">

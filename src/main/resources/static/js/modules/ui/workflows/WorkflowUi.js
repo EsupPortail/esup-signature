@@ -13,9 +13,13 @@ export class WorkflowUi {
 
     initListeners() {
         this.sourceTypeSelect.on('change', e => this.toggleSourceSelector());
+        $(document).ready(e => this.initDelListerner());
+    }
+
+    initDelListerner() {
         let self = this;
         $(".del-step-btn").each(function(){
-           $(this).on("click", e => self.launchDelete(e));
+            $(this).on("click", e => self.launchDelete(e));
         });
     }
 
