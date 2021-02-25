@@ -392,6 +392,7 @@ public class UserService {
     }
 
 
+    @Transactional
     public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
         User authUser = getByEppn(authUserEppn);
         Map<String, Object> keystore = new HashMap<>();

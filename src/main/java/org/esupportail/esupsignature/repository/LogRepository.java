@@ -12,6 +12,7 @@ public interface LogRepository extends CrudRepository<Log, Long>  {
     List<Log> findByEppnAndSignRequestId(String eppn, Long signResquestId);
     List<Log> findByEppnForAndSignRequestId(String eppn, Long signResquestId);
     List<Log> findBySignRequestIdAndFinalStatus(Long signResquestId, String finalStatus);
+    List<Log> findBySignRequestIdAndReturnCode(Long signResquestId, String returnCode);
     List<Log> findBySignRequestIdAndStepNumberIsNotNullAndCommentIsNotNull(Long signResquestId);
     List<Log> findBySignRequestIdAndStepNumber(Long signResquestId, Integer stepNumber);
     List<Log> findBySignRequestId(Long signResquestId);

@@ -64,7 +64,7 @@
                                     </div>
                                 </div>
                             </th>
-                            <th class="w-20 d-none d-lg-table-cell text-center">
+                            <th class="w-20 d-none d-xxl-table-cell text-center">
                                 <select id="workflowFilter" class="slim-select-simple sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <th:block th:each="workflow : ${signRequestWorkflow}">
@@ -98,7 +98,7 @@
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                <td class="w-20 d-none d-xxl-table-cell">
+                                <td class="w-20 d-none d-lg-table-cell">
                                     <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                                            th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
                                            th:data-id-signbook="${signRequest.parentSignBook.id}">

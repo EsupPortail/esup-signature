@@ -105,7 +105,7 @@ public class DataService {
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
-                inputStream = pdfService.convertGS(inputStream);
+                inputStream = pdfService.convertGS(inputStream, signRequest.getToken());
             } catch (IOException e) {
                 e.printStackTrace();
             }
