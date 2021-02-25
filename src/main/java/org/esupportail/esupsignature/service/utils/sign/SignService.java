@@ -317,7 +317,6 @@ public class SignService {
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
 			for(Document toSignFile : documents) {
-				//multipartFiles.add(new MultipartInputStreamFileResource(toSignFile.getInputStream(), toSignFile.getFileName() + ".pdf").);
 				multipartFiles.add(fileService.toMultipartFile(toSignFile.getInputStream(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
@@ -334,7 +333,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				if(signRequest.getSignedDocuments().size() == 0) {
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				}
 			} else {
 				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();

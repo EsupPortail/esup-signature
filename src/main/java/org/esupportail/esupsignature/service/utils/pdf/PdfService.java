@@ -35,13 +35,11 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
+import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -80,6 +78,9 @@ public class PdfService {
 
     @Resource
     private GlobalProperties globalProperties;
+
+    @Resource
+    private LogService logService;
 
     public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
@@ -131,8 +132,9 @@ public class PdfService {
 
             String signatureInfos =
                     "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
-                    "De : " + user.getEppn() + pdfTextStripper.getLineSeparator() +
+                    "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
                     "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
+                    "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
                     "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
                     globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
@@ -164,6 +166,11 @@ public class PdfService {
             pdOutlineItem.setTitle(signatureInfos);
             pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
 
+//            PDDocumentInformation info = pdDocument.getDocumentInformation();
+//            info.setKeywords(signatureInfos);
+//            info.setCustomMetadataValue("signatureInfos_" + signRequest.getSignedDocuments().size() + 1, signatureInfos);
+//            pdDocument.setDocumentInformation(info);
+
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
 
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
@@ -194,52 +201,6 @@ public class PdfService {
         return addText;
     }
 
-//    public InputStream stampText(Document document, String text, int xPos, int yPos, int pageNumber) {
-//        //signRequestService.setStep("Apposition de la signature");
-//        PdfParameters pdfParameters;
-//        try {
-//            PDDocument pdDocument = PDDocument.load(document.getInputStream());
-//            pdfParameters = getPdfParameters(pdDocument);
-//            PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-//            PDImageXObject pdImage;
-//
-//            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-//            float height = pdPage.getMediaBox().getHeight();
-//            float width = pdPage.getMediaBox().getWidth();
-//            File signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/sceau.png"), text, text.length() * 10, 20);
-//            BufferedImage bufferedImage = ImageIO.read(signImage);
-//            if (pdfParameters.getRotation() == 0) {
-//                AffineTransform tx = AffineTransform.getScaleInstance(1, -1);
-//                tx.translate(0, -bufferedImage.getHeight(null));
-//                AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-//                bufferedImage = op.filter(bufferedImage, null);
-//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-//                ImageIO.write(bufferedImage, "png", flipedSignImage);
-//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-//                contentStream.transform(new Matrix(new java.awt.geom.AffineTransform(1, 0, 0, -1, 0, height)));
-//                contentStream.drawImage(pdImage, xPos, yPos, bufferedImage.getWidth(), bufferedImage.getHeight());
-//            } else {
-//                AffineTransform at = new java.awt.geom.AffineTransform(0, 1, -1, 0, width, 0);
-//                contentStream.transform(new Matrix(at));
-//                ByteArrayOutputStream flipedSignImage = new ByteArrayOutputStream();
-//                ImageIO.write(bufferedImage, "png", flipedSignImage);
-//                pdImage = PDImageXObject.createFromByteArray(pdDocument, flipedSignImage.toByteArray(), "sign.png");
-//                contentStream.drawImage(pdImage, xPos, yPos - 37, bufferedImage.getWidth(), bufferedImage.getWidth());
-//            }
-//            contentStream.close();
-//            ByteArrayOutputStream out = new ByteArrayOutputStream();
-//            pdDocument.setAllSecurityToBeRemoved(true);
-//            pdDocument.save(out);
-//            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-//            pdDocument.close();
-//            signImage.delete();
-//            return in;
-//        } catch (IOException e) {
-//            logger.error("error to add image", e);
-//        }
-//        return null;
-//    }
-
     public Map<String, String> readMetadatas(InputStream inputStream) {
         Map<String, String> metadatas = new HashMap<>();
         try {
@@ -251,7 +212,6 @@ public class PdfService {
                 }
             } else {
                 try {
-                    PDDocumentCatalog catalog = pdDocument.getDocumentCatalog();
                     PDMetadata metadata = new PDMetadata(pdDocument);
                     DomXmpParser domXmpParser = new DomXmpParser();
                     XMPMetadata xmpMetadata = domXmpParser.parse(metadata.exportXMPMetadata());
@@ -292,7 +252,7 @@ public class PdfService {
         return false;
     }
 
-    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest) {
+    public InputStream writeMetadatas(InputStream inputStream, String fileName, SignRequest signRequest, List<Log> additionnalLogs) {
 
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
@@ -304,18 +264,17 @@ public class PdfService {
             rootDictionary.setItem(COSName.TYPE, COSName.CATALOG);
             rootDictionary.setItem(COSName.VERSION, COSName.getPDFName("1.7"));
 
+            String producer = "esup-signature v." + globalProperties.getVersion();
+
             PDDocumentInformation info = pdDocument.getDocumentInformation();
             info.setTitle(fileName);
             info.setSubject(fileName);
-            info.setAuthor(signRequest.getCreateBy().getEppn());
             info.setCreator(signRequest.getCreateBy().getEppn());
-            info.setProducer("esup-signature");
-            info.setKeywords("pdf, signed, " + fileName);
+            info.setProducer(producer);
             if (info.getCreationDate() == null) {
                 info.setCreationDate(Calendar.getInstance());
             }
             info.setModificationDate(Calendar.getInstance());
-            pdDocument.setDocumentInformation(info);
 
             PDDocumentCatalog cat = pdDocument.getDocumentCatalog();
 
@@ -328,19 +287,44 @@ public class PdfService {
             DublinCoreSchema dublinCoreSchema = xmpMetadata.createAndAddDublinCoreSchema();
             dublinCoreSchema.setTitle(info.getTitle());
             dublinCoreSchema.setDescription(info.getSubject());
-            dublinCoreSchema.addCreator(info.getAuthor());
+            dublinCoreSchema.addCreator(info.getCreator());
 
             XMPBasicSchema xmpBasicSchema = xmpMetadata.createAndAddXMPBasicSchema();
-            xmpBasicSchema.setCreatorTool(info.getCreator());
+            xmpBasicSchema.setCreatorTool(info.getProducer());
             xmpBasicSchema.setCreateDate(info.getCreationDate());
             xmpBasicSchema.setModifyDate(info.getModificationDate());
             xmpBasicSchema.addIdentifier(signRequest.getToken());
             xmpBasicSchema.addIdentifier(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
 
-            PDFAIdentificationSchema pdfaid = xmpMetadata.createAndAddPFAIdentificationSchema();
-            pdfaid.setConformance("B");
-            pdfaid.setPart(pdfConfig.getPdfProperties().getPdfALevel());
-            pdfaid.setAboutAsSimple(null);
+            PDFAIdentificationSchema pdfaIdentificationSchema = xmpMetadata.createAndAddPFAIdentificationSchema();
+            pdfaIdentificationSchema.setConformance("B");
+            pdfaIdentificationSchema.setPart(pdfConfig.getPdfProperties().getPdfALevel());
+            pdfaIdentificationSchema.setAboutAsSimple("");
+
+            PDFTextStripper pdfTextStripper = new PDFTextStripper();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
+
+            List<Log> logs = new ArrayList<>();
+            logs.addAll(additionnalLogs);
+            logs.addAll(logService.getSignLogs(signRequest.getId()));
+            int i = 0;
+            for(Log log : logs) {
+                i++;
+                String signatureInfos =
+                    log.getAction() + pdfTextStripper.getLineSeparator() +
+                    "De : " + log.getUser().getFirstname() + " " + log.getUser().getName() + pdfTextStripper.getLineSeparator() +
+                    "Le : " + dateFormat.format(log.getLogDate()) + pdfTextStripper.getLineSeparator() +
+                    "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
+                    "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+                info.setKeywords(info.getKeywords() + ", " + signatureInfos);
+                info.setCustomMetadataValue("Signature_1" + i, signatureInfos);
+                pdfaIdentificationSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
+                xmpBasicSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
+                dublinCoreSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
+                pdfSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
+
+            }
 
             XmpSerializer serializer = new XmpSerializer();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -356,6 +340,8 @@ public class PdfService {
                     pdAnnotation.setPrinted(true);
                 }
             }
+
+            pdDocument.setDocumentInformation(info);
             pdDocument.save(out);
             pdDocument.close();
             return new ByteArrayInputStream(out.toByteArray());
@@ -365,12 +351,12 @@ public class PdfService {
         return inputStream;
     }
 
-    public InputStream convertGS(InputStream inputStream) throws IOException, EsupSignatureException {
+    public InputStream convertGS(InputStream inputStream, String UUID) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
@@ -513,15 +499,6 @@ public class PdfService {
             logger.error("error to add blank page", e);
         }
         return null;
-    }
-
-    public void addText(PDPageContentStream contentStream, String text, int xPos, int yPos, PDFont font) throws IOException {
-        int fontSize = 8;
-        contentStream.beginText();
-        contentStream.newLineAtOffset(xPos, 830 - yPos);
-        contentStream.setFont(font, fontSize);
-        contentStream.showText(text);
-        contentStream.endText();
     }
 
     public Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {

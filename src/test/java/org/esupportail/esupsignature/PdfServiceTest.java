@@ -30,7 +30,7 @@ public class PdfServiceTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource("dummy.pdf").getFile());
         try {
-            pdfService.convertGS(new FileInputStream(file));
+            pdfService.convertGS(new FileInputStream(file), "1");
         } catch (Exception e) {
             logger.error("GhostScript convert not working, please check gs install or PDFA_def.ps and srgb.icc locations", e);
             fail();

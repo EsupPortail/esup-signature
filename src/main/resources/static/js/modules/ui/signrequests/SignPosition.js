@@ -536,7 +536,7 @@ export class SignPosition extends EventFactory {
                 textSign + " par " + this.userName +
                 "\n" +
                 "Le " + moment().format('DD/MM/YYYY HH:mm:ss');
-            if(this.getCurrentSignParams().extraText != null) {
+            if(this.getCurrentSignParams().extraText != null && this.getCurrentSignParams().extraText !== "") {
                 defaultText = this.getCurrentSignParams().extraText;
             }
             let fontSize = this.fontSize * this.currentScale * this.getCurrentSignParams().signScale;
