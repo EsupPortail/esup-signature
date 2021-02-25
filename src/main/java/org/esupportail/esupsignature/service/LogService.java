@@ -64,7 +64,7 @@ public class LogService {
         List<Log> logs = logRepository.findBySignRequestId(id);
         for (Log log : logs) {
             User user = userService.getUserByEppn(log.getEppn());
-            log.setUserName(user.getFirstname() + " " + user.getName());
+            log.setUser(user);
         }
         return logs;
     }
