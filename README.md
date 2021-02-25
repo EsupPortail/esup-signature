@@ -42,7 +42,7 @@ Avant la première compilation
 ```
 mvn clean initialize
 ```
-
+puis
 ```
 mvn clean package
 ```
