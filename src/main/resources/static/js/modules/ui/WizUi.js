@@ -113,11 +113,12 @@ export class WizUi {
         step.workflowId = $('#wizWorkflowId').val();
         step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-check='true']`).prevObject[0].slim.selected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
+        let userSignFirst = $('#_userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
         let signBookId = this.signBookId;
         console.log(signBookId);
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&start=" + start + "&close=" + close + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&userSignFirst=" + userSignFirst + "&start=" + start + "&close=" + close + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
