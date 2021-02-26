@@ -7,7 +7,7 @@ DECLARE
     wfs workflow_workflow_steps%rowtype;
     sn varchar;
 BEGIN
-    alter table workflow drop constraint uk_3je18ux0wru0pxv6un40yhbn4;
+    alter table workflow drop constraint if exists uk_3je18ux0wru0pxv6un40yhbn4;
     for frm in select * from form
         LOOP
             update form set workflow_id = (select id from workflow where workflow.name = frm.workflow_type) where form.id = frm.id;
