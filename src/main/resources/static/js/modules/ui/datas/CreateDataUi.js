@@ -45,7 +45,9 @@ export class CreateDataUi {
             document.getElementById('sendModalButton').addEventListener('click', e => this.openSendModal());
         }
         // $('#saveButton').on('click', e => this.submitForm());
-        // $('#newData').on('submit', e => this.launchSave());
+        $('#newData').on('submit', function (e){
+            e.preventDefault();
+        });
         // let self = this;
         // $("input").each(function(){
         //     $(this).on("change", e => self.launchSave());
