@@ -185,7 +185,7 @@ public class UserService {
         List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService.getIfAvailable()).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
-            eppn = buildEppn(personLdaps.get(0).getUid());
+            eppn = buildEppn(authName);
         }
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
