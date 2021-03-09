@@ -538,7 +538,11 @@ public class PdfService {
                         } else if (pdField instanceof PDRadioButton) {
                             PDRadioButton pdRadioButton = (PDRadioButton) pdField;
                             try {
-                                pdRadioButton.setValue(datas.get(filedName));
+                                String value = datas.get(filedName);
+                                if(value.isEmpty()) {
+                                    value = "Off";
+                                }
+                                pdRadioButton.setValue(value);
                             } catch (NullPointerException e) {
                                 logger.debug("radio buton is null");
                             }

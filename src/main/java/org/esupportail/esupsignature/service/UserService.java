@@ -174,7 +174,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createUserWithAuthentication(Authentication authentication) {
+    public void createUserWithAuthentication(Authentication authentication) {
         String authName = authentication.getName();
         logger.info("controle de l'utilisateur " + authName);
         List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService.getIfAvailable()).getPersonLdap(authName);
@@ -185,7 +185,7 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail, UserType.ldap);
+        createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
     @Transactional
