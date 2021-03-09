@@ -477,6 +477,10 @@ public class SignRequestService {
 					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
 				}
 			}
+			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
+			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook())) && signedContentType.equals("application/pdf")) {
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, signedFileName, signRequest, lastSignLogs), signRequest.getToken());
+			}
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
@@ -485,6 +489,7 @@ public class SignRequestService {
 			InMemoryDocument signedDocument = certSign(signRequest, signerUser, password, visual, sseId, "sign");
 			signedInputStream = signedDocument.openStream();
 			signedContentType = signedDocument.getMimeType().getMimeTypeString();
+			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
 		}
 		if (signType.equals(SignType.visa)) {
 			if(comment != null && !comment.isEmpty()) {
@@ -502,12 +507,7 @@ public class SignRequestService {
 			}
 		}
 		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
-		applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
-		if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook())) && signedContentType.equals("application/pdf")) {
-			signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, signedFileName, signRequest, lastSignLogs), signRequest.getToken());
-		}
 		documentService.addSignedFile(signRequest, signedInputStream, signedFileName, signedContentType);
-
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
 
