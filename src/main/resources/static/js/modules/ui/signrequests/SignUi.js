@@ -141,7 +141,11 @@ export class SignUi {
             if (this.gotoNext) {
                 document.location.href = $("#nextSignRequestButton").attr('href');
             } else {
-                document.location.href = "/user/";
+                if(this.profile != null && this.profile === "dev") {
+                    document.location.href = "/user/signrequests/" + this.signRequestId;
+                } else {
+                    document.location.href = "/user/";
+                }
             }
         } else {
             console.debug("update bar");
