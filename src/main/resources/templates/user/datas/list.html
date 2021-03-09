@@ -68,7 +68,7 @@
                             <th:block th:each="data : ${datas}">
                             <tr th:data-href="'/user/datas/' + ${data.id} + '/update'">
                                 <td class="w-20 d-none d-lg-table-cell"><input type="checkbox" class="datas-ids" name="ids[]" th:value="${data.id}"></td>
-                                <td class="clickable-td" th:text="${data.form.name}"></td>
+                                <td class="clickable-td"><span th:if="${data.form != null}" th:text="${data.form.name}"></span></td>
                                 <td class="clickable-td" th:text="${data.name}"></td>
                                 <td class="clickable-td" th:text="${#dates.format(data.createDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td class="">

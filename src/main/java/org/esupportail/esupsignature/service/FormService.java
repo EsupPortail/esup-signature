@@ -89,7 +89,8 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Workflow workflow, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
+		Workflow workflow = workflowService.getById(workflowId);
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflow, prefillType, roleName, targets, publicUsage);
 		return form;
@@ -296,8 +297,8 @@ public class FormService {
 					field.setType(FieldType.radio);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
-					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
-					field.setLabel(labelCOSName.getName());
+//					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
+					field.setLabel(pdField.getAlternateFieldName());
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
 				}
