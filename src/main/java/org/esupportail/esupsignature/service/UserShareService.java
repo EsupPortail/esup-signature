@@ -174,7 +174,7 @@ public class UserShareService {
 
         }
         Data data = dataService.getBySignRequest(signRequest);
-        if(data != null) {
+        if(data != null && data.getForm() != null) {
             userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
         }
         for (UserShare userShare : userShares) {

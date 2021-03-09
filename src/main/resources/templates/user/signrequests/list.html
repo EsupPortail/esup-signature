@@ -65,7 +65,7 @@
                                 </div>
                             </th>
                             <th class="w-20 d-none d-xxl-table-cell text-center">
-                                <select id="workflowFilter" class="slim-select-simple sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+                                <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <th:block th:each="workflow : ${signRequestWorkflow}">
                                             <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
@@ -73,7 +73,7 @@
                                 </select>
                             </th>
                             <th class="w-20 text-center">
-                                <select id="docTitleFilter" class="slim-select-simple sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                                <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <th:block th:each="docTitle : ${docTitles}">
                                         <option th:value="${docTitle}" th:selected="${docTitleFilter == docTitle}" th:text="${docTitle}"></option>
@@ -83,7 +83,7 @@
                             <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                             <th class="d-none d-lg-table-cell">
-                                <select id="recipientsFilter" class="slim-select-simple sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
+                                <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
                                         <option th:value="${signRequestRecipient.user.eppn}" th:selected="${recipientsFilter == signRequestRecipient.user.eppn}" th:text="${signRequestRecipient.user.firstname + ' ' + signRequestRecipient.user.name}"></option>

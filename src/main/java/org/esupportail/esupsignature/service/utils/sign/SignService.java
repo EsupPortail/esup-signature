@@ -539,7 +539,7 @@ public class SignService {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
 				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
-				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn);
+				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn, SignType.nexuSign, "");
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {

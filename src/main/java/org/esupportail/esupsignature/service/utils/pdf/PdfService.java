@@ -8,14 +8,15 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
@@ -357,7 +358,7 @@ public class PdfService {
         if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
@@ -521,10 +522,10 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont font = PDType1Font.HELVETICA;
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
-                resources.put(COSName.getPDFName("Helv"), font);
-                resources.put(COSName.getPDFName("Helvetica"), font);
+                resources.put(COSName.getPDFName("Helv"), pdFont);
+                resources.put(COSName.getPDFName("Helvetica"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
@@ -543,12 +544,12 @@ public class PdfService {
                             }
                         } else {
                             if (!(pdField instanceof PDSignatureField)) {
-                                PDAnnotationWidget ww = pdField.getWidgets().get(0);
-                                pdField.setValue(datas.get(filedName));
+                                String value = datas.get(filedName);
                                 pdField.getCOSObject().setNeedToBeUpdated(true);
                                 pdField.getCOSObject().removeItem(COSName.AA);
                                 pdField.getCOSObject().removeItem(COSName.AP);
-                                pdField.getCOSObject().setString(COSName.DA, "/Helv 11 Tf 0 g");
+                                pdField.getCOSObject().setString(COSName.DA, "/Helv 10 Tf 0 g");
+                                pdField.setValue(value);
                             }
                         }
                     }
