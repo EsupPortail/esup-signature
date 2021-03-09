@@ -441,8 +441,6 @@ public class SignRequestService {
 			}
 		}
 		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
-		String signedFileName = fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName());
-		String signedContentType = toSignDocuments.get(0).getContentType();
 		SignType signType = signRequest.getCurrentSignType();
 		InputStream filledInputStream;
 		if(!signBookService.isNextWorkFlowStep(signRequest.getParentSignBook())) {
@@ -465,11 +463,12 @@ public class SignRequestService {
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
-		InputStream signedInputStream;
-		List<Log> lastSignLogs = new ArrayList<>();
+
 		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
-			signedInputStream = filledInputStream;
-			signedFileName = toSignDocuments.get(0).getFileName();
+			InputStream signedInputStream = filledInputStream;
+			String fileName = toSignDocuments.get(0).getFileName();
+
+			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
@@ -477,37 +476,20 @@ public class SignRequestService {
 					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
 				}
 			}
-			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
-			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook())) && signedContentType.equals("application/pdf")) {
-				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, signedFileName, signRequest, lastSignLogs), signRequest.getToken());
+			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), signType, comment);
+			if ((signBookService.isStepAllSignDone(signRequest.getParentSignBook()))) {
+				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
 			}
+			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
-			InMemoryDocument signedDocument = certSign(signRequest, signerUser, password, visual, sseId, "sign");
-			signedInputStream = signedDocument.openStream();
-			signedContentType = signedDocument.getMimeType().getMimeTypeString();
-			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn());
+			certSign(signRequest, signerUser, password, visual, sseId, "sign");
+			eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
+			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
 		}
-		if (signType.equals(SignType.visa)) {
-			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, user.getEppn());
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
-			} else {
-				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", user.getEppn(), authUser.getEppn());
-			}
-		} else {
-			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, user.getEppn());
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn());
-			} else {
-				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", user.getEppn(), authUser.getEppn());
-			}
-		}
-		eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
-		documentService.addSignedFile(signRequest, signedInputStream, signedFileName, signedContentType);
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
 	}
 
@@ -569,7 +551,7 @@ public class SignRequestService {
 //
 //	}
 
-	public InMemoryDocument certSign(SignRequest signRequest, User user, String password, boolean visual, String sseId, String channel) throws EsupSignatureException, InterruptedException {
+	public void certSign(SignRequest signRequest, User user, String password, boolean visual, String sseId, String channel) throws EsupSignatureException, InterruptedException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest.getId())) {
@@ -627,8 +609,7 @@ public class SignRequestService {
 			pkcs12SignatureToken.close();
 			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), channel, sseId);
-			return signedPdfDocument;
-//			documentService.addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
+			documentService.addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
 		} catch (EsupSignatureKeystoreException e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
@@ -640,7 +621,22 @@ public class SignRequestService {
 		}
 	}
 
-	public void applyEndOfSignRules(SignRequest signRequest, String userEppn, String authUserEppn) throws EsupSignatureException {
+	public void applyEndOfSignRules(SignRequest signRequest, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
+		if (signType.equals(SignType.visa)) {
+			if(comment != null && !comment.isEmpty()) {
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, userEppn);
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
+			} else {
+				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", userEppn, authUserEppn);
+			}
+		} else {
+			if(comment != null && !comment.isEmpty()) {
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, userEppn);
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
+			} else {
+				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
+			}
+		}
 		recipientService.validateRecipient(signRequest, userEppn);
 		if (isSignRequestCompleted(signRequest)) {
 			completeSignRequests(Collections.singletonList(signRequest), authUserEppn);
@@ -953,7 +949,7 @@ public class SignRequestService {
 		SignBook signBook = signRequest.getParentSignBook();
 		Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
 		recipientUser.setLastSendAlertDate(date);
-		if(data != null) {
+		if(data != null && data.getForm() != null) {
 			for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
 				if (userShare.getShareTypes().contains(ShareType.sign)) {
 					if ((data.getForm().equals(userShare.getForm())) || (workflow != null && workflow.equals(userShare.getWorkflow()))) {
