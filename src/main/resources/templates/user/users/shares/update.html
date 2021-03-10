@@ -47,7 +47,7 @@
                         <!--                                <label for="selectType">Type de délégation</label>-->
                         <!--                                <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">-->
                         <!--                                    <option value="" data-placeholder="true">Choisir un type de délégation</option>-->
-                        <!--                                    <th:block th:each="shareType : ${shareTypes}">-->
+                        <!--                                    <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">-->
                         <!--                                        <option th:selected="${userShare.shareTypes.contains(shareType)}" th:value="${shareType.name()}"-->
                         <!--                                                th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>-->
                         <!--                                    </th:block>-->
@@ -56,7 +56,7 @@
 
                         <div class="form-group">
                             <label>Type de délégation</label>
-                            <th:block th:each="shareType : ${shareTypes}">
+                            <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
                                     <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types"
                                            th:checked="${userShare.shareTypes.contains(shareType)}"

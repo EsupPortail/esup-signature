@@ -177,7 +177,7 @@
                     <div class="form-group">
                         <label for="targetType" class="col-form-label">Type de destination</label>
                         <select class="slim-select-simple" id="targetType" name="targetType">
-                            <th:block th:each="targetType : ${targetTypes}">
+                            <th:block th:each="targetType : ${T(org.esupportail.esupsignature.entity.enums.DocumentIOType).values()}">
                                 <option th:value="${targetType}"
                                         th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
                             </th:block>

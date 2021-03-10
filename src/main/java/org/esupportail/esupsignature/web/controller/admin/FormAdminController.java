@@ -5,6 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
@@ -180,6 +181,8 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
+											  @RequestParam(value = "description", required = false) String description,
+											  @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
 											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
 											  @RequestParam(value = "favorisable", required = false, defaultValue = "false") Boolean favorisable,
 											  @RequestParam(value = "readOnly", required = false, defaultValue = "false") Boolean readOnly,
@@ -207,7 +210,7 @@ public class FormAdminController {
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
+		fieldService.updateField(id, description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

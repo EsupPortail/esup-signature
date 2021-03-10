@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
-<!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}">
     <div class="bs-stepper vertical linear">
         <div class="bs-stepper-header mx-auto" role="tablist">
@@ -23,7 +22,7 @@
                                     <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
                                     <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}">
-                                        <th:block th:each="signType : ${signTypes}">
+                                        <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
                                             <option th:value="${signType}"
                                                     th:text="#{'signbook.signtype.' + ${signType}}"
                                                     th:selected="${workflowStep.signType == signType}"></option>
