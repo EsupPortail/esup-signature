@@ -445,6 +445,8 @@ export class WorkspacePdf {
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
+        $('#rotateleft').css('opacity', 1);
+        $('#rotateright').css('opacity', 1);
         this.showAllPostits();
     }
 
@@ -551,6 +553,8 @@ export class WorkspacePdf {
         $('#refusetools').hide();
         $('#rotateleft').prop('disabled', true);
         $('#rotateright').prop('disabled', true);
+        $('#rotateleft').css('opacity', 0);
+        $('#rotateright').css('opacity', 0);
         $('#pdf').css('cursor', 'default');
 
         this.hideAllPostits();

@@ -136,14 +136,6 @@
                         <i class="fas fa-pencil-alt"></i>
                     </a>
                     <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
-                        <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline"><span>Page <span id="page_num"></span> / <span
-                                id="page_count"></span></span></div>
-                        <button id="prev" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
-                            <i class="fas fa-arrow-up"></i>
-                        </button>
-                        <button id="next" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
-                            <i class="fas fa-arrow-down"></i>
-                        </button>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
                         <button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark ml-1"><i
                                 class="fas fa-search-minus"></i></button>
@@ -153,8 +145,16 @@
                                 class="fas fa-expand"></i></button>
                         <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark ml-1"><i
                                 class="fas fa-compress"></i></button>
-                        <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none"><span id="zoom"></span> %</div>
+                        <div class="zoom bg-light ml-1 p-1 pt-2 d-inline d-none font-weight-bold"><span id="zoom"></span> %</div>
                         <div class="border ml-3 mr-3 d-none d-lg-block"></div>
+                        <button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline font-weight-bold"><span>Page <span id="page_num"></span> / <span
+                                id="page_count"></span></span></div>
+                        <button id="next" title="Page suivante" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
                         <button id="rotateleft" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
                                 class="fas fa-undo"></i></button>
                         <button id="rotateright" class="btn btn-light btn-outline-dark ml-1 d-none d-lg-block"><i
