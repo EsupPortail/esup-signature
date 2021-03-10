@@ -383,7 +383,6 @@ export class PdfViewer extends EventFactory {
                 })[0];
             }
 
-
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
                 inputField.attr('name', inputName);
@@ -412,6 +411,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.val(items[i].fieldValue);
                     inputField.prop('required', false);
@@ -524,12 +524,14 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
                 }
             }
+
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if(inputField.length && dataField) {
                 inputField.attr('name', inputName);
@@ -544,6 +546,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
