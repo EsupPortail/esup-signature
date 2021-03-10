@@ -35,6 +35,17 @@ export default class SelectUser {
         //         $('#launchSignButton').hide();
         //     }
         // }
+        if (this.selectField.attr('id') === 'recipientsEmailsWiz') {
+            if (this.slimSelect.selected().length > 0) {
+                $('#addNew').show();
+                $('#endStart').hide();
+                $('#end').hide();
+            } else {
+                $('#addNew').hide();
+                $('#endStart').show();
+                $('#end').show();
+            }
+        }
         if (this.signRequestId != null) {
             let recipientEmails = this.slimSelect.selected()
             $.ajax({

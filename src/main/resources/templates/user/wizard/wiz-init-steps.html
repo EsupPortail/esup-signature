@@ -54,17 +54,14 @@
     </select>
 </div>
 <div class="inline-flex">
-<button th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" type="button" class="btn btn-success m-1" >
-    <i class="fas fa-angle-left"></i> Précédent
-</button>
 <button type="button" id="addNew" name="addNew" value="true" class="btn btn-primary float-right m-1">
     <i class="fas fa-save"></i> Enregistrer l'étape
 </button>
-<button formnovalidate id="end" name="end" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-right m-1">
-    <i class="fas fa-eye"></i> Vérifier avant envoi
-</button>
 <button formnovalidate id="endStart" name="endStart" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-right m-1">
     <i class="fas fa-paper-plane"></i> Envoyer la demande immédiatement
+</button>
+<button formnovalidate id="end" name="end" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-right m-1">
+    <i class="fas fa-eye"></i> Vérifier avant envoi
 </button>
 </div>
 </html>
