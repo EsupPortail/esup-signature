@@ -179,7 +179,7 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
+        model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
         }

@@ -986,6 +986,16 @@ public class SignRequestService {
 		return signRequest;
 	}
 
+	@Transactional
+	public boolean isTempUsers(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		boolean isTempUsers = false;
+		if(userService.getTempUsers(signRequest).size() > 0) {
+			isTempUsers = true;
+		}
+		return isTempUsers;
+	}
+	
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, String[] names, String[] firstnames, String[] phones) throws MessagingException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
