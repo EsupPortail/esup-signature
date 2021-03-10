@@ -624,14 +624,14 @@ public class SignRequestService {
 	public void applyEndOfSignRules(SignRequest signRequest, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
 		if (signType.equals(SignType.visa)) {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, userEppn);
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 			} else {
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa", "SUCCESS", userEppn, authUserEppn);
 			}
 		} else {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, userEppn);
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
@@ -1086,7 +1086,7 @@ public class SignRequestService {
 			signRequest.getSignRequestParams().add(signRequestParams);
 			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
-		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, authUserEppn);
+		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, null, authUserEppn);
 		if(!(spotStepNumber != null && spotStepNumber > 0)) {
 			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		} else {

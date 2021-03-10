@@ -37,6 +37,8 @@ public class Comment {
 
     private Boolean isPostit;
 
+    private String postitColor = "#FFF740";
+
     public Long getId() {
         return id;
     }
@@ -115,5 +117,13 @@ public class Comment {
 
     public void setPostit(Boolean postit) {
         isPostit = postit;
+    }
+
+    public String getPostitColor() {
+        return postitColor;
+    }
+
+    public void setPostitColor(String postitColor) {
+        this.postitColor = postitColor;
     }
 }

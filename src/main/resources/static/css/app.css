@@ -664,10 +664,6 @@ height: 100%;
     float:left;
 }
 
-.postit-global-red {
-    background: #FF7EB9 !important;
-}
-
 .postit-global {
     overflow: auto;
     text-overflow: ellipsis;
@@ -678,7 +674,6 @@ height: 100%;
     padding:3px;
     text-decoration:none;
     color:#000;
-    background:#fff740;
     height:200px;
     width:220px;
     float:left;
