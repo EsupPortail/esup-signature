@@ -14,6 +14,7 @@ export class WizUi {
         this.input;
         this.fileInput
         this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
+        $('#addNew').hide();
         this.initListeners();
     }
 
