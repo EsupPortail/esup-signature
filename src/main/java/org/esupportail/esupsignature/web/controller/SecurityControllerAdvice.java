@@ -30,19 +30,10 @@ public class SecurityControllerAdvice {
     public String getUserEppn(HttpSession httpSession) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
-            String eppn = auth.getName();
-            if(ldapPersonService != null) {
-                List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
-                if(personLdaps.size() > 0) {
-                    eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                }
-            }
+            String eppn = tryGetEppnFromLdap(auth);
             if (httpSession.getAttribute("suEppn") != null) {
                 eppn = (String) httpSession.getAttribute("suEppn");
             }
-//            if(!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_OTP"))) {
-//                eppn = userService.buildEppn(eppn);
-//            }
             logger.debug("userEppn used is : " + eppn);
             return eppn;
         } else {
@@ -54,20 +45,27 @@ public class SecurityControllerAdvice {
     public String getAuthUserEppn() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && !auth.getName().equals("anonymousUser")) {
-            String eppn = auth.getName();
-            if(ldapPersonService != null) {
-                List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
-                if(personLdaps.size() > 0) {
-                    eppn = personLdaps.get(0).getEduPersonPrincipalName();
-                }
-            }
-//            if(!auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_OTP"))) {
-//                eppn = userService.buildEppn(eppn);
-//            }
+            String eppn = tryGetEppnFromLdap(auth);
             logger.debug("authUserEppn used is : " + eppn);
             return eppn;
         } else {
             return null;
         }
     }
+
+    public String tryGetEppnFromLdap(Authentication auth) {
+        String eppn = auth.getName();
+        if(ldapPersonService != null) {
+            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
+            if(personLdaps.size() > 0) {
+                eppn = personLdaps.get(0).getEduPersonPrincipalName();
+                if (eppn == null) {
+                    eppn = userService.buildEppn(auth.getName());
+                }
+            }
+        }
+        return eppn;
+    }
+
+
 }

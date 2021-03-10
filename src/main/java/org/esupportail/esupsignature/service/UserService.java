@@ -174,7 +174,7 @@ public class UserService {
     }
 
     @Transactional
-    public User createUserWithAuthentication(Authentication authentication) {
+    public void createUserWithAuthentication(Authentication authentication) {
         String authName;
         if (authentication.getName().contains("@")) {
             authName = authentication.getName().substring(0, authentication.getName().indexOf("@"));
@@ -190,7 +190,7 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        return createUser(eppn, name, firstName, mail, UserType.ldap);
+        createUser(eppn, name, firstName, mail, UserType.ldap);
     }
 
     @Transactional
