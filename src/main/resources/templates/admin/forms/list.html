@@ -158,16 +158,15 @@
                         <input type="text" id="roleName" name="roleName" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="workflowType" class="col-form-label">Type de workflow</label>
-                        <select class="slim-select-simple" id="workflowType" name="workflowType">
+                        <label for="workflowId" class="col-form-label">Type de workflow</label>
+                        <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
-                                <option th:value="${workflowType.name}"
-                                        th:text="${workflowType.description}"></option>
+                                <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
                             </th:block>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
+                        <label for="prefillType" class="col-form-label">Type de pré-remplissage</label>
                         <select class="slim-select-simple" id="prefillType" name="prefillType">
                             <th:block th:each="preFillType : ${preFillTypes}">
                                 <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"
@@ -178,7 +177,7 @@
                     <div class="form-group">
                         <label for="targetType" class="col-form-label">Type de destination</label>
                         <select class="slim-select-simple" id="targetType" name="targetType">
-                            <th:block th:each="targetType : ${targetTypes}">
+                            <th:block th:each="targetType : ${T(org.esupportail.esupsignature.entity.enums.DocumentIOType).values()}">
                                 <option th:value="${targetType}"
                                         th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
                             </th:block>

@@ -277,7 +277,7 @@ export class PdfViewer extends EventFactory {
     saveValue(item) {
         if(item != null && item.fieldName != null) {
             let inputName = item.fieldName.split(/\$|#|!/)[0];
-            let inputField = $('#' + inputName);
+            let inputField = $('#' + $.escapeSelector(inputName));
             if (inputField.length > 0) {
                 if (inputField.val() != null) {
                     if (inputField.is(':checkbox')) {
@@ -383,7 +383,6 @@ export class PdfViewer extends EventFactory {
                 })[0];
             }
 
-
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
                 inputField.attr('name', inputName);
@@ -412,6 +411,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.val(items[i].fieldValue);
                     inputField.prop('required', false);
@@ -504,7 +504,7 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
-            if(inputField.length && dataField != null) {
+            if(inputField.length && dataField) {
                 let sendField = inputField;
                 if(dataField.favorisable) {
                     $.ajax({
@@ -524,14 +524,16 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
                 }
             }
+
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length) {
+            if(inputField.length && dataField) {
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -544,6 +546,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
                     }
+                    inputField.attr('title', dataField.description);
                 } else {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');

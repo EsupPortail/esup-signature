@@ -53,7 +53,7 @@ public class WsOtpSignController {
         if(otp != null) {
             if(!otp.isSmsSended() && smsService != null) {
                 String password = otpService.generateOtpPassword(urlId);
-                logger.info("sending password by sms : " + password);
+                logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
                 try {
                     smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup-signature " + password);
                 } catch (EsupSignatureException e) {

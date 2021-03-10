@@ -42,6 +42,7 @@ public class RecipientService {
         signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
         signRequest.getRecipientHasSigned().get(validateRecipient).setUserIp(webUtilsService.getClientIp());
         signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
+        validateRecipient.setSigned(true);
     }
 
     public long recipientsContainsUser(List<Recipient> recipients, String userEppn) {

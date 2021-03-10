@@ -3,7 +3,6 @@
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <!--/*@thymesVar id="suUsers" type="java.util.List<org.esupportail.esupsignature.entity.User>"*/-->
-<!--/*@thymesVar id="signTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.SignType>"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
@@ -300,7 +299,7 @@
                         <br>
                         <label for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="slim-select-simple">
-                            <th:block th:each="signType : ${signTypes}">
+                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
@@ -357,7 +356,7 @@
                     <div class="form-group">
                         <label for="signType2">Choisir un type de signature</label>
                         <select class="slim-select-simple" name="signType" id="signType2">
-                            <th:block th:each="signType : ${signTypes}">
+                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>

@@ -23,7 +23,7 @@ public class CommentService {
     private UserService userService;
 
     @Transactional
-    public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String userEppn) {
+    public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
         SignRequest signRequest = signRequestService.getById(signRequestId);
         Comment comment = new Comment();
@@ -35,6 +35,9 @@ public class CommentService {
         comment.setPageNumber(pageNumer);
         comment.setStepNumber(stepNumber);
         comment.setPostit(postit);
+        if(postitColor != null) {
+            comment.setPostitColor(postitColor);
+        }
         commentRepository.save(comment);
         signRequest.getComments().add(comment);
         return comment;

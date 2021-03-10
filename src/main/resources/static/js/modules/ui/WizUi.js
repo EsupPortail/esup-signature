@@ -12,7 +12,7 @@ export class WizUi {
         this.csrf = csrf;
         this.mode = "";
         this.input;
-        this.fileInput
+        this.fileInput;
         this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
         $('#addNew').hide();
         this.initListeners();

@@ -185,7 +185,7 @@ public class UserService {
         List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService.getIfAvailable()).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
-            eppn = buildEppn(personLdaps.get(0).getUid());
+            eppn = buildEppn(authName);
         }
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
@@ -360,14 +360,6 @@ public class UserService {
         return tempUsers;
     }
 
-    public boolean isTempUsers(SignRequest signRequest) {
-        boolean isTempUsers = false;
-        if(getTempUsers(signRequest).size() > 0) {
-            isTempUsers = true;
-        }
-        return isTempUsers;
-    }
-
     public List<User> getTempUsers(SignRequest signRequest, List<String> recipientsEmails) {
         Set<User> users = new HashSet<>();
         users.addAll(getTempUsers(signRequest));
@@ -384,6 +376,16 @@ public class UserService {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                     if (recipient.getUser().getUserType().equals(UserType.external) || (recipient.getUser().getEppn().equals(recipient.getUser().getEmail()) && recipient.getUser().getEppn().equals(recipient.getUser().getName()))) {
                         users.add(recipient.getUser());
+                    }
+                }
+            }
+        } else if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+            if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps().size() > 0) {
+                for (WorkflowStep workflowStep : signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
+                    for (User user : workflowStep.getUsers()) {
+                        if (user.getUserType().equals(UserType.external) || (user.getEppn().equals(user.getEmail()) && user.getEppn().equals(user.getName()))) {
+                            users.add(user);
+                        }
                     }
                 }
             }

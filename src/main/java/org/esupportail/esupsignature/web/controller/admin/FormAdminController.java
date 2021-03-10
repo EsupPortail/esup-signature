@@ -4,10 +4,13 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Target;
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FieldService;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.TargetService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -91,10 +94,10 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Workflow workflow, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
 		List<Target> targets = new ArrayList<>();
 		targets.add(targetService.createTarget(targetType, targetUri));
-		Form form = formService.generateForm(multipartFile, name, title, workflow, prefillType, roleName, targets, publicUsage);
+		Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleName, targets, publicUsage);
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -178,6 +181,8 @@ public class FormAdminController {
 	@ResponseBody
 	@PostMapping("/field/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
+											  @RequestParam(value = "description", required = false) String description,
+											  @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
 											  @RequestParam(value = "required", required = false, defaultValue = "false") Boolean required,
 											  @RequestParam(value = "favorisable", required = false, defaultValue = "false") Boolean favorisable,
 											  @RequestParam(value = "readOnly", required = false, defaultValue = "false") Boolean readOnly,
@@ -205,7 +210,7 @@ public class FormAdminController {
 			searchType = valueType;
 			searchReturn = valueReturn;
 		}
-		fieldService.updateField(id, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
+		fieldService.updateField(id, description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

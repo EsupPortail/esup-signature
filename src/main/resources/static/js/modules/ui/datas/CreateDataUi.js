@@ -16,7 +16,6 @@ export class CreateDataUi {
         this.actionEnable = 0;
         this.formId = id;
         this.csrf = csrf;
-        let test = this.pdfViewer.dataFields;
         if (this.pdfViewer.dataFields[0].defaultValue != null) {
             for (let i = 0 ; i < this.pdfViewer.dataFields.length ; i++) {
                 this.pdfViewer.savedFields.set(this.pdfViewer.dataFields[i].name, this.pdfViewer.dataFields[i].defaultValue);
@@ -45,7 +44,9 @@ export class CreateDataUi {
             document.getElementById('sendModalButton').addEventListener('click', e => this.openSendModal());
         }
         // $('#saveButton').on('click', e => this.submitForm());
-        // $('#newData').on('submit', e => this.launchSave());
+        $('#newData').on('submit', function (e){
+            e.preventDefault();
+        });
         // let self = this;
         // $("input").each(function(){
         //     $(this).on("change", e => self.launchSave());
@@ -123,7 +124,7 @@ export class CreateDataUi {
 
     afterSimulate(command) {
         //$('#simulateDataSubmit').click();
-        this.excuteNextCommand();
+        this.executeNextCommand();
         if(command === "prev") window.scrollTo(0, document.body.scrollHeight);
     }
 
@@ -162,10 +163,10 @@ export class CreateDataUi {
                 }
             });
         }
-        this.excuteNextCommand();
+        this.executeNextCommand();
     }
 
-    excuteNextCommand() {
+    executeNextCommand() {
         if(this.nextCommand === "next") {
             this.pdfViewer.nextPage();
         } else if(this.nextCommand === "prev") {

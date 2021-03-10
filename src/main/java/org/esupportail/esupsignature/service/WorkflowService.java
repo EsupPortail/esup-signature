@@ -474,16 +474,16 @@ public class WorkflowService {
 
     public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
         if (displayWorkflowType == null) {
-            displayWorkflowType = DisplayWorkflowType.SYSTEM;
+            displayWorkflowType = DisplayWorkflowType.system;
         }
         List<Workflow> workflows = new ArrayList<>();
-        if(DisplayWorkflowType.SYSTEM.equals(displayWorkflowType)) {
-            workflows.addAll(getWorkflowsBySystemUser());
-        } else if(DisplayWorkflowType.CLASSES.equals(displayWorkflowType)) {
+        if(DisplayWorkflowType.system.equals(displayWorkflowType)) {
+            workflows.addAll(getWorkflowsBySystemUser().stream().filter(workflow -> workflow.getFromCode() == null || !workflow.getFromCode()).collect(Collectors.toList()));
+        } else if(DisplayWorkflowType.classes.equals(displayWorkflowType)) {
             workflows.addAll(getClassesWorkflows());
-        } else if(DisplayWorkflowType.ALL.equals(displayWorkflowType)) {
+        } else if(DisplayWorkflowType.all.equals(displayWorkflowType)) {
             workflows.addAll(getAllWorkflows());
-        } else if(DisplayWorkflowType.USERS.equals(displayWorkflowType)) {
+        } else if(DisplayWorkflowType.users.equals(displayWorkflowType)) {
             workflows.addAll(getAllWorkflows());
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
