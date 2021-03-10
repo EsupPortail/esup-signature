@@ -263,7 +263,11 @@ export class WorkspacePdf {
 
     clickAction() {
         if(this.mode === 'sign') {
-            this.signPosition.stopDragSignature();
+            if(this.signPosition.pointItEnable) {
+                this.signPosition.stopDragSignature(false);
+            } else {
+                this.signPosition.stopDragSignature(true);
+            }
         } else if(this.mode === 'comment') {
             if(this.addSpotEnabled || this.addCommentEnabled) {
                 this.displayDialogBox();
@@ -384,11 +388,13 @@ export class WorkspacePdf {
     }
 
     toggleSign(e) {
-        console.log("toggle sign_ " + $(e));
         let signId = $(e).attr("id").split("_")[1];
+        console.log("toggle sign_ " + signId);
+        let isCurrentSign = $(e).attr("data-current");
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        if (signRequestParams.xPos === - 1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId) || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
-            this.signPosition.getCurrentSignParams().signPageNumber = this.pdfViewer.pageNum;
+        let pageNum = this.pdfViewer.pageNum;
+        if (isCurrentSign === "true" || signRequestParams.xPos === -1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId && isCurrentSign === "true") || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
+            this.signPosition.signRequestParamses.get(signId).signPageNumber = pageNum;
             if(this.signPosition.visualActive) {
                 $(e).show();
             }
@@ -419,7 +425,7 @@ export class WorkspacePdf {
         $("#spotStepNumber").removeAttr("disabled");
         $("#addSignParams").removeAttr("disabled");
         postit.show();
-        this.signPosition.stopDragSignature();
+        this.signPosition.stopDragSignature(true);
     }
 
     hideComment() {
@@ -439,6 +445,8 @@ export class WorkspacePdf {
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#rotateleft').prop('disabled', false);
         $('#rotateright').prop('disabled', false);
+        $('#rotateleft').css('opacity', 1);
+        $('#rotateright').css('opacity', 1);
         this.showAllPostits();
     }
 
@@ -545,6 +553,8 @@ export class WorkspacePdf {
         $('#refusetools').hide();
         $('#rotateleft').prop('disabled', true);
         $('#rotateright').prop('disabled', true);
+        $('#rotateleft').css('opacity', 0);
+        $('#rotateright').css('opacity', 0);
         $('#pdf').css('cursor', 'default');
 
         this.hideAllPostits();

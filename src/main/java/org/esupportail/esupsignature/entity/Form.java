@@ -32,8 +32,9 @@ public class Form {
 
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
-	
-	private String workflowType;
+
+	@ManyToOne
+	private Workflow workflow;
 	
 	private String preFillType;
 
@@ -118,12 +119,12 @@ public class Form {
 		this.managers = managers;
 	}
 
-	public String getWorkflowType() {
-		return workflowType;
+	public Workflow getWorkflow() {
+		return workflow;
 	}
 
-	public void setWorkflowType(String workflowType) {
-		this.workflowType = workflowType;
+	public void setWorkflow(Workflow workflow) {
+		this.workflow = workflow;
 	}
 
 	public String getPreFillType() {

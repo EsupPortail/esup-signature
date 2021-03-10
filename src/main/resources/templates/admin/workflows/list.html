@@ -26,10 +26,10 @@
                         <span class="input-group-text">Filtrer</span>
                     </div>
                     <select name="displayWorkflowType" class="form-control" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="system" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).SYSTEM}">Workflows globaux (définis pas les administrateurs)</option>
-                        <option value="classes" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).CLASSES}">Classes workflow (définies par les développeurs)</option>
-                        <option value="users" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).USERS}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
-                        <option value="all" th:selected="${displayWorkflowType == T(org.esupportail.esupsignature.entity.enums.DisplayWorkflowType).ALL}">Tout voir</option>
+                        <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
+                        <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
+                        <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
+                        <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
                     </select>
                     </div>
                     <table class="table table-sm table-borderless table-hover table-striped">

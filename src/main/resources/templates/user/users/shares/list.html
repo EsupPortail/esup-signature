@@ -169,7 +169,7 @@
 
                         <div class="form-group">
                             <label>Type de délégation</label>
-                            <th:block th:each="shareType : ${shareTypes}">
+                            <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
                                     <input th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}" disabled/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>

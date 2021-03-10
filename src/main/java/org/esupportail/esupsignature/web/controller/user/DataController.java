@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -69,9 +68,6 @@ public class DataController {
 
 	@Resource
 	private UserService userService;
-
-	@Resource
-	private EventService eventService;
 
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
@@ -147,7 +143,7 @@ public class DataController {
 			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
 				model.addAttribute("toSign", true);
 			}
-			Workflow workflow = workflowService.computeWorkflow(workflowService.getWorkflowByName(data.getForm().getWorkflowType()).getId(), null, userEppn, true);
+			Workflow workflow = workflowService.computeWorkflow(data.getForm().getWorkflow().getId(), null, userEppn, true);
 			model.addAttribute("steps", workflow.getWorkflowSteps());
 			model.addAttribute("form", form);
 			model.addAttribute("activeForm", form.getName());

@@ -354,6 +354,17 @@ export class GlobalUi {
             $(this).addClass("slim-select-hack");
         })
 
+        $(".slim-select-filter").each(function () {
+            let selectName = $(this).attr('id');
+            console.info("auto enable slim-select-filter for : " + selectName);
+            new SlimSelect({
+                select: '#' + selectName,
+                hideSelectedOption: false,
+                placeholder: $(this).attr('data-placeholder'),
+                closeOnSelect: true
+            });
+        })
+
         $(".slim-select-simple").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);

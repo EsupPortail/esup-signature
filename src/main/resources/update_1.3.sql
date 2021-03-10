@@ -15,7 +15,7 @@ DECLARE
     a bigint;
     sd date;
 BEGIN
-    alter table sign_book drop constraint fkdbg7t5ofub4l25xsrv7sevrtf;
+    alter table sign_book drop constraint if exists fkdbg7t5ofub4l25xsrv7sevrtf;
 
     -- MIGRATE ORPHAN SIGNBOOK TO LIVEWORKFLOW AND LIVEWORKFLOWSTEP
     FOR sbr IN SELECT * FROM sign_book
