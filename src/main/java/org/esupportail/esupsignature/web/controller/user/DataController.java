@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -69,9 +68,6 @@ public class DataController {
 
 	@Resource
 	private UserService userService;
-
-	@Resource
-	private EventService eventService;
 
 	@Resource
 	private PreAuthorizeService preAuthorizeService;

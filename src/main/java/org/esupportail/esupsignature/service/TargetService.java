@@ -32,7 +32,9 @@ public class TargetService {
 
     public void copyTargets(List<Target> targets, SignBook signBook) {
         for(Target target : targets) {
-            signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetType(), target.getTargetUri()));
+            if(target.getTargetType() != DocumentIOType.none) {
+                signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetType(), target.getTargetUri()));
+            }
         }
     }
 
