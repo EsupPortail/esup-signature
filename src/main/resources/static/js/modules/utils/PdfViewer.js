@@ -277,7 +277,7 @@ export class PdfViewer extends EventFactory {
     saveValue(item) {
         if(item != null && item.fieldName != null) {
             let inputName = item.fieldName.split(/\$|#|!/)[0];
-            let inputField = $('#' + inputName);
+            let inputField = $('#' + $.escapeSelector(inputName));
             if (inputField.length > 0) {
                 if (inputField.val() != null) {
                     if (inputField.is(':checkbox')) {
