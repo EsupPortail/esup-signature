@@ -716,7 +716,7 @@ public class SignRequestService {
 					try {
 						for (SignRequest signRequest : signRequests) {
 							for (String email : targetUrl.split(";")) {
-								signRequest.getViewers().add(userService.getUserByEmail(email));
+								signRequest.getParentSignBook().getViewers().add(userService.getUserByEmail(email));
 							}
 						}
 						mailService.sendFile(title, signRequests, targetUrl);
@@ -849,7 +849,7 @@ public class SignRequestService {
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
-			if(signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
+			if(signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}
@@ -1114,8 +1114,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, String[] recipientsEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, String[] recipientsEmails, String[] recipientsCCEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
+		List<User> viewers = new ArrayList<>();
+		for (String recipientsEmail : recipientsCCEmails) {
+			viewers.add(userService.getUserByEmail(recipientsEmail));
+		}
+		signBook.setViewers(viewers);
 		return signBookService.sendSignBook(signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
 	}
 

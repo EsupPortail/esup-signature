@@ -80,6 +80,11 @@ public class MailService {
             message.setSubject("Esup-Signature : demande signature terminée");
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
             message.setTo(user.getEmail());
+            String[] viewersArray = new String[signBook.getViewers().size()];
+            for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
+                viewersArray[i] =  signBook.getViewers().get(i).getEmail();
+            }
+            message.setCc(viewersArray);
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email completes for " + user.getEppn());
@@ -111,6 +116,11 @@ public class MailService {
             message.setSubject("Esup-Signature : demande signature refusée");
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
             message.setTo(toEmails.toArray(String[]::new));
+            String[] viewersArray = new String[signBook.getViewers().size()];
+            for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
+                viewersArray[i] =  signBook.getViewers().get(i).getEmail();
+            }
+            message.setCc(viewersArray);
             String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email refude for " + toEmails.get(0));

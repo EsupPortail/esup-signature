@@ -295,6 +295,7 @@ public class SignRequestController {
     @PostMapping(value = "/send-sign-request")
     public String sendSignBook(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
                                @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                               @RequestParam(value = "recipientsCCEmails", required = false) String[] recipientsCCEmails,
                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                                @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                @RequestParam(value = "pending", required = false) Boolean pending,
@@ -305,7 +306,7 @@ public class SignRequestController {
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + Arrays.toString(recipientsEmails));
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, recipientsCCEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {
