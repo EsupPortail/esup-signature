@@ -26,8 +26,18 @@
     }
     new SignUi(
         [[${signRequest.id}]],
-        [[${signRequest.data.id}]],
-        [[${signRequest.data.form.id}]],
+        [# th:if="${signRequest.data != null}"]
+            [[${signRequest.data.id}]],
+        [/]
+        [# th:unless="${signRequest.data != null}"]
+            null,
+        [/]
+        [# th:if="${signRequest.data != null && signRequest.data.form != null}"]
+            [[${signRequest.data.form.id}]],
+        [/]
+        [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
+            null,
+        [/]
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
             [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
         [/]

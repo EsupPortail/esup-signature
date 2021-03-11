@@ -65,6 +65,7 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('render', e => this.initForm());
+            this.pdfViewer.addEventListener('change', e => this.saveData());
             let commentModeButton = $('#commentModeButton');
             if (commentModeButton.length) {
                 commentModeButton.on('click', e => this.toggleCommentMode());
@@ -168,7 +169,6 @@ export class WorkspacePdf {
 
     initForm(e) {
         console.info("init form");
-        let self = this;
         let inputs = $("#signForm :input");
         $.each(inputs, (index, e) => this.listenForChange(e));
         if(this.mode === 'read' || this.mode === 'comment') {
