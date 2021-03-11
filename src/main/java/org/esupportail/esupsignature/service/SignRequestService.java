@@ -157,8 +157,12 @@ public class SignRequestService {
 	}
 
 	public SignRequest getById(long id) {
-		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
-		return signRequest.orElse(null);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
+		Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+		if(data != null) {
+			signRequest.setData(data);
+		}
+		return signRequest;
 	}
 
 	public List<SignRequest> getSignRequestsByToken(String token) {
@@ -995,7 +999,7 @@ public class SignRequestService {
 		}
 		return isTempUsers;
 	}
-	
+
 	public boolean checkTempUsers(Long id, List<String> recipientEmails, String[] names, String[] firstnames, String[] phones) throws MessagingException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);

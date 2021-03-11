@@ -429,12 +429,6 @@ export class SignPosition extends EventFactory {
         borders.css('width', (this.getCurrentSignParams().signWidth / this.fixRatio * this.currentScale));
         borders.css('height', (this.getCurrentSignParams().signHeight / this.fixRatio * this.currentScale));
         cross.css('background-size', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio);
-        // let textDate = $('#textDate');
-        // textDate.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        // textDate.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        // let textName = $('#textName');
-        // textName.css('font-size', this.fontSize * this.currentScale * this.getCurrentSignParams().signScale + "px");
-        // textName.css('top', "-" + 30 * this.currentScale * this.getCurrentSignParams().signScale + "px");
         let textExtra = $('#textExtra_' + this.currentSign);
         if(!this.getCurrentSignParams().extraOnTop) {
             textExtra.css('margin-left', (this.getCurrentSignParams().signWidth - (this.getCurrentSignParams().extraWidth * this.getCurrentSignParams().signScale * this.fixRatio)) * this.currentScale / this.fixRatio + "px");
