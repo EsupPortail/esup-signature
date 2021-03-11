@@ -1,13 +1,16 @@
 import {PdfViewer} from "../../utils/PdfViewer.js";
 import {SignPosition} from "./SignPosition.js";
-import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
 import {WheelDetector} from "../../utils/WheelDetector.js";
+import {Message} from "../../../prototypes/Message.js";
+import {SseDispatcher} from "../../utils/SseDispatcher.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
+        this.dataId = dataId;
+        this.formId = formId;
         this.currentSignRequestParams =  currentSignRequestParams;
         this.currentSignType = currentSignType;
         this.postits = postits;
@@ -37,11 +40,13 @@ export class WorkspacePdf {
             userName, signable, this.forcePageNum);
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
+        this.sseDispatcher = new SseDispatcher();
         this.signLaunchButton = $("#signLaunchButton");
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
         this.spotCursor = this.getCommentPointer("\uf3c5");
         this.commentCursor = this.getCommentPointer("\uf075");
+        this.nextCommand = "none";
         this.initListeners();
         this.initDataFields(fields);
     }
@@ -66,7 +71,7 @@ export class WorkspacePdf {
                 if (this.signable) {
                     $('#signModeButton').on('click', e => this.toggleSignMode());
                     let visualButton = $('#visualButton')
-                    if (this.currentSignType != "pdfImageStamp") {
+                    if (this.currentSignType !== "pdfImageStamp") {
                         $('#visualButtonDiv').removeClass("d-none");
                         visualButton.on('click', e => this.signPosition.toggleVisual());
                     }
@@ -164,12 +169,66 @@ export class WorkspacePdf {
     initForm(e) {
         console.info("init form");
         let self = this;
-        $("#signForm :input").each(function () {
-            $(this).on('change', e => self.launchValidate());
-        });
+        let inputs = $("#signForm :input");
+        $.each(inputs, (index, e) => this.listenForChange(e));
         if(this.mode === 'read' || this.mode === 'comment') {
             this.disableForm();
         }
+    }
+
+    listenForChange(input) {
+        $(input).change(e => this.saveData());
+    }
+
+    saveData() {
+        this.pdfViewer.page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(e => this.pushData(false));
+    }
+
+    pushData(redirect) {
+        let formData  = new Map();
+        console.info("check data name");
+        let self = this;
+        let pdfViewer = this.pdfViewer;
+
+        pdfViewer.dataFields.forEach(function(dataField){
+            let savedField = self.pdfViewer.savedFields.get(dataField.name)
+            formData[dataField.name]= savedField;
+            // if(dataField.required && (savedField === "" || savedField == null)) {
+            //     alert("Un champ n'est pas rempli en page " + dataField.page);
+            //     redirect = false;
+            //     pdfViewer.renderPage(dataField.page);
+            // }
+        })
+        if(redirect || this.dataId != null) {
+            let json = JSON.stringify(formData);
+            let dataId = $('#dataId');
+            $.ajax({
+                data: {'formData': json},
+                type: 'POST',
+                url: '/user/datas/form/' + this.formId + '?' + this.csrf.parameterName + '=' + this.csrf.token + '&dataId=' + self.dataId,
+                success: function (response) {
+                    let message = new Message();
+                    message.type = "success";
+                    message.text = "Modifications enregistrées";
+                    message.object = null;
+                    self.sseDispatcher.dispatchEvent("user", message);
+                    dataId.val(response);
+                    if(redirect) {
+                        location.href = "/user/datas/" + response + "/update";
+                    }
+                }
+            });
+        }
+        this.executeNextCommand();
+    }
+
+    executeNextCommand() {
+        if(this.nextCommand === "next") {
+            this.pdfViewer.nextPage();
+        } else if(this.nextCommand === "prev") {
+            this.pdfViewer.prevPage()
+        }
+        this.nextCommand = "none";
     }
 
     initDataFields() {
@@ -393,7 +452,7 @@ export class WorkspacePdf {
         let isCurrentSign = $(e).attr("data-current");
         let signRequestParams = this.signPosition.signRequestParamses.get(signId);
         let pageNum = this.pdfViewer.pageNum;
-        if (isCurrentSign === "true" || signRequestParams.xPos === -1 || this.first || (this.signPosition.firstDrag && this.signPosition.currentSign === signId && isCurrentSign === "true") || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
+        if (isCurrentSign === "true" || signRequestParams.xPos === -1 || (this.signPosition.firstDrag && this.signPosition.currentSign === signId && isCurrentSign === "true") || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
             this.signPosition.signRequestParamses.get(signId).signPageNumber = pageNum;
             if(this.signPosition.visualActive) {
                 $(e).show();
@@ -523,7 +582,10 @@ export class WorkspacePdf {
         this.pdfViewer.rotation = 0;
         if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
             if(!this.forcePageNum) {
-                this.pdfViewer.renderPage(this.currentSignRequestParams[0].signPageNumber);
+                this.pdfViewer.renderPage(1);
+                let signPage = this.currentSignRequestParams[0].signPageNumber;
+                this.signPosition.getCurrentSignParams().signPageNumber = signPage;
+                this.signPosition.updateCrossPosition();
             } else {
                 this.pdfViewer.renderPage(this.forcePageNum);
             }

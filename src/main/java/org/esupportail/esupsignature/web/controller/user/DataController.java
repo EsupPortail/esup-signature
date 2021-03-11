@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -34,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -71,9 +71,6 @@ public class DataController {
 	private UserService userService;
 
 	@Resource
-	private EventService eventService;
-
-	@Resource
 	private PreAuthorizeService preAuthorizeService;
 
 	@Resource
@@ -109,26 +106,13 @@ public class DataController {
 
 	@GetMapping("form/{id}")
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-							 @PathVariable("id") Long id,
-							 @RequestParam(required = false) Integer page, Model model, RedirectAttributes redirectAttributes) {
+							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			if (page == null) {
-				page = 1;
-			}
-			Form form = formService.getById(id);
-			model.addAttribute("form", form);
-			model.addAttribute("fields", dataService.getPrefilledFields(form, user));
-			model.addAttribute("data", new Data());
-			model.addAttribute("activeForm", form.getName());
-			model.addAttribute("page", page);
-			String message = formService.getHelpMessage(user, form);
-			if(message != null) {
-				model.addAttribute("message", new JsonMessage("help", message));
-			}
 			Data data = dataService.addData(id, user, authUser);
-			return "redirect:/user/datas/" + data.getId() + "/update";
+			SignBook signBook = dataService.sendForSign(data, new ArrayList<>(), new ArrayList<>(), user, authUser);
+			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
 			return "redirect:/user/";
@@ -179,27 +163,6 @@ public class DataController {
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return data.getId().toString();
 	}
-
-//	@PutMapping("{id}")
-//	public String updateData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam String name, @RequestParam(required = false) String navPage, @RequestParam(required = false) Integer page, @RequestParam MultiValueMap<String, String> formData, RedirectAttributes redirectAttributes) {
-//		User user = userService.getUserById(userEppn);
-//		Data data = dataService.getById(id);
-//		if(page == null) {
-//			page = 1;
-//		}
-//		if("next".equals(navPage)) {
-//			page++;
-//		} else if("prev".equals(navPage)) {
-//			page--;
-//		}
-//		dataService.setDatas(name, formData, data);
-//		redirectAttributes.addAttribute("page", page);
-//		if(navPage != null && !navPage.isEmpty()) {
-//			return "redirect:/user/" + userEppn + "/data/" + data.getId() + "/update?page=" + page;
-//		} else {
-//			return "redirect:/user/" + userEppn + "/data/" + data.getId();
-//		}
-//	}
 
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@PostMapping("{id}/send")

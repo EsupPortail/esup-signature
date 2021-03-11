@@ -289,10 +289,13 @@ export class PdfViewer extends EventFactory {
                         return;
                     }
                     if (inputField.is(':radio')) {
-                        let radio = $('input[name=\'' + inputName + '\'][value=\'' + item.buttonValue + '\']');
-                        if (radio.prop("checked")) {
-                            this.savedFields.set(item.fieldName, radio.val());
-                        }
+                        let radio = $('input[name=\'' + inputField.attr("name") + '\']');
+                        let self = this;
+                        radio.each(function() {
+                            if ($(this).prop("checked")) {
+                                self.savedFields.set(item.fieldName, $(this).val());
+                            }
+                        });
                         return;
                     }
                     let value = inputField.val();
