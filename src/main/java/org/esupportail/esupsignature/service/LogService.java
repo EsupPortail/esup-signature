@@ -5,6 +5,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import java.util.List;
 
 @Service
 public class LogService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LogService.class);
 
     @Resource
     private LogRepository logRepository;
@@ -86,9 +90,7 @@ public class LogService {
         User user = userService.getUserByEppn(authUserEppn);
         log.setUser(user);
         log.setEppnFor(userEppn);
-        if(request != null) {
-            log.setIp(request.getRemoteAddr());
-        }
+        setClientIp(log);
         log.setInitialStatus(status);
         log.setLogDate(new Date());
         log.setAction(action);
@@ -96,6 +98,16 @@ public class LogService {
         log.setComment(comment);
         logRepository.save(log);
         return log;
+    }
+
+    public void setClientIp(Log log) {
+        if (request != null) {
+            try {
+                log.setIp(request.getRemoteAddr());
+            } catch (IllegalStateException e) {
+                logger.warn("unable to get IP");
+            }
+        }
     }
 
     @Transactional
@@ -108,9 +120,7 @@ public class LogService {
         User user = userService.getUserByEppn(authUserEppn);
         log.setUser(user);
         log.setEppnFor(userEppn);
-        if(request != null) {
-            log.setIp(request.getRemoteAddr());
-        }
+        setClientIp(log);
         log.setInitialStatus(signRequest.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);

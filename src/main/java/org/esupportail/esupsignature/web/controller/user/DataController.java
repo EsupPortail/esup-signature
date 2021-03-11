@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
@@ -124,22 +123,7 @@ public class DataController {
 	@GetMapping("{id}/update")
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureException {
 		Data data = dataService.getById(id);
-		model.addAttribute("data", data);
-		if(data.getStatus().equals(SignRequestStatus.draft)) {
-			Form form = data.getForm();
-			model.addAttribute("fields", dataService.setFieldsDefaultsValues(data, form, userService.getUserByEppn(userEppn)));
-			if (data.getSignBook() != null && recipientService.needSign(data.getSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn)) {
-				model.addAttribute("toSign", true);
-			}
-			Workflow workflow = workflowService.computeWorkflow(data.getForm().getWorkflow().getId(), null, userEppn, true);
-			model.addAttribute("steps", workflow.getWorkflowSteps());
-			model.addAttribute("form", form);
-			model.addAttribute("activeForm", form.getName());
-			model.addAttribute("document", form.getDocument());
-			return "user/datas/create";
-		} else {
-			return "redirect:/user/datas/" + data.getId();
-		}
+		return "redirect:/user/signrequests/" + data.getSignBook().getSignRequests().get(0).getId();
 	}
 
 	@PostMapping("form/{id}")
