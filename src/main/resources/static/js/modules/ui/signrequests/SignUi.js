@@ -46,7 +46,7 @@ export class SignUi {
     launchSign(gotoNext) {
         this.gotoNext = gotoNext;
         $('#signModal').modal('hide');
-        $('#stepRepeatableModal').modal('hide');
+        $('#stepRepeatableModal').modal('hide');    
         this.percent = 0;
         let good = true;
         if(this.signForm) {
@@ -197,7 +197,7 @@ export class SignUi {
             return;
         }
         step.recipientsEmails = selectedRecipents;
-        step.stepNumber = this.currentStepNumber + 1;
+        step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({

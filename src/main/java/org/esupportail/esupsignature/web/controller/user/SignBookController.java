@@ -110,9 +110,10 @@ public class SignBookController {
         try {
             String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
             recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber() - 1, step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
             return HTTPResponse.SC_OK;
         } catch (EsupSignatureException e) {
+            logger.error(e.getMessage());
             return HTTPResponse.SC_SERVER_ERROR;
         }
     }
