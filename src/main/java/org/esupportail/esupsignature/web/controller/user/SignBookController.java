@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -8,12 +7,17 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.LogService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -104,16 +108,17 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/add-repeatable-step/{id}")
     @ResponseBody
-    public int addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
-                                 @PathVariable("id") Long id,
-                                 @RequestBody JsonWorkflowStep step) {
+    public ResponseEntity<String> addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
+                                                    @PathVariable("id") Long id,
+                                                    @RequestBody JsonWorkflowStep step) {
         try {
             String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
             recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber() - 1, step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
-            return HTTPResponse.SC_OK;
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
+            return new ResponseEntity<>(HttpStatus.OK);
         } catch (EsupSignatureException e) {
-            return HTTPResponse.SC_SERVER_ERROR;
+            logger.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

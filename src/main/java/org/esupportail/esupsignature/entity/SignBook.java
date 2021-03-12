@@ -60,6 +60,9 @@ public class SignBook {
     @Transient
     transient String comment;
 
+    @OneToMany
+    private List<User> viewers = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -172,6 +175,11 @@ public class SignBook {
         this.comment = comment;
     }
 
+    public List<User> getViewers() {
+        return viewers;
+    }
 
-
+    public void setViewers(List<User> viewers) {
+        this.viewers = viewers;
+    }
 }
