@@ -90,7 +90,7 @@
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
                             <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton"
-                               style="width: 150px; height: 200px;" th:href="'/user/datas/form/' + ${form.id}"
+                               style="width: 150px; height: 200px;" data-toggle="modal" th:data-target="'#sendModal' + ${form.id}"
                                th:title="'Formulaire : ' + ${form.title}">
                                 <div class="crop">
                                     <i class="fas fa-file-alt fa-4x"></i>
@@ -112,8 +112,6 @@
             </div>
         </div>
     </div>
-
-
 
     <div class="modal fade" id="newFomModal" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -199,6 +197,87 @@
             </div>
         </div>
     </div>
+
+    <th:block th:each="form : ${forms}">
+        <div class="modal fade" th:id="'sendModal' +  ${form.id}" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content modal-lg">
+                    <div class="modal-header">
+                        <h3 th:if="${form.workflow.workflowSteps.size() > 0}" class="modal-title">Valider le circuit</h3>
+                        <h3 th:unless="${form.workflow.workflowSteps.size() > 0}" class="modal-title">Valider le document</h3>
+                        <button type="button" class="close" data-dismiss="modal"
+                                aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form th:action="'/user/datas/sendForm/' + ${form.id}" method="post" id="send">
+                        <div class="modal-body">
+                            <p th:unless="${form.workflow.workflowSteps.size() > 0}">Après la validation, vous pourrez télécharger le document</p>
+                            <div th:if="${form.workflow.workflowSteps.size() > 0}">
+                                <p>
+                                    La procédure "<span th:text="${form.title}"></span>" comporte <span
+                                        th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">s</span>
+                                </p>
+                                <th:block th:each="step,iterator : ${form.workflow.workflowSteps}">
+                                    <!--                            <div class="form-group">-->
+                                    <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
+                                    <!--                            </div>-->
+                                    <div class="form-group d-inline">
+                                        <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
+                                        <th:block th:if="${step.users.size() > 0}">
+                                            <span>(</span>
+                                            <th:block th:each="user, iterator : ${step.users}">
+                                                <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                            </th:block>
+                                            <span>)</span>
+                                        </th:block>
+                                    </div>
+                                    <br/>
+                                </th:block>
+                                <hr>
+                                <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
+                                    <div th:if="${step.changeable == true}" class="form-group">
+                                        <label><span th:text="'Merci de saisir l\' étape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span></label>
+                                        <select class="select-users" th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
+                                                multiple="multiple" name="recipientEmails" required="required">
+                                            <th:block th:each="user : ${step.users}">
+                                                <option th:if="${user.email != null}" selected="selected"
+                                                        th:text="${user.email}"
+                                                        th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
+                                            </th:block>
+                                        </select>
+                                        <p class="small">
+                                            Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
+                                        </p>
+                                    </div>
+                                </th:block>
+                                <th:block th:each="target : ${form.targets}">
+                                    <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
+                                        <label>Etape finale : Envoi par mail à </label>
+                                        <select class="select-users" th:id="'targetEmailsSelect' + ${form.id}" multiple="multiple" name="targetEmails" required>
+                                        </select>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-success">Valider</button>
+                        </div>
+                    </form>
+                    <script type="javascript">
+                        $("#send").on('submit', function (e) {
+                            e.preventDefault();
+                            alert("Merci de saisir les participants");
+                            if ($(e.target).is(':invalid')) {
+                                alert("Merci de saisir les participants");
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </th:block>
 
 </div>
 </html>

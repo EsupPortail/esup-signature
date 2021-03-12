@@ -5,7 +5,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
+    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -15,7 +15,7 @@ export class SignUi {
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.workspace = new WorkspacePdf(isPdf, id, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -188,23 +188,23 @@ export class SignUi {
     }
 
     insertStep() {
+        console.info("insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipents = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
-        if(selectedRecipents.length == 0 ) {
-            $("#infinitFormSubmit").click();
+        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        if(selectedRecipients.length === 0 ) {
+            $("#infiniteFormSubmit").click();
             return;
         }
-        step.recipientsEmails = selectedRecipents;
-        step.stepNumber = this.currentStepNumber + 1;
+        step.recipientsEmails = selectedRecipients;
+        step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
-            dataType: 'json',
             data: JSON.stringify(step),
             success: response => this.launchSign()
         });

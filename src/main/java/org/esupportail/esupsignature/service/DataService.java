@@ -126,10 +126,8 @@ public class DataService {
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
         data.setStatus(SignRequestStatus.pending);
-        if(recipientsEmails != null) {
-            for (String recipientEmail : recipientsEmails) {
-                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
-            }
+        for (String recipientEmail : recipientsEmails) {
+            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
         }
         return signBook;
     }
