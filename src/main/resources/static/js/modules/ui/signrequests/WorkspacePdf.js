@@ -263,7 +263,7 @@ export class WorkspacePdf {
                     let enableInfinite = $("#enableInfinite");
                     enableInfinite.unbind();
                     enableInfinite.on("click", function(){
-                       $("#infinitForm").toggleClass("d-none");
+                       $("#infiniteForm").toggleClass("d-none");
                        $("#launchSignButton").toggle();
                     });
                     let signModal;

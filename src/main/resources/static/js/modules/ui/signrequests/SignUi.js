@@ -46,7 +46,7 @@ export class SignUi {
     launchSign(gotoNext) {
         this.gotoNext = gotoNext;
         $('#signModal').modal('hide');
-        $('#stepRepeatableModal').modal('hide');    
+        $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
         if(this.signForm) {
@@ -188,15 +188,16 @@ export class SignUi {
     }
 
     insertStep() {
+        console.info("insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let selectedRecipents = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
-        if(selectedRecipents.length == 0 ) {
-            $("#infinitFormSubmit").click();
+        let selectedRecipients = $('#recipientsEmailsInfinite').find(`[data-check='true']`).prevObject[0].slim.selected();
+        if(selectedRecipients.length === 0 ) {
+            $("#infiniteFormSubmit").click();
             return;
         }
-        step.recipientsEmails = selectedRecipents;
+        step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.signType = $('#signTypeInfinite').val();
@@ -204,7 +205,6 @@ export class SignUi {
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
-            dataType: 'json',
             data: JSON.stringify(step),
             success: response => this.launchSign()
         });

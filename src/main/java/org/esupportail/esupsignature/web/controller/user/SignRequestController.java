@@ -228,7 +228,7 @@ public class SignRequestController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
-            new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }

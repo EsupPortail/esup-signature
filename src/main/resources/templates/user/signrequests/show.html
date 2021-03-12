@@ -447,12 +447,12 @@
                             <span th:text="${recipient.user.firstname + ' ' + recipient.user.name} + ' '"></span>
                         </th:block>
                         pour l'étape
-                        <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description != null}"
+                        <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
                               th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
 
                         </span>
-                        <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description != null}"
-                              th:text="${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber().workflowStep.description + 1}">
+                        <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
+                              th:text="${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() + 1}">
                         </span>
                         .
                     </span>
@@ -465,8 +465,8 @@
                         <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
                     </th:block>
                 </button>
-                <form id="infinitForm" class="d-none">
-                    <input type="submit" id="infinitFormSubmit" class="d-none">
+                <form id="infiniteForm" class="d-none">
+                    <input type="submit" id="infiniteFormSubmit" class="d-none">
                     <label for="recipientsEmailsInfinite">Choisir les participants</label>
                     <div class="form-group">
                         <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmailsInfinite" size="5" multiple="multiple" required="required">
@@ -493,7 +493,7 @@
                     <div class="form-group">
                         <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
                     </div>
-                    <button id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                    <button type="button" id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                         <i class="fas fa-check"></i> Confirmer l'envoi
                     </button>
                 </form>
