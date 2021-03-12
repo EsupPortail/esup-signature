@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -103,14 +102,16 @@ public class DataController {
 		}
 	}
 
-	@GetMapping("form/{id}")
+	@PostMapping("sendForm/{id}")
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+							 @RequestParam(required = false) List<String> recipientEmails,
+							 @RequestParam(required = false) List<String> targetEmails,
 							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, user, authUser);
-			SignBook signBook = dataService.sendForSign(data, new ArrayList<>(), new ArrayList<>(), user, authUser);
+			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user, authUser);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
