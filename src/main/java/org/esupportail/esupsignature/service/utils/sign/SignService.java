@@ -204,8 +204,8 @@ public class SignService {
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
 		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss ", Locale.FRENCH);
-		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), addText, false, signRequestParams);
+//		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
+		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);
@@ -317,7 +317,6 @@ public class SignService {
 			SignatureMultipleDocumentsForm signatureMultipleDocumentsForm = new SignatureMultipleDocumentsForm();
 			List<MultipartFile> multipartFiles = new ArrayList<>();
 			for(Document toSignFile : documents) {
-				//multipartFiles.add(new MultipartInputStreamFileResource(toSignFile.getInputStream(), toSignFile.getFileName() + ".pdf").);
 				multipartFiles.add(fileService.toMultipartFile(toSignFile.getInputStream(), toSignFile.getFileName(), toSignFile.getContentType()));
 			}
 			signatureMultipleDocumentsForm.setDocumentsToSign(multipartFiles);
@@ -334,7 +333,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				if(signRequest.getSignedDocuments().size() == 0) {
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest));
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				}
 			} else {
 				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
@@ -540,7 +539,7 @@ public class SignService {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
 				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
-				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn);
+				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn, SignType.nexuSign, "");
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {

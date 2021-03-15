@@ -36,17 +36,26 @@ public class FieldService {
 		return field;
 	}
 
+	public Field createField(String description, FieldType fieldType, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
+							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep> workflowSteps) {
+		Field field = new Field();
+		setFieldValues(description, fieldType, false, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
+		fieldRepository.save(field);
+		return field;
+	}
+
 	public void updateField(Field field) {
 		if (field.getId() !=null) {
-			updateField(field.getId(), field.getFavorisable(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
+			updateField(field.getId(), field.getDescription(), field.getType(), field.getFavorisable(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
 		}else {
-			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps());
+//			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps());
+			throw new RuntimeException("pas logique !!??");
 		}
 	}
 
 	@Transactional
-	public Field updateField(Long id, Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
-							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<Long> workflowStepsIds) {
+	public void updateField(Long id, String description, FieldType fieldType, Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
+							String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<Long> workflowStepsIds) {
 		Field field = fieldRepository.findById(id).get();
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		if(workflowStepsIds != null) {
@@ -54,11 +63,12 @@ public class FieldService {
 				workflowSteps.add(workflowStepService.getById(workflowStepId));
 			}
 		}
-		setFieldValues(favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
-		return field;
+		setFieldValues(description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
 	}
 
-	public void setFieldValues(Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType, String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep>workflowSteps, Field field) {
+	public void setFieldValues(String description, FieldType fieldType, Boolean favorisable, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType, String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep>workflowSteps, Field field) {
+		field.setDescription(description);
+		field.setType(fieldType);
 		field.setFavorisable(favorisable);
 		field.setRequired(required);
 		field.setReadOnly(readOnly);
@@ -73,14 +83,6 @@ public class FieldService {
 		field.getWorkflowSteps().addAll(workflowSteps);
 	}
 
-	public Field createField(Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
-								String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep> workflowSteps) {
-		Field field = new Field();
-		setFieldValues(false, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
-		fieldRepository.save(field);
-		return field;
-	}
-	
 	public void deleteField(int fieldId) {
 		fieldRepository.delete(getById(fieldId));
 	}

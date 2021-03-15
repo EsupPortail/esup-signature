@@ -2,16 +2,24 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 
 @Service
 public class LogService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LogService.class);
 
     @Resource
     private LogRepository logRepository;
@@ -19,12 +27,20 @@ public class LogService {
     @Resource
     private UserService userService;
 
+    @Autowired(required = false)
+    private HttpServletRequest request;
+
     public List<Log> getByEppnAndSignRequestId(String eppn, Long id) {
         return logRepository.findByEppnAndSignRequestId(eppn, id);
     }
 
     public List<Log> getRefuseLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.refused.name());
+        return setUsers(logs);
+    }
+
+    public List<Log> getSignLogs(Long id) {
+        List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.signed.name());
         return setUsers(logs);
     }
 
@@ -53,16 +69,28 @@ public class LogService {
         return logs;
     }
 
-    public List<Log> getById(Long id) {
+    public List<Log> getBySignRequest(Long id) {
         return logRepository.findBySignRequestId(id);
+    }
+
+    @Transactional
+    public List<Log> getFullBySignRequest(Long id) {
+        List<Log> logs = logRepository.findBySignRequestId(id);
+        for (Log log : logs) {
+            User user = userService.getUserByEppn(log.getEppn());
+            log.setUser(user);
+        }
+        return logs;
     }
 
     public Log create(Long id, String status, String action, String returnCode, String comment, String userEppn,  String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(id);
         log.setEppn(authUserEppn);
+        User user = userService.getUserByEppn(authUserEppn);
+        log.setUser(user);
         log.setEppnFor(userEppn);
-//        log.setIp(authUser.getIp());
+        setClientIp(log);
         log.setInitialStatus(status);
         log.setLogDate(new Date());
         log.setAction(action);
@@ -72,13 +100,27 @@ public class LogService {
         return log;
     }
 
-    public void create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+    public void setClientIp(Log log) {
+        if (request != null) {
+            try {
+                log.setIp(request.getRemoteAddr());
+            } catch (IllegalStateException e) {
+                logger.warn("unable to get IP");
+            }
+        }
+    }
+
+    @Transactional
+    public Log create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());
         log.setEppn(authUserEppn);
         log.setEppnFor(userEppn);
-//        log.setIp(authUser.getIp());
+        User user = userService.getUserByEppn(authUserEppn);
+        log.setUser(user);
+        log.setEppnFor(userEppn);
+        setClientIp(log);
         log.setInitialStatus(signRequest.getStatus().toString());
         log.setLogDate(new Date());
         log.setAction(action);
@@ -99,10 +141,18 @@ public class LogService {
             log.setFinalStatus(signRequest.getStatus().toString());
         }
         logRepository.save(log);
+        return log;
     }
 
     public void delete(Log log) {
         logRepository.delete(log);
+    }
+
+    public String getIp() {
+        if(request != null) {
+            return request.getRemoteAddr();
+        }
+        return "?";
     }
 
 }

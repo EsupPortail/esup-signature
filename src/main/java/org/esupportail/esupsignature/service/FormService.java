@@ -89,9 +89,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
+		Workflow workflow = workflowService.getById(workflowId);
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowType, prefillType, roleName, targets, publicUsage);
+		Form form = createForm(document, name, title, workflow, prefillType, roleName, targets, publicUsage);
 		return form;
 	}
 
@@ -123,7 +124,7 @@ public class FormService {
 		form.setTitle(updateForm.getTitle());
 		form.setRole(updateForm.getRole());
 		form.setPreFillType(updateForm.getPreFillType());
-		form.setWorkflowType(updateForm.getWorkflowType());
+		form.setWorkflow(updateForm.getWorkflow());
 		form.getTargets().addAll(updateForm.getTargets());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
@@ -186,7 +187,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, String workflowType, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException {
+	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -211,7 +212,7 @@ public class FormService {
 		form.getTargets().addAll(targets);
 		form.setRole(roleName);
 		form.setPreFillType(prefillType);
-		form.setWorkflowType(workflowType);
+		form.setWorkflow(workflow);
 		form.setPublicUsage(publicUsage);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {
@@ -296,8 +297,8 @@ public class FormService {
 					field.setType(FieldType.radio);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
-					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
-					field.setLabel(labelCOSName.getName());
+//					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
+					field.setLabel(pdField.getAlternateFieldName());
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
 				}

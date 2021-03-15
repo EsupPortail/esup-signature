@@ -86,14 +86,17 @@ public class SignBookService {
     @Resource
     private UserPropertieService userPropertieService;
 
+    @Resource
+    private CommentService commentService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(list::add);
         return list;
     }
 
-    public List<SignBook> getSignBooksByWorkflowName(String workFlowName) {
-        return signBookRepository.findByWorkflowNameAndStatus(workFlowName, SignRequestStatus.completed);
+    public List<SignBook> getSignBooksByWorkflow(Workflow workflow) {
+        return signBookRepository.findByLiveWorkflowWorkflow(workflow);
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
@@ -308,7 +311,6 @@ public class SignBookService {
         return false;
     }
 
-    @Transactional
     public boolean isStepAllSignDone(SignBook signBook) {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         return (!liveWorkflowStep.getAllSignToComplete() || workflowService.isWorkflowStepFullSigned(liveWorkflowStep)) && !isMoreWorkflowStep(signBook);
@@ -411,7 +413,10 @@ public class SignBookService {
 
     public void refuse(SignBook signBook, String comment, String userEppn, String authUserEppn) {
         mailService.sendRefusedMail(signBook, comment);
-        updateStatus(signBook, SignRequestStatus.refused, "Un des documents du a été refusé, ceci annule toute la procédure", "SUCCESS", comment, userEppn, authUserEppn);
+        for(SignRequest signRequest : signBook.getSignRequests()) {
+            commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
+        }
+        updateStatus(signBook, SignRequestStatus.refused, "Cette demande a été refusée, ceci annule toute la procédure", "SUCCESS", comment, userEppn, authUserEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signBook.getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
             for(Recipient recipient : signBook.getLiveWorkflow().getCurrentStep().getRecipients()) {

@@ -126,7 +126,11 @@ public class IndexController {
 			if(ldapPersonService != null) {
 				List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdap(auth.getName());
 				if(personLdaps.size() > 0) {
-					user = userService.getUserByEppn(personLdaps.get(0).getEduPersonPrincipalName());
+					String eppn = personLdaps.get(0).getEduPersonPrincipalName();
+					if(eppn == null) {
+						eppn = userService.buildEppn(auth.getName());
+					}
+					user = userService.getUserByEppn(eppn);
 				}
 			} else {
 				logger.debug("Try to retrieve "+ auth.getName() + " without ldap");

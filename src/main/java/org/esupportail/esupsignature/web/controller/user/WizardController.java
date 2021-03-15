@@ -37,6 +37,9 @@ public class WizardController {
     @Resource
     private EventService eventService;
 
+    @Resource
+    private UserService userService;
+
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix des fichiers");
@@ -67,6 +70,7 @@ public class WizardController {
     @PostMapping(value = "/wiz-add-step/{id}", produces = "text/html")
     public String wizX(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                        @RequestParam(name="addNew", required = false) Boolean addNew,
+                       @RequestParam(name="userSignFirst", required = false) Boolean userSignFirst,
                        @RequestParam(name="end", required = false) Boolean end,
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
@@ -77,6 +81,11 @@ public class WizardController {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
                 String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
                 recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
+                if (userSignFirst) {
+                    String[] userSignFirstArray = new String[1];
+                    userSignFirstArray[0] = userService.getByEppn(authUserEppn).getEmail();
+                    liveWorkflowStepService.addNewStepToSignBook(SignType.pdfImageStamp, false, userSignFirstArray, id, authUserEppn);
+                }
                 liveWorkflowStepService.addNewStepToSignBook(SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, id, authUserEppn);
                 if (addNew != null) {
                     model.addAttribute("signTypes", SignType.values());
@@ -210,7 +219,11 @@ public class WizardController {
         if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
-            workflowService.delete(workflow);
+            if(workflowService.delete(workflow)) {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Circuit supprimé"));
+            } else {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de supprimer ce circuit car il contient des demandes"));
+            }
         }
         return "redirect:/user/";
     }

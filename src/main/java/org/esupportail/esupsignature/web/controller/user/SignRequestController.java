@@ -179,7 +179,7 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("isTempUsers", userService.isTempUsers(signRequest));
+        model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
         }
@@ -195,7 +195,7 @@ public class SignRequestController {
         User user = (User) model.getAttribute("user");
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("signBooks", signBookService.getAllSignBooks());
-        List<Log> logs = logService.getById(signRequest.getId());
+        List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);
         model.addAttribute("comments", logService.getLogs(signRequest.getId()));

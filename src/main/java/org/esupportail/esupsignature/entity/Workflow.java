@@ -19,7 +19,6 @@ public class Workflow {
 	@Version
     private Integer version;
 
-	@Column(unique=true)
 	private String name;
 
     private String title;

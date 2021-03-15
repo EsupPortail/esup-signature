@@ -19,8 +19,9 @@ body {
 }
 
 label {
-    margin-top: .5rem;
+    padding-top: .5rem;
 }
+
 #actionDiv {
     position: relative;
     width: 100%;
@@ -400,16 +401,16 @@ input:checked + .slider:before {
     z-index: 3;
 }
 
-.sign-text {
+.sign-textarea {
     font-family: "DejaVu Sans Condensed", serif;
     color: black;
-    position : relative; float: left; clear: left;
-}
-
-.visa-text {
-    font-family: "DejaVu Sans Condensed", serif;
-    color: black;
-    float: left; clear: left;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width:100%;
+    /*border: transparent;*/
+    background: rgba(255, 255, 255, .5);
+    resize: none;
 }
 
 .wrapper {
@@ -663,10 +664,6 @@ height: 100%;
     float:left;
 }
 
-.postit-global-red {
-    background: #FF7EB9 !important;
-}
-
 .postit-global {
     overflow: auto;
     text-overflow: ellipsis;
@@ -677,7 +674,6 @@ height: 100%;
     padding:3px;
     text-decoration:none;
     color:#000;
-    background:#fff740;
     height:200px;
     width:220px;
     float:left;
@@ -1235,7 +1231,7 @@ height: 100%;
 }
 
 .annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    /*font-size: 11px !important;*/
+    font-size: 10px !important;
 }
 
 .annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {

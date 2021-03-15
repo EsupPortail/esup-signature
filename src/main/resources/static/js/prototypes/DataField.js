@@ -10,6 +10,7 @@ export class DataField {
         this.label;
         this.leftPos;
         this.name;
+        this.description;
         this.page;
         this.required;
         this.readOnly;

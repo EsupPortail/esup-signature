@@ -27,6 +27,8 @@ public class SignRequestParams {
 
 	private int yPos = 0;
 
+	private String extraText = "";
+
     private Boolean addExtra = false;
 
     private Boolean extraOnTop = true;
@@ -113,6 +115,14 @@ public class SignRequestParams {
 
 	public void setyPos(int yPos) {
         this.yPos = yPos;
+    }
+
+    public String getExtraText() {
+        return extraText;
+    }
+
+    public void setExtraText(String extraText) {
+        this.extraText = extraText;
     }
 
     public Boolean getAddExtra() {

@@ -35,7 +35,7 @@
     <br/><br/>
     <label>Type de signature :</label>
     <select class="form-control" name="signType" id="signType">
-        <th:block th:each="signType : ${signTypes}">
+        <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
     </select>

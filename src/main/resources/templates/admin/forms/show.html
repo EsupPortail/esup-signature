@@ -45,6 +45,7 @@
                     <thead class="thead-dark">
                         <tr>
                             <th class="align-middle th-fixed">Nom</th>
+                            <th class="align-middle th-fixed">Description</th>
                             <th class="align-middle th-fixed">Type</th>
                             <th class="align-middle th-fixed">Favorisable</th>
                             <th class="align-middle th-fixed">Requis</th>
@@ -63,7 +64,14 @@
                         <tr>
                             <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/field/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
-                            <td><span th:text="${field.type}"/></td>
+                            <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
+                            <td>
+                                <select name="fieldType" class="form-control">
+                                    <th:block th:each="fieldType : ${T(org.esupportail.esupsignature.entity.enums.FieldType).values()}">
+                                        <option th:value="${fieldType}" th:text="${fieldType.name()}" th:selected="${fieldType == field.type}"></option>
+                                    </th:block>
+                                </select>
+                            </td>
                             <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
                             <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
                             <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
