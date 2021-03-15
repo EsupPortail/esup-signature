@@ -82,9 +82,6 @@ public class SignRequest {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
-    @OneToMany
-    private List<User> viewers = new ArrayList<>();
-
     public Long getId() {
         return id;
     }
@@ -235,14 +232,6 @@ public class SignRequest {
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
-    }
-
-    public List<User> getViewers() {
-        return viewers;
-    }
-
-    public void setViewers(List<User> viewers) {
-        this.viewers = viewers;
     }
 
     public List<Document> getLiteOriginalDocuments() {
