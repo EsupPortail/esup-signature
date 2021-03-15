@@ -55,7 +55,6 @@
                             <th class="align-middle th-fixed">Nom du service</th>
                             <th class="align-middle th-fixed">Type de données</th>
                             <th class="align-middle th-fixed">Attribut retourné</th>
-                            <th class="align-middle th-fixed">Étape brouillon</th>
                             <th class="align-middle th-fixed">Étapes autorisées</th>
                         </tr>
                     </thead>
@@ -106,7 +105,6 @@
                                     <input type="text" class="form-control" name="valueReturn" size="7"/>
                                 </th:block>
                             </td>
-                            <td><input type="checkbox" name="stepZero" th:value="true" th:checked="${field.stepZero}"/></td>
                             <td>
                                 <select th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple" multiple size="3" data-placeholder="Choisir des étapes">
                                     <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
