@@ -1117,10 +1117,12 @@ public class SignRequestService {
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, String[] recipientsEmails, String[] recipientsCCEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
 		List<User> viewers = new ArrayList<>();
-		for (String recipientsEmail : recipientsCCEmails) {
-			viewers.add(userService.getUserByEmail(recipientsEmail));
+		if(recipientsCCEmails != null) {
+			for (String recipientsEmail : recipientsCCEmails) {
+				viewers.add(userService.getUserByEmail(recipientsEmail));
+			}
+			signBook.setViewers(viewers);
 		}
-		signBook.setViewers(viewers);
 		return signBookService.sendSignBook(signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
 	}
 
