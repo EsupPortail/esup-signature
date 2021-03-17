@@ -38,6 +38,10 @@
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
 		</repository>
+		<repository>
+			<id>localrepository</id>
+			<url>file:///${pom.basedir}/src/libs</url>
+		</repository>
 	</repositories>
 	<distributionManagement>
 		<repository>
@@ -381,10 +385,11 @@
 		</dependency>
 
 		<!-- SEDA dependencies -->
+
 		<dependency>
 			<groupId>fr.gouv.vitam.tools</groupId>
 			<artifactId>sedalib</artifactId>
-			<version>2.5.0-SNAPSHOT</version>
+			<version>2.5.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xerces</groupId>

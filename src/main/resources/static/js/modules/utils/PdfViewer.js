@@ -389,6 +389,7 @@ export class PdfViewer extends EventFactory {
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
@@ -517,6 +518,7 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
@@ -596,6 +598,7 @@ export class PdfViewer extends EventFactory {
             console.debug(inputField);
             if (inputField.length) {
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
                     inputField.val(items[i].buttonValue);
@@ -604,6 +607,7 @@ export class PdfViewer extends EventFactory {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {
                     inputField.attr('name', inputName);
+                    inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
                     inputField.val(items[i].fieldValue);
                 }
