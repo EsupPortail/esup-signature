@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +34,7 @@ public class FieldService {
 		field.setLabel(fieldName);
 		field.setType(FieldType.text);
 		if(workflow != null && workflow.getWorkflowSteps().size() > 0) {
-			field.setWorkflowSteps(Collections.singletonList(workflow.getWorkflowSteps().get(0)));
+			field.getWorkflowSteps().add(workflow.getWorkflowSteps().get(0));
 		}
 		fieldRepository.save(field);
 		return field;
@@ -84,6 +83,7 @@ public class FieldService {
 		field.setSearchType(searchType);
 		field.setSearchReturn(searchReturn);
 		field.setStepZero(stepZero);
+		field.getWorkflowSteps().clear();
 		for(WorkflowStep workflowStep : workflowSteps) {
 			if (!field.getWorkflowSteps().contains(workflowStep)) {
 				field.getWorkflowSteps().add(workflowStep);
