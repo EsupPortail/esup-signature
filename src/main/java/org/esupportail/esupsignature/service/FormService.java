@@ -59,7 +59,7 @@ public class FormService {
 	private DocumentService documentService;
 
 	@Resource
-	private UserPropertieService userPropertieService;
+	private FieldPropertieService fieldPropertieService;
 
 	@Resource
 	private UserService userService;
@@ -162,6 +162,7 @@ public class FormService {
 		}
 	}
 
+	@Transactional
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
 		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
@@ -169,6 +170,12 @@ public class FormService {
 			userShareService.delete(userShare);
 		}
 		dataService.nullifyForm(form);
+		for(Field field : form.getFields()) {
+			List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldPropertie(field.getId());
+			for(FieldPropertie fieldPropertie : fieldProperties) {
+				fieldPropertieService.delete(fieldPropertie.getId());
+			}
+		}
 		formRepository.delete(form);
 	}
 
@@ -195,7 +202,7 @@ public class FormService {
 		form.setActiveVersion(true);
 		if (document == null && fieldNames.length > 0) {
 			for(String fieldName : fieldNames) {
-				form.getFields().add(fieldService.createField(fieldName));
+				form.getFields().add(fieldService.createField(fieldName, workflow));
 			}
 		} else {
 			if (testForms.size() == 1) {
@@ -205,7 +212,7 @@ public class FormService {
 				form.getFields().addAll(testForms.get(0).getFields());
 			} else {
 				form.setVersion(1);
-				form.setFields(getFields(document));
+				form.setFields(getFields(document, workflow));
 			}
 		}
 		form.setDocument(document);
@@ -225,13 +232,14 @@ public class FormService {
 		return form;
 	}
 
-	private List<Field> getFields(Document document) throws IOException {
+	private List<Field> getFields(Document document, Workflow workflow) throws IOException {
 		List<Field> fields = new ArrayList<>();
 		PDDocument pdDocument = PDDocument.load(document.getInputStream());
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
-		PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(docCatalog);
+		PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
+		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(pdDocumentDocumentCatalog);
 		for(PDField pdField : pdFields) {
+			logger.info(pdField.getFullyQualifiedName());
 			List<PDAnnotationWidget> kids = pdField.getWidgets();
 			int page = 1;
 			if (kids != null) {
@@ -242,12 +250,11 @@ public class FormService {
 				}
 			}
 			if(pdField instanceof PDTextField){
-				Field field = fieldService.createField(pdField.getPartialName());
+				Field field = fieldService.createField(pdField.getPartialName(), workflow);
 				field.setLabel(pdField.getAlternateFieldName());
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
 				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
-				logger.info(pdField.getFullyQualifiedName());
 				String type = "text";
 				if(pdFormFieldAdditionalActions != null) {
 					if(pdFormFieldAdditionalActions.getK() != null) {
@@ -281,8 +288,9 @@ public class FormService {
 				}
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
+				logger.info("added");
 	        } else if(pdField instanceof PDCheckBox) {
-				Field field = fieldService.createField(pdField.getPartialName());
+				Field field = fieldService.createField(pdField.getPartialName(), workflow);
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
 				field.setType(FieldType.checkbox);
@@ -290,10 +298,11 @@ public class FormService {
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
+				logger.info("added");
 			} else if(pdField instanceof PDRadioButton){
 				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
 				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
-					Field field = fieldService.createField(pdField.getPartialName());
+					Field field = fieldService.createField(pdField.getPartialName(), workflow);
 					field.setType(FieldType.radio);
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
@@ -301,9 +310,10 @@ public class FormService {
 					field.setLabel(pdField.getAlternateFieldName());
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
+					logger.info("added");
 				}
 			} else if(pdField instanceof PDChoice) {
-				Field field = fieldService.createField(pdField.getPartialName());
+				Field field = fieldService.createField(pdField.getPartialName(), workflow);
 				field.setType(FieldType.select);
 				field.setRequired(pdField.isRequired());
 				field.setReadOnly(pdField.isReadOnly());
@@ -311,6 +321,7 @@ public class FormService {
 				field.setLabel(pdField.getAlternateFieldName());
 				parseField(field, pdField, pdAnnotationWidget, page);
 				fields.add(field);
+				logger.info("added");
 			}
 		}
 		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).collect(Collectors.toList());
@@ -322,7 +333,6 @@ public class FormService {
 			fieldService.updateField(field);
 			fieldsOrdered.add(field);
 		}
-
 		return fieldsOrdered;
 	}
 

@@ -873,6 +873,11 @@ public class SignRequestService {
 	public boolean delete(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
+		if(signRequest.getData() != null) {
+			Long dataId = signRequest.getData().getId();
+			signRequest.setData(null);
+			dataService.deleteOnlyData(dataId);
+		}
 		for(Long commentId : commentsIds) {
 			commentService.deleteComment(commentId);
 		}
@@ -880,7 +885,6 @@ public class SignRequestService {
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		}
-		signRequestRepository.save(signRequest);
 		signRequestRepository.delete(signRequest);
 		return true;
 	}
