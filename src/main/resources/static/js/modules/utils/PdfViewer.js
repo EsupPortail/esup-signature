@@ -524,6 +524,8 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                 }
                 if(this.isFieldEnable(dataField)) {
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);
