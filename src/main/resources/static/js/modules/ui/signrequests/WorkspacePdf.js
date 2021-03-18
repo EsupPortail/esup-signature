@@ -632,7 +632,7 @@ export class WorkspacePdf {
 
     pageBottom() {
         console.debug("wheel down next page");
-        if(this.pdfViewer.pageNum < this.pdfViewer.pdfDoc.numPages) {
+        if(this.pdfViewer.pdfDoc != null && this.pdfViewer.pageNum < this.pdfViewer.pdfDoc.numPages) {
             this.pdfViewer.nextPage();
         }
     }
