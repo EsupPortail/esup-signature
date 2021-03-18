@@ -179,7 +179,7 @@ public class FormService {
 		formRepository.delete(form);
 	}
 
-	private Map<COSDictionary, Integer> getPageNrByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
+	private Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
 		Iterator<PDPage> pages = docCatalog.getPages().iterator();
 		Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
 		int i = 0;
@@ -237,7 +237,7 @@ public class FormService {
 		PDDocument pdDocument = PDDocument.load(document.getInputStream());
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
 		PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
-		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNrByAnnotDict(pdDocumentDocumentCatalog);
+		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
 		for(PDField pdField : pdFields) {
 			logger.info(pdField.getFullyQualifiedName());
 			List<PDAnnotationWidget> kids = pdField.getWidgets();
@@ -268,7 +268,6 @@ public class FormService {
 						}
 					}
 				}
-
 				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
 				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
@@ -324,7 +323,7 @@ public class FormService {
 				logger.info("added");
 			}
 		}
-		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).collect(Collectors.toList());
+		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).sorted(Comparator.comparingInt(Field::getPage)).collect(Collectors.toList());
 		List<Field> fieldsOrdered = new LinkedList<>();
 		int i=0;
 		for(Field field : fields) {
