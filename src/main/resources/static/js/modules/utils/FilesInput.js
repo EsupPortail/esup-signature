@@ -45,10 +45,10 @@ export default class FilesInput extends EventFactory {
     initFileInput(documents, readOnly) {
         let urls = [];
         let previews = [];
-        let type = 'other';
         let csrf = this.csrf
         if (documents != null) {
             documents.forEach(function (document) {
+                let type;
                 urls.push("/user/signrequests/get-file/" + document.id);
                 switch (document.contentType.split('/')[1]) {
                     case "pdf" :

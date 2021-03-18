@@ -24,7 +24,7 @@ public class FieldPropertieService {
     }
 
     public void createFieldPropertie(User user, Field field, String value) {
-        FieldPropertie fieldPropertie = getFieldPropertie(user.getEppn(), field.getId());
+        FieldPropertie fieldPropertie = getFieldPropertie(field.getId(), user.getEppn());
         if(value != null && !value.isEmpty()) {
             if (fieldPropertie == null) {
                 addPropertie(user, field, value);
@@ -45,7 +45,7 @@ public class FieldPropertieService {
 
     public List<String> getFavoritesValues(String userEppn, Long id) {
         List<String> favoriteValues = new ArrayList<>();
-        FieldPropertie fieldPropertie = getFieldPropertie(userEppn, id);
+        FieldPropertie fieldPropertie = getFieldPropertie(id, userEppn);
         if(fieldPropertie != null) {
             Map<String, Date> favorites = fieldPropertie.getFavorites();
             if (favorites.size() > 0) {
@@ -59,8 +59,12 @@ public class FieldPropertieService {
         return favoriteValues;
     }
 
-    public FieldPropertie getFieldPropertie(String userEppn, Long fieldId) {
+    public FieldPropertie getFieldPropertie(Long fieldId, String userEppn) {
         return fieldPropertieRepository.findByFieldIdAndUserEppn(fieldId, userEppn);
+    }
+
+    public List<FieldPropertie> getFieldPropertie(Long fieldId) {
+        return fieldPropertieRepository.findByFieldId(fieldId);
     }
 
     public List<FieldPropertie> getFieldProperties(String userEppn) {

@@ -84,6 +84,12 @@ public class DataService {
         dataRepository.delete(data);
     }
 
+    public void deleteOnlyData(Long id) {
+        Data data = getById(id);
+        data.setForm(null);
+        dataRepository.delete(data);
+    }
+
     @Transactional
     public SignBook sendForSign(Data data, List<String> recipientsEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientsEmails == null) {

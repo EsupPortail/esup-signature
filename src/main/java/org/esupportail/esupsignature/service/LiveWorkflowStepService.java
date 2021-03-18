@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LiveWorkflowStepService {
@@ -98,8 +99,8 @@ public class LiveWorkflowStepService {
     }
 
     public void delete(Long id) {
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepRepository.findById(id).get();
-        liveWorkflowStepRepository.delete(liveWorkflowStep);
+        Optional<LiveWorkflowStep> liveWorkflowStep = liveWorkflowStepRepository.findById(id);
+        liveWorkflowStep.ifPresent(workflowStep -> liveWorkflowStepRepository.delete(workflowStep));
     }
 
     public List<LiveWorkflowStep> getLiveWorkflowStepByWorkflowStep(WorkflowStep workflowStep) {
