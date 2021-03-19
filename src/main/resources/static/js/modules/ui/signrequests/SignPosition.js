@@ -610,6 +610,7 @@ export class SignPosition extends EventFactory {
                 "                        -o-user-select: none;'>" +
                 defaultText +
                 "</textarea>");
+            this.getCurrentSignParams().extraText = defaultText;
             let lines = defaultText.split(/\r|\r\n|\n/);
             let count = lines.length;
             textExtra.attr("rows", count);
@@ -641,12 +642,12 @@ export class SignPosition extends EventFactory {
         let lines = text.split(/\r|\r\n|\n/);
         let count = lines.length;
         target.attr("rows", count);
+        this.getCurrentSignParams().extraText = target.val();
         if(this.getCurrentSignParams().extraOnTop) {
             let textExtraHeight = target.height();
             this.getCurrentSignParams().extraHeight = textExtraHeight;
             this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
             this.changeSignImage(this.getCurrentSignParams().signImageNumber);
-            this.getCurrentSignParams().extraText = target.val();
         }
     }
 

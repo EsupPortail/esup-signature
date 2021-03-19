@@ -117,6 +117,7 @@ export class Nexu {
             console.warn("NexU not detected or not started ! " + JSON.stringify(error));
             $("#warning-text").html("NexU not detected or not started ! ");
             $("#nexu_missing_alert").show();
+            $("#signFormConfirm").hide();
         });
 
     }

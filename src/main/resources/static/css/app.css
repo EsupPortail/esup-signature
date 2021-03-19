@@ -1525,3 +1525,8 @@ progress:before {
 .modal.bootbox {
     z-index: 120002;
 }
+.progress {
+    height: 18px;
+    font-size: 1rem;
+    font-weight: bold;
+}
