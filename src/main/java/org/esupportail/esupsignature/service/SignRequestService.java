@@ -60,11 +60,13 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
+import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -388,7 +390,6 @@ public class SignRequestService {
 			return true;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-//			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), "sign", sseId);
 		}
 		return false;
 	}
@@ -572,16 +573,13 @@ public class SignRequestService {
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-
 			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), channel, sseId);
-
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
 			for (CertificateToken token : certificateTokenChain) {
 				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
 			}
 			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-
 			AbstractSignatureParameters<?> parameters;
 			if(signatureForm.equals(SignatureForm.CAdES)) {
 				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
@@ -592,7 +590,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user);
 			}
 
 			if(signatureForm.equals(SignatureForm.PAdES)) {
