@@ -153,8 +153,6 @@ public class SignRequestController {
         model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
         model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
-//        model.addAttribute("realCurrentStepNumber", signBookService.getRealCurrentStepNumber(signRequest.getParentSignBook().getId()));
-//        model.addAttribute("isRealCurrentStepSigned", signBookService.isRealCurrentStepSigned(signRequest.getParentSignBook().getId()));
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
             model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
