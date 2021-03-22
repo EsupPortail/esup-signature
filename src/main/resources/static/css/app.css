@@ -408,7 +408,8 @@ input:checked + .slider:before {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     width:100%;
-    /*border: transparent;*/
+    border: 2px solid #acacac;
+    border-radius: 4px;
     background: rgba(255, 255, 255, .5);
     resize: none;
 }
@@ -1523,4 +1524,9 @@ progress:before {
 }
 .modal.bootbox {
     z-index: 120002;
+}
+.progress {
+    height: 18px;
+    font-size: 1rem;
+    font-weight: bold;
 }

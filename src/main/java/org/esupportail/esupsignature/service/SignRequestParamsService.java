@@ -117,6 +117,8 @@ public class SignRequestParamsService {
                 signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
                 signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
                 signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
+                signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
+                signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
                 liveWfSignRequestParams.add(signRequestParams);
             } else {
                 liveWfSignRequestParams.get(i).setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
@@ -125,6 +127,8 @@ public class SignRequestParamsService {
                 liveWfSignRequestParams.get(i).setSignWidth(signRequestParamses.get(i).getSignWidth());
                 liveWfSignRequestParams.get(i).setSignHeight(signRequestParamses.get(i).getSignHeight());
                 liveWfSignRequestParams.get(i).setAddExtra(signRequestParamses.get(i).getAddExtra());
+                liveWfSignRequestParams.get(i).setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
+                liveWfSignRequestParams.get(i).setExtraText(signRequestParamses.get(i).getExtraText());
             }
         }
     }

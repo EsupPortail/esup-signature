@@ -362,7 +362,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
-        let datePicherIndex = 1040;
+        let datePickerIndex = 1040;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
@@ -389,6 +389,7 @@ export class PdfViewer extends EventFactory {
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
                     let sendField = inputField;
@@ -446,8 +447,8 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === "date") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
-                    datePicherIndex--;
+                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePickerIndex);
+                    datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'DD/MM/YYYY',
                         locale: 'fr',
@@ -475,8 +476,8 @@ export class PdfViewer extends EventFactory {
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
-                    datePicherIndex--;
+                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePickerIndex);
+                    datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'LT',
                         locale: 'fr',
@@ -517,11 +518,14 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                 }
                 if(this.isFieldEnable(dataField)) {
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);
@@ -596,6 +600,7 @@ export class PdfViewer extends EventFactory {
             console.debug(inputField);
             if (inputField.length) {
                 inputField.attr('name', inputName);
+                inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
                     inputField.val(items[i].buttonValue);
@@ -604,6 +609,7 @@ export class PdfViewer extends EventFactory {
                 inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
                 if (inputField.length > 0) {
                     inputField.attr('name', inputName);
+                    inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
                     inputField.val(items[i].fieldValue);
                 }
