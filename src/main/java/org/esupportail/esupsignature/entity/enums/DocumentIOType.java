@@ -6,6 +6,6 @@ public enum DocumentIOType {
     vfs,
     cmis,
     mail,
-    //rest,
-    ;
+    rest_post,
+    rest_get;
 }
