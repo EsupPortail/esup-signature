@@ -236,6 +236,7 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
+    @JsonIgnore
     public List<Document> getLiteOriginalDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
         for (Document document : this.originalDocuments) {
@@ -245,6 +246,7 @@ public class SignRequest {
         return liteDocuments;
     }
 
+    @JsonIgnore
     public List<Document> getLiteSignedDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
         for (Document document : this.signedDocuments) {

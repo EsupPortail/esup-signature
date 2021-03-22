@@ -904,6 +904,8 @@ public class SignRequestService {
 	public void delete(Long signRequestId) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
+		signRequest.getSignedDocuments().clear();
+		signRequest.getOriginalDocuments().clear();
 		signRequest.setStatus(SignRequestStatus.deleted);
 	}
 
@@ -1356,5 +1358,9 @@ public class SignRequestService {
 		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
 		outputStream.close();
 		return file;
+	}
+
+	public List<SignRequest> getAll() {
+		return (List<SignRequest>) signRequestRepository.findAll();
 	}
 }
