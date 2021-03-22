@@ -16,6 +16,16 @@ public class Target {
 
     private String targetUri;
 
+    private Boolean targetOk = false;
+
+    public Boolean getTargetOk() {
+        return targetOk;
+    }
+
+    public void setTargetOk(Boolean targetOk) {
+        this.targetOk = targetOk;
+    }
+
     public DocumentIOType getTargetType() {
         return targetType;
     }
