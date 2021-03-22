@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -10,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import java.util.*;
 
 @Entity
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class SignRequest {
 	
 	@Id
@@ -234,6 +236,7 @@ public class SignRequest {
         this.recipientHasSigned = recipientHasSigned;
     }
 
+    @JsonIgnore
     public List<Document> getLiteOriginalDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
         for (Document document : this.originalDocuments) {
@@ -243,6 +246,7 @@ public class SignRequest {
         return liteDocuments;
     }
 
+    @JsonIgnore
     public List<Document> getLiteSignedDocuments() {
         List<Document> liteDocuments = new ArrayList<>();
         for (Document document : this.signedDocuments) {
@@ -252,6 +256,7 @@ public class SignRequest {
         return liteDocuments;
     }
 
+    @JsonIgnore
     public Document getLastSignedDocument() {
         if(this.getSignedDocuments().size() > 0) {
             return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);
@@ -260,6 +265,7 @@ public class SignRequest {
         }
     }
 
+    @JsonIgnore
     public Document getLastOriginalDocument() {
         List<Document> documents = this.getOriginalDocuments();
         if (documents.size() != 1) {

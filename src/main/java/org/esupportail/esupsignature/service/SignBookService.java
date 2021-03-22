@@ -186,8 +186,18 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public boolean delete(Long signBookId) {
-        //TODO critères de suppression ou en conf
+    public void delete(Long signBookId) {
+        //TODO critères de suppression ou en conf (if deleteDefinitive)
+        SignBook signBook = getById(signBookId);
+        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+        for(Long signRequestId : signRequestsIds) {
+            signRequestService.delete(signRequestId);
+        }
+        signBook.setStatus(SignRequestStatus.deleted);
+    }
+
+    @Transactional
+    public void deleteDefinitive(Long signBookId) {
         SignBook signBook = getById(signBookId);
         List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
         for (Long liveWorkflowStepId : liveWorkflowStepIds) {
@@ -195,11 +205,10 @@ public class SignBookService {
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
-            signRequestService.delete(signRequestId);
+            signRequestService.deleteDefinitive(signRequestId);
         }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
-        return true;
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {

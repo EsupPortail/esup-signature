@@ -9,7 +9,7 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';" class="bgfilter"
+                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"
                      style="display: none;z-index:10000;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
@@ -69,8 +69,14 @@
                                     style="z-index: 3;">
                                 <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
                             </button>
+                            <button type="button" id="watermark_0"
+                                    title="Filigrane"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-ad"></i>
+                            </button>
                             <button type="button" id="check_0"
-                                    title="Ajouter un texte à la signature"
+                                    title="Coche"
                                     class="btn btn-sm btn-transparent text-white"
                                     style="z-index: 3;">
                                 <i class="fas fa-check"></i>

@@ -49,10 +49,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -65,8 +68,8 @@ import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -200,7 +203,7 @@ public class SignRequestService {
 
 	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
 		Set<SignRequest> signRequests = new HashSet<>();
-		if (statusFilter != null) {
+		if (statusFilter != null && !statusFilter.isEmpty()) {
 			switch (statusFilter) {
 				case "tosign":
 					signRequests.addAll(getToSignRequests(userEppn));
@@ -217,6 +220,9 @@ public class SignRequestService {
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
+				case "deleted":
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+					break;
 				default:
 					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
 					break;
@@ -226,6 +232,7 @@ public class SignRequestService {
 			signRequests.addAll(getToSignRequests(userEppn));
 			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
+			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
 		}
 		return new ArrayList<>(signRequests);
 	}
@@ -705,6 +712,7 @@ public class SignRequestService {
 	}
 
 	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
+		boolean allTargetsDone = true;
 		for(Target target : targets) {
 			DocumentIOType documentIOType = target.getTargetType();
 			String targetUrl = target.getTargetUri();
@@ -718,23 +726,48 @@ public class SignRequestService {
 							}
 						}
 						mailService.sendFile(title, signRequests, targetUrl);
+						target.setTargetOk(true);
 					} catch (MessagingException | IOException e) {
-						throw new EsupSignatureException("unable to send mail", e);
+						logger.error("unable to send mail : " + e.getMessage());
+						allTargetsDone = false;
 					}
 				} else {
 					for (SignRequest signRequest : signRequests) {
-						Document signedFile = signRequest.getLastSignedDocument();
-						if (signRequest.getAttachments().size() > 0) {
-							targetUrl += "/" + signRequest.getTitle();
-							for (Document attachment : signRequest.getAttachments()) {
-								documentService.exportDocument(documentIOType, targetUrl, attachment);
+						if(target.getTargetType().equals(DocumentIOType.rest) && !target.getTargetOk()) {
+							RestTemplate restTemplate = new RestTemplate();
+							ActionType actionType = ActionType.signed;
+							if(signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
+								actionType = ActionType.refused;
 							}
+							ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + actionType.name(), String.class);
+							if(response.getStatusCode().equals(HttpStatus.OK)) {
+								target.setTargetOk(true);
+								updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+							} else {
+								allTargetsDone = false;
+							}
+						} else {
+							Document signedFile = signRequest.getLastSignedDocument();
+							if (signRequest.getAttachments().size() > 0) {
+								targetUrl += "/" + signRequest.getTitle();
+								for (Document attachment : signRequest.getAttachments()) {
+									documentService.exportDocument(documentIOType, targetUrl, attachment);
+								}
+							}
+							documentService.exportDocument(documentIOType, targetUrl, signedFile);
+							target.setTargetOk(true);
+							updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 						}
-						documentService.exportDocument(documentIOType, targetUrl, signedFile);
-						updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 					}
 				}
 			}
+		}
+		if(allTargetsDone) {
+			for (SignRequest signRequest : signRequests) {
+				updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers toutes les destinations", "SUCCESS", authUserEppn, authUserEppn);
+			}
+		} else {
+			throw new EsupSignatureException("unable to send at all targets");
 		}
 	}
 
@@ -868,7 +901,16 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean delete(Long signRequestId) {
+	public void delete(Long signRequestId) {
+		//TODO critères de suppression ou en conf (if deleteDefinitive)
+		SignRequest signRequest = getById(signRequestId);
+		signRequest.getSignedDocuments().clear();
+		signRequest.getOriginalDocuments().clear();
+		signRequest.setStatus(SignRequestStatus.deleted);
+	}
+
+	@Transactional
+	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
 		if(signRequest.getData() != null) {
@@ -884,7 +926,6 @@ public class SignRequestService {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		}
 		signRequestRepository.delete(signRequest);
-		return true;
 	}
 
 	@Transactional
@@ -1317,5 +1358,9 @@ public class SignRequestService {
 		IOUtils.copy(toValideDocument.getInputStream(), outputStream);
 		outputStream.close();
 		return file;
+	}
+
+	public List<SignRequest> getAll() {
+		return (List<SignRequest>) signRequestRepository.findAll();
 	}
 }

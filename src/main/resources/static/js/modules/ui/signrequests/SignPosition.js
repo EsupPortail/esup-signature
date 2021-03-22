@@ -61,6 +61,7 @@ export class SignPosition extends EventFactory {
         this.displayMoreToolsButton = $('#displayMoreTools_0');
         this.hideMoreToolsButton = $('#hideMoreTools_0');
         this.checkButton = $('#check_0');
+        this.watermarkButton = $('#watermark_0');
         this.createColorPicker();
         this.addSignButton = $('#addSignButton');
         if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
@@ -116,7 +117,9 @@ export class SignPosition extends EventFactory {
         this.displayMoreToolsButton.on('click', e => this.displayMoreTools());
         this.hideMoreToolsButton.on('click', e => this.hideMoreTools());
         this.checkButton.on('click', e => this.checkImage(e));
+        this.watermarkButton.on('click', e => this.toggleWatermark());
         if(this.signRequestParamses.size > 1) {
+            this.signDropButton.show();
             this.signDropButton.on('click', e => this.removeSign(e));
         } else {
             this.signDropButton.hide();
@@ -144,6 +147,7 @@ export class SignPosition extends EventFactory {
         this.displayMoreToolsButton.unbind();
         this.hideMoreToolsButton.unbind();
         this.checkButton.unbind();
+        this.watermarkButton.unbind();
         this.hideButtons();
     }
 
@@ -182,6 +186,7 @@ export class SignPosition extends EventFactory {
 
     addSign() {
         this.hideButtons();
+        this.unbindCrossToolsListeners();
         let okSign = this.cross.clone();
         okSign.css( "z-index", "2");
         okSign.children().removeClass("anim-border");
@@ -256,6 +261,7 @@ export class SignPosition extends EventFactory {
         this.displayMoreToolsButton = $('#displayMoreTools_' + currentSign);
         this.hideMoreToolsButton = $('#hideMoreTools_' + currentSign);
         this.checkButton = $('#check_' + currentSign);
+        this.watermarkButton = $('#watermark_' + currentSign);
         this.defaultTools = $('#defaultTools_' + currentSign);
         this.moreTools = $('#moreTools_' + currentSign);
         this.hideMoreTools();
@@ -268,6 +274,8 @@ export class SignPosition extends EventFactory {
         nameButton.removeClass('btn-outline-success');
         nameButton.addClass('btn-outline-dark');
         // this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+        this.hideMoreTools();
+        this.initCrossToolsListeners();
         this.resetSign();
     }
 
@@ -300,6 +308,7 @@ export class SignPosition extends EventFactory {
         this.displayMoreToolsButton = $('#displayMoreTools_' + currentSign);
         this.hideMoreToolsButton = $('#hideMoreTools_' + currentSign);
         this.checkButton = $('#check_' + currentSign);
+        this.watermarkButton = $('#watermark_' + currentSign);
         this.defaultTools = $('#defaultTools_' + currentSign);
         this.moreTools = $('#moreTools_' + currentSign);
         this.hideMoreTools();
@@ -584,6 +593,22 @@ export class SignPosition extends EventFactory {
         };
     }
 
+    toggleWatermark() {
+        if(this.getCurrentSignParams().addWatermark) {
+            this.cross.removeClass("watermarkWidth");
+            this.cross.removeClass("watermarkHeight");
+            this.getCurrentSignParams().addWatermark = false;
+        } else {
+            if(this.getCurrentSignParams().extraOnTop) {
+                this.cross.addClass("watermarkWidth");
+            } else {
+                this.cross.addClass("watermarkHeight");
+            }
+            this.getCurrentSignParams().addWatermark = true;
+        }
+
+    }
+
     toggleExtraInfos() {
         console.log("toggle extra");
         $('#extraButton').toggleClass('btn-outline-success btn-outline-dark');
@@ -614,13 +639,21 @@ export class SignPosition extends EventFactory {
             let lines = defaultText.split(/\r|\r\n|\n/);
             let count = lines.length;
             textExtra.attr("rows", count);
+            this.cross.removeClass("watermarkWidth");
+            this.cross.removeClass("watermarkHeight");
             if(this.getCurrentSignParams().extraOnTop) {
+                if(this.getCurrentSignParams().addWatermark) {
+                    this.cross.addClass("watermarkWidth");
+                }
                 this.borders.append(textExtra);
                 let textExtraHeight = textExtra.height();
                 this.getCurrentSignParams().extraHeight = textExtraHeight;
                 this.getCurrentSignParams().extraWidth = 0;
                 this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
             } else {
+                if(this.getCurrentSignParams().addWatermark) {
+                    this.cross.addClass("watermarkHeight");
+                }
                 this.borders.append(textExtra);
                 console.log(textExtra);
                 let textExtraWidth = this.getCurrentSignParams().signWidth / this.fixRatio;

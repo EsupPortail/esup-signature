@@ -99,17 +99,21 @@ public class PdfService {
                 signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), signRequestParams);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
-                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
-                signImage = new FileInputStream(fileWithWatermark);
+                if(signRequestParams.getAddWatermark()) {
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                    signImage = new FileInputStream(fileWithWatermark);
+                }
             } else {
                 if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
                     signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");
                 } else {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
-                    signImage = new FileInputStream(fileWithWatermark);
+                    if(signRequestParams.getAddWatermark()) {
+                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                        signImage = new FileInputStream(fileWithWatermark);
+                    }
                 }
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);

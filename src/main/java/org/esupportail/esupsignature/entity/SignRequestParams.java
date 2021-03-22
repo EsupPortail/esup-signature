@@ -29,6 +29,8 @@ public class SignRequestParams {
 
 	private String extraText = "";
 
+	private Boolean addWatermark = false;
+
     private Boolean addExtra = false;
 
     private Boolean extraOnTop = true;
@@ -123,6 +125,14 @@ public class SignRequestParams {
 
     public void setExtraText(String extraText) {
         this.extraText = extraText;
+    }
+
+    public Boolean getAddWatermark() {
+        return addWatermark;
+    }
+
+    public void setAddWatermark(Boolean addWatermark) {
+        this.addWatermark = addWatermark;
     }
 
     public Boolean getAddExtra() {

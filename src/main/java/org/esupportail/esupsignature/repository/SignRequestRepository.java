@@ -23,9 +23,10 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     @Query("select count(s.id) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed is false")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
-    List<SignRequest> findByCreateByEppn(String CreateByEppn);
-    List<SignRequest> findByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
-    Long countByCreateByEppnAndStatus(String CreateByEppn, SignRequestStatus status);
+    List<SignRequest> findByCreateByEppn(String createByEppn);
+    List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
+    List<SignRequest> findByCreateByEppnAndStatusNot(String createByEppn, SignRequestStatus status);
+    Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
     @Query("select s from SignRequest s join s.recipientHasSigned rhs where key(rhs).user.eppn = :recipientUserEppn and rhs.actionType = :actionType")
