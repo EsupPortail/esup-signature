@@ -388,6 +388,7 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
@@ -447,7 +448,7 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === "date") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePickerIndex);
+                    section.css("z-index", datePickerIndex);
                     datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'DD/MM/YYYY',
@@ -476,7 +477,7 @@ export class PdfViewer extends EventFactory {
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePickerIndex);
+                    section.css("z-index", datePickerIndex);
                     datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'LT',
