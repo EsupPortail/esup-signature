@@ -3,10 +3,11 @@
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
+<!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import ListSignRequestUi from "/static/js/modules/ui/signrequests/ListSignRequestUi.js";
-    new ListSignRequestUi([[${signRequests.getTotalElements() - signRequests.getNumberOfElements()}]], [[${_csrf}]]);
+    new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

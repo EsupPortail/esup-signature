@@ -200,9 +200,11 @@ public class SignService {
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
 		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
-		File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-		fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
-		signImage = new FileInputStream(fileWithWatermark);
+		if(signRequestParams.getAddWatermark()) {
+			File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+			fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
+			signImage = new FileInputStream(fileWithWatermark);
+		}
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);

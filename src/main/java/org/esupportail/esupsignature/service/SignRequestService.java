@@ -200,7 +200,7 @@ public class SignRequestService {
 
 	public List<SignRequest> getSignRequestsByStatus(String userEppn, String statusFilter) {
 		Set<SignRequest> signRequests = new HashSet<>();
-		if (statusFilter != null) {
+		if (statusFilter != null && !statusFilter.isEmpty()) {
 			switch (statusFilter) {
 				case "tosign":
 					signRequests.addAll(getToSignRequests(userEppn));
@@ -217,6 +217,9 @@ public class SignRequestService {
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
+				case "deleted":
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+					break;
 				default:
 					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
 					break;
@@ -226,6 +229,7 @@ public class SignRequestService {
 			signRequests.addAll(getToSignRequests(userEppn));
 			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
+			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
 		}
 		return new ArrayList<>(signRequests);
 	}
@@ -868,7 +872,14 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean delete(Long signRequestId) {
+	public void delete(Long signRequestId) {
+		//TODO critères de suppression ou en conf (if deleteDefinitive)
+		SignRequest signRequest = getById(signRequestId);
+		signRequest.setStatus(SignRequestStatus.deleted);
+	}
+
+	@Transactional
+	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
 		if(signRequest.getData() != null) {
@@ -884,7 +895,6 @@ public class SignRequestService {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		}
 		signRequestRepository.delete(signRequest);
-		return true;
 	}
 
 	@Transactional

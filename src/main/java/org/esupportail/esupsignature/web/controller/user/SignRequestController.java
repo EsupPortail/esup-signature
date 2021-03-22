@@ -334,11 +334,8 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        if(signRequestService.delete(id)) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        } else {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression interdite"));
-        }
+        signRequestService.delete(id);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         return "redirect:" + request.getHeader("referer");
     }
 
