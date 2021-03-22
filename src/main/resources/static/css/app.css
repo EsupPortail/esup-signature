@@ -1509,3 +1509,39 @@ progress:before {
     font-size: 1rem;
     font-weight: bold;
 }
+
+.watermarkHeight::after {
+    filter: invert(1);
+    content: "";
+    background-image: url('/images/watermark.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+    height: 60%;
+    top: 20%;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    display: inline-block;
+    z-index: -1;
+}
+
+.watermarkWidth::after {
+    filter: invert(1);
+    content: "";
+    background-image: url('/images/watermark.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.2;
+    width: 80%;
+    top: 0;
+    left: 10%;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    display: inline-block;
+    z-index: -1;
+}

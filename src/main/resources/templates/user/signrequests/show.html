@@ -374,10 +374,10 @@
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et retourner à l'accueil</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et retourner à l'accueil</span>
                     </button>
-                    <button id="checkRepeatableButtonNext"
+                    <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}"
                             class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${nextSignRequest != null && (signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp)}">Signer et aller à la suivante </span>
-                        <span th:if="${nextSignRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
                         <i class="fas fa-arrow-alt-circle-right"></i>
                     </button>
                 </div>
