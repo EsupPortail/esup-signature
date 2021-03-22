@@ -1511,7 +1511,6 @@ progress:before {
 }
 
 .watermarkHeight::after {
-    filter: invert(1);
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
@@ -1529,7 +1528,6 @@ progress:before {
 }
 
 .watermarkWidth::after {
-    filter: invert(1);
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
