@@ -235,10 +235,11 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-@ApiResponses( value = {
+    @ApiResponses( value = {
             @ApiResponse(responseCode = "200")
             }
-    )@GetMapping(value = "/get-signed-file")
+    )
+    @GetMapping(value = "/get-signed-file")
     public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response) {
         try {
             SignRequest signRequest = signRequestRepository.findByToken(signBookName).get(0);
