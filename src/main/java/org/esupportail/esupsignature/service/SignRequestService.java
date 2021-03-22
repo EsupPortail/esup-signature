@@ -1316,4 +1316,8 @@ public class SignRequestService {
 		outputStream.close();
 		return file;
 	}
+
+	public List<SignRequest> getAll() {
+		return (List<SignRequest>) signRequestRepository.findAll();
+	}
 }
