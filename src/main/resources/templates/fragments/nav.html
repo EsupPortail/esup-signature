@@ -33,35 +33,20 @@
                               th:text="${nbToSign}"></span>
                     </a>
                 </li>
-                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
-                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-folder-open"></i> <span class="nav-item-label d-none d-xl-inline">Mes documents</span>
-                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
-                              class="badge badge-info mt-1" th:text="${nbDatas}"></span>
-                    </a>
-                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'signrequests'} ? 'bg-secondary'" title="Tableau de bord"
                        th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
-                       href="/user/signrequests" class="btn btn-transparent text-left" style="width: 250px;">
+                       href="/user/signrequests" class="btn btn-transparent text-left">
                         <i class="fas fa-paste"></i> <span
                             class="nav-item-label d-inline">Tableau de bord</span>
                     </a>
-                    <a th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Mes brouillons"
-                       th:if="${userEppn == authUserEppn || isOneCreateShare}"
-                       href="/user/datas" class="btn btn-transparent text-left" style="width: 250px;">
-                        <i class="fab fa-firstdraft"></i> <span
-                            class="nav-item-label d-inline">Brouillons</span>
-                        <span th:title="${nbDatas} + ' document(s) en cours de création'" th:if="${nbDatas > 0 && userEppn == authUserEppn}"
-                              class="badge badge-info mt-1" th:text="${nbDatas}"></span>
-                    </a>
+                </li>
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}">
                     <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary'" title="Rapport"
-                       th:if="${userEppn == authUserEppn && reportNumber > 0}"
                        href="/user/reports" class="btn btn-transparent text-left" style="width: 250px;">
                         <i class="fas fa-file-contract"></i> <span
                             class="nav-item-label d-inline">Rapports</span>
                     </a>
-                    </div>
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
