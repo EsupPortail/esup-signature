@@ -21,10 +21,7 @@ import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
@@ -714,49 +711,65 @@ public class SignRequestService {
 	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
 		boolean allTargetsDone = true;
 		for(Target target : targets) {
-			DocumentIOType documentIOType = target.getTargetType();
-			String targetUrl = target.getTargetUri();
-			if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
-				if (documentIOType.equals(DocumentIOType.mail)) {
-					logger.info("send by email to " + targetUrl);
-					try {
-						for (SignRequest signRequest : signRequests) {
-							for (String email : targetUrl.split(";")) {
-								signRequest.getParentSignBook().getViewers().add(userService.getUserByEmail(email));
-							}
-						}
-						mailService.sendFile(title, signRequests, targetUrl);
-						target.setTargetOk(true);
-					} catch (MessagingException | IOException e) {
-						logger.error("unable to send mail : " + e.getMessage());
-						allTargetsDone = false;
-					}
-				} else {
-					for (SignRequest signRequest : signRequests) {
-						if(target.getTargetType().equals(DocumentIOType.rest) && !target.getTargetOk()) {
-							RestTemplate restTemplate = new RestTemplate();
-							ActionType actionType = ActionType.signed;
-							if(signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
-								actionType = ActionType.refused;
-							}
-							ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + actionType.name(), String.class);
-							if(response.getStatusCode().equals(HttpStatus.OK)) {
-								target.setTargetOk(true);
-								updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
-							} else {
-								allTargetsDone = false;
-							}
-						} else {
-							Document signedFile = signRequest.getLastSignedDocument();
-							if (signRequest.getAttachments().size() > 0) {
-								targetUrl += "/" + signRequest.getTitle();
-								for (Document attachment : signRequest.getAttachments()) {
-									documentService.exportDocument(documentIOType, targetUrl, attachment);
+			if(!target.getTargetOk()) {
+				DocumentIOType documentIOType = target.getTargetType();
+				String targetUrl = target.getTargetUri();
+				if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
+					if (documentIOType.equals(DocumentIOType.mail)) {
+						logger.info("send by email to " + targetUrl);
+						try {
+							for (SignRequest signRequest : signRequests) {
+								for (String email : targetUrl.split(";")) {
+									User user = userService.getUserByEmail(email);
+									if(!signRequest.getParentSignBook().getViewers().contains(user)) {
+										signRequest.getParentSignBook().getViewers().add(user);
+									}
 								}
 							}
-							documentService.exportDocument(documentIOType, targetUrl, signedFile);
+							mailService.sendFile(title, signRequests, targetUrl);
 							target.setTargetOk(true);
-							updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+						} catch (MessagingException | IOException e) {
+							logger.error("unable to send mail to : " + target.getTargetUri(), e);
+							allTargetsDone = false;
+						}
+					} else {
+						for (SignRequest signRequest : signRequests) {
+							if (target.getTargetType().equals(DocumentIOType.rest)) {
+								RestTemplate restTemplate = new RestTemplate();
+								ActionType actionType = ActionType.signed;
+								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
+									actionType = ActionType.refused;
+								}
+								try {
+									ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + actionType.name(), String.class);
+									if (response.getStatusCode().equals(HttpStatus.OK)) {
+										target.setTargetOk(true);
+										updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+									} else {
+										logger.error("rest export fail : " + target.getTargetUri() + " return is : " + response.getStatusCode());
+										allTargetsDone = false;
+									}
+								} catch (Exception e) {
+									logger.error("rest export fail : " + target.getTargetUri(), e.getMessage());
+									allTargetsDone = false;
+								}
+							} else {
+								try {
+									Document signedFile = signRequest.getLastSignedDocument();
+									if (signRequest.getAttachments().size() > 0) {
+										targetUrl += "/" + signRequest.getTitle();
+										for (Document attachment : signRequest.getAttachments()) {
+											documentService.exportDocument(documentIOType, targetUrl, attachment);
+										}
+									}
+									documentService.exportDocument(documentIOType, targetUrl, signedFile);
+									target.setTargetOk(true);
+									updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+								} catch (EsupSignatureFsException e) {
+									logger.error("fs export fail : " + target.getTargetUri(), e);
+									allTargetsDone = false;
+								}
+							}
 						}
 					}
 				}
@@ -767,7 +780,7 @@ public class SignRequestService {
 				updateStatus(signRequest, SignRequestStatus.exported, "Exporté vers toutes les destinations", "SUCCESS", authUserEppn, authUserEppn);
 			}
 		} else {
-			throw new EsupSignatureException("unable to send at all targets");
+			throw new EsupSignatureException("unable to send to all targets");
 		}
 	}
 
@@ -778,7 +791,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureException {
+	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException {
 		if(globalProperties.getArchiveUri() != null) {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
@@ -825,7 +838,7 @@ public class SignRequestService {
 		}
 	}
 
-	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureException {
+	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
@@ -1284,7 +1297,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getToSignFileResponse(Long signRequestId) throws SQLException, EsupSignatureException, IOException {
+	public Map<String, Object> getToSignFileResponse(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());

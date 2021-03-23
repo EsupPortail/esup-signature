@@ -103,7 +103,7 @@ export class SignPosition extends EventFactory {
         this.signUndoButton.on('click', e => this.resetSign());
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
-        if(this.signImages.length > 2) {
+        if(this.signImages != null && this.signImages.length > 2) {
             this.signNextImageButton.show();
             this.signPrevImageButton.show();
             this.signNextImageButton.on('click', e => this.signNextImage(e));
