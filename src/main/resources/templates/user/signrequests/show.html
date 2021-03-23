@@ -92,15 +92,14 @@
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
-                    <li th:if="${!signRequest.title.startsWith('Signature simple') && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                            th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                    <li th:if="${signRequest.title.startsWith('Signature simple')}">
+                    <li th:if="${signRequest.createBy.eppn == userEppn}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
-                           data-toggle="modal" data-target="#modal-warning"
-                           th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
+                           data-toggle="modal" th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
                     </li>
                     <th:block id="signButtons"
                  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
@@ -740,7 +739,7 @@
 <!--</div>-->
 
 
-<div th:if="${signRequest.title.startsWith('Signature simple') || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+<div th:if="${signRequest.createBy.eppn == userEppn}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
