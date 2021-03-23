@@ -112,7 +112,7 @@ public class LogService {
             try {
                 log.setIp(request.getRemoteAddr());
             } catch (IllegalStateException e) {
-                logger.warn("unable to get IP");
+                logger.debug("unable to get IP (maybe it was launched by scheduler)");
             }
         }
     }

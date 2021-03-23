@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -262,7 +263,7 @@ public class SignBookService {
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
     }
 
-    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureException {
+    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException {
         if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
             signRequestService.archiveSignRequests(signBook.getSignRequests(), authUserEppn);
             signBook.setStatus(SignRequestStatus.archived);

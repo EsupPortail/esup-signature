@@ -32,7 +32,7 @@ public class LogController {
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
-		return "adminsignrequests";
+		return "logs";
 	}
 
 	private SignRequestStatus statusFilter = null;

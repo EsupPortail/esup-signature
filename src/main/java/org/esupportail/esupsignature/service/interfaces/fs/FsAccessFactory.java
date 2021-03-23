@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.fs;
 
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
@@ -26,7 +26,7 @@ public class FsAccessFactory {
 	@Autowired
 	private ObjectProvider<CmisAccessImpl> cmisAccessImpl;
 
-	public FsAccessService getFsAccessService(String path) throws EsupSignatureException {
+	public FsAccessService getFsAccessService(String path) throws EsupSignatureFsException {
 		return  getFsAccessService(getPathIOType(path));
 	}
 
@@ -51,12 +51,12 @@ public class FsAccessFactory {
 		return fsAccessServices;
 	}
 
-	public DocumentIOType getPathIOType(String path) throws EsupSignatureException {
+	public DocumentIOType getPathIOType(String path) throws EsupSignatureFsException {
 		try {
 			URI uri = new URI(path);
 			return DocumentIOType.valueOf(uri.getScheme());
 		} catch (URISyntaxException e) {
-			throw new EsupSignatureException("target Url error", e);
+			throw new EsupSignatureFsException("target Url error", e);
 		}
 	}
 }
