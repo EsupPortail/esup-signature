@@ -22,8 +22,8 @@
 --     "fkbba225ae2q2t0ncl2cihttsh6" FOREIGN KEY (sign_book_id) REFERENCES sign_book(id)
 --     "fkecvisojhprwbqypbx5ec8q2jf" FOREIGN KEY (viewers_id) REFERENCES user_account(id)
 
---on supprime le contraint ainsi :
+--on supprime la contrainte ainsi :
 
-alter table sign_book_viewers drop constraint uk_gt3duxi8s9hmjyrakbjrwlhpk;
+alter table sign_book_viewers drop constraint if exists uk_gt3duxi8s9hmjyrakbjrwlhpk;
 
-drop table sign_request_viewers;
+drop table if exists sign_request_viewers;
