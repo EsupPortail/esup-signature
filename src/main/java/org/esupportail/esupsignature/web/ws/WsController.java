@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -19,7 +18,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.utils.barcode.DdDocService;
 import org.esupportail.esupsignature.web.ws.json.JsonDocuments;
 import org.esupportail.esupsignature.web.ws.json.JsonSignRequestStatus;
-import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -27,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,19 +136,19 @@ public class WsController {
         return ok;
     }
 
-    @ResponseBody
-    @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<HttpStatus> addWorkflowStep(@ModelAttribute("userEppn") String userEppn, @RequestParam String name,
-                                  @RequestParam String jsonWorkflowStepString) throws IOException {
-        SignBook signBook = signBookRepository.findByName(name).get(0);
-        ObjectMapper mapper = new ObjectMapper();
-        JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
-        int level = jsonWorkflowStep.getSignLevel();
-        SignType signType = signRequestService.getSignTypeByLevel(level);
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, false, jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientsEmails().stream().toArray(String[]::new));
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @ResponseBody
+//    @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<HttpStatus> addWorkflowStep(@ModelAttribute("userEppn") String userEppn, @RequestParam String name,
+//                                  @RequestParam String jsonWorkflowStepString) throws IOException {
+//        SignBook signBook = signBookRepository.findByName(name).get(0);
+//        ObjectMapper mapper = new ObjectMapper();
+//        JsonWorkflowStep jsonWorkflowStep = mapper.readValue(jsonWorkflowStepString, JsonWorkflowStep.class);
+//        int level = jsonWorkflowStep.getSignLevel();
+//        SignType signType = signRequestService.getSignTypeByLevel(level);
+//        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, false, jsonWorkflowStep.getAllSignToComplete(), signType, jsonWorkflowStep.getRecipientsEmails().stream().toArray(String[]::new));
+//        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     @ResponseBody
     @GetMapping(value = "/list-sign-requests", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -167,13 +164,13 @@ public class WsController {
         return signedFiles;
     }
 
-    @ResponseBody
-    @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
-    public String pendingSignBook(@RequestParam String name) {
-        SignBook signBook = signBookRepository.findByName(name).get(0);
-        signBookService.nextStepAndPending(signBook.getId(), null, "system", "system");
-        return signBook.getSignRequests().get(0).getToken();
-    }
+//    @ResponseBody
+//    @PostMapping(value = "/pending-sign-book", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public String pendingSignBook(@RequestParam String name) {
+//        SignBook signBook = signBookRepository.findByName(name).get(0);
+//        signBookService.nextStepAndPending(signBook.getId(), null, "system", "system");
+//        return signBook.getSignRequests().get(0).getToken();
+//    }
 
     @ResponseBody
     @PostMapping(value = "/pending-sign-request", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -210,19 +207,19 @@ public class WsController {
         return workflow.getName();
     }
 
-    @ResponseBody
-    @PostMapping(value = "/delete-sign-book")
-    public ResponseEntity<String> deleteSignBook(@RequestParam String name, HttpServletRequest httpServletRequest) {
-        User user = userService.getSystemUser();
-        user.setIp(httpServletRequest.getRemoteAddr());
-        if (signBookRepository.countByName(name) > 0) {
-            SignBook signBook = signBookRepository.findByName(name).get(0);
-            if(signBook.getExternal()) {
-                signBookService.delete(signBook.getId());
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @ResponseBody
+//    @PostMapping(value = "/delete-sign-book")
+//    public ResponseEntity<String> deleteSignBook(@RequestParam String name, HttpServletRequest httpServletRequest) {
+//        User user = userService.getSystemUser();
+//        user.setIp(httpServletRequest.getRemoteAddr());
+//        if (signBookRepository.countByName(name) > 0) {
+//            SignBook signBook = signBookRepository.findByName(name).get(0);
+//            if(signBook.getExternal()) {
+//                signBookService.delete(signBook.getId());
+//            }
+//        }
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     @ResponseBody
     @PostMapping(value = "/delete-sign-request")
@@ -310,36 +307,36 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping(value = "/get-last-file-from-signbook")
-    public ResponseEntity<Void> getLastFileFromSignBook(@RequestParam String name, HttpServletResponse response) {
-        try {
-            SignBook signBook = signBookRepository.findByName(name).get(0);
-            if (signBook != null) {
-                try {
-                    SignRequest signRequest = signBook.getSignRequests().get(0);
-                    FsFile file = signRequestService.getLastSignedFsFile(signRequest);
-                    if (file == null) {
-                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
-                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
-                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
-                    } else {
-                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
-                        response.setContentType(file.getContentType());
-                        IOUtils.copy(file.getInputStream(), response.getOutputStream());
-                    }
-                    return new ResponseEntity<>(HttpStatus.OK);
-                } catch (Exception e) {
-                    logger.error("get file error", e);
-                }
-            } else {
-                logger.warn("no signed version of " + name);
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        } catch (NoResultException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @GetMapping(value = "/get-last-file-from-signbook")
+//    public ResponseEntity<Void> getLastFileFromSignBook(@RequestParam String name, HttpServletResponse response) {
+//        try {
+//            SignBook signBook = signBookRepository.findByName(name).get(0);
+//            if (signBook != null) {
+//                try {
+//                    SignRequest signRequest = signBook.getSignRequests().get(0);
+//                    FsFile file = signRequestService.getLastSignedFsFile(signRequest);
+//                    if (file == null) {
+//                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
+//                        response.setContentType(signRequest.getOriginalDocuments().get(0).getContentType());
+//                        IOUtils.copy(signRequest.getOriginalDocuments().get(0).getInputStream(), response.getOutputStream());
+//                    } else {
+//                        response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.toString()));
+//                        response.setContentType(file.getContentType());
+//                        IOUtils.copy(file.getInputStream(), response.getOutputStream());
+//                    }
+//                    return new ResponseEntity<>(HttpStatus.OK);
+//                } catch (Exception e) {
+//                    logger.error("get file error", e);
+//                }
+//            } else {
+//                logger.warn("no signed version of " + name);
+//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//            }
+//        } catch (NoResultException e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     @GetMapping(value = "/get-last-file")
     public ResponseEntity<Void> getLastFile(@RequestParam String token, HttpServletResponse response) {
@@ -426,30 +423,29 @@ public class WsController {
     }
 
 
-    @PostMapping(value = "/complete-sign-book")
-    public ResponseEntity<Void> completeSignBook(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
-        try {
-            SignBook signBook = signBookRepository.findByName(signBookName).get(0);
-            SignRequest signRequest = signRequestRepository.findByToken(name).get(0);
-            User user = userService.getSystemUser();
-            user.setIp(httpServletRequest.getRemoteAddr());
-            if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
-                try {
-                    signBookService.removeSignRequestFromSignBook(signBook, signRequest);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                } catch (Exception e) {
-                    logger.error("get file error", e);
-                }
-            } else {
-                logger.warn("no signed version of " + name);
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-        } catch (NoResultException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
+//    @PostMapping(value = "/complete-sign-book")
+//    public ResponseEntity<Void> completeSignBook(@RequestParam String signBookName, @RequestParam String name, HttpServletRequest httpServletRequest, HttpServletResponse response, Model model) {
+//        try {
+//            SignBook signBook = signBookRepository.findByName(signBookName).get(0);
+//            SignRequest signRequest = signRequestRepository.findByToken(name).get(0);
+//            User user = userService.getSystemUser();
+//            user.setIp(httpServletRequest.getRemoteAddr());
+//            if (signRequest.getStatus().equals(SignRequestStatus.signed)) {
+//                try {
+//                    signBookService.removeSignRequestFromSignBook(signBook, signRequest);
+//                    return new ResponseEntity<>(HttpStatus.OK);
+//                } catch (Exception e) {
+//                    logger.error("get file error", e);
+//                }
+//            } else {
+//                logger.warn("no signed version of " + name);
+//                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//            }
+//        } catch (NoResultException e) {
+//            logger.error(e.getMessage(), e);
+//        }
+//        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
     @ResponseBody
     @PostMapping(value = "/complete-sign-request")

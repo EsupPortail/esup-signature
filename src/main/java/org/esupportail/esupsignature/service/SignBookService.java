@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,21 +100,17 @@ public class SignBookService {
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
-        String name = generateName(prefix, suffix, user.getEppn());
-        if (signBookRepository.countByName(name) == 0) {
-            SignBook signBook = new SignBook();
-            signBook.setStatus(SignRequestStatus.draft);
-            signBook.setName(name);
-            signBook.setTitle(prefix);
-            signBook.setCreateBy(user);
-            signBook.setCreateDate(new Date());
-            signBook.setExternal(external);
-            signBook.setLiveWorkflow(liveWorkflowService.create());
-            signBookRepository.save(signBook);
-            return signBook;
-        } else {
-            return signBookRepository.findByName(name).get(0);
-        }
+        String name = generateName(prefix, suffix);
+        SignBook signBook = new SignBook();
+        signBook.setStatus(SignRequestStatus.draft);
+        signBook.setName(name);
+        signBook.setTitle(prefix);
+        signBook.setCreateBy(user);
+        signBook.setCreateDate(new Date());
+        signBook.setExternal(external);
+        signBook.setLiveWorkflow(liveWorkflowService.create());
+        signBookRepository.save(signBook);
+        return signBook;
     }
 
     @Transactional
@@ -152,9 +147,9 @@ public class SignBookService {
         return signBookRepository.findByCreateByEppn(userEppn);
     }
 
-    public SignBook getByName(String name) {
-        return signBookRepository.findByName(name).get(0);
-    }
+//    public SignBook getByName(String name) {
+//        return signBookRepository.findByName(name).get(0);
+//    }
 
     public SignBook getById(Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -441,20 +436,18 @@ public class SignBookService {
         }
     }
 
-    public String generateName(String prefix, String suffix, String userEppn) {
+    public String generateName(String prefix, String suffix) {
         String signBookName = "";
 
         if(!prefix.isEmpty()) {
             signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-").replace(" ", "-");
         }
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        signBookName += "_" + format.format(new Date());
-
         if(!suffix.isEmpty()) {
-            signBookName += "_";
+            if(!prefix.isEmpty()) {
+                signBookName += "-";
+            }
             signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
         }
-        signBookName += "_" + userEppn;
         return signBookName;
     }
 
@@ -497,15 +490,15 @@ public class SignBookService {
             prefix += "_";
         }
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(prefix + fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(prefix + multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         }
     }
 
     @Transactional
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(workflowName, name, authUser, true);
-        addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser.getEppn());
+        SignBook signBook = createSignBook("", name, authUser, true);
+        addDocumentsToSignBook(signBook, "", multipartFiles, authUser.getEppn());
         return signBook;
     }
 

@@ -19,7 +19,7 @@ body {
 }
 
 header {
-    z-index: 10000 !important;
+    z-index: 1029 !important;
 }
 
 label {
@@ -185,6 +185,10 @@ code {
 
 .custom-file-input:lang(en) ~ .custom-file-label::after {
 	content: "Parcourir" !important;
+}
+
+.static-border {
+    border: 2px solid #008000;
 }
 
 .anim-border {
@@ -439,7 +443,7 @@ input:checked + .slider:before {
     top: 50px;
     padding-right: 10px;
     position: fixed;
-    z-index: 10002;
+    z-index: 1039;
     min-width: 260px;
     max-width: 260px;
     height: calc(100vh - 80px);
@@ -482,7 +486,7 @@ input:checked + .slider:before {
     padding-top: 5px;
     background-color: white;
     width: 100%;
-    z-index: 10001;
+    z-index: 1029;
     position: fixed;
     padding-left: 10px;
 }
@@ -500,7 +504,7 @@ input:checked + .slider:before {
     background-color: white;
     margin-left: 260px;
     width: calc(100vw - 275px);
-    z-index: 10000;
+    z-index: 1029;
 }
 
 .breadcrumb-nav-full {
@@ -1377,7 +1381,6 @@ input:focus, textarea:focus, select:focus {
     }
 
     .tools {
-        z-index: 10001;
         top: 50px;
     }
 
