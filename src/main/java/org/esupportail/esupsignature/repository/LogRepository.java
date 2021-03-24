@@ -1,11 +1,14 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Log;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
 public interface LogRepository extends CrudRepository<Log, Long>  {
+    Page<Log> findAll(Pageable pageable);
     List<Log> findByEppn(String eppn);
     List<Log> findByEppnAndFinalStatus(String eppn, String finalStatus);
     List<Log> findByEppnForAndFinalStatus(String eppn, String finalStatus);

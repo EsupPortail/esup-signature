@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -186,8 +187,18 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public boolean delete(Long signBookId) {
-        //TODO critères de suppression ou en conf
+    public void delete(Long signBookId) {
+        //TODO critères de suppression ou en conf (if deleteDefinitive)
+        SignBook signBook = getById(signBookId);
+        List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
+        for(Long signRequestId : signRequestsIds) {
+            signRequestService.delete(signRequestId);
+        }
+        signBook.setStatus(SignRequestStatus.deleted);
+    }
+
+    @Transactional
+    public void deleteDefinitive(Long signBookId) {
         SignBook signBook = getById(signBookId);
         List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
         for (Long liveWorkflowStepId : liveWorkflowStepIds) {
@@ -195,11 +206,10 @@ public class SignBookService {
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
-            signRequestService.delete(signRequestId);
+            signRequestService.deleteDefinitive(signRequestId);
         }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
-        return true;
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
@@ -253,7 +263,7 @@ public class SignBookService {
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
     }
 
-    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureException {
+    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException {
         if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
             signRequestService.archiveSignRequests(signBook.getSignRequests(), authUserEppn);
             signBook.setStatus(SignRequestStatus.archived);

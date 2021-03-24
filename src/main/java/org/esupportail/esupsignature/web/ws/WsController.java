@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
@@ -235,10 +236,11 @@ public class WsController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-@ApiResponses( value = {
+    @ApiResponses( value = {
             @ApiResponse(responseCode = "200")
             }
-    )@GetMapping(value = "/get-signed-file")
+    )
+    @GetMapping(value = "/get-signed-file")
     public ResponseEntity<Void> getSignedFile(@RequestParam String signBookName, @RequestParam String name, HttpServletResponse response) {
         try {
             SignRequest signRequest = signRequestRepository.findByToken(signBookName).get(0);
@@ -302,7 +304,7 @@ public class WsController {
                 logger.warn("no signRequest " + token);
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-        } catch (NoResultException | IOException | EsupSignatureException e) {
+        } catch (NoResultException | IOException | EsupSignatureFsException e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

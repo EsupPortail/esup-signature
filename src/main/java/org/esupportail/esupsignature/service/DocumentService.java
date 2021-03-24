@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
@@ -81,11 +80,11 @@ public class DocumentService {
 		return name;
 	}
 
-	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureException {
+	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureFsException {
 		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
 	}
 
-	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureException {
+	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureFsException {
 		String documentUri;
 		FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
 		if(fsAccessService != null) {
@@ -99,16 +98,16 @@ public class DocumentService {
 					if (fsAccessService.getFileFromURI(documentUri) != null) {
 						return documentUri;
 					} else {
-						throw new EsupSignatureException("file is not exported");
+						throw new EsupSignatureFsException("file is not exported");
 					}
 				} else {
-					throw new EsupSignatureException("file is not exported");
+					throw new EsupSignatureFsException("file is not exported");
 				}
 			} catch (EsupSignatureFsException e) {
-				throw new EsupSignatureException("write fsaccess error : ", e);
+				throw new EsupSignatureFsException("write fsaccess error : ", e);
 			}
 		} else {
-			throw new EsupSignatureException("aucun fsService configuré");
+			throw new EsupSignatureFsException("aucun fsService configuré");
 		}
 	}
 

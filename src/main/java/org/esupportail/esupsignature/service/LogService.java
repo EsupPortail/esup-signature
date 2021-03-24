@@ -8,6 +8,8 @@ import org.esupportail.esupsignature.repository.LogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,11 @@ public class LogService {
     public List<Log> getSignLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.signed.name());
         return setUsers(logs);
+    }
+
+    public Page<Log> getAllLogs(Pageable pageable) {
+        Page<Log> logs = logRepository.findAll(pageable);
+        return logs;
     }
 
     public List<Log> getByEppn(String eppn) {
@@ -105,7 +112,7 @@ public class LogService {
             try {
                 log.setIp(request.getRemoteAddr());
             } catch (IllegalStateException e) {
-                logger.warn("unable to get IP");
+                logger.debug("unable to get IP (maybe it was launched by scheduler)");
             }
         }
     }

@@ -9,7 +9,7 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class Workflow {
 
     @Id

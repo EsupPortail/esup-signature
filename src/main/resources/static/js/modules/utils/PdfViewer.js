@@ -362,7 +362,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
-        let datePicherIndex = 1040;
+        let datePickerIndex = 1040;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
@@ -388,6 +388,7 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
@@ -447,8 +448,8 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === "date") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
-                    datePicherIndex--;
+                    section.css("z-index", datePickerIndex);
+                    datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'DD/MM/YYYY',
                         locale: 'fr',
@@ -476,8 +477,8 @@ export class PdfViewer extends EventFactory {
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
-                    $('section[data-annotation-id=' + items[i].id + ']').css("z-index", datePicherIndex);
-                    datePicherIndex--;
+                    section.css("z-index", datePickerIndex);
+                    datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'LT',
                         locale: 'fr',
@@ -524,6 +525,8 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                 }
                 if(this.isFieldEnable(dataField)) {
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);

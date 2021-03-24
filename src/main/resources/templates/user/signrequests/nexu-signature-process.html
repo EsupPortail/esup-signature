@@ -13,16 +13,16 @@
 <main role="main">
     <nav th:insert="fragments/side"></nav>
     <div id="content" class="content">
-        <div class="alert alert-primary col-6 mb-2">
-            <p>Signature NexU en cours</p>
-            <p><small>
+        <div class="alert alert-success col-6 mb-2 mx-auto">
+            <h3>Signature NexU en cours</h3>
+            <p>
                 L'application Nexu va s'ouvrir, vous pourez utiliser le gestionnaire de clés windows ou une
                 clé matérielle<br>
                 Il est possible que vous deviez saisir votre mot de passe plusieurs fois pendant la
-                procédure</small>
+                procédure
             </p>
         </div>
-        <div class="card">
+        <div class="card col-10 mx-auto">
             <div class="card-body">
                 <h5 class="text-center"><b>Progression de la procédure de signature</b></h5>
                 <div class="progress">
@@ -54,5 +54,6 @@
         </div>
     </div>
 </main>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

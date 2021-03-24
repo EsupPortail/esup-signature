@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -11,6 +12,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "user_account")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 	
 	@Id

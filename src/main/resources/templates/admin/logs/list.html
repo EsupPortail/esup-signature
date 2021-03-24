@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="fragments/side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Logs</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Logs</b></h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Eppn</th>
+                            <th>Action</th>
+                            <th>Statut initial</th>
+                            <th>Statut final</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="log : ${logs}">
+                            <tr>
+                                <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                <td><span th:text="${log.eppn}"></span></td>
+                                <td><span th:text="${log.action}"></span></td>
+                                <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
+                                <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

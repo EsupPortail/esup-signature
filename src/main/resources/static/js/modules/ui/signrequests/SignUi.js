@@ -197,6 +197,7 @@ export class SignUi {
             $("#infiniteFormSubmit").click();
             return;
         }
+        this.signComment = $("#signCommentInfinite");
         step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');

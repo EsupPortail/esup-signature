@@ -8,6 +8,7 @@ export class SignRequestParams {
         this.signHeight;
         this.xPos = -1;
         this.yPos = -1;
+        this.addWatermark = false;
         this.addExtra = true;
         this.extraOnTop = true;
         this.extraWidth = 0;

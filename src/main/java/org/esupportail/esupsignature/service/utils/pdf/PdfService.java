@@ -99,15 +99,25 @@ public class PdfService {
                 signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), signRequestParams);
             } else if (signRequestParams.getAddExtra()) {
                 signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
+                if(signRequestParams.getAddWatermark()) {
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                    signImage = new FileInputStream(fileWithWatermark);
+                }
             } else {
                 if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
                     signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");
                 } else {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                    if(signRequestParams.getAddWatermark()) {
+                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                        signImage = new FileInputStream(fileWithWatermark);
+                    }
                 }
             }
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-            changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -645,26 +655,6 @@ public class PdfService {
         InputStream inputStream = bufferedImageToInputStream(bufferedImage, "png");
         bufferedImage.flush();
         return inputStream;
-    }
-
-    private void changeColor(BufferedImage imgBuf, int oldRed, int oldGreen, int oldBlue, int newRed, int newGreen, int newBlue) {
-
-        int RGB_MASK = 0x00ffffff;
-        int ALPHA_MASK = 0xff000000;
-
-        int oldRGB = oldRed << 16 | oldGreen << 8 | oldBlue;
-        int toggleRGB = oldRGB ^ (newRed << 16 | newGreen << 8 | newBlue);
-
-        int w = imgBuf.getWidth();
-        int h = imgBuf.getHeight();
-
-        int[] rgb = imgBuf.getRGB(0, 0, w, h, null, 0, w);
-        for (int i = 0; i < rgb.length; i++) {
-            if ((rgb[i] & RGB_MASK) == oldRGB) {
-                rgb[i] ^= toggleRGB;
-            }
-        }
-        imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
     }
 
 }
