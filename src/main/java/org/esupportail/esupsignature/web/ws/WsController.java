@@ -123,18 +123,18 @@ public class WsController {
         return ok;
     }
 
-    @ResponseBody
-    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
-                                              @PathVariable("workflowName") String workflowName,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
-        logger.info("start add documents in " + name);
-        User systemUser = userService.getSystemUser();
-        systemUser.setIp(httpServletRequest.getRemoteAddr());
-        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, systemUser);
-        String[] ok = {"ok"};
-        return ok;
-    }
+//    @ResponseBody
+//    @PostMapping(value = "/add-docs-in-sign-book-unique/{workflowName}/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+//    public Object addDocumentToNewSignRequest(@PathVariable("name") String name,
+//                                              @PathVariable("workflowName") String workflowName,
+//                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
+//        logger.info("start add documents in " + name);
+//        User systemUser = userService.getSystemUser();
+//        systemUser.setIp(httpServletRequest.getRemoteAddr());
+//        signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, systemUser);
+//        String[] ok = {"ok"};
+//        return ok;
+//    }
 
 //    @ResponseBody
 //    @PostMapping(value = "/add-workflow-step", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -253,7 +253,10 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(SignBook signBook, String authUser) {
+    public void completeSignBook(SignBook signBook, String authUser) throws EsupSignatureException {
+        if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
+            mailService.sendCompletedMail(signBook);
+        }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
     }
@@ -285,7 +288,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) {
+    public boolean startLiveWorkflow(SignBook signBook, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureException {
         if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >  0) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
@@ -374,7 +377,7 @@ public class SignBookService {
         }
     }
 
-    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn) {
+    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         boolean emailSended = false;
@@ -400,7 +403,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) {
+    public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
         nextWorkFlowStep(signBook);
         pendingSignBook(signBook, data, userEppn, authUserEppn);
@@ -497,7 +500,7 @@ public class SignBookService {
 
     @Transactional
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook("", name, authUser, true);
+        SignBook signBook = createSignBook("", "", authUser, true);
         addDocumentsToSignBook(signBook, "", multipartFiles, authUser.getEppn());
         return signBook;
     }
@@ -505,7 +508,7 @@ public class SignBookService {
     @Transactional
     public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
-        SignBook signBook = createSignBook(name, "", authUser, false);
+        SignBook signBook = createSignBook("", "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
@@ -513,7 +516,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) {
+    public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) throws EsupSignatureException {
         Workflow workflow = workflowService.getById(workflowSignBookId);
         importWorkflow(signBook, workflow);
         nextWorkFlowStep(signBook);
