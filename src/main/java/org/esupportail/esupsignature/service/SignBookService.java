@@ -490,15 +490,15 @@ public class SignBookService {
             prefix += "_";
         }
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(prefix + fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(prefix + multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         }
     }
 
     @Transactional
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(workflowName, name, authUser, true);
-        addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser.getEppn());
+        SignBook signBook = createSignBook("", name, authUser, true);
+        addDocumentsToSignBook(signBook, "", multipartFiles, authUser.getEppn());
         return signBook;
     }
 
