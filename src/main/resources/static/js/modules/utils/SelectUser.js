@@ -190,8 +190,8 @@ export default class SelectUser {
                 controller.abort();
                 controller = new AbortController()
                 signal = controller.signal
-                if (search.length < 4) {
-                    callback('Merci de saisir au moins 4 caractères');
+                if (search.length < 3) {
+                    callback('Merci de saisir au moins 3 caractères');
                 } else {
                     fetch('/user/users/search-user?searchString=' + search, {
                         method: 'get',
