@@ -461,6 +461,12 @@ public class UserService {
     }
 
     @Transactional
+    public void setUiParams(String authUserEppn, String key, String value) {
+        User user = getUserByEppn(authUserEppn);
+        user.getUiParams().put(UiParams.valueOf(key), value);
+    }
+
+    @Transactional
     public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
         User user = getUserByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImaeNumber);

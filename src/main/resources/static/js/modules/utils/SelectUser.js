@@ -151,7 +151,6 @@ export default class SelectUser {
             };
         }
         this.favorites = typeValues;
-        console.log(this.favorites);
         this.slimSelect.setData(this.favorites);
         this.slimSelect.set();
     }
@@ -169,7 +168,6 @@ export default class SelectUser {
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
-        console.log(this.favorites);
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             data: this.favorites,
