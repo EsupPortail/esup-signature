@@ -76,9 +76,10 @@ td {
 }
 
 .footer {
-  width: 100%;
-  height: 38px;
-  line-height: 38px;
+    z-index: 10000;
+    width: 100%;
+    height: 38px;
+    line-height: 38px;
 }
 
 .mini-menu {
@@ -850,8 +851,8 @@ height: 100%;
 }
 
 .bootstrap-datetimepicker-widget {
-    list-style: none !important;
     background-color: #fff !important;
+    font-size: 10px;
 }
 
 .required-field {

@@ -46,7 +46,8 @@ public class SignRequestParamsService {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        signRequestParams.setxPos((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX());
+        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
+        signRequestParams.setxPos(xPosCentered);
         signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
         signRequestParams.setSignPageNumber(annotationPages.get(0));
         signRequestParamsRepository.save(signRequestParams);

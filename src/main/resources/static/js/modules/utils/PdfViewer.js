@@ -467,11 +467,7 @@ export class PdfViewer extends EventFactory {
                         toolbarPlacement: 'bottom',
                         showClear: true,
                         showClose: true,
-                        keepOpen: false,
-                        widgetPositioning: {
-                            horizontal: 'right',
-                            vertical: 'bottom'
-                        },
+                        keepOpen: true,
                     });
                     inputField.off('dp.change');
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));
