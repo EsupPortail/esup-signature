@@ -151,7 +151,6 @@ export default class SelectUser {
             };
         }
         this.favorites = typeValues;
-        console.log(this.favorites);
         this.slimSelect.setData(this.favorites);
         this.slimSelect.set();
     }
@@ -169,7 +168,6 @@ export default class SelectUser {
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
-        console.log(this.favorites);
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             data: this.favorites,
@@ -190,8 +188,8 @@ export default class SelectUser {
                 controller.abort();
                 controller = new AbortController()
                 signal = controller.signal
-                if (search.length < 4) {
-                    callback('Merci de saisir au moins 4 caractères');
+                if (search.length < 3) {
+                    callback('Merci de saisir au moins 3 caractères');
                 } else {
                     fetch('/user/users/search-user?searchString=' + search, {
                         method: 'get',

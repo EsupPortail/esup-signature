@@ -654,9 +654,7 @@ public class SignRequestService {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
 				} else {
 					signBookService.completeSignBook(signRequest.getParentSignBook(), authUserEppn);
-					if (!signRequest.getParentSignBook().getCreateBy().equals(userService.getSchedulerUser())) {
-						mailService.sendCompletedMail(signRequest.getParentSignBook());
-					}
+
 				}
 			}
 		} else {
@@ -1178,6 +1176,7 @@ public class SignRequestService {
 				viewers.add(userService.getUserByEmail(recipientsEmail));
 			}
 			signBook.setViewers(viewers);
+			mailService.sendCCtAlert(Arrays.asList(recipientsCCEmails), signBook.getSignRequests().get(0));
 		}
 		return signBookService.sendSignBook(signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
 	}

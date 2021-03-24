@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
@@ -84,8 +85,20 @@ public class UserController {
 		model.addAttribute("activeMenu", "settings");
 		return "user/users/update";
     }
-    
-    @PostMapping
+
+	@GetMapping("/get-ui-params")
+	@ResponseBody
+	public Map<UiParams, String> getUiParams(@ModelAttribute("authUserEppn") String authUserEppn) {
+    	return userService.getUiParams(authUserEppn);
+	}
+
+	@GetMapping("/set-ui-params/{key}/{value}")
+	@ResponseBody
+	public void setUiParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String key, @PathVariable String value) {
+		userService.setUiParams(authUserEppn, key, value);
+	}
+
+	@PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
     		@RequestParam(value = "emailAlertFrequency", required=false) EmailAlertFrequency emailAlertFrequency,
     		@RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,

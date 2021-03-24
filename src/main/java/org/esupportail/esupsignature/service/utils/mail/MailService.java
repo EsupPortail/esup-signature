@@ -2,9 +2,7 @@ package org.esupportail.esupsignature.service.utils.mail;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
@@ -80,11 +78,16 @@ public class MailService {
             message.setSubject("Esup-Signature : demande signature terminée");
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
             message.setTo(user.getEmail());
-            String[] viewersArray = new String[signBook.getViewers().size()];
+            List<String> viewersArray = new ArrayList<>();
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
-                viewersArray[i] =  signBook.getViewers().get(i).getEmail();
+                viewersArray.add(signBook.getViewers().get(i).getEmail());
             }
-            message.setCc(viewersArray);
+            for(Recipient recipient : signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny().get()) {
+                if(!viewersArray.contains(recipient.getUser().getEmail())) {
+                    viewersArray.add(recipient.getUser().getEmail());
+                }
+            }
+            message.setCc(viewersArray.toArray(new String[0]));
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email completes for " + user.getEppn());
@@ -154,6 +157,40 @@ public class MailService {
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
             message.setTo(recipientsEmails.toArray(String[]::new));
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
+            message.setText(htmlContent, true);
+            logger.info("send email alert for " + recipientsEmails.get(0));
+            mailSender.getIfAvailable().send(mimeMessage);
+            signRequest.setLastNotifDate(new Date());
+        } catch (MessagingException e) {
+            logger.error("unable to send email", e);
+        }
+
+    }
+
+    public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) {
+        if (!checkMailSender()) {
+            return;
+        }
+        final Context ctx = new Context(Locale.FRENCH);
+
+        PersonLdap personLdap = userService.findPersonLdapByUser(signRequest.getCreateBy());
+        if(personLdap != null) {
+            OrganizationalUnitLdap organizationalUnitLdap = userService.findOrganizationalUnitLdapByPersonLdap(personLdap);
+            ctx.setVariable("organizationalUnitLdap", organizationalUnitLdap);
+        }
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.getIfAvailable().createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            User creator = signRequest.getCreateBy();
+            message.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            message.setFrom(mailConfig.getIfAvailable().getMailFrom());
+            message.setTo(recipientsEmails.toArray(String[]::new));
+            String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
             mailSender.getIfAvailable().send(mimeMessage);

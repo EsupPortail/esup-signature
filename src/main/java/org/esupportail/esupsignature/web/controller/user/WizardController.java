@@ -75,7 +75,7 @@ public class WizardController {
                        @RequestParam(name="close", required = false) Boolean close,
                        @RequestParam(name="start", required = false) Boolean start,
                        @RequestBody JsonWorkflowStep step,
-                       Model model) {
+                       Model model) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {

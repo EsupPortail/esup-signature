@@ -92,15 +92,14 @@
                         <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Viser"><i class="fas fa-check"></i></a>
                     </li>
-                    <li th:if="${!signRequest.title.startsWith('Signature simple') && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <li th:if="${signRequest.createBy.eppn != userEppn && signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a id="refuseLaunchButton" role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Refuser"
                            th:token="${signRequest.token}" data-toggle="modal" data-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                    <li th:if="${signRequest.title.startsWith('Signature simple')}">
+                    <li th:if="${signRequest.createBy.eppn == userEppn}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
-                           data-toggle="modal" data-target="#modal-warning"
-                           th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
+                           data-toggle="modal" th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
                     </li>
                     <th:block id="signButtons"
                  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
@@ -455,10 +454,10 @@
                 </p>
                 <button id="enableInfinite" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <th:block th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-signature"></i> Signer et envoyer au(x) personne(s) sélectionnée(s)
+                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' ? 'Choisir les prochain(s) destinataire(s)' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
                     </th:block>
                     <th:block th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
+                        <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' ? 'Choisir les prochain(s) destinataire(s)' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
                     </th:block>
                 </button>
                 <form id="infiniteForm" class="d-none">
@@ -487,7 +486,7 @@
                         </label>
                     </div>
                     <div class="form-group">
-                        <textarea class="form-control" name="comment" placeholder="Commentaire"></textarea>
+                        <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Commentaire"></textarea>
                     </div>
                     <button type="button" id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                         <i class="fas fa-check"></i> Confirmer l'envoi
@@ -498,10 +497,10 @@
                 <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-signature"></i> Signer sans modification du circuit
+                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' ? 'Signer sans modification du circuit' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
                     </span>
                     <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                    <i class="fas fa-check"></i> Viser sans modification du circuit
+                    <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' ? 'Viser sans modification du circuit' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
                         </span>
                 </button>
             </div>
@@ -740,7 +739,7 @@
 <!--</div>-->
 
 
-<div th:if="${signRequest.title.startsWith('Signature simple') || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+<div th:if="${signRequest.createBy.eppn == userEppn}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
