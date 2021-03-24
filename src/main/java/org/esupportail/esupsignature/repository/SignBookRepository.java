@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long>, SignBookRepositoryCustom {
-    List<SignBook> findByName(String name);
     List<SignBook> findByCreateByEppn(String createByEppn);
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
     @Query("select count(s.id) from SignBook s join s.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed is false")
@@ -22,5 +21,4 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long>, Sign
     @Query("select s from SignBook s where s.liveWorkflow.workflow = :workflow")
     List<SignBook> findByLiveWorkflowWorkflow(Workflow workflow);
     List<SignBook> findByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus);
-    Long countByName(String name);
 }
