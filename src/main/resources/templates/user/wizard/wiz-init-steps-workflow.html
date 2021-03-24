@@ -18,6 +18,42 @@
         </div>
     </div>
 </div>
+<hr>
+<div id="stepper2" class="bs-stepper linear">
+    <div class="bs-stepper-header" role="tablist">
+        <th:block th:if="${workflow != null}">
+            <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+                <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
+            <span title="Étape à venir" class="bs-stepper-circle">
+                <i class="fas fa-clock"></i>
+            </span>
+                    <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-right"><i class="fas fa-users"></i></span>
+                    <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-right"><i class="fas fa-user"></i></span>
+                    <div class="bs-stepper-label">
+                        <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
+                            <span th:text="${workflowStep.description}"></span>
+                            <br/>
+                        </th:block>
+                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                        <br/>
+                        <table class="table table-sm table-hover table-borderless">
+                            <th:block th:each="user : ${workflowStep.users}">
+                                <tr>
+                                    <td th:title="${user.email}" th:text="${user.firstname + ' ' + user.name}"></td>
+                                    <td class="text-right">
+                                        <i title="N'a pas signé le document" class="fas fa-minus-circle text-secondary"></i>
+                                    </td>
+                                </tr>
+                            </th:block>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+            </th:block>
+        </th:block>
+    </div>
+</div>
+<hr>
 <h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape&nbsp;<span th:text="' ' + ${workflow != null? workflow.workflowSteps.size() + 1 : 1}"></span></h4>
 <div class="col-lg-12">
     <input type="hidden" id="wizWorkflowId" name="wizWorkflowId" th:value="${workflow != null ? workflow.id : null}">
