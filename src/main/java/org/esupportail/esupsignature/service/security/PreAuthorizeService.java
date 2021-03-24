@@ -49,11 +49,6 @@ public class PreAuthorizeService {
         return signBookService.checkUserManageRights(userEppn, signBook);
     }
 
-    public boolean signBookManage(String name, String userEppn) {
-        SignBook signBook = signBookService.getByName(name);
-        return signBookService.checkUserManageRights(userEppn, signBook);
-    }
-
     public boolean signRequestOwner(Long id, String userEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         return signRequest.getCreateBy().getEppn().equals(userEppn);

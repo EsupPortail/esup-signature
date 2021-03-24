@@ -23,7 +23,7 @@ export class WheelDetector extends EventFactory {
                 this.fireEvent("zoomin");
             }
         } else {
-            if (this.detectMouseWheelDirection(event) === 'down' && $(window).scrollTop() + $(window).height() >= $(document).height()) {
+            if (this.detectMouseWheelDirection(event) === 'down' && Math.round($(window).scrollTop() + $(window).height()) >= $(document).height()) {
                 console.debug("wheel down next page");
                 this.fireEvent("pagebottom");
             } else if (this.detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {

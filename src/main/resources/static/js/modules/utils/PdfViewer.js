@@ -362,7 +362,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
-        let datePickerIndex = 1040;
+        let datePickerIndex = 40;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
@@ -448,7 +448,6 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === "date") {
-                    section.css("z-index", datePickerIndex);
                     datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'DD/MM/YYYY',
@@ -467,17 +466,18 @@ export class PdfViewer extends EventFactory {
                         toolbarPlacement: 'bottom',
                         showClear: true,
                         showClose: true,
-                        keepOpen: false,
-                        widgetPositioning: {
-                            horizontal: 'right',
-                            vertical: 'bottom'
-                        },
+                        keepOpen: true
+                    });
+                    inputField.on("focus", function() {
+                        section.css("z-index", datePickerIndex + 2000);
+                    });
+                    inputField.on("focusout", function() {
+                        section.css("z-index", datePickerIndex);
                     });
                     inputField.off('dp.change');
                     inputField.on('dp.change', e => this.fireEvent('change', ['date']));
                 }
                 if (dataField.type === "time") {
-                    section.css("z-index", datePickerIndex);
                     datePickerIndex--;
                     inputField.datetimepicker({
                         format: 'LT',
@@ -497,11 +497,13 @@ export class PdfViewer extends EventFactory {
                         toolbarPlacement: 'bottom',
                         showClear: true,
                         showClose: true,
-                        keepOpen: false,
-                        widgetPositioning: {
-                            horizontal: 'right',
-                            vertical: 'bottom'
-                        },
+                        keepOpen: true,
+                    });
+                    inputField.on("focus", function() {
+                        section.css("z-index", datePickerIndex + 2000);
+                    });
+                    inputField.on("focusout", function() {
+                        section.css("z-index", datePickerIndex);
                     });
                     inputField.off('dp.change');
                     inputField.on('dp.change', e => this.fireEvent('change', ['time']));

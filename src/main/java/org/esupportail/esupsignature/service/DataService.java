@@ -105,9 +105,7 @@ public class DataService {
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
-        String docName = user.getFirstname().substring(0, 1).toUpperCase();
-        docName += user.getName().substring(0, 1).toUpperCase();
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, docName, user.getEppn()), signBook, user.getEppn(), authUser.getEppn());
+        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, ""), signBook, user.getEppn(), authUser.getEppn());
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {

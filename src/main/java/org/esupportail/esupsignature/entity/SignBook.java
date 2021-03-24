@@ -21,7 +21,6 @@ public class SignBook {
 	@Version
     private Integer version;
 
-	@Column(unique=true)
 	private String name;
 
     private String title;
