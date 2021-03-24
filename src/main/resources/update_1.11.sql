@@ -25,3 +25,5 @@
 --on supprime le contraint ainsi :
 
 alter table sign_book_viewers drop constraint uk_gt3duxi8s9hmjyrakbjrwlhpk;
+
+drop table sign_request_viewers;
