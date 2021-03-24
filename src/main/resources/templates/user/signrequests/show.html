@@ -454,10 +454,10 @@
                 </p>
                 <button id="enableInfinite" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <th:block th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-signature"></i> Signer et envoyer au(x) personne(s) sélectionnée(s)
+                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' ? 'Choisir les prochain(s) destinataire(s)' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
                     </th:block>
                     <th:block th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-check"></i> Viser et envoyer au(x) personne(s) sélectionnée(s)
+                        <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' ? 'Choisir les prochain(s) destinataire(s)' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
                     </th:block>
                 </button>
                 <form id="infiniteForm" class="d-none">
@@ -497,10 +497,10 @@
                 <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                        <i class="fas fa-signature"></i> Signer sans modification du circuit
+                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' ? 'Signer sans modification du circuit' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
                     </span>
                     <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                    <i class="fas fa-check"></i> Viser sans modification du circuit
+                    <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' ? 'Viser sans modification du circuit' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
                         </span>
                 </button>
             </div>
