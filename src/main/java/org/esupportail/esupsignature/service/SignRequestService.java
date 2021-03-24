@@ -1176,6 +1176,7 @@ public class SignRequestService {
 				viewers.add(userService.getUserByEmail(recipientsEmail));
 			}
 			signBook.setViewers(viewers);
+			mailService.sendCCtAlert(Arrays.asList(recipientsCCEmails), signBook.getSignRequests().get(0));
 		}
 		return signBookService.sendSignBook(signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
 	}
