@@ -11,6 +11,7 @@ import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.model.*;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.pades.PAdESSignatureParameters;
+import eu.europa.esig.dss.pades.SignatureFieldParameters;
 import eu.europa.esig.dss.pades.SignatureImageParameters;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
@@ -50,12 +51,7 @@ import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -198,21 +194,25 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, User user) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user) throws IOException {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		InputStream signImage;
-		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss ", Locale.FRENCH);
-//		List<String> addText = pdfService.getSignatureStrings(user, SignType.certSign, new Date(), dateFormat);
 		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
+		if(signRequestParams.getAddWatermark()) {
+			File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+			fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
+			signImage = new FileInputStream(fileWithWatermark);
+		}
 		BufferedImage bufferedSignImage = ImageIO.read(signImage);
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		ImageIO.write(bufferedSignImage, "png", os);
 		fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
 		fileDocumentImage.setMimeType(MimeType.PNG);
 		imageParameters.setImage(fileDocumentImage);
-		imageParameters.setPage(signRequestParams.getSignPageNumber());
+		SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
+		signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
 		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
 		if(signRequestParams.getAddExtra()) {
@@ -222,16 +222,17 @@ public class SignService {
 		int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
 
 		if(pdfParameters.getRotation() == 0) {
-			imageParameters.setWidth(widthAdjusted);
-			imageParameters.setHeight(heightAdjusted);
-			imageParameters.setxAxis(signRequestParams.getxPos());
+			signatureFieldParameters.setWidth(widthAdjusted);
+			signatureFieldParameters.setHeight(heightAdjusted);
+			signatureFieldParameters.setOriginX(signRequestParams.getxPos());
 		} else {
-			imageParameters.setWidth(heightAdjusted);
-			imageParameters.setHeight(widthAdjusted);
-			imageParameters.setxAxis(signRequestParams.getxPos() - 50);
+			signatureFieldParameters.setWidth(heightAdjusted);
+			signatureFieldParameters.setHeight(widthAdjusted);
+			signatureFieldParameters.setOriginX(signRequestParams.getxPos() - 50);
 		}
 		int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
-		imageParameters.setyAxis(yPos);
+		signatureFieldParameters.setOriginY(yPos);
+		imageParameters.setFieldParameters(signatureFieldParameters);
 		imageParameters.setDpi(300);
 		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
 		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
@@ -509,12 +510,15 @@ public class SignService {
 		return signConfig.getSignProperties().getPasswordTimeout();
 	}
 
-	public AbstractSignatureForm getAbstractSignatureForm(SignRequest signRequest) throws IOException, EsupSignatureException {
+	@Transactional
+	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId) throws IOException, EsupSignatureException {
+		SignRequest signRequest = signRequestService.getById(signRequestId);
 		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, true);
 	}
 
 	@Transactional
-	public AbstractSignatureParameters<?> getSignatureParameters(SignRequest signRequest, String userEppn, AbstractSignatureForm abstractSignatureForm) throws IOException {
+	public AbstractSignatureParameters<?> getSignatureParameters(Long signRequestId, String userEppn, AbstractSignatureForm abstractSignatureForm) throws IOException {
+		SignRequest signRequest = signRequestService.getById(signRequestId);
 		User user = userService.getByEppn(userEppn);
 		AbstractSignatureParameters<?> parameters;
 		if(abstractSignatureForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
@@ -522,7 +526,7 @@ public class SignService {
 		} else {
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) abstractSignatureForm;
-				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()), user);
+				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()),new Color(61, 170, 231), user);
 			} else {
 				parameters = fillParameters((SignatureDocumentForm) abstractSignatureForm);
 			}
@@ -530,7 +534,9 @@ public class SignService {
 		return parameters;
 	}
 
-	public SignDocumentResponse getSignDocumentResponse(SignRequest signRequest, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, String userEppn, String authUserEppn) throws EsupSignatureException {
+	@Transactional
+	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, AbstractSignatureParameters<?> parameters, String userEppn, String authUserEppn) throws EsupSignatureException {
+		SignRequest signRequest = signRequestService.getById(signRequestId);
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		try {

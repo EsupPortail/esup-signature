@@ -2,9 +2,13 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 
 export default class ListSignRequestUi {
 
-    constructor(totalElementsToDisplay, csrf) {
+    constructor(signRequets, statusFilter, csrf) {
         console.info("Starting list sign UI");
-        this.totalElementsToDisplay = totalElementsToDisplay;
+        this.totalElementsToDisplay = signRequets.totalElements - signRequets.numberOfElements;
+        this.statusFilter = "";
+        if(statusFilter != null) {
+            this.statusFilter = statusFilter;
+        }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable")
         this.page = 1;
@@ -94,7 +98,7 @@ export default class ListSignRequestUi {
             console.info("Add to page");
             this.page++;
             let self = this;
-            $.get("/user/signrequests/list-ws?" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
+            $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
                 self.signRequestTable.append(data);
             });
         }

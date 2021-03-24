@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -76,7 +77,7 @@ public class ScheduledTaskService {
 				if(globalProperties.getArchiveUri() != null) {
 					signBookService.archivesFiles(signBook, "scheduler");
 				}
-			} catch (EsupSignatureException e) {
+			} catch (EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());
 			}
 		}

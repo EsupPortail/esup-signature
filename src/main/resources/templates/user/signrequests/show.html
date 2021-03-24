@@ -316,36 +316,37 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"
-                     class="alert alert-success"></div>
-                <div class="modal-body">
-                    <label th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
-                           for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
-                    <textarea id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
+                <div id="signFormConfirm">
+                    <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"
+                         class="alert alert-success"></div>
+                    <div class="modal-body">
+                        <label th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                               for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
+                        <textarea id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
+                    </div>
                 </div>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
-                    <div id="nexu_version_alert" style="display: none;">
+                    <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-left">
-                            <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
-                                <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
-                            </a>
-                            L'application NexU n’a pas la bonne version.
-                            <span th:text="${globalProperties.nexuVersion} + 'nécessaire'"></span>
+                            L'application NexU n’a pas la bonne version : NexU <span th:text="${globalProperties.nexuVersion} + 'est nécessaire'"></span>
                             <br>
                         </div>
-                    </div>
-                    <div id="nexu_missing_alert" style="display: none;">
-                        <a onclick="location.reload();" class="mr-2 btn btn-warning btnSeccion float-left">
-                            <i class="fas fa-sync-alt fa-2x"></i><br> Actualiser
+                        <a onclick="location.reload();" class="mt-2 mx-auto btn btn-warning btnSeccion">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Ré-actualiser la page après le lancement de NexU
                         </a>
+                    </div>
+                    <div id="nexu_missing_alert" style="display: none; text-align: center;">
                         <div class="alert alert-warning float-left">
-                            L'application NexU n'a pas été détectée
-                            <br>
-                            <small>
-                                Merci de lancer l’application sur votre poste puis d'actualiser la page.<br/>L'application
-                                NexU est disponible ici : <a target="_blank" th:href="${globalProperties.rootUrl}">NexU</a>
-                            </small>
+                            <h3>L'application NexU n'a pas été détectée</h3>
+                            <p>
+                                Merci de lancer l’application sur votre poste puis d'actualiser la page.<br/>
+                                Pour plus d'informations sur l'utilisation de NexU merci de consulter la documentation à cette adresse :
+                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Application+NexU">https://www.esup-portail.org/wiki/display/SIGN/Application+NexU</a>
+                            </p>
                         </div>
+                        <a onclick="location.reload();" class="mt-2 mx-auto btn btn-warning btnSeccion">
+                            <i class="fas fa-sync-alt fa-2x"></i><br> Ré-actualiser la page après le lancement de NexU
+                        </a>
                     </div>
                     <div id="nexu_ready_alert" style="display: none;">
                         <div class="alert alert-success float-left mt-1 mb-1 col-12">
@@ -353,7 +354,7 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé matérielle ou un keystore</small>
                         </div>
-                        <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success float-right" title="Signer"
+                        <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
                         </button>
                         <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
@@ -367,24 +368,19 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button id="checkRepeatableButtonEnd" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                    Signer et retourner à l'accueil
-                </button>
-                <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null && (signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp)}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                    Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
-                </button>
-                <button id="checkRepeatableButtonEnd"
-                        th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                    Viser et retourner à l'accueil
-                </button>
-                <button id="checkRepeatableButtonNext"
-                        th:if="${nextSignRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
-                        class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
-                    Viser et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
-                </button>
+                <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
+                    <button id="checkRepeatableButtonEnd"
+                            class="btn btn-success mr-1" title="Signer" th:value="${signRequest.id}" autofocus>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et retourner à l'accueil</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et retourner à l'accueil</span>
+                    </button>
+                    <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}"
+                            class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
+                        <i class="fas fa-arrow-alt-circle-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

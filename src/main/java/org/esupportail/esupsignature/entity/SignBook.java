@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 public class SignBook {
 
 	@Id
@@ -60,7 +60,7 @@ public class SignBook {
     @Transient
     transient String comment;
 
-    @OneToMany
+    @ManyToMany
     private List<User> viewers = new ArrayList<>();
 
     public Long getId() {

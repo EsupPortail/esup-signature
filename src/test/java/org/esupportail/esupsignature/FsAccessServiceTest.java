@@ -2,7 +2,7 @@ package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.junit.Test;
@@ -92,7 +92,7 @@ public class FsAccessServiceTest {
 
     @Test(timeout = 10000)
     @Order(4)
-    public void testArchiveUri() throws EsupSignatureException {
+    public void testArchiveUri() throws EsupSignatureFsException {
         assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()));
         fsAccessService.createURITree(globalProperties.getArchiveUri());

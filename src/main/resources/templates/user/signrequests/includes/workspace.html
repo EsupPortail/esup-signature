@@ -9,57 +9,93 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
             <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';" class="bgfilter"
+                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"
-                     style="display: none;z-index:4;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
+                     style="display: none;z-index:10000;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
                     <div id="crossTools_0" class="badge badge-success position-absolute d-none" style="left: 0px; top: -45px;
                         z-index: 3; opacity: .9;user-select: none;
                         -moz-user-select: none;
                         -khtml-user-select: none;
                         -webkit-user-select: none;
                         -o-user-select: none;">
-                        <button type="button" id="signUndo_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-undo-alt"></i>
-                        </button>
-                        <button type="button" id="signZoomOut_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <span style="font-size:1em; line-height: 1em;" class="">A</span>
-                        </button>
-                        <button type="button" id="signZoomIn_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <span style="font-size:1.6666em; line-height: 1em;">A</span>
-                        </button>
-                        <button type="button" id="signPrevImage_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-chevron-up"></i>
-                        </button>
-                        <button type="button" id="signNextImage_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                        <button type="button" id="signExtra_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-receipt"></i>
-                        </button>
-                        <button type="button" id="signExtraOnTop_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-retweet"></i>
-                        </button>
-                        <button type="button" id="signDrop_0"
-                                class="btn btn-sm btn-transparent text-white"
-                                style="z-index: 3;">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                        <input id="signColorPicker_0" value='#000000'/>
+                        <div id="defaultTools_0">
+                            <button type="button" id="signUndo_0"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button type="button" id="signZoomOut_0"
+                                    title="Réduire la taille de la signature"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <span style="font-size:1em; line-height: 1em;" class="">A</span>
+                            </button>
+                            <button type="button" id="signZoomIn_0"
+                                    title="Agrandir la taille de la signature"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <span style="font-size:1.6666em; line-height: 1em;">A</span>
+                            </button>
+                            <button type="button" id="signPrevImage_0"
+                                    title="Signature précédente"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                            <button type="button" id="signNextImage_0"
+                                    title="Signature suivante"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <button type="button" id="signDrop_0"
+                                    title="Supprimer la signature"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                            <button type="button" id="displayMoreTools_0"
+                                    title="Plus d'outils"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div id="moreTools_0" class="d-none">
+                            <button type="button" id="hideMoreTools_0"
+                                    title="Moins d'outils"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
+                            </button>
+                            <button type="button" id="watermark_0"
+                                    title="Filigrane"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-ad"></i>
+                            </button>
+                            <button type="button" id="check_0"
+                                    title="Coche"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" id="signExtra_0"
+                                    title="Ajouter un texte à la signature"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    style="z-index: 3;">
+                                <i class="fas fa-receipt"></i>
+                            </button>
+                            <button type="button" id="signExtraOnTop_0"
+                                    title="Texte au dessus/texte sur la droite"
+                                    class="btn btn-sm btn-transparent text-white"
+                                    disabled
+                                    style="z-index: 3;">
+                                <i class="fas fa-retweet"></i>
+                            </button>
+                            <input id="signColorPicker_0" value='#000000'/>
+                        </div>
                     </div>
                     <div id="borders_0" class="anim-border"
                          th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>

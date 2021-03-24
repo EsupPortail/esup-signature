@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
+@Hidden
 @RequestMapping("/")
 @Controller
 public class IndexController {

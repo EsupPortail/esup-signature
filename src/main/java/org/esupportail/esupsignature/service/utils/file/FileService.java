@@ -261,6 +261,25 @@ public class FileService {
 		return textAddedInputStream;
 	}
 
+	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, File destImageFile, Color color) {
+		try {
+			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
+			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
+			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
+			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
+			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
+			g2d.setComposite(alphaChannel);
+			int topLeftX = (sourceImage.getWidth() - watermarkImage.getWidth()) / 2;
+			int topLeftY = (sourceImage.getHeight() - watermarkImage.getHeight()) / 2;
+			g2d.drawImage(watermarkImage, topLeftX, topLeftY, null);
+			ImageIO.write(sourceImage, "png", destImageFile);
+			g2d.dispose();
+		} catch (IOException ex) {
+			logger.error(ex.getMessage());
+		}
+	}
+
 	public InputStream svgToPng(InputStream svgInputStream) throws IOException {
 		File file = getTempFile("sceau.png");
 		ImageIO.write(ImageIO.read(svgInputStream), "PNG", file);
@@ -295,4 +314,24 @@ public class FileService {
         fileResponse.put("contentType", contentType);
         return fileResponse;
     }
+
+	public void changeColor(BufferedImage imgBuf, int oldRed, int oldGreen, int oldBlue, int newRed, int newGreen, int newBlue) {
+
+		int RGB_MASK = 0x00ffffff;
+		int ALPHA_MASK = 0xff000000;
+
+		int oldRGB = oldRed << 16 | oldGreen << 8 | oldBlue;
+		int toggleRGB = oldRGB ^ (newRed << 16 | newGreen << 8 | newBlue);
+
+		int w = imgBuf.getWidth();
+		int h = imgBuf.getHeight();
+
+		int[] rgb = imgBuf.getRGB(0, 0, w, h, null, 0, w);
+		for (int i = 0; i < rgb.length; i++) {
+			if ((rgb[i] & RGB_MASK) == oldRGB) {
+				rgb[i] ^= toggleRGB;
+			}
+		}
+		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
+	}
 }

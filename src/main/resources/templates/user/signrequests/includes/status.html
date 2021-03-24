@@ -40,6 +40,10 @@
 			<i class="fas fa-flag-checkered"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="badge badge-danger text-center" style="padding: 10px;"  th:title="#{'signbook.status.' + ${signBook.status}}">
+			<i class="fas fa-trash"></i>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+		</div>
 		<div th:case="*">
 			<span th:text="${signBook.status}"></span>
 		</div>
