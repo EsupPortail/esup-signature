@@ -1,5 +1,10 @@
 package org.esupportail.esupsignature.config;
 
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -22,6 +27,20 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 @EnableAsync
 @EnableAutoConfiguration
 @EnableConfigurationProperties
+@OpenAPIDefinition(info = @Info(
+		description = "Esup Signature REST API",
+		version = "V1.11.2",
+		title = "Esup Signature REST API",
+		contact = @Contact(
+				name = "David Lemaignent",
+				email = "david.lemaignent@univ-rouen.fr",
+				url = "https://www.esup-portail.org/wiki/display/SIGN/Accueil"
+		),
+		license = @License(
+				name = "Apache 2.0",
+				url = "http://www.apache.org/licenses/LICENSE-2.0"
+		)
+) , externalDocs = @ExternalDocumentation(url = "https://www.esup-portail.org/wiki/display/SIGN/Web+services+REST") )
 public class WebAppConfig implements WebMvcConfigurer {
 
     @Override
@@ -81,7 +100,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
 				"/admin/", "/admin/*",
-				"/public/", "/public/*"
+				"/public/", "/public/*",
+				"/ws/", "/ws/*"
 		);
 		return registrationBean;
 	}
