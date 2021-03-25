@@ -133,7 +133,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
@@ -151,7 +151,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
-    public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+    public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         signBookService.pendingSignBook(signBook, null, authUserEppn, authUserEppn);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

@@ -1,3 +1,5 @@
+import {UiParams} from "../utils/UiParams.js";
+
 export class HomeUi {
 
     constructor() {
@@ -5,8 +7,11 @@ export class HomeUi {
         this.workflowFilterButton = $('#workflowFilterButton');
         this.formFilterButton = $('#formFilterButton');
         this.globalFilterButton = $('#globalFilterButton');
-        this.noFilterButton = $('#noFilterButton');
+        this.workflowFilterStatus = true;
+        this.formFilterStatus = true;
+        this.globalFilterStatus = true;
         this.menuToggled = false;
+        this.uiParams = new UiParams();
         this.initListeners();
     }
 
@@ -14,9 +19,8 @@ export class HomeUi {
         $('#toggleNewGrid').on('click', e => this.toggleNewMenu());
         $('#newScroll').on('mousewheel DOMMouseScroll', e => this.activeHorizontalScrolling(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
-        this.globalFilterButton.on('click', e => this.globalWorkflows(e));
+        this.globalFilterButton.on('click', e => this.filterGlobal(e));
         this.formFilterButton.on('click', e => this.filterForms(e));
-        this.noFilterButton.on('click', e => this.filterNothing(e));
         $('[id^="deleteWorkflow_"]').each(function (){
             $(this).on('submit', function (e){
                 e.preventDefault();
@@ -28,6 +32,51 @@ export class HomeUi {
                 });
             });
         });
+        this.uiParams.addEventListener("ready", e => this.initUiParams());
+    }
+
+    initUiParams() {
+        this.initWorkflowFilter();
+    }
+
+    initWorkflowFilter() {
+        this.workflowFilterStatus = this.uiParams.get("workflowFilterStatus");
+        if(this.workflowFilterStatus == null) {
+            this.workflowFilterStatus = true;
+            this.uiParams.set("workflowFilterStatus", true).then(e => this.initFormFilter());
+        } else {
+            if(this.workflowFilterStatus === "false") {
+                this.filterWorkflows().then(e => this.initFormFilter());
+            } else {
+                this.initFormFilter()
+            }
+        }
+    }
+
+    initFormFilter() {
+        this.formFilterStatus = this.uiParams.get("formFilterStatus")
+        if(this.formFilterStatus == null) {
+            this.formFilterStatus = true;
+            this.uiParams.set("formFilterStatus", true).then(e => this.initGlobalFilter());
+        } else {
+            if(this.formFilterStatus === "false") {
+                this.filterForms().then(e => this.initGlobalFilter());
+            } else {
+                this.initGlobalFilter();
+            }
+        }
+    }
+
+    initGlobalFilter() {
+        this.globalFilterStatus = this.uiParams.get("globalFilterStatus");
+        if(this.globalFilterStatus == null) {
+            this.globalFilterStatus = true;
+            this.uiParams.set("globalFilterStatus", true);
+        } else {
+            if(this.globalFilterStatus === "false") {
+                this.filterGlobal();
+            }
+        }
     }
 
     toggleNewMenu() {
@@ -43,59 +92,25 @@ export class HomeUi {
         this.menuToggled = !this.menuToggled;
     }
 
-    globalWorkflows(e) {
-        this.turnAllButtonsOff();
-        this.globalFilterButton.removeClass('btn-light');
-        this.globalFilterButton.addClass('btn-secondary');
-        $('.workflowButton').addClass('d-none');
-        $('.formButton').addClass('d-none');
-        $('.globalButton').removeClass('d-none');
-        $('.noForm').addClass('d-none');
-        $('.noWorkflow').addClass('d-none');
+    filterGlobal(e) {
+        this.globalFilterButton.toggleClass('btn-secondary btn-light');
+        $('.globalButton').toggleClass('d-none');
+        this.globalFilterStatus = !this.globalFilterStatus;
+        return this.uiParams.set("globalFilterStatus", this.globalFilterStatus);
     }
 
     filterWorkflows(e) {
-        this.turnAllButtonsOff();
-        this.workflowFilterButton.removeClass('btn-light');
-        this.workflowFilterButton.addClass('btn-secondary');
-        $('.noWorkflow').removeClass('d-none');
-        $('.noForm').addClass('d-none');
-        $('.workflowButton').removeClass('d-none');
-        $('.formButton').addClass('d-none');
-        $('.globalButton').addClass('d-none');
+        this.workflowFilterButton.toggleClass('btn-secondary btn-light');
+        $('.workflowButton').toggleClass('d-none');
+        this.workflowFilterStatus = !this.workflowFilterStatus;
+        return this.uiParams.set("workflowFilterStatus", this.workflowFilterStatus);
     }
 
     filterForms(e) {
-        this.turnAllButtonsOff();
-        this.formFilterButton.removeClass('btn-light');
-        this.formFilterButton.addClass('btn-secondary');
-        $('.noForm').removeClass('d-none');
-        $('.noWorkflow').addClass('d-none');
-        $('.workflowButton').addClass('d-none');
-        $('.formButton').removeClass('d-none');
-        $('.globalButton').addClass('d-none');
-    }
-
-    filterNothing(e) {
-        this.turnAllButtonsOff();
-        this.noFilterButton.removeClass('btn-light');
-        this.noFilterButton.addClass('btn-secondary');
-        $('.workflowButton').removeClass('d-none');
-        $('.formButton').removeClass('d-none');
-        $('.globalButton').removeClass('d-none');
-        $('.noWorkflow').addClass('d-none');
-        $('.noForm').addClass('d-none');
-    }
-
-    turnAllButtonsOff() {
-        this.workflowFilterButton.removeClass('btn-secondary');
-        this.formFilterButton.removeClass('btn-secondary');
-        this.globalFilterButton.removeClass('btn-secondary');
-        this.noFilterButton.removeClass('btn-secondary');
-        this.workflowFilterButton.addClass('btn-light');
-        this.formFilterButton.addClass('btn-light');
-        this.globalFilterButton.addClass('btn-light');
-        this.noFilterButton.addClass('btn-light');
+        this.formFilterButton.toggleClass('btn-secondary btn-light');
+        $('.formButton').toggleClass('d-none');
+        this.formFilterStatus = !this.formFilterStatus;
+        return this.uiParams.set("formFilterStatus", this.formFilterStatus);
     }
 
     activeHorizontalScrolling(e){

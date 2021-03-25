@@ -188,7 +188,7 @@ export class SignPosition extends EventFactory {
         this.hideButtons();
         this.unbindCrossToolsListeners();
         let okSign = this.cross.clone();
-        okSign.css( "z-index", "2");
+        okSign.css( "z-index", "1028");
         okSign.children().removeClass("anim-border");
         okSign.attr("data-current", "false");
         okSign.appendTo(this.pdf);
@@ -294,6 +294,7 @@ export class SignPosition extends EventFactory {
         this.cross.unbind();
         this.borders = $('#borders_' + currentSign);
         this.borders.addClass("anim-border");
+        this.borders.removeClass("static-border");
         this.initCrossListeners();
         this.unbindCrossToolsListeners();
         this.crossTools = $('#crossTools_' + currentSign);
@@ -318,6 +319,7 @@ export class SignPosition extends EventFactory {
     lockCurrentSign() {
         console.info("lock current sign");
         this.borders.removeClass("anim-border");
+        this.borders.addClass("static-border");
         this.cross.attr("data-current", "false");
         this.borders.unbind();
         this.cross.on("click", e => this.switchSignToTarget(e));
@@ -553,6 +555,7 @@ export class SignPosition extends EventFactory {
         } else {
             this.cross.attr("data-current", "true");
             this.borders.addClass("anim-border");
+            this.borders.removeClass("static-border");
             this.showButtons();
         }
     }

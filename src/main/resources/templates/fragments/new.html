@@ -225,12 +225,12 @@
                                     <div class="form-group d-inline">
                                         <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>
                                         <th:block th:if="${step.users.size() > 0}">
-                                            <span>(</span>
+                                            <span th:if="${step.description != ''}"> - </span>
                                             <th:block th:each="user, iterator : ${step.users}">
                                                 <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                                             </th:block>
-                                            <span>)</span>
                                         </th:block>
+                                        <span th:if="${step.repeatable}"> (un ou plusieurs)</span>
                                     </div>
                                     <br/>
                                 </th:block>
