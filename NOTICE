@@ -1,6 +1,6 @@
 Copyright (C) 2018 Université de Rouen Normandie http://www.univ-rouen.fr
 Copyright (C) 2018 Esup Portail http://www.esup-portail.org
-@Author (C) 2018 David Lemaignent <David.Lemaignent@univ-rouen.fr>
+@Author (C) 2018 David Lemaignent, Valentin Hagnere <esup-signature@esup-portail.org>
 
 Licensed under the Apache License, Version 2.0 (the
 "License"); you may not use this file except in compliance
@@ -21,7 +21,7 @@ This project includes:
   AspectJ runtime under Eclipse Public License - v 1.0
   AspectJ weaver under Eclipse Public License - v 1.0
   Bean Validation API under Apache License, Version 2.0
-  esup-signature under Apache License, Version 2.0
+  carte-culture under Apache License, Version 2.0
   Commons BeanUtils under The Apache Software License, Version 2.0
   Commons Codec under The Apache Software License, Version 2.0
   Commons Collections under The Apache Software License, Version 2.0
