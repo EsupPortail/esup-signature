@@ -32,8 +32,8 @@ import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 		version = "V1.11.2",
 		title = "Esup Signature REST API",
 		contact = @Contact(
-				name = "David Lemaignent",
-				email = "david.lemaignent@univ-rouen.fr",
+				name = "David Lemaignent, Valentin Hagnere",
+				email = "esup-signature@esup-portail.org",
 				url = "https://www.esup-portail.org/wiki/display/SIGN/Accueil"
 		),
 		license = @License(
