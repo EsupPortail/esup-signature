@@ -654,7 +654,6 @@ public class SignRequestService {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
 				} else {
 					signBookService.completeSignBook(signRequest.getParentSignBook(), authUserEppn);
-
 				}
 			}
 		} else {

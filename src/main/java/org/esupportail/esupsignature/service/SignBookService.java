@@ -100,7 +100,7 @@ public class SignBookService {
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
-        String name = generateName(prefix, suffix);
+        String name = generateName("", suffix);
         SignBook signBook = new SignBook();
         signBook.setStatus(SignRequestStatus.draft);
         signBook.setName(name);
@@ -256,6 +256,7 @@ public class SignBookService {
     public void completeSignBook(SignBook signBook, String authUser) throws EsupSignatureException {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             mailService.sendCompletedMail(signBook);
+            mailService.sendCompletedCCMail(signBook);
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
@@ -489,26 +490,23 @@ public class SignBookService {
 
 
     public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
-        if(!prefix.isEmpty()) {
-            prefix += "_";
-        }
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(prefix + multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         }
     }
 
     @Transactional
     public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook("", "", authUser, true);
-        addDocumentsToSignBook(signBook, "", multipartFiles, authUser.getEppn());
+        SignBook signBook = createSignBook(workflowName, name, authUser, true);
+        addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser.getEppn());
         return signBook;
     }
 
     @Transactional
     public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
-        SignBook signBook = createSignBook("", "", authUser, false);
+        SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
