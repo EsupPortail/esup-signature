@@ -196,3 +196,10 @@ sign:
 logging:
     file:
         name: logs/esup-signature.log
+
+springdoc:
+    api-docs:
+        enabled: true
+    swagger-ui:
+        enabled: true
+        supported-submit-methods: []
