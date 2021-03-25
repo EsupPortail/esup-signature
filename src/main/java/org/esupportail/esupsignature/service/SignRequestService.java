@@ -654,7 +654,9 @@ public class SignRequestService {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
 				} else {
 					signBookService.completeSignBook(signRequest.getParentSignBook(), authUserEppn);
-
+					if (!signRequest.getParentSignBook().getCreateBy().equals(userService.getSchedulerUser())) {
+						mailService.sendCompletedMail(signRequest.getParentSignBook());
+					}
 				}
 			}
 		} else {
