@@ -675,6 +675,17 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<groupId>com.twelvemonkeys.servlet</groupId>
+			<artifactId>servlet</artifactId>
+			<version>3.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio</artifactId>
+			<version>3.6.4</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
 			<version>1.5.4</version>
