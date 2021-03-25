@@ -1,1 +1,0 @@
-alter table sign_book drop constraint if exists uk_nmkr8srruubb1j93cceyg747y;
