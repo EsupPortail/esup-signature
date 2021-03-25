@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.11</version>
+	<version>1.11.2</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -673,6 +673,17 @@
 <!--					<artifactId>xml-apis</artifactId>-->
 <!--				</exclusion>-->
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.servlet</groupId>
+			<artifactId>servlet</artifactId>
+			<version>3.6.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.twelvemonkeys.imageio</groupId>
+			<artifactId>imageio</artifactId>
+			<version>3.6.4</version>
+			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>

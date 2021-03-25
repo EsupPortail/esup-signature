@@ -1,7 +1,3 @@
--- connexion à la base esupsignature
-
-\c esupsignature
-
 -- supprimer la contrainte unique sur viewers_id de la table sign_book_viewers
 
 alter table sign_book_viewers drop constraint if exists uk_gt3duxi8s9hmjyrakbjrwlhpk;
