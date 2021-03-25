@@ -256,6 +256,7 @@ public class SignBookService {
     public void completeSignBook(SignBook signBook, String authUser) throws EsupSignatureException {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             mailService.sendCompletedMail(signBook);
+            mailService.sendCompletedCCMail(signBook);
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);

@@ -78,21 +78,52 @@ public class MailService {
             message.setSubject("Esup-Signature : demande signature terminée");
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
             message.setTo(user.getEmail());
-            List<String> viewersArray = new ArrayList<>();
-            for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
-                viewersArray.add(signBook.getViewers().get(i).getEmail());
-            }
-            for(Recipient recipient : signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny().get()) {
-                if(!viewersArray.contains(recipient.getUser().getEmail())) {
-                    viewersArray.add(recipient.getUser().getEmail());
-                }
-            }
-            message.setCc(viewersArray.toArray(new String[0]));
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
             message.setText(htmlContent, true);
             logger.info("send email completes for " + user.getEppn());
             if(mailSender.getIfAvailable() != null) {
                 mailSender.getIfAvailable().send(mimeMessage);
+            }
+        } catch (MailSendException | MessagingException e) {
+            logger.error("unable to send email", e);
+            throw new EsupSignatureException("Problème lors de l'envoi du mail", e);
+        }
+    }
+
+    public void sendCompletedCCMail(SignBook signBook) throws EsupSignatureException {
+        if (!checkMailSender()) {
+            return;
+        }
+        User user = signBook.getCreateBy();
+        final Context ctx = new Context(Locale.FRENCH);
+        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        ctx.setVariable("userService", userService);
+        setTemplate(ctx);
+        final MimeMessage mimeMessage = mailSender.getIfAvailable().createMimeMessage();
+        MimeMessageHelper message;
+        try {
+            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            message.setSubject("Esup-Signature : demande signature terminée");
+            message.setFrom(mailConfig.getIfAvailable().getMailFrom());
+            List<User> viewersArray = new ArrayList<>(signBook.getViewers());
+
+            for(Recipient recipient : signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny().get()) {
+                if(!viewersArray.contains(recipient.getUser())) {
+                    viewersArray.add(recipient.getUser());
+                }
+            }
+            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
+            if(viewersArray.size() > 0) {
+                message.setTo(viewersArray.stream().map(User::getEmail).toArray(String[]::new));
+                String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
+                message.setText(htmlContent, true);
+                logger.info("send email completes for " + user.getEppn());
+                if (mailSender.getIfAvailable() != null) {
+                    mailSender.getIfAvailable().send(mimeMessage);
+                }
+            } else {
+                logger.debug("no viewers to send mail");
             }
         } catch (MailSendException | MessagingException e) {
             logger.error("unable to send email", e);
