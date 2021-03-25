@@ -8,7 +8,7 @@ import javax.naming.Name;
 import java.util.List;
 
 @Entry(objectClasses = {"nisMailAlias"}, base = "ou=aliases-list")
-public class AliasLdap {
+public final class AliasLdap {
 
     @Id
     private Name dn;

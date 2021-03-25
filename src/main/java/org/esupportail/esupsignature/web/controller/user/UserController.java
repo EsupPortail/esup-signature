@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
 import org.esupportail.esupsignature.service.list.UserListService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -137,9 +137,9 @@ public class UserController {
 
 	@GetMapping(value="/search-user")
 	@ResponseBody
-	public List<PersonLdap> searchLdap(@RequestParam(value="searchString") String searchString) {
+	public List<PersonLdapLight> searchLdap(@RequestParam(value="searchString") String searchString) {
 		logger.debug("ldap search for : " + searchString);
-		return userService.getPersonLdaps(searchString).stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
+		return userService.getPersonLdapsLight(searchString).stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
    }
 
    	@GetMapping(value = "/search-list")
