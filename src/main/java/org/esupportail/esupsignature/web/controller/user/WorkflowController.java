@@ -15,10 +15,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 
-@Hidden
 @Controller
 @RequestMapping("/user/workflows")
-
 public class WorkflowController {
 
     @Resource

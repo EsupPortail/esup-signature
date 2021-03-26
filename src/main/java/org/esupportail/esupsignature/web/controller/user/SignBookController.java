@@ -27,7 +27,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 
-@Hidden
 @Controller
 @RequestMapping("/user/signbooks")
 public class SignBookController {
