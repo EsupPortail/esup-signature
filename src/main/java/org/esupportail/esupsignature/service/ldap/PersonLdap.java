@@ -20,20 +20,11 @@ public final class PersonLdap {
 	private @Attribute(name = "schacDateOfBirth") String schacDateOfBirth;
 	private @Attribute(name = "schacPlaceOfBirth") String schacPlaceOfBirth;
 	private @Attribute(name = "mail") String mail;
-	private @Attribute(name = "md5UserPassword") String md5UserPassword;
-	private @Attribute(name = "cryptUserPassword") String cryptUserPassword;
-	private @Attribute(name = "shaUserPassword") String shaUserPassword;
 	private @Attribute(name = "eduPersonAffiliation") List<String> eduPersonAffiliation;
 	private @Attribute(name = "eduPersonPrimaryAffiliation") String eduPersonPrimaryAffiliation;
 	private @Attribute(name = "eduPersonPrincipalName") String eduPersonPrincipalName;
-	private @Attribute(name = "mailDrop") String mailDrop;
-	private @Attribute(name = "mailHost") String mailHost;
 	private @Attribute(name = "sambaSID") String sambaSID;
 	private @Attribute(name = "sambaPrimaryGroupSID") String sambaPrimaryGroupSID;
-	private @Attribute(name = "sambaPwdLastSet") String sambaPwdLastSet;
-	private @Attribute(name = "sambaLMPassword") String sambaLMPassword;
-	private @Attribute(name = "sambaNTPassword") String sambaNTPassword;
-	private @Attribute(name = "sambaAcctFlags") String sambaAcctFlags;
 	private @Attribute(name = "homeDirectory") String homeDirectory;
 	private @Attribute(name = "uidNumber") String uidNumber;
 	private @Attribute(name = "gidNumber") String gidNumber;
@@ -63,7 +54,6 @@ public final class PersonLdap {
 	private @Attribute(name = "supannRefId") List<String> supannRefId;
 	private @Attribute(name = "supannRoleGenerique") String supannRoleGenerique;
 	private @Attribute(name = "supannAutreMail") String supannAutreMail;
-	private @Attribute(name = "mailuserquota") Long mailuserquota;
 
 	public String getUid() {
 		return uid;
@@ -129,30 +119,6 @@ public final class PersonLdap {
 		this.mail = mail;
 	}
 
-	public String getMd5UserPassword() {
-		return md5UserPassword;
-	}
-
-	public void setMd5UserPassword(String md5UserPassword) {
-		this.md5UserPassword = md5UserPassword;
-	}
-
-	public String getCryptUserPassword() {
-		return cryptUserPassword;
-	}
-
-	public void setCryptUserPassword(String cryptUserPassword) {
-		this.cryptUserPassword = cryptUserPassword;
-	}
-
-	public String getShaUserPassword() {
-		return shaUserPassword;
-	}
-
-	public void setShaUserPassword(String shaUserPassword) {
-		this.shaUserPassword = shaUserPassword;
-	}
-
 	public List<String> getEduPersonAffiliation() {
 		return eduPersonAffiliation;
 	}
@@ -177,22 +143,6 @@ public final class PersonLdap {
 		this.eduPersonPrincipalName = eduPersonPrincipalName;
 	}
 
-	public String getMailDrop() {
-		return mailDrop;
-	}
-
-	public void setMailDrop(String mailDrop) {
-		this.mailDrop = mailDrop;
-	}
-
-	public String getMailHost() {
-		return mailHost;
-	}
-
-	public void setMailHost(String mailHost) {
-		this.mailHost = mailHost;
-	}
-
 	public String getSambaSID() {
 		return sambaSID;
 	}
@@ -207,38 +157,6 @@ public final class PersonLdap {
 
 	public void setSambaPrimaryGroupSID(String sambaPrimaryGroupSID) {
 		this.sambaPrimaryGroupSID = sambaPrimaryGroupSID;
-	}
-
-	public String getSambaPwdLastSet() {
-		return sambaPwdLastSet;
-	}
-
-	public void setSambaPwdLastSet(String sambaPwdLastSet) {
-		this.sambaPwdLastSet = sambaPwdLastSet;
-	}
-
-	public String getSambaLMPassword() {
-		return sambaLMPassword;
-	}
-
-	public void setSambaLMPassword(String sambaLMPassword) {
-		this.sambaLMPassword = sambaLMPassword;
-	}
-
-	public String getSambaNTPassword() {
-		return sambaNTPassword;
-	}
-
-	public void setSambaNTPassword(String sambaNTPassword) {
-		this.sambaNTPassword = sambaNTPassword;
-	}
-
-	public String getSambaAcctFlags() {
-		return sambaAcctFlags;
-	}
-
-	public void setSambaAcctFlags(String sambaAcctFlags) {
-		this.sambaAcctFlags = sambaAcctFlags;
 	}
 
 	public String getHomeDirectory() {
@@ -473,13 +391,6 @@ public final class PersonLdap {
 		this.supannAutreMail = supannAutreMail;
 	}
 
-	public Long getMailuserquota() {
-		return mailuserquota;
-	}
-
-	public void setMailuserquota(Long mailuserquota) {
-		this.mailuserquota = mailuserquota;
-	}
 }
 	
 	
