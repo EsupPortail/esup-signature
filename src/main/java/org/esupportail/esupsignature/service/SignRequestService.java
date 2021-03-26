@@ -227,8 +227,6 @@ public class SignRequestService {
 		} else {
 			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
 			signRequests.addAll(getToSignRequests(userEppn));
-			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
-			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
 		}
 		return new ArrayList<>(signRequests);
