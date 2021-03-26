@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-@Hidden
 @RequestMapping("/")
 @Controller
 public class IndexController {

@@ -23,7 +23,6 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.Serializable;
 
-@Hidden
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
 @RequestMapping("/user/nexu-sign")
