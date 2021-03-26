@@ -199,33 +199,31 @@ export default class SelectUser {
                             return response.json()
                         })
                         .then((json) => {
-                            if (json.length > 0) {
-                                let data = []
-                                for (let i = 0; i < json.length; i++) {
-                                    data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
-                                }
-                                callback(data);
-                            } else {
-                                this.flag = true;
-                                controller.abort();
-                                controller = new AbortController()
-                                signal = controller.signal
-                                fetch('/user/users/search-list?searchString=' + search, {
-                                    method: 'get',
-                                    signal: signal,
+                            let data = []
+                            for (let i = 0; i < json.length; i++) {
+                                data.push({text: json[i].displayName + ' (' + json[i].mail + ')', value: valuePrefix + json[i].mail});
+                            }
+                            this.flag = true;
+                            controller.abort();
+                            controller = new AbortController()
+                            signal = controller.signal
+                            fetch('/user/users/search-list?searchString=' + search, {
+                                method: 'get',
+                                signal: signal,
+                            })
+                                .then(function (response){
+                                    return response.json()
                                 })
-                                    .then(function (response){
-                                        return response.json()
-                                    })
-                                    .then(function (json) {
-                                        let data = []
-                                        for (let i = 0; i < json.length; i++) {
-                                            data.push({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
-                                        }
+                                .then(function (json) {
+                                    for (let i = 0; i < json.length; i++) {
+                                        data.unshift({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
                                         if(data.length > 0) {
                                             callback(data);
                                         }
-                                    })
+                                    }
+                                })
+                            if(data.length > 0) {
+                                callback(data);
                             }
                         })
                         .catch(function () {

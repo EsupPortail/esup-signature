@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.ldap;
 
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
+import org.esupportail.esupsignature.repository.ldap.PersonLdapLightRepository;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,11 +27,17 @@ public class LdapPersonService {
     @Resource
     private PersonLdapRepository personLdapRepository;
 
+    @Resource
+    private PersonLdapLightRepository personLdapLightRepository;
+
     public List<PersonLdap> search(String searchString) {
         return personLdapRepository.findByDisplayNameStartingWithIgnoreCaseOrCnStartingWithIgnoreCaseOrUidStartingWithOrMailStartingWith(searchString, searchString, searchString, searchString);
     }
 
-	public PersonLdapRepository getPersonLdapRepository() {
+    public List<PersonLdapLight> searchLight(String searchString) {
+        return personLdapLightRepository.fullTextSearch(searchString);
+    }
+    public PersonLdapRepository getPersonLdapRepository() {
 		return personLdapRepository;
 	}
 
