@@ -7,10 +7,7 @@ import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
-import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
-import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
-import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
@@ -265,22 +262,22 @@ public class UserService {
         return false;
     }
 
-    public List<PersonLdap> getPersonLdaps(String searchString) {
-        List<PersonLdap> personLdaps = new ArrayList<>();
+    public List<PersonLdapLight> getPersonLdapsLight(String searchString) {
+        List<PersonLdapLight> personLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
         for (User user : users) {
-            personLdaps.add(getPersonLdapFromUser(user));
+            personLdaps.add(getPersonLdapLightFromUser(user));
         }
-        if (ldapPersonService.getIfAvailable() != null && !searchString.trim().isEmpty() && searchString.length() > 3) {
-            List<PersonLdap> ldapSearchList = ldapPersonService.getIfAvailable().search(searchString);
+        if (ldapPersonService.getIfAvailable() != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
+            List<PersonLdapLight> ldapSearchList = ldapPersonService.getIfAvailable().searchLight(searchString);
             if (ldapSearchList.size() > 0) {
-                List<PersonLdap> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdap::getDisplayName)).collect(Collectors.toList());
-                for (PersonLdap personLdapList : ldapList) {
+                List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
+                for (PersonLdapLight personLdapList : ldapList) {
                     if (personLdapList.getMail() != null) {
-                        if (!personLdaps.stream().anyMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
+                        if (personLdaps.stream().noneMatch(personLdap -> personLdap.getMail().equals(personLdapList.getMail()))) {
                             personLdaps.add(personLdapList);
                         }
                     }
@@ -298,6 +295,16 @@ public class UserService {
         personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
         personLdap.setMail(user.getEmail());
         personLdap.setEduPersonPrincipalName(user.getEppn());
+        return personLdap;
+    }
+
+    public PersonLdapLight getPersonLdapLightFromUser(User user) {
+        PersonLdapLight personLdap = new PersonLdapLight();
+        personLdap.setUid(user.getEppn());
+        personLdap.setSn(user.getName());
+        personLdap.setGivenName(user.getFirstname());
+        personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
+        personLdap.setMail(user.getEmail());
         return personLdap;
     }
 
