@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 
-import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.service.FormService;
@@ -23,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-@Hidden
 @Controller
 @RequestMapping(value = "/admin/export")
 public class ExportController {

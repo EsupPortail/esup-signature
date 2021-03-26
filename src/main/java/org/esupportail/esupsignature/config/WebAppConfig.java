@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.config;
 
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.info.Contact;
-import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -21,27 +21,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.dialect.springdata.SpringDataDialect;
 import org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect;
 
+import javax.annotation.Resource;
+
 @Configuration 
 @ComponentScan
 @EnableWebMvc
 @EnableAsync
 @EnableAutoConfiguration
 @EnableConfigurationProperties
-@OpenAPIDefinition(info = @Info(
-		description = "Esup Signature REST API",
-		version = "V1.11.2",
-		title = "Esup Signature REST API",
-		contact = @Contact(
-				name = "David Lemaignent, Valentin Hagnere",
-				email = "esup-signature@esup-portail.org",
-				url = "https://www.esup-portail.org/wiki/display/SIGN/Accueil"
-		),
-		license = @License(
-				name = "Apache 2.0",
-				url = "http://www.apache.org/licenses/LICENSE-2.0"
-		)
-) , externalDocs = @ExternalDocumentation(url = "https://www.esup-portail.org/wiki/display/SIGN/Web+services+REST") )
 public class WebAppConfig implements WebMvcConfigurer {
+
+	@Resource
+	private GlobalProperties globalProperties;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -104,6 +95,19 @@ public class WebAppConfig implements WebMvcConfigurer {
 				"/ws/", "/ws/*"
 		);
 		return registrationBean;
+	}
+
+	@Bean
+	public OpenAPI springShopOpenAPI() {
+		return new OpenAPI()
+				.info(new Info().title("Esup Signature")
+						.description("Esup Signature REST API")
+						.version(globalProperties.getVersion())
+						.contact(new Contact().name("David Lemaignent, Valentin Hagnere").email("esup-signature@esup-portail.org"))
+						.license(new License().name("Apache 2.0").url("http://www.apache.org/licenses/LICENSE-2.0")))
+				.externalDocs(new ExternalDocumentation()
+						.description("Wiki Esup Signature")
+						.url("https://www.esup-portail.org/wiki/display/SIGN/Accueil"));
 	}
 
 }
