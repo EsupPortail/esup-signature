@@ -336,7 +336,9 @@ public class PdfService {
 
             }
 
-            pdfSchema.setKeywords(info.getKeywords());
+            if(info.getKeywords() != null) {
+                pdfSchema.setKeywords(info.getKeywords());
+            }
 
             XmpSerializer serializer = new XmpSerializer();
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
