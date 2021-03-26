@@ -258,10 +258,10 @@ public class MailService {
 
     }
 
-    public void sendOtp(Otp otp, String urlId, SignBook signBook) throws MessagingException {
+    public void sendOtp(Otp otp, String urlId, SignRequest signRequest) throws MessagingException {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("url", globalProperties.getRootUrl() + "/otp/" + urlId);
-        ctx.setVariable("signBook", signBook);
+        ctx.setVariable("signRequest", signRequest);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);

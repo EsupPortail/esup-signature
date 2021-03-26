@@ -56,8 +56,7 @@ public class OtpService {
         otp.setEmail(extUser.getEmail());
         otp.setSignRequestId(signRequest.getId());
         String urlId = UUID.randomUUID().toString();
-        mailService.sendOtp(otp, urlId, signRequest.getParentSignBook());
-//        signRequestService.addRecipients(signRequest, extUser);
+        mailService.sendOtp(otp, urlId, signRequest);
         removeOtpFromCache(extUser.getEppn());
         removeOtpFromCache(extUser.getEmail());
         otpCache.put(urlId, otp);
