@@ -486,7 +486,7 @@ input:checked + .slider:before {
     padding-top: 5px;
     background-color: white;
     width: 100%;
-    z-index: 1029;
+    z-index: 1028;
     position: fixed;
     padding-left: 10px;
 }
@@ -504,7 +504,7 @@ input:checked + .slider:before {
     background-color: white;
     margin-left: 260px;
     width: calc(100vw - 275px);
-    z-index: 1029;
+    z-index: 1028;
 }
 
 .breadcrumb-nav-full {
