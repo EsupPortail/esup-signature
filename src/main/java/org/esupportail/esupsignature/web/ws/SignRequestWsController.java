@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.web.ws;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -43,13 +47,16 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @PostMapping("/new")
-    public Long create(@RequestParam MultipartFile[] multipartFiles, @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails, @RequestParam(value = "recipientsCCEmails", required = false) String[] recipientsCCEmails,
-                         @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                         @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                         @RequestParam(value = "pending", required = false) Boolean pending,
-                         @RequestParam(value = "comment", required = false) String comment,
-                         @RequestParam("signType") String signType,
-                         @RequestParam String eppn) {
+    @Operation(description = "Création d'une demande de siagnture")
+    public Long create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) String[] recipientsCCEmails,
+                       @Parameter(description = "Tout les participants doivent-ils signer ?") @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                       @Parameter(description = "Le créateur doit-il signer en premier ?") @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
+                       @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
+                       @Parameter(description = "Commentaire") @RequestParam(value = "comment", required = false) String comment,
+                       @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
+                       @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn) {
         User user = userService.getByEppn(eppn);
         try {
             Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, recipientsCCEmails, allSignToComplete, userSignFirst, pending, comment, SignType.valueOf(signType), user, user);
@@ -61,7 +68,8 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SignRequest get(@PathVariable Long id) {
+    @Operation(description = "Récupération d'une demande de signature")
+    public SignRequest get(@Parameter(description = "Identifiant de la demande") @PathVariable Long id) {
         return signRequestService.getById(id);
     }
 

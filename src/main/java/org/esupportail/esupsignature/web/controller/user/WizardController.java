@@ -20,7 +20,6 @@ import javax.annotation.Resource;
 
 @RequestMapping("/user/wizard")
 @Controller
-
 public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);

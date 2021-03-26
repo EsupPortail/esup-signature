@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.ws;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -24,7 +25,8 @@ public class FormWsController {
     UserService userService;
 
     @CrossOrigin
-    @PostMapping(value = "/{id}")
+    @PostMapping(value = "/{id}/new")
+    @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public Long start(@PathVariable Long id, @RequestParam String eppn, @RequestParam(required = false) @Parameter(description = "pattern : stepNumber*email") List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) {
         User user = userService.getByEppn(eppn);
         Data data = dataService.addData(id, user, user);

@@ -36,7 +36,6 @@ import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Hidden
 @CrossOrigin(origins = "*")
 @RequestMapping("user/users")
 @Controller

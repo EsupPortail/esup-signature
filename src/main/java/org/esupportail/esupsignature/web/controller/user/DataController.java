@@ -35,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-@Hidden
 @Controller
 @RequestMapping("/user/datas")
 public class DataController {
