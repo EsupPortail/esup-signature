@@ -1232,9 +1232,7 @@ public class SignRequestService {
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
-					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/sceau.png"), "sceau.png"));
-				} else {
+				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
 						UserShare userShare = userShareService.getById(userShareId);
@@ -1257,10 +1255,10 @@ public class SignRequestService {
 
 						}
 					}
+					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/check.png"), "check.png"));
 				}
 			}
 		}
-		signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/check.png"), "check.png"));
 		return signImages;
 	}
 

@@ -195,11 +195,10 @@
 <!--                                <i class="fas fa-eye"></i> Inserer un visuel-->
 <!--                            </button>-->
                             <div id="visualButtonDiv" class="d-none">
-                            <label class="switch">
-                                <input type="checkbox" id="visualButton" name="allSignToComplete" th:checked="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}">
-                                <span class="slider round"></span>
-                            </label>
-                            <label for="visualButton">Inserer un visuel</label>
+                                <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+                                        id="visualButton" title="Afficher/Masquer un visa visuel"
+                                        class="btn btn-success ml-1">Afficher/Masquer un visa visuel
+                                </button>
                             </div>
                         </div>
                         <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
