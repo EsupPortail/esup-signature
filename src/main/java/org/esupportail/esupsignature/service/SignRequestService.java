@@ -921,16 +921,16 @@ public class SignRequestService {
 	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
-		if(signRequest.getData() != null) {
+		if (signRequest.getData() != null) {
 			Long dataId = signRequest.getData().getId();
 			signRequest.setData(null);
 			dataService.deleteOnlyData(dataId);
 		}
-		for(Long commentId : commentsIds) {
+		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
 		}
 		signRequestRepository.delete(signRequest);

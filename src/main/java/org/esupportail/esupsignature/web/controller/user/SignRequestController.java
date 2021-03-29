@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -183,6 +182,9 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
+        List<Log> logs = logService.getBySignRequest(signRequest.getId());
+        logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+        model.addAttribute("logs", logs);
         return "user/signrequests/show";
     }
 
@@ -206,7 +208,6 @@ public class SignRequestController {
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";
-
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
@@ -336,6 +337,22 @@ public class SignRequestController {
         signRequestService.delete(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         return "redirect:" + request.getHeader("referer");
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
+    public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+        SignRequest signRequest = signRequestService.getById(id);
+        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
+            signRequestService.deleteDefinitive(id);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+            return "redirect:/user/signbooks/" + signRequest.getParentSignBook().getId();
+
+        } else {
+            signBookService.deleteDefinitive(signRequest.getParentSignBook().getId());
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
+            return "redirect:/user/";
+        }
     }
 
     @PostMapping(value = "/delete-multiple", consumes = {"application/json"})
