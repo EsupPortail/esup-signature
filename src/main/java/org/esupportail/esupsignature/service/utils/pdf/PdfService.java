@@ -91,14 +91,17 @@ public class PdfService {
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument);
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             InputStream signImage;
             if (signType.equals(SignType.visa)) {
-                signImage = fileService.addTextToImage(PdfService.class.getResourceAsStream("/static/images/sceau.png"), signRequestParams);
+                File fileSignImage = fileService.getEmptyImage();
+                signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
+                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
+                signImage = new FileInputStream(fileWithWatermark);
             } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams);
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType);
                 if(signRequestParams.getAddWatermark()) {
                     File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                     fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
@@ -199,17 +202,6 @@ public class PdfService {
             logger.error("error to add image", e);
         }
         return null;
-    }
-
-    public List<String> getSignatureStrings(User user, SignType signType, Date newDate, DateFormat dateFormat) throws IOException {
-        List<String> addText = new ArrayList<>();
-        if(signType.equals(SignType.visa)) {
-            addText.add("Visé par " + user.getFirstname() + " " + user.getName() + "\n");
-        } else {
-            addText.add("Signé par " + user.getFirstname() + " " + user.getName() + "\n");
-        }
-        addText.add("Le " + dateFormat.format(newDate));
-        return addText;
     }
 
     public Map<String, String> readMetadatas(InputStream inputStream) {

@@ -83,7 +83,7 @@ public class OtpService {
         try{
             return otpCache.getUnchecked(urlId);
         }catch (Exception e){
-            logger.error("error on get otp : " + e.getMessage());
+            logger.warn("error on get otp : " + e.getMessage());
             return null;
         }
     }

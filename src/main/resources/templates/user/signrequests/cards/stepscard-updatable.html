@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <div th:fragment="stepscard-updatable">
     <div class="card mb-1 col-lg-10 mx-auto">
         <div class="card-body">
@@ -28,7 +29,8 @@
                                         </table>
                                     </div>
                                     <div class="bs-stepper-bottom">
-                                        <form th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                        <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1}"
+                                                th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
                                             <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-right">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
@@ -38,18 +40,21 @@
                             </div>
                             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                         </th:block>
-                        <th:block th:if="${signBook.liveWorkflow.documentsTargetUri != null}">
-                            <div class="bs-stepper-line"></div>
-                            <div class="step" name="target" data-target="#target">
-                                <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
-                                    <span th:classappend="${signRequest.exportedDocumentURI != null} ? 'bg-success'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
-                                    <span class="bs-stepper-label"><p>Export</p></span>
+                        <th:block th:if="${signBook.liveWorkflow.workflow != null}">
+                            <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
+                                <div class="bs-stepper-line"></div>
+                                <div class="step" name="target" data-target="#target">
+                                    <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
+                                        <span th:classappend="${target.targetOk} ? 'bg-success' : 'bg_secondary'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
+                                        <span class="bs-stepper-label"><p>Export : <span th:text="${target.targetUri}"></span></p></span>
+                                    </div>
                                 </div>
-                            </div>
+                            </th:block>
                         </th:block>
                     </div>
                 </div>
             </th:block>
+            <a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect float-right m-2"><i class="fas fa-shoe-prints"></i></a>
         </div>
     </div>
 </div>

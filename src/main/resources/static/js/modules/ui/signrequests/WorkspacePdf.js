@@ -247,7 +247,7 @@ export class WorkspacePdf {
         let self = this;
         this.pdfViewer.checkForm().then(function(result) {
             if(result === "ok") {
-                if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signType !== "visa" && self.signPosition.visualActive) {
+                if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signPosition.visualActive) {
                     bootbox.alert("Merci de placer la signature", function () {
                         self.pdfViewer.initSavedValues();
                         if(self.currentSignRequestParams != null) {
