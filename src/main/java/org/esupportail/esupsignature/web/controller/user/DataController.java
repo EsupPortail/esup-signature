@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,12 +105,17 @@ public class DataController {
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 							 @RequestParam(required = false) List<String> recipientEmails,
 							 @RequestParam(required = false) List<String> targetEmails,
+							 @RequestParam(value = "emails", required = false) List<String> emails,
+							 @RequestParam(value = "names", required = false) List<String> names,
+							 @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+							 @RequestParam(value = "phones", required = false) List<String> phones,
 							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
+		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, user, authUser);
-			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user, authUser);
+			SignBook signBook = dataService.sendForSign(data, recipientEmails, externalUsersInfos, targetEmails, user, authUser);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));

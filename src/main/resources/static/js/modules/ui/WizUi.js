@@ -134,9 +134,10 @@ export class WizUi {
         step.signType = $('#signTypeWiz').val();
         $("div[id^='externalUserInfos_']").each(function() {
             let externalUserInfos = new ExternalUserInfos();
-            externalUserInfos.name = $(this).find("#name").val();
-            externalUserInfos.firstname = $(this).find("#firstname").val();
-            externalUserInfos.phone = $(this).find("#phone").val();
+            externalUserInfos.email = $(this).find("#emails").val();
+            externalUserInfos.name = $(this).find("#names").val();
+            externalUserInfos.firstname = $(this).find("#firstnames").val();
+            externalUserInfos.phone = $(this).find("#phones").val();
             step.externalUsersInfos.push(externalUserInfos);
         });
         let signBookId = this.signBookId;

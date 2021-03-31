@@ -310,7 +310,7 @@ public class WorkflowService {
                                 }
                             } else {
                                 targetService.copyTargets(workflow.getTargets(), signBook);
-                                signBookService.importWorkflow(signBook, workflow);
+                                signBookService.importWorkflow(signBook, workflow, null);
                             }
                             signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
                             fsAccessService.remove(fsFile);

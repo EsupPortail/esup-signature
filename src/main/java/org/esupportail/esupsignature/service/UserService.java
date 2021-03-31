@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -477,5 +478,18 @@ public class UserService {
     public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
         User user = getUserByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImaeNumber);
+    }
+
+    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {
+        List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
+        for(int i = 0; i < emails.size(); i++) {
+            JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
+            jsonExternalUserInfo.setEmail(emails.get(i));
+            jsonExternalUserInfo.setName(names.get(i));
+            jsonExternalUserInfo.setFirstname(firstnames.get(i));
+            jsonExternalUserInfo.setPhone(phones.get(i));
+            externalUsersInfos.add(jsonExternalUserInfo);
+        }
+        return externalUsersInfos;
     }
 }

@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -91,7 +92,7 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
         }
@@ -116,7 +117,7 @@ public class DataService {
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
-        signBookService.importWorkflow(signBook, computedWorkflow);
+        signBookService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargets().size() > 0) {
             targetService.copyTargets(form.getTargets(), signBook);
@@ -254,7 +255,7 @@ public class DataService {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(data, recipientEmails, targetEmails, user, authUser);
+                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {

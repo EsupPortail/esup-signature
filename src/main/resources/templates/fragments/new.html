@@ -252,6 +252,7 @@
                                             Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
                                         </p>
                                     </div>
+                                    <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
                                 </th:block>
                                 <th:block th:each="target : ${form.targets}">
                                     <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
