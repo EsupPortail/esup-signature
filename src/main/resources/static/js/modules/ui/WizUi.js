@@ -1,6 +1,7 @@
 import {default as FilesInput} from "../utils/FilesInput.js";
 import {default as SelectUser} from "../utils/SelectUser.js";
 import {Step} from "../../prototypes/Step.js";
+import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js";
 
 export class WizUi {
 
@@ -131,14 +132,12 @@ export class WizUi {
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         let userSignFirst = $('#_userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
-        $("input[name='names']").each(function() {
-            step.names.push($( this ).val());
-        });
-        $("input[name='firstnames']").each(function() {
-            step.firstnames.push($( this ).val());
-        });
-        $("input[name='phones']").each(function() {
-            step.phones.push($( this ).val());
+        $("div[id^='externalUserInfos_']").each(function() {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.name = $(this).find("#name").val();
+            externalUserInfos.firstname = $(this).find("#firstname").val();
+            externalUserInfos.phone = $(this).find("#phone").val();
+            step.externalUsersInfos.push(externalUserInfos);
         });
         let signBookId = this.signBookId;
         console.log(signBookId);

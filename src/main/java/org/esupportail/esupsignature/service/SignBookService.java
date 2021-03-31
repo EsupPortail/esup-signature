@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,7 @@ public class SignBookService {
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
                 SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
-                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, false, signType, Collections.singletonList(user.getEmail()), null, null, null));
+                signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, false, signType, Collections.singletonList(user.getEmail()), null));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
                 dispatchSignRequestParams(signBook);
                 pendingSignBook(signBook, null, user.getEppn(), authUserEppn);
@@ -230,7 +231,7 @@ public class SignBookService {
                     recipientEmails.add(user.getEmail());
                 }
             }
-            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, workflowStep.getRepeatable(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails, null, null, null);
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, workflowStep.getRepeatable(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails, null);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
         }
         if(!(workflow instanceof DefaultWorkflow)) {
@@ -455,15 +456,15 @@ public class SignBookService {
         return signBookName;
     }
 
-    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones, User user, User authUser) throws EsupSignatureException {
+    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException {
         String message = null;
         if (allSignToComplete == null) {
             allSignToComplete = false;
         }
         if(userSignFirst != null && userSignFirst) {
-            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, false, SignType.pdfImageStamp, Collections.singletonList(user.getEmail()), null, null, null));
+            signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, false, SignType.pdfImageStamp, Collections.singletonList(user.getEmail()), null));
         }
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, allSignToComplete, signType, recipientsEmails, names, firstnames, phones));
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, allSignToComplete, signType, recipientsEmails, externalUsersInfos));
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         dispatchSignRequestParams(signBook);
         if (pending != null && pending) {
@@ -537,7 +538,7 @@ public class SignBookService {
     public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = this.getById(id);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, repeatable, allSignToComplete, signType, recipientsEmails, null, null, null);
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, repeatable, allSignToComplete, signType, recipientsEmails, null);
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {

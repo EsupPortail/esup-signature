@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -298,6 +299,7 @@ public class SignRequestController {
                                @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                @RequestParam(value = "pending", required = false) Boolean pending,
                                @RequestParam(value = "comment", required = false) String comment,
+                               @RequestParam(value = "emails", required = false) List<String> emails,
                                @RequestParam(value = "names", required = false) List<String> names,
                                @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                @RequestParam(value = "phones", required = false) List<String> phones,
@@ -305,9 +307,18 @@ public class SignRequestController {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
+        List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
+        for(int i = 0; i < emails.size(); i++) {
+            JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
+            jsonExternalUserInfo.setEmail(emails.get(i));
+            jsonExternalUserInfo.setName(names.get(i));
+            jsonExternalUserInfo.setFirstname(firstnames.get(i));
+            jsonExternalUserInfo.setPhone(phones.get(i));
+            externalUsersInfos.add(jsonExternalUserInfo);
+        }
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, names, firstnames, phones, user, authUser);
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {
@@ -316,7 +327,7 @@ public class SignRequestController {
                     }
                 }
                 long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-                if(!signRequestService.checkTempUsers(signRequestId, recipientsEmails, names, firstnames, phones)) {
+                if(!signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
@@ -473,11 +484,9 @@ public class SignRequestController {
                           @RequestParam(required = false) List<String> recipientEmails,
                           @RequestParam(required = false) List<String> targetEmails,
                           @RequestParam(value = "comment", required = false) String comment,
-                          @RequestParam(value = "names", required = false) List<String> names,
-                          @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-                          @RequestParam(value = "phones", required = false) List<String> phones,
+                          @RequestParam(value = "externalUsersInfos", required = false) List<JsonExternalUserInfo> externalUsersInfos,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
-        if(!signRequestService.checkTempUsers(id, recipientEmails, names, firstnames, phones)) {
+        if(!signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }

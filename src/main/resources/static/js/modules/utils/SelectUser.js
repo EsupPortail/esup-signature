@@ -120,9 +120,10 @@ export default class SelectUser {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
         tempUsersDiv.append(
-            "<div class='alert alert-primary'>" +
+            "<div class='alert alert-primary' id='externalUserInfos_" + e.email + "'>" +
             "<b>Destinataire externe : <span>"+ e.email +"</span></b>" +
             "<div>" +
+            "<input id=\"emails\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\""+ e.email +"\"></div>" +
             "<div class=\"d-flex col-10\"><label for=\"name\" class='col-2'>Nom</label>" +
             "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\""+ e.name +"\" required></div>" +
             "<div class=\"d-flex col-10\"><label for=\"firstname\" class='col-2'>Prénom</label>" +

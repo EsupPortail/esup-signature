@@ -83,9 +83,9 @@ public class WizardController {
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
                 if (userSignFirst) {
-                    liveWorkflowStepService.addNewStepToSignBook(id, SignType.pdfImageStamp, false, Collections.singletonList(userService.getByEppn(authUserEppn).getEmail()), null, null, null, authUserEppn);
+                    liveWorkflowStepService.addNewStepToSignBook(id, SignType.pdfImageStamp, false, Collections.singletonList(userService.getByEppn(authUserEppn).getEmail()), null, authUserEppn);
                 }
-                liveWorkflowStepService.addNewStepToSignBook(id, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getNames(), step.getFirstnames(), step.getPhones(), authUserEppn);
+                liveWorkflowStepService.addNewStepToSignBook(id, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getExternalUsersInfos(), authUserEppn);
                 if (addNew != null) {
                     model.addAttribute("signTypes", SignType.values());
                 }

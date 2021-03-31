@@ -1,4 +1,5 @@
 export class Step {
+    externalUsersInfos;
 
     constructor(signRequestParams) {
         this.workflowId;
@@ -6,9 +7,7 @@ export class Step {
         this.stepNumber;
         this.allSignToComplete;
         this.signType;
-        this.names = [];
-        this.firstnames = [];
-        this.phones= [];
+        this.externalUsersInfos = [];
         Object.assign(this, signRequestParams);
     }
 

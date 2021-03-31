@@ -16,11 +16,7 @@ public class JsonWorkflowStep {
 
 	private List<String> recipientsEmails = new ArrayList<>();
 
-	private List<String> names = new ArrayList<>();
-
-	private List<String> firstnames = new ArrayList<>();
-
-	private List<String> phones = new ArrayList<>();
+	private List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
 
 	private Boolean changeable = false;
 
@@ -62,28 +58,12 @@ public class JsonWorkflowStep {
 		this.recipientsEmails = recipientsEmails;
 	}
 
-	public List<String> getNames() {
-		return names;
+	public List<JsonExternalUserInfo> getExternalUsersInfos() {
+		return externalUsersInfos;
 	}
 
-	public void setNames(List<String> names) {
-		this.names = names;
-	}
-
-	public List<String> getFirstnames() {
-		return firstnames;
-	}
-
-	public void setFirstnames(List<String> firstnames) {
-		this.firstnames = firstnames;
-	}
-
-	public List<String> getPhones() {
-		return phones;
-	}
-
-	public void setPhones(List<String> phones) {
-		this.phones = phones;
+	public void setExternalUsersInfos(List<JsonExternalUserInfo> externalUsersInfos) {
+		this.externalUsersInfos = externalUsersInfos;
 	}
 
 	public Boolean getChangeable() {

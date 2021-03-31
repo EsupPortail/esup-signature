@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class LiveWorkflowStepService {
     @Resource
     private UserPropertieService userPropertieService;
 
-    public LiveWorkflowStep createLiveWorkflowStep(WorkflowStep workflowStep, Boolean repeatable, Boolean allSignToComplete, SignType signType, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones) {
+    public LiveWorkflowStep createLiveWorkflowStep(WorkflowStep workflowStep, Boolean repeatable, Boolean allSignToComplete, SignType signType, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
         if(repeatable == null) {
@@ -48,19 +49,20 @@ public class LiveWorkflowStepService {
             liveWorkflowStep.setAllSignToComplete(allSignToComplete);
         }
         liveWorkflowStep.setSignType(signType);
-        addRecipientsToWorkflowStep(liveWorkflowStep, recipientsEmails, names, firstnames, phones);
+        addRecipientsToWorkflowStep(liveWorkflowStep, recipientsEmails, externalUsersInfos);
         liveWorkflowStepRepository.save(liveWorkflowStep);
         return liveWorkflowStep;
     }
 
-    public void addRecipientsToWorkflowStep(LiveWorkflowStep liveWorkflowStep, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones) {
+    public void addRecipientsToWorkflowStep(LiveWorkflowStep liveWorkflowStep, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
         int i = 0;
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
             if(recipientUser.getUserType().equals(UserType.external)) {
-                recipientUser.setName(names.get(i));
-                recipientUser.setFirstname(firstnames.get(i));
-                recipientUser.setEppn(phones.get(i));
+                JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(recipientEmail)).findFirst().get();
+                recipientUser.setName(jsonExternalUserInfo.getName());
+                recipientUser.setFirstname(jsonExternalUserInfo.getFirstname());
+                recipientUser.setEppn(jsonExternalUserInfo.getPhone());
                 i++;
             }
             if(liveWorkflowStep.getId() != null) {
@@ -78,10 +80,10 @@ public class LiveWorkflowStepService {
     }
 
     @Transactional
-    public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones, String authUserEppn) {
+    public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String authUserEppn) {
         SignBook signBook = signBookService.getById(signBookId);
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
-        LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(null,false, allSignToComplete, signType, recipientsEmails, names, firstnames, phones);
+        LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(null,false, allSignToComplete, signType, recipientsEmails, externalUsersInfos);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         if(recipientsEmails != null) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), recipientsEmails);

@@ -34,6 +34,7 @@ import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1051,23 +1052,22 @@ public class SignRequestService {
 		return isTempUsers;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<String> names, List<String> firstnames, List<String> phones) throws MessagingException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<JsonExternalUserInfo> externalUsersInfos) throws MessagingException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
-			if (names != null && tempUsers.size() == names.size()) {
-				int userNumber = 0;
+			if (externalUsersInfos != null && tempUsers.size() == externalUsersInfos.size()) {
 				for (User tempUser : tempUsers) {
 					if (tempUser.getUserType().equals(UserType.shib)) {
 						logger.warn("TODO Envoi Mail SHIBBOLETH ");
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
-						tempUser.setFirstname(firstnames.get(userNumber));
-						tempUser.setName(names.get(userNumber));
-						tempUser.setEppn(phones.get(userNumber));
+						JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(tempUser.getEmail())).findFirst().get();
+						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
+						tempUser.setName(jsonExternalUserInfo.getName());
+						tempUser.setEppn(jsonExternalUserInfo.getPhone());
 						otpService.generateOtpForSignRequest(id, tempUser);
 					}
-					userNumber++;
 				}
 			} else {
 				return false;
@@ -1165,7 +1165,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
 		List<User> viewers = new ArrayList<>();
 		if(recipientsCCEmails != null) {
@@ -1175,7 +1175,7 @@ public class SignRequestService {
 			signBook.setViewers(viewers);
 			mailService.sendCCtAlert(recipientsCCEmails, signBook.getSignRequests().get(0));
 		}
-		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, names, firstnames, phones, user, authUser);
+		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
 	}
 
 	public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
