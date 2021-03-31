@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -91,7 +92,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam("recipientsEmails") String[] recipientsEmails,
+                          @RequestParam("recipientsEmails") List<String> recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) {
@@ -112,9 +113,7 @@ public class SignBookController {
                                                     @PathVariable("id") Long id,
                                                     @RequestBody JsonWorkflowStep step) {
         try {
-            String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
-            recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step.getRecipientsEmails(), step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());

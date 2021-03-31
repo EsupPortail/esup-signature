@@ -70,19 +70,19 @@ public class UserService {
     }
 
     public User getSystemUser() {
-        return createUser("system", "", "", "system", UserType.system);
+        return createUser("system", "", "", "system", UserType.system, false);
     }
 
     public User getCreatorUser() {
-        return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
+        return createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
     }
 
     public User getSchedulerUser() {
-        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system);
+        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system, false);
     }
 
     public User getGenericUser() {
-        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system);
+        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
     }
 
     public List<User> getAllUsers() {
@@ -138,7 +138,7 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 String mail = personLdaps.get(0).getMail();
-                return createUser(eppn, name, firstName, mail, UserType.ldap);
+                return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
             }
@@ -157,15 +157,15 @@ public class UserService {
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
-                return createUser(eppn, name, firstName, mail, UserType.ldap);
+                return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             }
         }
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
             logger.info("ldap user not found : " + mail + ". Creating temp acccount");
-            return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.external);
+            return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
-            return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.shib);
+            return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
         }
         return null;
     }
@@ -187,11 +187,11 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail, UserType.ldap);
+        createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
     @Transactional
-    public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
+    public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
             user = getByEppn(eppn);
@@ -207,7 +207,7 @@ public class UserService {
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-        if(!user.getUserType().equals(UserType.system)) {
+        if(updateCurrentUserRoles) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);

@@ -82,7 +82,7 @@ public class WorkflowService {
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
         if (creator == null) {
-            creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system);
+            creator = userService.createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
         }
         if (workflowRepository.countByName("Ma signature") == 0) {
             Workflow workflow = new Workflow();
@@ -296,7 +296,7 @@ public class WorkflowService {
                                         if(workflow.getWorkflowSteps().size() > i) {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, false, SignType.valueOf(signType), recipientList.toArray(String[]::new));
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, false, SignType.valueOf(signType), recipientList, null, null, null);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                         i++;
                                     }

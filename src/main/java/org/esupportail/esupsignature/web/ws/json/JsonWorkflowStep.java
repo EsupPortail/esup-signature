@@ -16,6 +16,12 @@ public class JsonWorkflowStep {
 
 	private List<String> recipientsEmails = new ArrayList<>();
 
+	private List<String> names = new ArrayList<>();
+
+	private List<String> firstnames = new ArrayList<>();
+
+	private List<String> phones = new ArrayList<>();
+
 	private Boolean changeable = false;
 
 	private Integer signLevel = 0;
@@ -54,6 +60,30 @@ public class JsonWorkflowStep {
 
 	public void setRecipientsEmails(List<String> recipientsEmails) {
 		this.recipientsEmails = recipientsEmails;
+	}
+
+	public List<String> getNames() {
+		return names;
+	}
+
+	public void setNames(List<String> names) {
+		this.names = names;
+	}
+
+	public List<String> getFirstnames() {
+		return firstnames;
+	}
+
+	public void setFirstnames(List<String> firstnames) {
+		this.firstnames = firstnames;
+	}
+
+	public List<String> getPhones() {
+		return phones;
+	}
+
+	public void setPhones(List<String> phones) {
+		this.phones = phones;
 	}
 
 	public Boolean getChangeable() {

@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
@@ -236,9 +235,19 @@ public class UserController {
 	}
 
 	@ResponseBody
-	@PostMapping(value ="/check-user-certificate")
+	@PostMapping(value ="/check-users-certificate")
 	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
     	return userService.getUserWithoutCertificate(userEmails);
+	}
+
+	@ResponseBody
+	@PostMapping(value ="/check-temp-users")
+	private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+    	if(recipientEmails != null) {
+			return userService.getTempUsersFromRecipientList(recipientEmails);
+		} else {
+    		return new ArrayList<>();
+		}
 	}
 
 	@ResponseBody

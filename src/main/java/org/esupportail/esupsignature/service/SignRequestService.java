@@ -1051,20 +1051,20 @@ public class SignRequestService {
 		return isTempUsers;
 	}
 
-	public boolean checkTempUsers(Long id, List<String> recipientEmails, String[] names, String[] firstnames, String[] phones) throws MessagingException {
+	public boolean checkTempUsers(Long id, List<String> recipientEmails, List<String> names, List<String> firstnames, List<String> phones) throws MessagingException {
 		SignRequest signRequest = getById(id);
 		List<User> tempUsers = userService.getTempUsers(signRequest, recipientEmails);
 		if(tempUsers.size() > 0) {
-			if (names != null && tempUsers.size() == names.length) {
+			if (names != null && tempUsers.size() == names.size()) {
 				int userNumber = 0;
 				for (User tempUser : tempUsers) {
 					if (tempUser.getUserType().equals(UserType.shib)) {
 						logger.warn("TODO Envoi Mail SHIBBOLETH ");
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
-						tempUser.setFirstname(firstnames[userNumber]);
-						tempUser.setName(names[userNumber]);
-						tempUser.setEppn(phones[userNumber]);
+						tempUser.setFirstname(firstnames.get(userNumber));
+						tempUser.setName(names.get(userNumber));
+						tempUser.setEppn(phones.get(userNumber));
 						otpService.generateOtpForSignRequest(id, tempUser);
 					}
 					userNumber++;
@@ -1159,13 +1159,13 @@ public class SignRequestService {
 		}
 	}
 
-	public void addStep(Long id, String[] recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
+	public void addStep(Long id, List<String> recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, authUserEppn);
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, String[] recipientsEmails, String[] recipientsCCEmails, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, SignType signType, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<String> names, List<String> firstnames, List<String> phones, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
 		List<User> viewers = new ArrayList<>();
 		if(recipientsCCEmails != null) {
@@ -1173,9 +1173,9 @@ public class SignRequestService {
 				viewers.add(userService.getUserByEmail(recipientsEmail));
 			}
 			signBook.setViewers(viewers);
-			mailService.sendCCtAlert(Arrays.asList(recipientsCCEmails), signBook.getSignRequests().get(0));
+			mailService.sendCCtAlert(recipientsCCEmails, signBook.getSignRequests().get(0));
 		}
-		return signBookService.sendSignBook(signBook, recipientsEmails, allSignToComplete, userSignFirst, pending, comment, signType, user, authUser);
+		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, names, firstnames, phones, user, authUser);
 	}
 
 	public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {

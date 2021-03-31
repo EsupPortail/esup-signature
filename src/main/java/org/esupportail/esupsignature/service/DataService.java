@@ -169,7 +169,8 @@ public class DataService {
         return data;
     }
 
-    public Data cloneData(Data data, User authUser) {
+    public Data cloneData(Data data, String authUserEppn) {
+        User authUser = userService.getUserByEppn(authUserEppn);
         Form form = formService.getFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
         Data cloneData = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
@@ -247,7 +248,9 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook initSendData(Long dataId, User user, List<String> recipientEmails, List<String> targetEmails, User authUser) throws EsupSignatureIOException, EsupSignatureException {
+    public SignBook initSendData(Long dataId, String userEppn, List<String> recipientEmails, List<String> targetEmails, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
+        User user = userService.getUserByEppn(userEppn);
+        User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
@@ -267,9 +270,10 @@ public class DataService {
         }
     }
 
-    public Data cloneFromSignRequest(SignRequest signRequest, User authUser) {
+    public SignBook cloneFromSignRequest(SignRequest signRequest, String userEppn, String authUserEppn, List<String> recipientEmails, List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
         Data data = getBySignRequest(signRequest);
-        return cloneData(data, authUser);
+        Data dataClone = cloneData(data, authUserEppn);
+        return initSendData(dataClone.getId(), userEppn, recipientEmails, targetEmails, authUserEppn);
     }
 
     public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {

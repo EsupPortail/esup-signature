@@ -516,16 +516,14 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">
-                    Démarrer le circuit</h3>
-                <h3 th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">
-                    Valider le document</h3>
+                <h3 th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">Démarrer le circuit</h3>
+                <h3 th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="modal-title">Valider le document</h3>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form th:action="'/user/signrequests/pending/' + ${signRequest.id}">
+            <form th:action="'/user/signrequests/pending/' + ${signRequest.id}" method="post">
                 <div class="modal-body">
                     <th:block th:unless="${steps.size() > 0}">
                         <p th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
@@ -579,6 +577,7 @@
                                         Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.
                                     </p>
                                 </div>
+                                <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
                             </th:block>
                         </th:block>
                         <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}">
@@ -607,11 +606,11 @@
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
                                             <label for="name">Nom</label>
-                                            <input id="name" class="form-control mr-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
+                                            <input id="names" class="form-control mr-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
                                             <label for="firstname">Prénom</label>
-                                            <input id="firstname" class="form-control mr-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
+                                            <input id="firstnames" class="form-control mr-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  mr-2" type="text" name="phones" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.eppn} : ''" required>
+                                            <input id="phones" class="form-control  mr-2" type="text" name="phones" value="" required>
                                         </div>
                                     </div>
                                 </th:block>
@@ -621,17 +620,16 @@
                                     <div th:if="${user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${user.email}"></span></b>
                                         <div class="form-inline">
-                                            <label for="name">Nom</label>
-                                            <input id="name" class="form-control mr-2" type="text" name="names" th:value="${user.name}" required>
-                                            <label for="firstname">Prénom</label>
-                                            <input id="firstname" class="form-control mr-2" type="text" name="firstnames" th:value="${user.firstname}" required>
+                                            <label for="names">Nom</label>
+                                            <input id="names" class="form-control mr-2" type="text" name="names" th:value="${user.name}" required>
+                                            <label for="firstnames">Prénom</label>
+                                            <input id="firstnames" class="form-control mr-2" type="text" name="firstnames" th:value="${user.firstname}" required>
                                             <label for="phones">Mobile</label>
                                             <input id="phones" class="form-control  mr-2" type="text" name="phones" th:value="${user.eppn}" required>
                                         </div>
                                     </div>
                                 </th:block>
                         </th:block>
-                        <div id="tempUsers"></div>
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
                             <label>Etape finale : Envoi par mail à </label>

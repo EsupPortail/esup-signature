@@ -5,7 +5,10 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.LiveWorkflowStepService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -59,7 +63,7 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 signBookService.initSignBook(id, workflowId, user);
-                return "user/wizard/wizend";
+                return "user/wizard/wiz-setup-workflow";
             }
             model.addAttribute("signTypes", SignType.values());
         }
@@ -78,14 +82,10 @@ public class WizardController {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(step.getRecipientsEmails() != null && step.getRecipientsEmails().size() > 0) {
-                String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
-                recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
                 if (userSignFirst) {
-                    String[] userSignFirstArray = new String[1];
-                    userSignFirstArray[0] = userService.getByEppn(authUserEppn).getEmail();
-                    liveWorkflowStepService.addNewStepToSignBook(SignType.pdfImageStamp, false, userSignFirstArray, id, authUserEppn);
+                    liveWorkflowStepService.addNewStepToSignBook(id, SignType.pdfImageStamp, false, Collections.singletonList(userService.getByEppn(authUserEppn).getEmail()), null, null, null, authUserEppn);
                 }
-                liveWorkflowStepService.addNewStepToSignBook(SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), recipientsEmailsArray, id, authUserEppn);
+                liveWorkflowStepService.addNewStepToSignBook(id, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getNames(), step.getFirstnames(), step.getPhones(), authUserEppn);
                 if (addNew != null) {
                     model.addAttribute("signTypes", SignType.values());
                 }

@@ -13,6 +13,9 @@ export class WizUi {
         this.mode = "";
         this.input;
         this.fileInput;
+        this.close = false;
+        this.end = false;
+        this.start = false;
         this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
         $('#addNew').hide();
         this.initListeners();
@@ -95,20 +98,32 @@ export class WizUi {
     }
 
     initWiz2(html) {
-        console.log(this.csrf);
+        let csrf = this.csrf;
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
-            new SelectUser("recipientsEmailsWiz");
+            new SelectUser("recipientsEmailsWiz", null, null, csrf);
         }
-        $("#addNew").on('click', e => this.gotoAddStep(false, false, false));
-        $("#end").on('click', e => this.gotoAddStep(true, false, false));
-        $("#endStart").on('click', e => this.gotoAddStep(true, true, true));
+        $('[id^="recipientEmailsWizSelect_"]').each(function (){
+            new SelectUser($(this).attr('id'), null, null, csrf);
+        });
+        $('[id^="targetEmailsSelect_"]').each(function (){
+            new SelectUser($(this).attr('id'), null, null, csrf);
+        });
+        let self = this;
+        $("#end").on('click', function (){
+            self.end = true;
+        });
+        $("#endStart").on('click', function (){
+            self.end = true;
+            self.start = true;
+        });
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
-
+        $("#wiz-step-form").on('submit', e => this.gotoAddStep(e));
     }
 
-    gotoAddStep(end, start, close) {
+    gotoAddStep(e) {
+        e.preventDefault();
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
@@ -116,10 +131,20 @@ export class WizUi {
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         let userSignFirst = $('#_userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
+        $("input[name='names']").each(function() {
+            step.names.push($( this ).val());
+        });
+        $("input[name='firstnames']").each(function() {
+            step.firstnames.push($( this ).val());
+        });
+        $("input[name='phones']").each(function() {
+            step.phones.push($( this ).val());
+        });
         let signBookId = this.signBookId;
         console.log(signBookId);
+        let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&userSignFirst=" + userSignFirst + "&start=" + start + "&close=" + close + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),

@@ -1,10 +1,11 @@
 export default class SelectUser {
 
-    constructor(selectName, limit, signRequestId) {
+    constructor(selectName, limit, signRequestId, csrf) {
         console.debug("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         this.signRequestId = signRequestId;
+        this.csrf = csrf;
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
@@ -46,17 +47,16 @@ export default class SelectUser {
                 $('#end').show();
             }
         }
-        if (this.signRequestId != null) {
-            let recipientEmails = this.slimSelect.selected()
-            $.ajax({
-                url: "/user/signrequests/is-temp-users/" + this.signRequestId,
-                type: 'GET',
-                dataType: 'json',
-                contentType: "application/json",
-                data: {"recipientEmails": JSON.stringify(recipientEmails)},
-                success: data => this.displayTempUsersSuccess(data)
-            });
-        }
+        let recipientEmails = this.slimSelect.selected()
+        let csrf = this.csrf;
+        $.ajax({
+            url: "/user/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+            type: 'POST',
+            contentType: "application/json",
+            dataType: 'json',
+            data: JSON.stringify(recipientEmails),
+            success: data => this.displayTempUsersSuccess(data)
+        });
         if (this.flag === true) {
             if (!e[e.length - 1].text.includes('(')) {
                 $.ajax({
@@ -111,26 +111,26 @@ export default class SelectUser {
 
     displayTempUsersSuccess(data) {
         console.log("display temp users");
-        let tempUsersDiv = $('#tempUsers');
+        let tempUsersDiv = $('#tempUsers-' + this.selectField.attr("id"));
         tempUsersDiv.empty();
         data.forEach(e => this.appendTempUser(e));
     }
 
     appendTempUser(e) {
-        let tempUsersDiv = $('#tempUsers');
-        tempUsersDiv.append(" " +
-            "<div>" +
+        let name = '#tempUsers-' + this.selectField.attr("id");
+        let tempUsersDiv = $(name);
+        tempUsersDiv.append(
+            "<div class='alert alert-primary'>" +
             "<b>Destinataire externe : <span>"+ e.email +"</span></b>" +
-            "<div class=\"form-inline\">" +
-            "<label for=\"name\">Nom</label>" +
-            "<input id=\"name\" class=\"form-control mr-2\" type=\"text\" name=\"names\" value=\""+ e.name +"\" required>" +
-            "<label for=\"firstname\">Prénom</label>" +
-            "<input id=\"firstname\" class=\"form-control mr-2\" type=\"text\" name=\"firstnames\" value=\""+ e.firstname +"\" required>\n" +
-            "<label for=\"phones\">Mobile</label>\n" +
-            "<input id=\"phones\" class=\"form-control  mr-2\" type=\"text\" name=\"phones\" value=\""+ e.eppn +"\" required>\n" +
-            "</div>\n" +
+            "<div>" +
+            "<div class=\"d-flex col-10\"><label for=\"name\" class='col-2'>Nom</label>" +
+            "<input id=\"names\" class=\"form-control \" type=\"text\" name=\"names\" value=\""+ e.name +"\" required></div>" +
+            "<div class=\"d-flex col-10\"><label for=\"firstname\" class='col-2'>Prénom</label>" +
+            "<input id=\"firstnames\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\""+ e.firstname +"\" required></div>" +
+            "<div class=\"d-flex col-10\"><label for=\"phones\" class='col-2'>Mobile</label>" +
+            "<input id=\"phones\" class=\"form-control \" type=\"text\" name=\"phones\" value='' required></div>" +
             "</div>" +
-            "");
+            "</div>");
     }
 
     validateEmail(email) {

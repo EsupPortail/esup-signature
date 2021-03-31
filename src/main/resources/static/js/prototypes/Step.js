@@ -6,6 +6,9 @@ export class Step {
         this.stepNumber;
         this.allSignToComplete;
         this.signType;
+        this.names = [];
+        this.firstnames = [];
+        this.phones= [];
         Object.assign(this, signRequestParams);
     }
 

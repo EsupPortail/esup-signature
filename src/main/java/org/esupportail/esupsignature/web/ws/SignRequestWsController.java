@@ -47,19 +47,22 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @PostMapping("/new")
-    @Operation(description = "Création d'une demande de siagnture")
+    @Operation(description = "Création d'une demande de signature")
     public Long create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
-                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
-                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) String[] recipientsCCEmails,
+                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                        @Parameter(description = "Tout les participants doivent-ils signer ?") @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                        @Parameter(description = "Le créateur doit-il signer en premier ?") @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                        @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
                        @Parameter(description = "Commentaire") @RequestParam(value = "comment", required = false) String comment,
+                       @Parameter(description = "Noms des signataires externes") @RequestParam(value = "names", required = false) List<String> names,
+                       @Parameter(description = "Prénoms des signataires externes") @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                       @Parameter(description = "Numéros de mobiles des signataires externes") @RequestParam(value = "phones", required = false) List<String> phones,
                        @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn) {
         User user = userService.getByEppn(eppn);
         try {
-            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, recipientsCCEmails, allSignToComplete, userSignFirst, pending, comment, SignType.valueOf(signType), user, user);
+            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, names, firstnames, phones, user, user);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;
