@@ -223,6 +223,12 @@ export default class SelectUser {
                                 })
                             if(data.length > 0) {
                                 callback(data);
+                            } else {
+                                if(this.validateEmail(search)) {
+                                    callback("Email non trouvé, utilisez le '+' pour ajouter cette adresse");
+                                } else {
+                                    callback("Aucun résultat. Pour ajouter une personne externe entrer une adresse email");
+                                }
                             }
                         })
                         .catch(function () {
@@ -232,4 +238,5 @@ export default class SelectUser {
             }
         });
     }
+
 }

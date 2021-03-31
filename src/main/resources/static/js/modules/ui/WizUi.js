@@ -88,7 +88,6 @@ export class WizUi {
     gotoStep2(e) {
         this.div.html("");
         this.signBookId = e;
-        console.log(this.signBookId);
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId,
@@ -148,7 +147,11 @@ export class WizUi {
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
-            success: html => this.initWiz2(html)
+            success: html => this.initWiz2(html),
+            error: function(data){
+                console.error(data.responseJSON.message);
+                bootbox.alert("Une erreur s'est produite. Merci de vérifier votre saisie", function (){ });
+            }
         });
     }
 

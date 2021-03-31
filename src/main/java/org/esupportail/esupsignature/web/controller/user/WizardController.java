@@ -5,10 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.LiveWorkflowStepService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
@@ -43,6 +40,9 @@ public class WizardController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private SignRequestService signRequestService;
+
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix des fichiers");
@@ -63,6 +63,7 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
                 signBookService.initSignBook(id, workflowId, user);
+                model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getSignRequests().get(0).getId()));
                 return "user/wizard/wiz-setup-workflow";
             }
             model.addAttribute("signTypes", SignType.values());

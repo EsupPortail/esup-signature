@@ -916,6 +916,7 @@ public class SignRequestService {
 		signRequest.getSignedDocuments().clear();
 		signRequest.getOriginalDocuments().clear();
 		signRequest.setStatus(SignRequestStatus.deleted);
+		otpService.deleteOtpBySignRequestId(signRequestId);
 	}
 
 	@Transactional
@@ -1066,7 +1067,6 @@ public class SignRequestService {
 						tempUser.setFirstname(jsonExternalUserInfo.getFirstname());
 						tempUser.setName(jsonExternalUserInfo.getName());
 						tempUser.setEppn(jsonExternalUserInfo.getPhone());
-						otpService.generateOtpForSignRequest(id, tempUser);
 					}
 				}
 			} else {

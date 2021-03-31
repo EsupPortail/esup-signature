@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.mail.MessagingException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,6 +91,9 @@ public class SignBookService {
 
     @Resource
     private CommentService commentService;
+
+    @Resource
+    private OtpService otpService;
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -393,6 +398,13 @@ public class SignBookService {
                 for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                     if(!signRequest.getCreateBy().getEppn().equals(userEppn)) {
                         eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(recipient.getUser().getEppn()));
+                    }
+                    if(recipient.getUser().getUserType().equals(UserType.external)) {
+                        try {
+                            otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
+                        } catch (MessagingException e) {
+                            throw new EsupSignatureException(e.getMessage());
+                        }
                     }
                 }
                 logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());

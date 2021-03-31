@@ -629,6 +629,7 @@
                                         </div>
                                     </div>
                                 </th:block>
+                            </th:block>
                         </th:block>
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
