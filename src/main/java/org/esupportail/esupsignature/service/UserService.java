@@ -482,13 +482,15 @@ public class UserService {
 
     public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {
         List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
-        for(int i = 0; i < emails.size(); i++) {
-            JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
-            jsonExternalUserInfo.setEmail(emails.get(i));
-            jsonExternalUserInfo.setName(names.get(i));
-            jsonExternalUserInfo.setFirstname(firstnames.get(i));
-            jsonExternalUserInfo.setPhone(phones.get(i));
-            externalUsersInfos.add(jsonExternalUserInfo);
+        if(emails != null) {
+            for (int i = 0; i < emails.size(); i++) {
+                JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
+                jsonExternalUserInfo.setEmail(emails.get(i));
+                jsonExternalUserInfo.setName(names.get(i));
+                jsonExternalUserInfo.setFirstname(firstnames.get(i));
+                jsonExternalUserInfo.setPhone(phones.get(i));
+                externalUsersInfos.add(jsonExternalUserInfo);
+            }
         }
         return externalUsersInfos;
     }
