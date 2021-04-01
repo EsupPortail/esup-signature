@@ -124,7 +124,7 @@ export class Nexu {
 
     checkNexu(data) {
         console.log("Check NexU");
-        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.22")) {
+        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22")) {
             console.log("Loading script...");
             this.loadScript();
             $("#nexu_ready_alert").show();
