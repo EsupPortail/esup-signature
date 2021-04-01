@@ -81,6 +81,9 @@ export class SignPosition extends EventFactory {
         if(this.signType !== "visa" && this.signable) {
             $(document).ready(e => this.toggleExtraInfos());
         }
+        if(this.signType === "visa") {
+            this.toggleWatermark();
+        }
         this.initListeners();
     }
 
@@ -579,6 +582,16 @@ export class SignPosition extends EventFactory {
             this.visualActive = true;
             this.cross.show();
             this.toggleExtraInfos();
+            if(this.signType === "visa") {
+                this.cross.css("width", 300);
+                this.cross.css("height", 150);
+                this.borders.css("width", 300);
+                this.borders.css("height", 150);
+                this.getCurrentSignParams().signWidth = 150;
+                this.getCurrentSignParams().signHeight = 75;
+                $("#displayMoreTools_0").hide();
+                $("#signUndo_0").hide();
+            }
         }
     }
 
@@ -669,7 +682,7 @@ export class SignPosition extends EventFactory {
                 e.stopPropagation();
             });
         }
-        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+        if(this.signType !== "visa") this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
     refreshExtraText(e) {
@@ -679,7 +692,7 @@ export class SignPosition extends EventFactory {
         let count = lines.length;
         target.attr("rows", count);
         this.getCurrentSignParams().extraText = target.val();
-        if(this.getCurrentSignParams().extraOnTop) {
+        if(this.getCurrentSignParams().extraOnTop && this.signType !== "visa") {
             let textExtraHeight = target.height();
             this.getCurrentSignParams().extraHeight = textExtraHeight;
             this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;

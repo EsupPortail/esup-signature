@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -70,19 +71,19 @@ public class UserService {
     }
 
     public User getSystemUser() {
-        return createUser("system", "", "", "system", UserType.system);
+        return createUser("system", "", "", "system", UserType.system, false);
     }
 
     public User getCreatorUser() {
-        return createUser("creator", "Createur de la demande", "", "creator", UserType.system);
+        return createUser("creator", "Createur de la demande", "", "creator", UserType.system, false);
     }
 
     public User getSchedulerUser() {
-        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system);
+        return createUser("scheduler", "Esup-Signature", "Automate", globalProperties.getApplicationEmail(), UserType.system, false);
     }
 
     public User getGenericUser() {
-        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system);
+        return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
     }
 
     public List<User> getAllUsers() {
@@ -138,7 +139,7 @@ public class UserService {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
                 String mail = personLdaps.get(0).getMail();
-                return createUser(eppn, name, firstName, mail, UserType.ldap);
+                return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             } else {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
             }
@@ -157,15 +158,15 @@ public class UserService {
                 }
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
-                return createUser(eppn, name, firstName, mail, UserType.ldap);
+                return createUser(eppn, name, firstName, mail, UserType.ldap, false);
             }
         }
         UserType userType = checkMailDomain(mail);
         if (userType.equals(UserType.external)) {
             logger.info("ldap user not found : " + mail + ". Creating temp acccount");
-            return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.external);
+            return createUser(UUID.randomUUID().toString(), "", "", mail, UserType.external, false);
         } else if (userType.equals(UserType.shib)) {
-            return createUser(mail, mail, "Nouvel utilisateur", mail, UserType.shib);
+            return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
         }
         return null;
     }
@@ -187,11 +188,11 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        createUser(eppn, name, firstName, mail, UserType.ldap);
+        createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
     @Transactional
-    public User createUser(String eppn, String name, String firstName, String email, UserType userType) {
+    public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
         if (userRepository.countByEppn(eppn) > 0) {
             user = getByEppn(eppn);
@@ -207,7 +208,7 @@ public class UserService {
         user.setEppn(eppn);
         user.setEmail(email);
         user.setUserType(userType);
-        if(!user.getUserType().equals(UserType.system)) {
+        if(updateCurrentUserRoles) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
@@ -477,5 +478,18 @@ public class UserService {
     public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
         User user = getUserByEppn(authUserEppn);
         user.setDefaultSignImageNumber(signImaeNumber);
+    }
+
+    public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {
+        List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
+        for(int i = 0; i < emails.size(); i++) {
+            JsonExternalUserInfo jsonExternalUserInfo = new JsonExternalUserInfo();
+            jsonExternalUserInfo.setEmail(emails.get(i));
+            jsonExternalUserInfo.setName(names.get(i));
+            jsonExternalUserInfo.setFirstname(firstnames.get(i));
+            jsonExternalUserInfo.setPhone(phones.get(i));
+            externalUsersInfos.add(jsonExternalUserInfo);
+        }
+        return externalUsersInfos;
     }
 }

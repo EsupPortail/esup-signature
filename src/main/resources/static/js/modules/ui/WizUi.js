@@ -1,6 +1,7 @@
 import {default as FilesInput} from "../utils/FilesInput.js";
 import {default as SelectUser} from "../utils/SelectUser.js";
 import {Step} from "../../prototypes/Step.js";
+import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js";
 
 export class WizUi {
 
@@ -13,6 +14,9 @@ export class WizUi {
         this.mode = "";
         this.input;
         this.fileInput;
+        this.close = false;
+        this.end = false;
+        this.start = false;
         this.modal = $('#' + this.div.attr('id').replace("Frame", "Modal"));
         $('#addNew').hide();
         this.initListeners();
@@ -84,7 +88,6 @@ export class WizUi {
     gotoStep2(e) {
         this.div.html("");
         this.signBookId = e;
-        console.log(this.signBookId);
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId,
@@ -95,20 +98,32 @@ export class WizUi {
     }
 
     initWiz2(html) {
-        console.log(this.csrf);
+        let csrf = this.csrf;
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
-            new SelectUser("recipientsEmailsWiz");
+            new SelectUser("recipientsEmailsWiz", null, null, csrf);
         }
-        $("#addNew").on('click', e => this.gotoAddStep(false, false, false));
-        $("#end").on('click', e => this.gotoAddStep(true, false, false));
-        $("#endStart").on('click', e => this.gotoAddStep(true, true, true));
+        $('[id^="recipientEmailsWizSelect_"]').each(function (){
+            new SelectUser($(this).attr('id'), null, null, csrf);
+        });
+        $('[id^="targetEmailsSelect_"]').each(function (){
+            new SelectUser($(this).attr('id'), null, null, csrf);
+        });
+        let self = this;
+        $("#end").on('click', function (){
+            self.end = true;
+        });
+        $("#endStart").on('click', function (){
+            self.end = true;
+            self.start = true;
+        });
         $("#exitWiz").on('click', e => this.exit());
         $("#saveWorkflow").on('click', e => this.saveWorkflow(e));
-
+        $("#wiz-step-form").on('submit', e => this.gotoAddStep(e));
     }
 
-    gotoAddStep(end, start, close) {
+    gotoAddStep(e) {
+        e.preventDefault();
         let csrf = this.csrf;
         let step = new Step();
         step.workflowId = $('#wizWorkflowId').val();
@@ -116,14 +131,27 @@ export class WizUi {
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
         let userSignFirst = $('#_userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
+        $("div[id^='externalUserInfos_']").each(function() {
+            let externalUserInfos = new ExternalUserInfos();
+            externalUserInfos.email = $(this).find("#emails").val();
+            externalUserInfos.name = $(this).find("#names").val();
+            externalUserInfos.firstname = $(this).find("#firstnames").val();
+            externalUserInfos.phone = $(this).find("#phones").val();
+            step.externalUsersInfos.push(externalUserInfos);
+        });
         let signBookId = this.signBookId;
         console.log(signBookId);
+        let self = this;
         $.ajax({
-            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + end + "&userSignFirst=" + userSignFirst + "&start=" + start + "&close=" + close + "&" + csrf.parameterName + "=" + csrf.token,
+            url: "/user/wizard/wiz-add-step"+ this.mode +"/" + signBookId + "?end=" + self.end + "&userSignFirst=" + userSignFirst + "&start=" + self.start + "&close=" + self.close + "&" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
-            success: html => this.initWiz2(html)
+            success: html => this.initWiz2(html),
+            error: function(data){
+                console.error(data.responseJSON.message);
+                bootbox.alert("Une erreur s'est produite. Merci de vérifier votre saisie", function (){ });
+            }
         });
     }
 

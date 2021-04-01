@@ -137,44 +137,42 @@ export class GlobalUi {
 
     checkUserCertificate() {
         if ($('#signType2').val() === 'certSign') {
-            let csrf = new CsrfToken(this.csrf);
+            let csrf = this.csrf;
             $.ajax({
-                url: "/user/users/check-user-certificate?" + csrf.parameterName + "=" + csrf.token,
+                url: "/user/users/check-users-certificate?" + csrf.parameterName + "=" + csrf.token,
                 type: 'POST',
                 contentType: "application/json",
                 dataType: 'json',
                 data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
-                success: response => this.submitSendPending(response)
+                success: response => this.checkSendPending(response)
             });
         } else {
-            $("#pending").val(true);
-            $("#sendButton").click();
+            this.submitSendPendind();
         }
     }
 
-    submitSendPending(data) {
+    checkSendPending(data) {
+        if (data.length === 0) {
+            this.submitSendPendind();
+            return;
+        }
+        let self = this;
         let stringChain = "Les utilisateurs suivants n'ont pas de certificats électroniques : ";
         for (let i = 0; i < data.length ; i++) {
             stringChain += data[i].firstname + " " + data[i].name + " ";
         }
         stringChain += "Confirmez-vous l'envoie de la demande ? "
-        if (data.length < 1) {
-            $("#pending").val(true);
-            $("#sendButton").click();
-            return;
-        }
         bootbox.confirm(stringChain, function(result) {
            if(result) {
-               $("#pending").val(true);
-               $("#sendButton").click();
+               self.submitSendPendind();
            }
         });
     }
 
-    // showSendPendingModal() {
-    //     $('#sendPending').modal('toggle');
-    //     $('#sendSignRequestModal').modal('toggle');
-    // }
+    submitSendPendind() {
+        $("#pending").val(true);
+        $("#sendButton").click();
+    }
 
     checkCurrentPage() {
         let url = window.location.pathname;
@@ -337,10 +335,11 @@ export class GlobalUi {
     }
 
     checkSelectUser() {
+        let csrf = this.csrf;
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'));
+            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'), csrf);
         });
     }
 
