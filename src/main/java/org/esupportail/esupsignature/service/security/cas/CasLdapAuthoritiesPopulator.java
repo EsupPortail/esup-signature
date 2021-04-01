@@ -51,8 +51,8 @@ public class CasLdapAuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator
 	protected Set<GrantedAuthority> getAdditionalRoles(DirContextOperations user, String username) {
 		Set<GrantedAuthority> grantedAuthorities = new HashSet<>();
 		List<String> ldapGroups = ldapGroupService.getGroups(username.toLowerCase());
-		for (String roleFromLdap : group2UserRoleService.getRoles(username.toLowerCase())) {
-			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority("ROLE_" + roleFromLdap);
+		for (String role : group2UserRoleService.getRoles(username.toLowerCase())) {
+			SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(role);
 			grantedAuthorities.add(simpleGrantedAuthority);
 			logger.debug("loading authorities : " + simpleGrantedAuthority.getAuthority());
 		}
