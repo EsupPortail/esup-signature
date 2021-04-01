@@ -71,6 +71,14 @@ public class OtpService {
         }
     }
 
+    public void deleteOtpBySignRequestId(Long id) {
+        for (Map.Entry<String, Otp> otpEntry : otpCache.asMap().entrySet()) {
+            if(otpEntry.getValue().getSignRequestId().equals(id)) {
+                clearOTP(otpEntry.getKey());
+            }
+        }
+    }
+
     public String generateOtpPassword(String urlId) {
         Otp otp = getOtp(urlId);
         String password = randomOtpPassword(6);
@@ -83,7 +91,7 @@ public class OtpService {
         try{
             return otpCache.getUnchecked(urlId);
         }catch (Exception e){
-            logger.error("error on get otp : " + e.getMessage());
+            logger.warn("error on get otp : " + e.getMessage());
             return null;
         }
     }

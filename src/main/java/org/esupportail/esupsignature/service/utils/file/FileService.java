@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -219,7 +220,7 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
 		List<String> text = Arrays.asList(arr);
@@ -246,12 +247,11 @@ public class FileService {
 			font = font.deriveFont(map);
 			graphics2D.setFont(font);
 			graphics2D.setPaint(Color.black);
+			FontMetrics fm = graphics2D.getFontMetrics();
 			for (String line : text) {
-				FontMetrics fm = graphics2D.getFontMetrics();
 				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset * 3, fm.getHeight() * lineCount);
 				lineCount++;
 			}
-			FontMetrics fm = graphics2D.getFontMetrics();
 			graphics2D.drawString("", widthOffset * 3, fm.getHeight() * lineCount + 1);
 			graphics2D.dispose();
 			File fileImage = getTempFile("sign.png");
@@ -333,5 +333,16 @@ public class FileService {
 			}
 		}
 		imgBuf.setRGB(0, 0, w, h, rgb, 0, w);
+	}
+
+	public File getEmptyImage() throws IOException {
+		BufferedImage bufferedImage = new BufferedImage(600, 300, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g2d = bufferedImage.createGraphics();
+		g2d.setColor(Color.white);
+		g2d.fillRect(0, 0, 600, 300);
+		g2d.dispose();
+		File fileSignImage = getTempFile("sign_image.png");
+		ImageIO.write(bufferedImage, "png", fileSignImage);
+		return fileSignImage;
 	}
 }

@@ -36,7 +36,7 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 		} else {
 			name = new String(name.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
 			firstName = new String(firstName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-			userService.createUser(eppn, name, firstName, email, UserType.shib);
+			userService.createUser(eppn, name, firstName, email, UserType.shib, true);
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
         /*

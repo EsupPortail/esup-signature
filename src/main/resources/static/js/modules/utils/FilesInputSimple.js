@@ -19,14 +19,11 @@ export default class FilesInputSimple {
             showCaption: false,
             showClose: false,
             showUpload: false,
+            showRemove: true,
             browseOnZoneClick: true,
             uploadAsync: false,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
-            initialPreview: urls,
-            initialPreviewConfig : previews,
-            initialPreviewAsData: true,
-            initialPreviewFileType: 'other',
             overwriteInitial: false,
             preferIconicPreview: true,
             previewFileIconSettings: {
@@ -72,10 +69,7 @@ export default class FilesInputSimple {
             fileActionSettings: {
                 showDrag: true,
                 showZoom: function(config) {
-                    if (config.type === 'pdf' || config.type === 'image') {
-                        return true;
-                    }
-                    return false;
+                    return config.type === 'pdf' || config.type === 'image';
                 },
             }
         });

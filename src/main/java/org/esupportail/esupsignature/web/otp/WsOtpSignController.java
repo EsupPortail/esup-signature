@@ -64,7 +64,7 @@ public class WsOtpSignController {
             model.addAttribute("urlid", urlId);
             return "otp/signin";
         } else {
-            return "redirect:/denied/" + urlId;
+            return "otp/expired";
         }
     }
 

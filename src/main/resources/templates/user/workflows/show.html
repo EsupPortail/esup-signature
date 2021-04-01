@@ -35,8 +35,8 @@
                         </a>
                     </li>
                     <li>
-                        <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete" onsubmit="bootbox.confirm('Voulez-vous vraiment supprimer ce circuit ?')">
-                            <a role="button" title="Supprimer" type="submit" onclick="$('#delete').submit();" class="btn-floating bg-danger waves-effect">
+                        <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
+                            <a id="delete-button" role="button" title="Supprimer" class="btn-floating bg-danger waves-effect">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </form>

@@ -336,6 +336,7 @@ input:checked + .slider:before {
 }
 
 .ss-disabled {
+    color: #555 !important;
     cursor: pointer !important;
 }
 
@@ -1450,8 +1451,13 @@ input:focus, textarea:focus, select:focus {
 }
 
 .ss-main {
+    color: #555 !important;
     font-weight: normal !important;
     margin: auto !important;
+}
+
+.ss-option-selected {
+    color: #dedede !important;
 }
 
 .custom-autocompletion {

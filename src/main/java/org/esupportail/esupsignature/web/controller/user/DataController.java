@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Hidden;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -10,6 +9,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,12 +105,17 @@ public class DataController {
 	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 							 @RequestParam(required = false) List<String> recipientEmails,
 							 @RequestParam(required = false) List<String> targetEmails,
+							 @RequestParam(value = "emails", required = false) List<String> emails,
+							 @RequestParam(value = "names", required = false) List<String> names,
+							 @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+							 @RequestParam(value = "phones", required = false) List<String> phones,
 							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
+		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, user, authUser);
-			SignBook signBook = dataService.sendForSign(data, recipientEmails, targetEmails, user, authUser);
+			SignBook signBook = dataService.sendForSign(data, recipientEmails, externalUsersInfos, targetEmails, user, authUser);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
@@ -155,10 +160,8 @@ public class DataController {
                                @RequestParam(required = false) List<String> recipientEmails,
 							   @RequestParam(required = false) List<String> targetEmails,
 							   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
-		User user = (User) model.getAttribute("user");
-		User authUser = (User) model.getAttribute("authUser");
 		try {
-			SignBook signBook = dataService.initSendData(id, user, recipientEmails, targetEmails, authUser);
+			SignBook signBook = dataService.initSendData(id, userEppn, recipientEmails, targetEmails, authUserEppn);
 			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
@@ -180,39 +183,17 @@ public class DataController {
 		return "redirect:/user/datas/";
 	}
 
-	@GetMapping("{id}/export-pdf")
-	public ResponseEntity exportToPdf(@PathVariable("id") Long id, HttpServletResponse response) {
-		try {
-			Data data = dataService.getById(id);
-			InputStream exportPdf = dataService.generateFile(data);
-			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(data.getName(), StandardCharsets.UTF_8.toString()));
-			response.setContentType("application/pdf");
-			IOUtils.copy(exportPdf, response.getOutputStream());
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception e) {
-			logger.error("get file error", e);
-		}
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	}
-
-	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
-	@GetMapping("{id}/clone")
-	public String cloneData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User user = (User) model.getAttribute("user");
-		Data data = dataService.getById(id);
-		Data cloneData = dataService.cloneData(data, user);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
-		return "redirect:/user/datas/" + cloneData.getId() + "/update";
-	}
-
 	@PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
-	@GetMapping("{id}/clone-from-signrequests")
-	public String cloneDataFromSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		User authUser = (User) model.getAttribute("authUser");
+	@PostMapping("{id}/clone-from-signrequests")
+	public String cloneDataFromSignRequest(@ModelAttribute("serEppn") String userEppn,
+										   @ModelAttribute("authUserEppn") String authUserEppn,
+										   @PathVariable("id") Long id,
+										   @RequestParam(required = false) List<String> recipientEmails,
+										   @RequestParam(required = false) List<String> targetEmails, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		SignRequest signRequest = signRequestService.getById(id);
-		Data cloneData = dataService.cloneFromSignRequest(signRequest, authUser);
+		SignBook signBook = dataService.cloneFromSignRequest(signRequest, userEppn, authUserEppn, recipientEmails, targetEmails);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le document a été cloné"));
-		return "redirect:/user/datas/" + cloneData.getId() + "/update";
+		return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0);
 	}
 
 	@GetMapping("forms/{id}/get-image")

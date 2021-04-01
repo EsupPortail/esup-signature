@@ -16,6 +16,8 @@ public class JsonWorkflowStep {
 
 	private List<String> recipientsEmails = new ArrayList<>();
 
+	private List<JsonExternalUserInfo> externalUsersInfos = new ArrayList<>();
+
 	private Boolean changeable = false;
 
 	private Integer signLevel = 0;
@@ -54,6 +56,14 @@ public class JsonWorkflowStep {
 
 	public void setRecipientsEmails(List<String> recipientsEmails) {
 		this.recipientsEmails = recipientsEmails;
+	}
+
+	public List<JsonExternalUserInfo> getExternalUsersInfos() {
+		return externalUsersInfos;
+	}
+
+	public void setExternalUsersInfos(List<JsonExternalUserInfo> externalUsersInfos) {
+		this.externalUsersInfos = externalUsersInfos;
 	}
 
 	public Boolean getChangeable() {

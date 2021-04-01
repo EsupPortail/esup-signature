@@ -63,13 +63,16 @@ export default class FilesInput extends EventFactory {
                     default :
                         type = "other";
                 }
-
+                let deleteUrl = "";
+                if(!readOnly) {
+                    deleteUrl = "/user/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token;
+                }
                 let preview = new DocumentPreview(
                     type,
                     document.size,
                     document.contentType,
                     document.fileName,
-                    "/user/signrequests/remove-doc/" + document.id + "/?" + csrf.parameterName + "=" + csrf.token,
+                    deleteUrl,
                     document.id,
                     "/user/signrequests/get-file/" + document.id,
                     document.fileName
@@ -94,6 +97,7 @@ export default class FilesInput extends EventFactory {
             initialPreviewConfig : previews,
             initialPreviewAsData: true,
             initialPreviewFileType: 'other',
+            initialPreviewShowDelete: !readOnly,
             overwriteInitial: false,
             preferIconicPreview: true,
             previewFileIconSettings: {

@@ -38,11 +38,6 @@ Voir : https://www.esup-portail.org/wiki/display/SIGN/Sources+et+configuration#S
 
 # Compilation
 
-Avant la première compilation
-```
-mvn clean initialize
-```
-puis
 ```
 mvn clean package
 ```

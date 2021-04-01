@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -71,23 +72,27 @@ public class SignBookController {
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
-        model.addAttribute("signBook", signBook);
-        SignRequest signRequest = signBook.getSignRequests().get(0);
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(signRequest.getId()).get(0));
-        model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("comments", logService.getLogs(signRequest.getId()));
-        model.addAttribute("logs", signBook.getLogs());
-        model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
-        model.addAttribute("signTypes", SignType.values());
-        model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
-        return "user/signrequests/update-signbook";
+        if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending)) {
+            model.addAttribute("signBook", signBook);
+            SignRequest signRequest = signBook.getSignRequests().get(0);
+            model.addAttribute("signRequest", signRequest);
+            model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(signRequest.getId()).get(0));
+            model.addAttribute("signable", signRequest.getSignable());
+            model.addAttribute("comments", logService.getLogs(signRequest.getId()));
+            model.addAttribute("logs", signBook.getLogs());
+            model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
+            model.addAttribute("signTypes", SignType.values());
+            model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
+            return "user/signrequests/update";
+        } else {
+            return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam("recipientsEmails") String[] recipientsEmails,
+                          @RequestParam("recipientsEmails") List<String> recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam("signType") SignType signType, RedirectAttributes redirectAttributes) {
@@ -108,9 +113,7 @@ public class SignBookController {
                                                     @PathVariable("id") Long id,
                                                     @RequestBody JsonWorkflowStep step) {
         try {
-            String[] recipientsEmailsArray = new String[step.getRecipientsEmails().size()];
-            recipientsEmailsArray = step.getRecipientsEmails().toArray(recipientsEmailsArray);
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), recipientsEmailsArray, step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step.getRecipientsEmails(), step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
