@@ -51,7 +51,7 @@
                                             th:text="${recipient.user.email}"></option>
                                 </th:block>
                             </select>
-                            <br/><br/>
+                            <br/>
                             <label>
                                 Tous les participants doivent-ils signer ?
                             </label>
@@ -82,6 +82,6 @@
 <script type="module">
     import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
 
-    new SelectUser("recipientsEmail");
+    new SelectUser("recipientsEmail", null, null, [[${_csrf}]]);
 </script>
 </html>

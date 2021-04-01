@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.web.ws;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.io.IOUtils;
@@ -14,6 +16,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -47,19 +50,20 @@ public class SignRequestWsController {
 
     @CrossOrigin
     @PostMapping("/new")
-    @Operation(description = "Création d'une demande de siagnture")
+    @Operation(description = "Création d'une demande de signature")
     public Long create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
-                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
-                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) String[] recipientsCCEmails,
+                       @Parameter(description = "Liste des participants") @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                       @Parameter(description = "Liste des personnes en copie") @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                        @Parameter(description = "Tout les participants doivent-ils signer ?") @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
                        @Parameter(description = "Le créateur doit-il signer en premier ?") @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                        @Parameter(description = "Envoyer la demande automatiquement") @RequestParam(value = "pending", required = false) Boolean pending,
                        @Parameter(description = "Commentaire") @RequestParam(value = "comment", required = false) String comment,
+                       @Parameter(description = "Infos pour les des signataires externes", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = JsonExternalUserInfo.class)))) @RequestParam(value = "externalUsersInfos", required = false) List<JsonExternalUserInfo> externalUsersInfos,
                        @Parameter(description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) @RequestParam("signType") String signType,
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn) {
         User user = userService.getByEppn(eppn);
         try {
-            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, recipientsEmails, recipientsCCEmails, allSignToComplete, userSignFirst, pending, comment, SignType.valueOf(signType), user, user);
+            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;

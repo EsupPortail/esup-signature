@@ -77,7 +77,7 @@
 <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="Refus" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/pending/' + ${id}">
+            <form th:action="'/user/signrequests/pending/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title">Démarrer le circuit</h3>
                 </div>

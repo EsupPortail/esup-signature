@@ -14,6 +14,16 @@ export class WorkflowUi {
     initListeners() {
         this.sourceTypeSelect.on('change', e => this.toggleSourceSelector());
         $(document).ready(e => this.initDelListerner());
+        ;
+        $("#delete-button").on("click", e => this.confirmDelete());
+    }
+
+    confirmDelete() {
+        bootbox.confirm("Voulez-vous vraiment supprimer ce circuit ?", function (result){
+            if(result) {
+                $("#delete").submit();
+            }
+        })
     }
 
     initDelListerner() {
