@@ -62,7 +62,6 @@ public class LiveWorkflowStepService {
                 recipientUser.setName(jsonExternalUserInfo.getName());
                 recipientUser.setFirstname(jsonExternalUserInfo.getFirstname());
                 recipientUser.setEppn(jsonExternalUserInfo.getPhone());
-                i++;
             }
             if(liveWorkflowStep.getId() != null) {
                 for (Recipient recipient : liveWorkflowStep.getRecipients()) {
