@@ -580,12 +580,16 @@ public class PdfService {
         return null;
     }
 
-    public PDFieldTree getFields(PDDocument pdDocument) {
+    public PDFieldTree getFields(PDDocument pdDocument) throws EsupSignatureException {
         try {
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-            PDFieldTree fields = new PDFieldTree(pdAcroForm);
-            pdDocument.close();
-            return fields;
+            if(pdAcroForm != null) {
+                PDFieldTree fields = new PDFieldTree(pdAcroForm);
+                pdDocument.close();
+                return fields;
+            } else {
+                throw new EsupSignatureException("Le document ne contient pas de formulaire");
+            }
         } catch (IOException e) {
             logger.error("file read error", e);
         }

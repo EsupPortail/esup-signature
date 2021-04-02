@@ -17,6 +17,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -89,7 +90,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException, EsupSignatureException {
 		Workflow workflow = workflowService.getById(workflowId);
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflow, prefillType, roleName, targets, publicUsage);
@@ -148,15 +149,16 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateFormModel(Long id, MultipartFile multipartModel) {
+	public void updateFormModel(Long id, MultipartFile multipartModel) throws EsupSignatureException {
 		Form form = getById(id);
 		if(multipartModel != null) {
-			Document document = form.getDocument();
+			Document oldModel = form.getDocument();
 			form.setDocument(null);
-			documentService.delete(document.getId());
+			documentService.delete(oldModel.getId());
 			try {
-				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType()));
-				List<Field> fields = getFields(document, form.getWorkflow());
+				Document newModel = documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				form.setDocument(newModel);
+				List<Field> fields = getFields(newModel, form.getWorkflow());
 				for(Field field : fields) {
 					if(form.getFields().stream().noneMatch(field1 -> field1.getName().equals(field.getName()))) {
 						form.getFields().add(field);
@@ -176,13 +178,14 @@ public class FormService {
 			userShareService.delete(userShare);
 		}
 		dataService.nullifyForm(form);
-		for(Field field : form.getFields()) {
-			List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldPropertie(field.getId());
+		List<Long> fieldToDelete = form.getFields().stream().map(Field::getId).collect(Collectors.toList());
+		form.getFields().clear();
+		for(Long fieldId : fieldToDelete) {
+			List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldPropertie(fieldId);
 			for(FieldPropertie fieldPropertie : fieldProperties) {
 				fieldPropertieService.delete(fieldPropertie.getId());
 			}
-			field.getWorkflowSteps().clear();
-			fieldService.deleteField(field.getId());
+			fieldService.deleteField(fieldId);
 		}
 		formRepository.delete(form);
 	}
@@ -202,7 +205,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException {
+	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -240,105 +243,107 @@ public class FormService {
 		return form;
 	}
 
-	private List<Field> getFields(Document document, Workflow workflow) throws IOException {
+	private List<Field> getFields(Document document, Workflow workflow) throws IOException, EsupSignatureException {
 		List<Field> fields = new ArrayList<>();
+		List<Field> fieldsOrdered = new LinkedList<>();
 		PDDocument pdDocument = PDDocument.load(document.getInputStream());
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
-		PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
-		Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
-		for(PDField pdField : pdFields) {
-			logger.info(pdField.getFullyQualifiedName());
-			List<PDAnnotationWidget> kids = pdField.getWidgets();
-			int page = 1;
-			if (kids != null) {
-				for (COSObjectable kid : kids) {
-					COSBase kidObject = kid.getCOSObject();
-					if (kidObject instanceof COSDictionary)
-						page = pageNrByAnnotDict.get(kidObject);
-				}
-			}
-			if(pdField instanceof PDTextField){
-				Field field = fieldService.createField(pdField.getPartialName(), workflow);
-				field.setLabel(pdField.getAlternateFieldName());
-				field.setRequired(pdField.isRequired());
-				field.setReadOnly(pdField.isReadOnly());
-				PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
-				String type = "text";
-				if(pdFormFieldAdditionalActions != null) {
-					if(pdFormFieldAdditionalActions.getK() != null) {
-						type = pdFormFieldAdditionalActions.getK().getType();
-					}
-					PDAction pdAction = pdFormFieldAdditionalActions.getC();
-					if(pdAction != null) {
-						String actionsString = pdAction.getCOSObject().getString(COSName.JS);
-						if (actionsString != null) {
-							computeActions(field, actionsString);
-						}
+		if(pdFields != null) {
+			PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
+			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
+			for (PDField pdField : pdFields) {
+				logger.info(pdField.getFullyQualifiedName());
+				List<PDAnnotationWidget> kids = pdField.getWidgets();
+				int page = 1;
+				if (kids != null) {
+					for (COSObjectable kid : kids) {
+						COSBase kidObject = kid.getCOSObject();
+						if (kidObject instanceof COSDictionary)
+							page = pageNrByAnnotDict.get(kidObject);
 					}
 				}
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
-				if(pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
-					if(pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
-						COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
-						type = cosString.toString();
-					}
-				}
-				if(type.equals("text")) {
-					field.setType(FieldType.text);
-				} else if(type.contains("Time")) {
-					field.setType(FieldType.time);
-				} else if(type.contains("Date")) {
-					field.setType(FieldType.date);
-				} else if(type.contains("Number")) {
-					field.setType(FieldType.number);
-				}
-				parseField(field, pdField, pdAnnotationWidget, page);
-				fields.add(field);
-				logger.info("added");
-	        } else if(pdField instanceof PDCheckBox) {
-				Field field = fieldService.createField(pdField.getPartialName(), workflow);
-				field.setRequired(pdField.isRequired());
-				field.setReadOnly(pdField.isReadOnly());
-				field.setType(FieldType.checkbox);
-				field.setLabel(pdField.getAlternateFieldName());
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				parseField(field, pdField, pdAnnotationWidget, page);
-				fields.add(field);
-				logger.info("added");
-			} else if(pdField instanceof PDRadioButton){
-				List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
-				for(PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
+				if (pdField instanceof PDTextField) {
 					Field field = fieldService.createField(pdField.getPartialName(), workflow);
-					field.setType(FieldType.radio);
+					field.setLabel(pdField.getAlternateFieldName());
 					field.setRequired(pdField.isRequired());
 					field.setReadOnly(pdField.isReadOnly());
+					PDFormFieldAdditionalActions pdFormFieldAdditionalActions = pdField.getActions();
+					String type = "text";
+					if (pdFormFieldAdditionalActions != null) {
+						if (pdFormFieldAdditionalActions.getK() != null) {
+							type = pdFormFieldAdditionalActions.getK().getType();
+						}
+						PDAction pdAction = pdFormFieldAdditionalActions.getC();
+						if (pdAction != null) {
+							String actionsString = pdAction.getCOSObject().getString(COSName.JS);
+							if (actionsString != null) {
+								computeActions(field, actionsString);
+							}
+						}
+					}
+					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+					PDAnnotationAdditionalActions pdAnnotationAdditionalActions = pdAnnotationWidget.getActions();
+					if (pdAnnotationAdditionalActions != null && pdAnnotationAdditionalActions.getCOSObject().size() > 0) {
+						if (pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K) != null) {
+							COSString cosString = (COSString) pdAnnotationAdditionalActions.getCOSObject().getCOSObject(COSName.K).getItem(COSName.JS);
+							type = cosString.toString();
+						}
+					}
+					if (type.equals("text")) {
+						field.setType(FieldType.text);
+					} else if (type.contains("Time")) {
+						field.setType(FieldType.time);
+					} else if (type.contains("Date")) {
+						field.setType(FieldType.date);
+					} else if (type.contains("Number")) {
+						field.setType(FieldType.number);
+					}
+					parseField(field, pdField, pdAnnotationWidget, page);
+					fields.add(field);
+					logger.info("added");
+				} else if (pdField instanceof PDCheckBox) {
+					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					field.setRequired(pdField.isRequired());
+					field.setReadOnly(pdField.isReadOnly());
+					field.setType(FieldType.checkbox);
+					field.setLabel(pdField.getAlternateFieldName());
+					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
+					parseField(field, pdField, pdAnnotationWidget, page);
+					fields.add(field);
+					logger.info("added");
+				} else if (pdField instanceof PDRadioButton) {
+					List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
+					for (PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
+						Field field = fieldService.createField(pdField.getPartialName(), workflow);
+						field.setType(FieldType.radio);
+						field.setRequired(pdField.isRequired());
+						field.setReadOnly(pdField.isReadOnly());
 //					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
+						field.setLabel(pdField.getAlternateFieldName());
+						parseField(field, pdField, pdAnnotationWidget, page);
+						fields.add(field);
+						logger.info("added");
+					}
+				} else if (pdField instanceof PDChoice) {
+					Field field = fieldService.createField(pdField.getPartialName(), workflow);
+					field.setType(FieldType.select);
+					field.setRequired(pdField.isRequired());
+					field.setReadOnly(pdField.isReadOnly());
+					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 					field.setLabel(pdField.getAlternateFieldName());
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
 					logger.info("added");
 				}
-			} else if(pdField instanceof PDChoice) {
-				Field field = fieldService.createField(pdField.getPartialName(), workflow);
-				field.setType(FieldType.select);
-				field.setRequired(pdField.isRequired());
-				field.setReadOnly(pdField.isReadOnly());
-				PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
-				field.setLabel(pdField.getAlternateFieldName());
-				parseField(field, pdField, pdAnnotationWidget, page);
-				fields.add(field);
-				logger.info("added");
 			}
-		}
-		fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).sorted(Comparator.comparingInt(Field::getPage)).collect(Collectors.toList());
-		List<Field> fieldsOrdered = new LinkedList<>();
-		int i=0;
-		for(Field field : fields) {
-			i++;
-			field.setFillOrder(i);
-			fieldService.updateField(field);
-			fieldsOrdered.add(field);
+			fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).sorted(Comparator.comparingInt(Field::getPage)).collect(Collectors.toList());
+			int i = 0;
+			for (Field field : fields) {
+				i++;
+				field.setFillOrder(i);
+				fieldService.updateField(field);
+				fieldsOrdered.add(field);
+			}
 		}
 		return fieldsOrdered;
 	}

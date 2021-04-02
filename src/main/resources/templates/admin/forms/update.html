@@ -44,10 +44,10 @@
                                 <input id="multipartModel" type="file" accept="application/pdf"
                                        class="custom-file-input" name="multipartModel" value="Choose a file"
                                        aria-describedby="multipartModel"/>
-                                <label for="multipartModel" class="custom-file-label"> Choisir un modèle au PDF</label>
+                                <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-success">Modifier le modèle</button>
+                        <button id="submitModel" type="submit" class="btn btn-success d-none">Modifier le modèle</button>
                     </form>
                     <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">

@@ -92,7 +92,9 @@ public class FieldService {
 	}
 
 	public void deleteField(Long fieldId) {
-		fieldRepository.delete(getById(fieldId));
+		Field field = getById(fieldId);
+		field.getWorkflowSteps().clear();
+		fieldRepository.delete(field);
 	}
 
     public List<Field> getFieldsByWorkflowStep(WorkflowStep workflowStep) {
