@@ -156,6 +156,12 @@ public class FormService {
 			documentService.delete(document.getId());
 			try {
 				form.setDocument(documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType()));
+				List<Field> fields = getFields(document, form.getWorkflow());
+				for(Field field : fields) {
+					if(form.getFields().stream().noneMatch(field1 -> field1.getName().equals(field.getName()))) {
+						form.getFields().add(field);
+					}
+				}
 			} catch (IOException e) {
 				logger.error("unable to modif model", e);
 			}
@@ -175,6 +181,8 @@ public class FormService {
 			for(FieldPropertie fieldPropertie : fieldProperties) {
 				fieldPropertieService.delete(fieldPropertie.getId());
 			}
+			field.getWorkflowSteps().clear();
+			fieldService.deleteField(field.getId());
 		}
 		formRepository.delete(form);
 	}

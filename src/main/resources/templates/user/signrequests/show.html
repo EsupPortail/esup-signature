@@ -47,7 +47,7 @@
         currentSignType,
         signable,
         [[${signRequest.comments}]],
-        [[${toSignDocument.contentType == 'application/pdf'}]],
+        [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
         [[${currentStepNumber}]],
         [[${currentStepId}]],
         [[${signImages}]],
@@ -81,7 +81,7 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
+            <div id="signButtons" class="fixed-action-btns active" th:if="${toSignDocument != null}">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
@@ -140,7 +140,7 @@
                     </li>
                 </ul>
             </div>
-            <div id="tools" class="tools">
+            <div id="tools" class="tools" th:if="${toSignDocument != null}">
                 <div class="d-flex mb-1">
                     <!--                    <a th:if="${signRequest.createBy.eppn == userEppn && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark mr-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
                     <a th:if="${signRequest.createBy.eppn == userEppn}"
@@ -246,10 +246,10 @@
                     </div>
                 </th:block>
             </div>
-            <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
+            <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="user/signrequests/includes/workspace"></div>
             </th:block>
-            <div th:if="${toSignDocument.contentType != 'application/pdf' && signRequest.originalDocuments.size() > 0}" id="workspace"
+            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
@@ -274,6 +274,12 @@
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
                     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
                 </script>
+            </div>
+            <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
+                <h4>La demande de signature a été supprimée</h4>
+                <p th:if="${signRequest.exportedDocumentURI != null}">
+                    Vous trouverez une copie du document signé ici : <a th:href="${signRequest.exportedDocumentURI}" th:text="${signRequest.exportedDocumentURI}"></a>
+                </p>
             </div>
         </div>
     </div>
