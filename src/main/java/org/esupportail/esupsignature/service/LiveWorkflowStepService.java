@@ -55,10 +55,9 @@ public class LiveWorkflowStepService {
     }
 
     public void addRecipientsToWorkflowStep(LiveWorkflowStep liveWorkflowStep, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
-        int i = 0;
         for (String recipientEmail : recipientsEmails) {
             User recipientUser = userService.getUserByEmail(recipientEmail);
-            if(recipientUser.getUserType().equals(UserType.external)) {
+            if(recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
                 JsonExternalUserInfo jsonExternalUserInfo = externalUsersInfos.stream().filter(jsonExternalUserInfo1 -> jsonExternalUserInfo1.getEmail().equals(recipientEmail)).findFirst().get();
                 recipientUser.setName(jsonExternalUserInfo.getName());
                 recipientUser.setFirstname(jsonExternalUserInfo.getFirstname());

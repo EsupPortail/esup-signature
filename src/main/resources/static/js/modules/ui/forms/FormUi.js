@@ -29,6 +29,9 @@ export default class FormUi {
         $('[id^="searchCheckbox_"]').each(function (){
             $(this).on('click', e => self.toggleSelect(e));
         });
+        $("#multipartModel").on('change', function () {
+            $("#submitModel").removeClass("d-none");
+        });
     }
 
     toggleSelect(e) {
