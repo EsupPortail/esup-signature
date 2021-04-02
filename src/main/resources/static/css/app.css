@@ -1213,6 +1213,10 @@ height: 100%;
     border: 1px solid !important;
 }
 
+.choiceWidgetAnnotation select:focus {
+    border: 1px solid !important;
+}
+
 input:focus, textarea:focus, select:focus {
     outline: none;
 }
@@ -1228,6 +1232,19 @@ input:focus, textarea:focus, select:focus {
     left: 20%;
     top: 20%;
     width: 60%;
+}
+
+.annotationLayer section {
+    border: 1px solid transparent !important;
+}
+
+.choiceWidgetAnnotation select {
+    font-size: 9px !important;
+    border: 1px solid transparent !important;
+}
+
+.choiceWidgetAnnotation select option {
+    font-size: 14px !important;
 }
 
 .sign-field {

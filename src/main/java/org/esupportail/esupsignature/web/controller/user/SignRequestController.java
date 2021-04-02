@@ -157,7 +157,9 @@ public class SignRequestController {
             model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
-        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        if(signRequestService.getToSignDocuments(id).size() > 0) {
+            model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));

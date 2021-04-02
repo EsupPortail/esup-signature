@@ -11,7 +11,7 @@
         <th:block th:unless="${signRequest != null}">
             <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
         </th:block>
-        <div class="hr sidebar-label" th:if="${toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>
+        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>
         <!--
         <select id="select-innerHTML" name="changeMode" class="mb-2 select-mode"></select>
 <script language="JavaScript">
