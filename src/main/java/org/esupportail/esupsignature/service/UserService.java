@@ -360,9 +360,11 @@ public class UserService {
             if(recipientEmail.contains("*")) {
                 recipientEmail = recipientEmail.split("\\*")[1];
             }
-            User recipientUser = getUserByEmail(recipientEmail);
-            if(recipientUser.getUserType().equals(UserType.external)) {
-                tempUsers.add(recipientUser);
+            if(!recipientEmail.contains(globalProperties.getDomain())) {
+                User recipientUser = getUserByEmail(recipientEmail);
+                if (recipientUser.getUserType().equals(UserType.external)) {
+                    tempUsers.add(recipientUser);
+                }
             }
         }
         return tempUsers;
