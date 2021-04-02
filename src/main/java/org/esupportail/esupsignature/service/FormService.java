@@ -181,6 +181,8 @@ public class FormService {
 			for(FieldPropertie fieldPropertie : fieldProperties) {
 				fieldPropertieService.delete(fieldPropertie.getId());
 			}
+			field.getWorkflowSteps().clear();
+			fieldService.deleteField(field.getId());
 		}
 		formRepository.delete(form);
 	}

@@ -913,8 +913,10 @@ public class SignRequestService {
 	public void delete(Long signRequestId) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
-		signRequest.getSignedDocuments().clear();
 		signRequest.getOriginalDocuments().clear();
+		if(signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+			signRequest.getSignedDocuments().clear();
+		}
 		signRequest.setStatus(SignRequestStatus.deleted);
 		otpService.deleteOtpBySignRequestId(signRequestId);
 	}

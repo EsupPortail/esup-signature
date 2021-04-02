@@ -91,7 +91,7 @@ public class FieldService {
 		}
 	}
 
-	public void deleteField(int fieldId) {
+	public void deleteField(Long fieldId) {
 		fieldRepository.delete(getById(fieldId));
 	}
 
