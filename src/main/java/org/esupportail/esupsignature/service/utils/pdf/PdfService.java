@@ -94,7 +94,7 @@ public class PdfService {
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             InputStream signImage;
-            if (signType.equals(SignType.visa)) {
+            if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
                 File fileSignImage = fileService.getEmptyImage();
                 signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
                 File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");

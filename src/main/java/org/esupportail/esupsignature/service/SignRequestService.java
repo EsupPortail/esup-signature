@@ -472,7 +472,7 @@ public class SignRequestService {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
 
-		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
+		if( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)  || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 
@@ -627,7 +627,7 @@ public class SignRequestService {
 	}
 
 	public void applyEndOfSignRules(SignRequest signRequest, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
-		if (signType.equals(SignType.visa)) {
+		if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
 			if(comment != null && !comment.isEmpty()) {
 				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
@@ -982,25 +982,6 @@ public class SignRequestService {
 		return null;
 	}
 
-	public SignType getSignTypeByLevel(int level) {
-		SignType signType = null;
-		switch (level) {
-			case 0:
-				signType = SignType.visa;
-				break;
-			case 1:
-				signType = SignType.pdfImageStamp;
-				break;
-			case 2:
-				signType = SignType.certSign;
-				break;
-			case 3:
-				signType = SignType.nexuSign;
-				break;
-		}
-		return signType;
-	}
-
 	public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) {
 		Date date = new Date();
 		Set<String> toEmails = new HashSet<>();
@@ -1234,7 +1215,7 @@ public class SignRequestService {
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
+				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
 						UserShare userShare = userShareService.getById(userShareId);
