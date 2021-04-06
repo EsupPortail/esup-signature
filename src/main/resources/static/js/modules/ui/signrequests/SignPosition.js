@@ -191,7 +191,7 @@ export class SignPosition extends EventFactory {
         this.hideButtons();
         this.unbindCrossToolsListeners();
         let okSign = this.cross.clone();
-        okSign.css( "z-index", "1028");
+        okSign.css( "z-index", "1027");
         okSign.children().removeClass("anim-border");
         okSign.attr("data-current", "false");
         okSign.appendTo(this.pdf);
