@@ -14,6 +14,7 @@ export class SignUi {
         this.workspace = null;
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
+        this.isPdf = isPdf;
         this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
         this.xmlHttpMain = new XMLHttpRequest();
         this.signRequestUrlParams = "";
@@ -60,7 +61,11 @@ export class SignUi {
             console.log('launch sign for : ' + this.signRequestId);
             this.wait.modal('show');
             this.wait.modal({backdrop: 'static', keyboard: false});
-            this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
+            if(this.isPdf) {
+                this.workspace.pdfViewer.promizeSaveValues().then(e => this.submitSignRequest());
+            } else {
+                this.submitSignRequest();
+            }
         } else {
             this.signModal.on('hidden.bs.modal', function () {
                 $("#checkDataSubmit").click();
@@ -83,14 +88,16 @@ export class SignUi {
 
     submitSignRequest() {
         let formData = { };
-        $.each($('#signForm').serializeArray(), function() {
-            if(!this.name.startsWith("comment")) {
-                formData[this.name] = this.value;
-            }
-        });
-        this.workspace.pdfViewer.savedFields.forEach((value, key)=>{
-            formData[key] = value;
-        });
+        if(this.isPdf) {
+            $.each($('#signForm').serializeArray(), function () {
+                if (!this.name.startsWith("comment")) {
+                    formData[this.name] = this.value;
+                }
+            });
+            this.workspace.pdfViewer.savedFields.forEach((value, key) => {
+                formData[key] = value;
+            });
+        }
         if(this.workspace != null) {
             this.signRequestUrlParams = "password=" + document.getElementById("password").value +
                 "&sseId=" + sessionStorage.getItem("sseId") +

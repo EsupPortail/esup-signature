@@ -81,7 +81,7 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active" th:if="${toSignDocument != null}">
+            <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
@@ -245,7 +245,7 @@
             <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="user/signrequests/includes/workspace"></div>
             </th:block>
-            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && signRequest.originalDocuments.size() > 0}" id="workspace"
+            <div th:if="${(toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">
                     <div class="card-body">
@@ -266,7 +266,6 @@
                 </div>
                 <script th:inline="javascript" type="module">
                     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
-
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
                     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
                 </script>

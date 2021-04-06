@@ -86,11 +86,12 @@ export class WizUi {
     }
 
     gotoStep2(e) {
+        let comment = $("#commentWiz");
         this.div.html("");
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId,
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&comment=" + comment.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)

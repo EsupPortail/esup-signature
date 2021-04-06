@@ -868,7 +868,9 @@ public class SignRequestService {
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
-		return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
+		//return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
+		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).findAny().get();
+		return signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
 	}
 
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
@@ -1287,6 +1289,12 @@ public class SignRequestService {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
 		}
+	}
+
+	@Transactional
+	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, EsupSignatureFsException, IOException {
+		Document document = documentService.getById(documentId);
+		return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 	}
 
 	@Transactional

@@ -43,6 +43,9 @@ public class WizardController {
     @Resource
     private SignRequestService signRequestService;
 
+    @Resource
+    private CommentService commentService;
+
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         logger.debug("Choix des fichiers");
@@ -56,9 +59,13 @@ public class WizardController {
     @GetMapping(value = "/wiz-init-steps/{id}")
     public String wiz4(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
+                       @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
+        if(comment != null && !comment.isEmpty()) {
+            commentService.create(signBook.getSignRequests().get(0).getId(), comment, 0, 0, 0, null, true, null, userEppn);
+        }
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
@@ -112,7 +119,9 @@ public class WizardController {
 //    }
 
     @PostMapping(value = "/wiz-save/{id}")
-    public String saveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name, Model model, RedirectAttributes redirectAttributes) {
+    public String saveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+                               @RequestParam(name="name") String name,
+                               Model model) {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
