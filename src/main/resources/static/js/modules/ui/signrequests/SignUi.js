@@ -1,6 +1,5 @@
 import {WorkspacePdf} from "./WorkspacePdf.js";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js";
-import {PrintDocument} from "../../utils/PrintDocument.js";
 import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
@@ -22,7 +21,6 @@ export class SignUi {
         this.signModal = $('#signModal');
         this.stepRepeatable = stepRepeatable;
         this.currentStepNumber = currentStepNumber;
-        this.printDocument = new PrintDocument();
         this.gotoNext = false;
         this.profile = profile;
         this.initListeners();

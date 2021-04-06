@@ -4,6 +4,12 @@
     url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
+@font-face {
+    font-family: 'LiberationSans-Regular';
+    src: url('/fonts/LiberationSans-Regular.ttf') format('truetype'),
+    url('/fonts/LiberationSans-Regular.ttf') format('truetype');
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -11,8 +17,7 @@ html {
 }
 
 body {
-    font-family: "Roboto",sans-serif;
-    font-weight: lighter;
+    font-family: "LiberationSans-Regular";
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;

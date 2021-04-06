@@ -700,12 +700,6 @@ export class PdfViewer extends EventFactory {
         this.fireEvent('rotate', ['right']);
     }
 
-    printPdf() {
-        this.pdfPageView.eventBus.dispatch('print', {
-            source: self
-        });
-    }
-
     autocomplete(response, inputField) {
         let id = inputField.attr('id');
         let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";

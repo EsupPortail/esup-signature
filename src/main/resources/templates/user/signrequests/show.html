@@ -108,26 +108,22 @@
                            th:data-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
                     </li>
                 </th:block>
-            <th:block id="openButtons" class="fixed-action-btns active"
-                 th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
-                 onmouseover="$('#openButtons').toggleClass('active');"
-                 onmouseout="$('#openButtons').toggleClass('active');">
-                    <li class="d-none">
-                        <a id="print" class="btn-lg btn-floating bg-primary waves-effect"
-                           title="Imprimer le document"><i class="fas fa-print"></i></a>
-                    </li>
+                <th:block id="openButtons" class="fixed-action-btns active"
+                     th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
+                     onmouseover="$('#openButtons').toggleClass('active');"
+                     onmouseout="$('#openButtons').toggleClass('active');">
                     <li>
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
                            title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
                     </li>
-                <li><a title="Export SEDA" class="btn btn-floating bg-primary aves-effect d-none" th:href="'/user/signrequests/get-seda/' + ${id}">
-                    <i class="fas fa-file-export"></i>
-                </a></li>
-                <li><a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
-                    <i class="fas fa-shield-alt "></i>
-                </a></li>
-               </th:block>
+                    <li><a title="Export SEDA" class="btn btn-floating bg-primary aves-effect d-none" th:href="'/user/signrequests/get-seda/' + ${id}">
+                        <i class="fas fa-file-export"></i>
+                    </a></li>
+                    <li><a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary waves-effect d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                        <i class="fas fa-shield-alt "></i>
+                    </a></li>
+                   </th:block>
                     <li th:if="${nextSignRequest != null}">
                         <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"
                            class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
