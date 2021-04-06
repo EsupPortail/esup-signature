@@ -1138,6 +1138,11 @@ input:placeholder-shown.required-field {
 
 .toast {
     font-size: 1rem;
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    pointer-events: auto !important;
 }
 
 .toast-body-news {
@@ -1154,28 +1159,15 @@ input:placeholder-shown.required-field {
 
 .toast-sm {
     min-width: 400px;
-    margin: 20px;
-    position: fixed;
-    top: 0;
-    right: 0;
 }
 
 .toast-md {
     min-width: 800px;
-    margin: 20px;
-    position: fixed;
-    top: 0;
-    right: 0;
 }
 
 .toast-xl {
     min-width: 80vw;
     min-height: 80vh;
-    margin: 20px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    left: 0;
     max-width: 100%;
 }
 

@@ -6,7 +6,7 @@
 <!--/*@thymesVar id="messageSuccess" type="java.lang.String"*/-->
 <!--/*@thymesVar id="messageInfo" type="java.lang.String"*/-->
 <!--/*@thymesVar id="messageCustom" type="java.lang.String"*/-->
-<div>
+<div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;">
 	<script th:inline="javascript" type="module">
 		import Toast from "../../static/js/modules/ui/Toast.js";
 		new Toast([[${message}]]);
