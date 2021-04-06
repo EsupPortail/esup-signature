@@ -38,7 +38,7 @@
             <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>
         </button>
         <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
-            <i class="fas fa-comment"></i> <span class="sidebar-label">Commentaires</span>
+            <i class="ml-1 fas fa-comment"></i><i class="mr-2"></i> <span class="sidebar-label">Annoter</span>
             <span th:if="${signRequest.comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${signRequest.comments.size()}"></span>
         </button>
 

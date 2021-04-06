@@ -85,6 +85,8 @@ export class SignPosition extends EventFactory {
             this.toggleWatermark();
         }
         this.initListeners();
+        this.borders.addClass("anim-border");
+        this.borders.removeClass("static-border");
     }
 
     initListeners() {
@@ -98,6 +100,9 @@ export class SignPosition extends EventFactory {
         this.borders.on('mousedown', e => this.dragSignature());
         this.borders.on('touchstart', e => this.dragSignature());
         this.borders.on('mouseup', e => this.stopDragSignature(false));
+        this.borders.on('click', function (e) {
+            e.stopPropagation();
+        });
         this.borders.on('touchend', e => this.stopDragSignature(false));
     }
 
@@ -128,8 +133,15 @@ export class SignPosition extends EventFactory {
             this.signDropButton.hide();
         }
         this.createColorPicker();
-        this.crossTools.on('mouseup', function (e) {
+        this.crossTools.unbind();
+        this.crossTools.on('click', function (e) {
             e.stopPropagation();
+        });
+        this.crossTools.children().each(function(){
+            $(this).unbind();
+            $(this).on('click', function (e) {
+                e.stopPropagation();
+            });
         });
     }
 
@@ -193,11 +205,12 @@ export class SignPosition extends EventFactory {
         let okSign = this.cross.clone();
         okSign.css( "z-index", "1027");
         okSign.children().removeClass("anim-border");
+        okSign.children().addClass("static-border");
         okSign.attr("data-current", "false");
         okSign.appendTo(this.pdf);
-        okSign.on("click", e => this.switchSignToTarget(e));
+        okSign.on("mousedown", e => this.switchSignToTarget(e));
         console.info("add sign");
-        let currentSign = (parseInt(this.currentSign) + 1) + "";
+        let currentSign = (this.signRequestParamses.size + 1) + "";
         let signRequestParams;
         if(this.signRequestParamses.get(currentSign) == null) {
             signRequestParams = new SignRequestParams();
@@ -283,7 +296,9 @@ export class SignPosition extends EventFactory {
     }
 
     switchSignToTarget(e) {
+        e.stopPropagation();
         let changeCross = $(e.currentTarget);
+        this.lockCurrentSign();
         this.switchSign(changeCross.attr("id").split("_")[1]);
 
     }
@@ -296,6 +311,7 @@ export class SignPosition extends EventFactory {
         this.cross.attr("data-current", "true");
         this.cross.unbind();
         this.borders = $('#borders_' + currentSign);
+        this.cross.children().removeClass("static-border");
         this.borders.addClass("anim-border");
         this.borders.removeClass("static-border");
         this.initCrossListeners();
@@ -317,6 +333,7 @@ export class SignPosition extends EventFactory {
         this.moreTools = $('#moreTools_' + currentSign);
         this.hideMoreTools();
         this.initCrossToolsListeners();
+        this.dragSignature();
     }
 
     lockCurrentSign() {
@@ -325,7 +342,7 @@ export class SignPosition extends EventFactory {
         this.borders.addClass("static-border");
         this.cross.attr("data-current", "false");
         this.borders.unbind();
-        this.cross.on("click", e => this.switchSignToTarget(e));
+        this.cross.on("mousedown", e => this.switchSignToTarget(e));
         this.hideButtons();
     }
 
@@ -520,7 +537,7 @@ export class SignPosition extends EventFactory {
     }
 
     stopDragSignature(lock) {
-        console.info("stop drag");
+        console.info("stop drag " + lock);
         this.fireEvent('stopDrag', ['ok']);
         this.cross.css('pointerEvents', "auto");
         document.body.style.cursor = "default";

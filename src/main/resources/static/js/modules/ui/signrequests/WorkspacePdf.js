@@ -85,7 +85,7 @@ export class WorkspacePdf {
             this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
             this.wheelDetector.addEventListener("pagebottom", e => this.pageBottom());
 
-            this.pdfViewer.canvas.addEventListener('mouseup', e => this.clickAction());
+            this.pdfViewer.canvas.addEventListener('click', e => this.clickAction());
 
             $('#pdf').mousemove(e => this.moveAction(e));
 
@@ -577,7 +577,7 @@ export class WorkspacePdf {
         $('#infos').show();
         if(this.signPosition.visualActive) {
             $('#pen').removeClass('btn-outline-secondary').addClass('btn-outline-success');
-            // this.signPosition.cross.show();
+            this.signPosition.cross.removeClass('d-none');
         }
         this.pdfViewer.rotation = 0;
         if(this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
@@ -608,8 +608,7 @@ export class WorkspacePdf {
         $('#commentsTools').hide();
         $('#commentsBar').hide();
         $('#signTools').hide();
-        this.signPosition.cross.hide();
-
+        this.signPosition.cross.addClass('d-none');
         $('#infos').hide();
         $('#postit').hide();
         $('#refusetools').hide();
