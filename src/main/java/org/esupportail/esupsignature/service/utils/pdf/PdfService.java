@@ -94,7 +94,7 @@ public class PdfService {
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             InputStream signImage;
-            if (signType.equals(SignType.visa)) {
+            if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
                 File fileSignImage = fileService.getEmptyImage();
                 signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
                 File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
@@ -526,10 +526,9 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
             if(pdAcroForm != null) {
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
                 PDResources resources = pdAcroForm.getDefaultResources();
-                resources.put(COSName.getPDFName("Helv"), pdFont);
-                resources.put(COSName.getPDFName("Helvetica"), pdFont);
+                resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
@@ -556,7 +555,7 @@ public class PdfService {
                                 pdField.getCOSObject().setNeedToBeUpdated(true);
                                 pdField.getCOSObject().removeItem(COSName.AA);
                                 pdField.getCOSObject().removeItem(COSName.AP);
-                                pdField.getCOSObject().setString(COSName.DA, "/Helv 10 Tf 0 g");
+                                pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                                 pdField.setValue(value);
                             }
                         }

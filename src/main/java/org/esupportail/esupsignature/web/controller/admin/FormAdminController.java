@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,12 +94,16 @@ public class FormAdminController {
 	}
 	
 	@GetMapping("{id}")
-	public String getFormById(@PathVariable("id") Long id, Model model) {
+	public String show(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("workflow", form.getWorkflow());
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
-		model.addAttribute("preFillTypes", preFill.getTypes());
+		if(preFill != null) {
+			model.addAttribute("preFillTypes", preFill.getTypes());
+		} else {
+			model.addAttribute("preFillTypes", new HashMap<>());
+		}
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/show";
 	}
