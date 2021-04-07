@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+import java.util.List;
 
 @RequestMapping("/user/wizard")
 @Controller
@@ -59,6 +60,7 @@ public class WizardController {
     @GetMapping(value = "/wiz-init-steps/{id}")
     public String wiz4(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
+                       @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
         User user = (User) model.getAttribute("user");
@@ -66,6 +68,7 @@ public class WizardController {
         if(comment != null && !comment.isEmpty()) {
             commentService.create(signBook.getSignRequests().get(0).getId(), comment, 0, 0, 0, null, true, null, userEppn);
         }
+        signBookService.addViewers(id, recipientsCCEmailsWiz);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null) {
@@ -200,6 +203,7 @@ public class WizardController {
     public String wizEnd(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="close") String close, Model model) throws EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
+            signBookService.sendCCEmail(id, null);
             model.addAttribute("signBook", signBook);
             model.addAttribute("close", close);
             return "user/wizard/wizend";

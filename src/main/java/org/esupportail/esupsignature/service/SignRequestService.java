@@ -106,7 +106,7 @@ public class SignRequestService {
 	private CustomMetricsService customMetricsService;
 
 	@Resource
-	private SignBookService signBookService;
+	public SignBookService signBookService;
 
 	@Resource
 	private SignService signService;
@@ -868,7 +868,6 @@ public class SignRequestService {
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
-		//return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
 		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).findAny().get();
 		return signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
 	}
@@ -1152,14 +1151,7 @@ public class SignRequestService {
 	@Transactional
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
-		List<User> viewers = new ArrayList<>();
-		if(recipientsCCEmails != null) {
-			for (String recipientsEmail : recipientsCCEmails) {
-				viewers.add(userService.getUserByEmail(recipientsEmail));
-			}
-			signBook.setViewers(viewers);
-			mailService.sendCCtAlert(recipientsCCEmails, signBook.getSignRequests().get(0));
-		}
+		signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
 		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
 	}
 
@@ -1217,7 +1209,7 @@ public class SignRequestService {
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
 						UserShare userShare = userShareService.getById(userShareId);

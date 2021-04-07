@@ -157,8 +157,9 @@ export class WorkspacePdf {
             this.enableCommentMode();
         } else {
             this.enableSignMode();
-            if(this.signable && this.currentSignType === 'visa' && this.currentSignType === 'hiddenVisa') {
+            if(this.signable && this.currentSignType !== 'visa' && this.currentSignType !== 'hiddenVisa') {
                 if(this.mode === 'sign') {
+                    this.signPosition.visualActive = false;
                     this.signPosition.toggleVisual();
                 }
             }
