@@ -100,7 +100,6 @@ export class SignPosition extends EventFactory {
         window.addEventListener("touchmove", e => this.touchIt(e), {passive: false});
         this.initCrossListeners();
         this.initCrossToolsListeners();
-        this.addSignButton.on('click', e => this.addSign(e));
     }
 
     initCrossListeners() {

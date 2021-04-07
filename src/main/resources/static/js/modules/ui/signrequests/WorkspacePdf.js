@@ -105,7 +105,9 @@ export class WorkspacePdf {
                     postitButton.removeClass('circle-border');
                 });
             });
+
         }
+        $('#addSignButton').on('click', e => this.addSign(e));
 
         $('[id^="deleteAttachement-"]').each(function (){
             $(this).on('click', function (e){
@@ -137,6 +139,11 @@ export class WorkspacePdf {
             window.onbeforeunload = null;
         });
 
+    }
+
+    addSign(e) {
+        this.signPosition.addSign(e)
+        this.pdfViewer.renderPage(this.pdfViewer.pageNum);
     }
 
     initWorkspace() {
@@ -212,7 +219,7 @@ export class WorkspacePdf {
                     message.type = "success";
                     message.text = "Modifications enregistrées";
                     message.object = null;
-                    self.sseDispatcher.dispatchEvent("user", message);
+                    // self.sseDispatcher.dispatchEvent("user", message);
                     dataId.val(response);
                     if(redirect) {
                         location.href = "/user/datas/" + response + "/update";

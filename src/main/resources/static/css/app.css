@@ -46,7 +46,7 @@ html {
 }
 
 body {
-    font-family: "Gravity";
+    font-family: "Gravity", sans-serif;
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
@@ -907,11 +907,16 @@ input:placeholder-shown.required-field {
     background-color: #F8D7DA !important;
 }
 
+textarea:placeholder-shown.required-field {
+    background-color: #F8D7DA !important;
+}
+
 .radioButton.required-field {
     border-color: red !important;
 }
 
 .annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
+    font-family: "LiberationSans-Regular", sans-serif;
     border: 0px !important;
 }
 
@@ -1183,7 +1188,7 @@ input:placeholder-shown.required-field {
 
 .toast {
     font-size: 1rem;
-    position: absolute;
+    position: fixed;
     top: 100px;
     left: 50%;
     transform: translate(-50%, 0%);
