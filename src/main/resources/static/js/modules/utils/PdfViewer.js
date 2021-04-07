@@ -525,6 +525,7 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 inputField.attr('name', inputName);
+                inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {

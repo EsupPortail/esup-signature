@@ -907,6 +907,10 @@ input:placeholder-shown.required-field {
     background-color: #F8D7DA !important;
 }
 
+textarea:placeholder-shown.required-field {
+    background-color: #F8D7DA !important;
+}
+
 .radioButton.required-field {
     border-color: red !important;
 }
