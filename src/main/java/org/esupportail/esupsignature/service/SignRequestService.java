@@ -106,7 +106,7 @@ public class SignRequestService {
 	private CustomMetricsService customMetricsService;
 
 	@Resource
-	private SignBookService signBookService;
+	public SignBookService signBookService;
 
 	@Resource
 	private SignService signService;
@@ -472,7 +472,7 @@ public class SignRequestService {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
 
-		if(signType.equals(SignType.visa) || signType.equals(SignType.pdfImageStamp)) {
+		if( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)  || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 
@@ -627,7 +627,7 @@ public class SignRequestService {
 	}
 
 	public void applyEndOfSignRules(SignRequest signRequest, String userEppn, String authUserEppn, SignType signType, String comment) throws EsupSignatureException {
-		if (signType.equals(SignType.visa)) {
+		if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
 			if(comment != null && !comment.isEmpty()) {
 				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.checked, "Visa",  "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
@@ -868,7 +868,8 @@ public class SignRequestService {
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
-		return recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
+		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).findAny().get();
+		return signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
 	}
 
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
@@ -980,25 +981,6 @@ public class SignRequestService {
 			return action.get(0).getDate();
 		}
 		return null;
-	}
-
-	public SignType getSignTypeByLevel(int level) {
-		SignType signType = null;
-		switch (level) {
-			case 0:
-				signType = SignType.visa;
-				break;
-			case 1:
-				signType = SignType.pdfImageStamp;
-				break;
-			case 2:
-				signType = SignType.certSign;
-				break;
-			case 3:
-				signType = SignType.nexuSign;
-				break;
-		}
-		return signType;
 	}
 
 	public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) {
@@ -1169,14 +1151,7 @@ public class SignRequestService {
 	@Transactional
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
-		List<User> viewers = new ArrayList<>();
-		if(recipientsCCEmails != null) {
-			for (String recipientsEmail : recipientsCCEmails) {
-				viewers.add(userService.getUserByEmail(recipientsEmail));
-			}
-			signBook.setViewers(viewers);
-			mailService.sendCCtAlert(recipientsCCEmails, signBook.getSignRequests().get(0));
-		}
+		signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
 		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
 	}
 
@@ -1234,7 +1209,7 @@ public class SignRequestService {
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				if(!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa)) {
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 					User user = userService.getByEppn(userEppn);
 					if(userShareId != null) {
 						UserShare userShare = userShareService.getById(userShareId);
@@ -1306,6 +1281,12 @@ public class SignRequestService {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
 		}
+	}
+
+	@Transactional
+	public Map<String, Object> getFileResponse(Long documentId) throws SQLException, EsupSignatureFsException, IOException {
+		Document document = documentService.getById(documentId);
+		return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 	}
 
 	@Transactional

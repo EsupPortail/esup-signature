@@ -23,6 +23,7 @@ export default class ListSignRequestUi {
         $('#recipientsFilter').on('change', e => this.buildUrlFilter());
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
+        $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
@@ -35,8 +36,10 @@ export default class ListSignRequestUi {
         let idDom = $('.sign-requests-ids:checked');
         if (idDom.length > 0) {
             $('#deleteMultipleButton').removeClass('d-none');
+            $('#menuDeleteMultipleButton').removeClass('d-none');
         } else {
             $('#deleteMultipleButton').addClass('d-none');
+            $('#menuDeleteMultipleButton').addClass('d-none');
         }
 
         if (idDom.length > 1 && this.massSignButtonHide) {

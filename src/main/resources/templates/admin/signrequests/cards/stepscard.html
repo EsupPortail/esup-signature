@@ -23,10 +23,10 @@
                                         <i class="fas fa-clock"></i>
                                     </span>
                                     <th:block th:unless="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                        <span title="Document visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
+                                        <span title="Document visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                             <i class="fas fa-check"></i>
                                         </span>
-                                        <span title="Document signé" th:unless="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}" class="bs-stepper-circle bg-success">
+                                        <span title="Document signé" th:unless="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                             <i class="fas fa-signature"></i>
                                         </span>
                                     </th:block>
