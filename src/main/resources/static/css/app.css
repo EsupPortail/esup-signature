@@ -96,6 +96,7 @@ th {
 td {
     vertical-align: middle !important;
     font-size: 0.9em;
+    font-weight: 300;
 }
 
 .table-fix-head {
