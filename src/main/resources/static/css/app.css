@@ -11,14 +11,14 @@
 
 @font-face {
     font-family: 'Gravity';
-    src: url('/fonts/Gravity-Regular.otf') format('opentype');
-    font-weight: normal;
+    src: url('/fonts/Gravity-Bold.otf') format('opentype');
+    font-weight: 700;
 }
 
 @font-face {
     font-family: 'Gravity';
-    src: url('/fonts/Gravity-Bold.otf') format('opentype');
-    font-weight: 700;
+    src: url('/fonts/Gravity-Regular.otf') format('opentype');
+    font-weight: 500;
 }
 
 @font-face {

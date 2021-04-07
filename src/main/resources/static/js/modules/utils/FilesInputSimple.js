@@ -3,7 +3,6 @@ export default class FilesInputSimple {
     constructor(input) {
         console.info("Enable file input simple for : " + input.attr('id'));
         this.input = input;
-        this.async = false;
         this.initListeners();
         this.initFileInput();
     }
@@ -18,14 +17,22 @@ export default class FilesInputSimple {
             language: "fr",
             showCaption: false,
             showClose: false,
+            showBrowse: true,
             showUpload: false,
             showRemove: true,
+            dropZoneEnabled: true,
             browseOnZoneClick: true,
+            uploadUrl: ' ',
             uploadAsync: false,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
+            initialPreview: urls,
+            initialPreviewConfig : previews,
+            initialPreviewAsData: true,
+            initialPreviewShowDelete: true,
             overwriteInitial: false,
             preferIconicPreview: true,
+            allowedFileTypes : [],
             previewFileIconSettings: {
                 'pdf': '<i class="fas fa-file-pdf text-danger fa-2x"></i>',
                 'doc': '<i class="fas fa-file-word text-primary fa-2x"></i>',
@@ -38,11 +45,18 @@ export default class FilesInputSimple {
                 'mp3': '<i class="fas fa-file-audio text-warning fa-2x"></i>',
                 'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
                 'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
-                'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
+                'png': '<i class="fas fa-file-image text-primary fa-2x"></i>',
+                'other': '<i class="fas fa-file text-muted fa-2x"></i>'
             },
-            previewFileExtSettings: { // configure the logic for determining icon file extensions
+            previewFileExtSettings: {
+                    'other': function() {
+                    return true;
+                },
+                'pdf': function(ext) {
+                    return ext.match(/(pdf)$/i);
+                },
                 'doc': function(ext) {
-                    return ext.match(/(doc|docx)$/i);
+                    return ext.match(/(doc|docx|odt)$/i);
                 },
                 'xls': function(ext) {
                     return ext.match(/(xls|xlsx)$/i);
@@ -69,8 +83,12 @@ export default class FilesInputSimple {
             fileActionSettings: {
                 showDrag: true,
                 showZoom: function(config) {
-                    return config.type === 'pdf' || config.type === 'image';
+                    if (config.type === 'pdf' || config.type === 'image') {
+                        return true;
+                    }
+                    return false;
                 },
+                showRemove: true
             }
         });
     }
