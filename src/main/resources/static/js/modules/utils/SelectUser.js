@@ -57,8 +57,9 @@ export default class SelectUser {
             data: JSON.stringify(recipientEmails),
             success: data => this.displayTempUsersSuccess(data)
         });
-        if (this.flag === true) {
-            if (!e[e.length - 1].text.includes('(')) {
+        if (this.flag === true && e.length > 0) {
+            let text = e[e.length - 1].text;
+            if ( text != null && !text.includes('(')) {
                 $.ajax({
                     url: "/user/users/search-user-list?searchString=" + e[e.length - 1].text,
                     type: 'GET',

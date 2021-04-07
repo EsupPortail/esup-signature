@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
@@ -50,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -157,7 +159,10 @@ public class SignRequestController {
             model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
-        model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
+        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
+        if(toSignDocuments.size() == 1) {
+            model.addAttribute("toSignDocument", toSignDocuments.get(0));
+        }
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
@@ -432,9 +437,11 @@ public class SignRequestController {
     public ResponseEntity<Void> getLastFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
-            httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-            httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
-            IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
+            if(fileResponse != null) {
+                httpServletResponse.setContentType(fileResponse.get("contentType").toString());
+                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
+            }
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
@@ -442,16 +449,24 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-file/{id}")
-    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+    public ResponseEntity<Void> getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, SQLException, EsupSignatureFsException {
         Document document = documentService.getById(id);
         if(signRequestService.getById(document.getParentId()) != null) {
-            httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
-            httpServletResponse.setContentType(document.getContentType());
-            IOUtils.copy(document.getInputStream(), httpServletResponse.getOutputStream());
-            return new ResponseEntity<>(HttpStatus.OK);        }
-        logger.warn("document is not present in signResquest");
+            if(preAuthorizeService.signRequestView(document.getParentId(), userEppn, authUserEppn)) {
+                Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
+                if(fileResponse != null) {
+                    httpServletResponse.setContentType(fileResponse.get("contentType").toString());
+                    httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                    IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
+                }
+                return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                logger.warn(userEppn + " try access document " + id + " without permission");
+            }
+        } else {
+            logger.warn("document is not present in signResquest");
+        }
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 

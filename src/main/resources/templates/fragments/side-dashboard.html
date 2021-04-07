@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite">
-    <div class="ml-1 mt-1">
+    <div class="ml-1 mt-2">
+        <h5 class="text-center"><b>Filtres</b></h5>
         <a th:classappend="${status == statusFilter} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests">Tout voir</a>
         <div class="hr">En cours</div>
         <a th:classappend="${statusFilter == 'tosign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=tosign">A signer</a>

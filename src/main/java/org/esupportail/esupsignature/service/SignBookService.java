@@ -586,4 +586,27 @@ public class SignBookService {
             }
         }
     }
+
+    @Transactional
+    public void sendCCEmail(Long signBookId, List<String> recipientsCCEmails) {
+        SignBook signBook = getById(signBookId);
+        if(recipientsCCEmails != null) {
+            addViewers(signBookId, recipientsCCEmails);
+        }
+        mailService.sendCCtAlert(signBook.getViewers().stream().map(User::getEmail).collect(Collectors.toList()), signBook.getSignRequests().get(0));
+    }
+
+    @Transactional
+    public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
+        SignBook signBook = getById(signBookId);
+        if(recipientsCCEmails != null) {
+            for (String recipientsEmail : recipientsCCEmails) {
+                User user = userService.getUserByEmail(recipientsEmail);
+                if(!signBook.getViewers().contains(user)) {
+                    signBook.getViewers().add(user);
+                }
+            }
+        }
+    }
+
 }

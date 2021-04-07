@@ -390,6 +390,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
+                inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
@@ -435,6 +436,9 @@ export class PdfViewer extends EventFactory {
                     inputField.get(0).type = "number";
                 }
                 if (dataField.type === "radio") {
+                    if (dataField.required) {
+                        inputField.parent().addClass('required-field');
+                    }
                     inputField.val(items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {
                         inputField.prop("checked", true);
@@ -521,6 +525,7 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 inputField.attr('name', inputName);
+                inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -694,12 +699,6 @@ export class PdfViewer extends EventFactory {
         this.rotation = this.rotation + 90;
         this.renderPage(this.pageNum);
         this.fireEvent('rotate', ['right']);
-    }
-
-    printPdf() {
-        this.pdfPageView.eventBus.dispatch('print', {
-            source: self
-        });
     }
 
     autocomplete(response, inputField) {
