@@ -42,7 +42,7 @@ public class WebAppConfig implements WebMvcConfigurer {
                 "/webjars/**",
                 "/images/**",
                 "/css/**",
-				"/doc/**",
+				"/fonts/**",
                 "/js/**",
 				"/static/js/**")
                 .addResourceLocations(
@@ -52,6 +52,7 @@ public class WebAppConfig implements WebMvcConfigurer {
                         "classpath:/static/images/",
                         "classpath:/static/css/",
 						"classpath:/static/doc/",
+						"classpath:/static/fonts/",
                         "classpath:/static/js/",
 						"classpath:/static/js/");
 		registry.addResourceHandler("swagger-ui.html")

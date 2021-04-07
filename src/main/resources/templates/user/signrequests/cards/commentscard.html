@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="commentscard">
     <div class="card mb-1 col-lg-10 mx-auto">
         <div id="collapseComments" class="show"
@@ -10,14 +11,10 @@
                     <th:block th:each="comment : ${signRequest.comments}">
                         <div class="d-flex w-100 justify-content-between">
                             <li href="#" class="list-group-item list-group-item-action">
-                                De : <span class="mb-1" th:text="${comment.eppn}"></span> -
+                                De : <span class="mb-1" th:text="${comment.createBy.eppn}"></span> -
                                 <small>
-                                    le : <span th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                    <br>
-                                    Action effectuée : <span
-                                        th:text="#{'signbook.status.' + ${comment.finalStatus}}"></span>
-                                </small>
-                                <p th:text="${comment.comment}"></p>
+                                    le : <span th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                <p th:text="${comment.text}"></p>
 
                             </li>
                         </div>

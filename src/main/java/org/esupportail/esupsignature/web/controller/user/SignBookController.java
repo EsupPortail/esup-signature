@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -76,7 +77,10 @@ public class SignBookController {
             model.addAttribute("signBook", signBook);
             SignRequest signRequest = signBook.getSignRequests().get(0);
             model.addAttribute("signRequest", signRequest);
-            model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(signRequest.getId()).get(0));
+            List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
+            if(toSignDocuments.size() == 1) {
+                model.addAttribute("toSignDocument", toSignDocuments.get(0));
+            }
             model.addAttribute("signable", signRequest.getSignable());
             model.addAttribute("comments", logService.getLogs(signRequest.getId()));
             model.addAttribute("logs", signBook.getLogs());
@@ -159,7 +163,6 @@ public class SignBookController {
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookManage(#name, #authUserEppn)")
     @ResponseBody
     @PostMapping(value = "/add-docs-in-sign-book-group/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object addDocumentInSignBookGroup(@ModelAttribute("authUserEppn") String authUserEppn,
