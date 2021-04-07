@@ -83,14 +83,23 @@ export class WizUi {
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
         this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
+        let csrf = this.csrf;
+        $('[id^="recipientsCCEmailsWiz"]').each(function (){
+            new SelectUser($(this).attr('id'), null, null, csrf);
+        });
     }
 
     gotoStep2(e) {
+        let comment = $("#commentWiz");
+        let recipientsCCEmailsWiz=[];
+        $('select[name="recipientsCCEmailsWiz"] option:selected').each(function() {
+            recipientsCCEmailsWiz.push($(this).val());
+        });
         this.div.html("");
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId,
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&comment=" + comment.val(),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)

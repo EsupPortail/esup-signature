@@ -43,6 +43,10 @@ export default class Toast {
         }
         toast.css('z-index', 10000);
         toast.toast('show');
+        toast.on('hidden.bs.toast', function () {
+            $("#toast-backdrop").removeClass("backdrop");
+        })
+        $("#toast-backdrop").addClass("backdrop");
         new Notification(message.text);
         let start = new Date();
         let end = new Date();
@@ -63,6 +67,7 @@ export default class Toast {
             if (ellasped < 0) {
                 ellasped = 0
                 window.clearTimeout(timer)
+                $("#toast-backdrop").removeClass("backdrop");
             }
             elem.attr('value', ellasped);
         }

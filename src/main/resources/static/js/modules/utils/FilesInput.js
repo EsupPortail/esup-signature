@@ -154,6 +154,7 @@ export default class FilesInput extends EventFactory {
     }
 
     fileUpload() {
+
         console.info("file upload");
         this.input.fileinput('upload');
         let self = this;
@@ -166,7 +167,7 @@ export default class FilesInput extends EventFactory {
 
 
     checkUniqueFile() {
-        if(this.input.fileinput('getFilesCount') > 1) {
+        if(this.input.fileinput('getFilesCount') > 0) {
             $('#unique').removeClass('d-none');
         } else {
             $('#unique').addClass('d-none');

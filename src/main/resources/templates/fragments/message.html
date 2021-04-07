@@ -6,6 +6,8 @@
 <!--/*@thymesVar id="messageSuccess" type="java.lang.String"*/-->
 <!--/*@thymesVar id="messageInfo" type="java.lang.String"*/-->
 <!--/*@thymesVar id="messageCustom" type="java.lang.String"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<div id="toast-backdrop"></div>
 <div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;">
 	<script th:inline="javascript" type="module">
 		import Toast from "../../static/js/modules/ui/Toast.js";
@@ -65,7 +67,6 @@
 			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
-			<h4 class="mr-auto text-white">Information</h4>
 			<h5 id="message-info" class="text-white"></h5>
 		</div>
 		<progress id="progress-info" class="progress-bar bg-info"></progress>
