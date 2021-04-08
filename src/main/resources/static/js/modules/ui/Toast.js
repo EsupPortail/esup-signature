@@ -12,6 +12,7 @@ export default class Toast {
             $(this).css('z-index', 10000);
             $(this).toast('show');
         });
+        this.toastBackdrop = $("#toast-backdrop");
         this.initListener();
     }
 
@@ -43,10 +44,16 @@ export default class Toast {
         }
         toast.css('z-index', 10000);
         toast.toast('show');
+        let toastBackdrop = this.toastBackdrop;
         toast.on('hidden.bs.toast', function () {
-            $("#toast-backdrop").removeClass("backdrop");
+            toastBackdrop.removeClass("backdrop");
+            toastBackdrop.unbind();
         })
-        $("#toast-backdrop").addClass("backdrop");
+
+        toastBackdrop.addClass("backdrop");
+        toastBackdrop.on("click", function () {
+            toast.toast('hide');
+        });
         new Notification(message.text);
         let start = new Date();
         let end = new Date();
@@ -55,20 +62,20 @@ export default class Toast {
     }
 
     setUpProgressBar(selector, startTime, endTime, update) {
-
         let timer;
         let elem = $(selector);
         let max = endTime - startTime;
         elem.attr('max', max);
         elem.attr('value', max);
+        let toastBackdrop = this.toastBackdrop;
         let setValue = function() {
             let currentTime = new Date().getTime();
             let ellasped = endTime - currentTime;
             if (ellasped < 0) {
                 ellasped = 0
                 window.clearTimeout(timer)
-                $("#toast-backdrop").removeClass("backdrop");
-            }
+                toastBackdrop.removeClass("backdrop");
+                toastBackdrop.unbind();            }
             elem.attr('value', ellasped);
         }
         setValue();
