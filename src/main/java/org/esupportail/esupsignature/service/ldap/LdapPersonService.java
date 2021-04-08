@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service.ldap;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapLightRepository;
 import org.esupportail.esupsignature.repository.ldap.PersonLdapRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
@@ -14,11 +13,11 @@ import java.text.MessageFormat;
 import java.util.List;
 
 @Service
-@ConditionalOnProperty(prefix = "spring.ldap", name = "base")
+@ConditionalOnProperty({"spring.ldap.base"})
 @EnableConfigurationProperties(LdapProperties.class)
 public class LdapPersonService {
 
-    @Autowired
+    @Resource
     private LdapTemplate ldapTemplate;
 
     @Resource

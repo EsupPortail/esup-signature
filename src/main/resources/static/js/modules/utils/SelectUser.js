@@ -125,7 +125,8 @@ export default class SelectUser {
             contentType: "application/json",
             dataType: 'json',
             data: JSON.stringify(recipientEmails),
-            success: data => this.displayTempUsersSuccess(data)
+            success: data => this.displayTempUsersSuccess(data),
+            error: e => this.displayExternalsError()
         });
         if (this.flag === true && e.length > 0) {
             let text = e[e.length - 1].value;
@@ -140,6 +141,15 @@ export default class SelectUser {
                 });
             }
         }
+    }
+
+    displayExternalsError() {
+        let name = '#tempUsers-' + this.selectField.attr("id");
+        let tempUsersDiv = $(name);
+        tempUsersDiv.append(
+            "<div class='alert alert-danger' id='externalUserInfos_'>" +
+            "<b>Destinataires externes non autorisés</b>" +
+            "</div>");
     }
 
     addListMembers(data, selectValue) {

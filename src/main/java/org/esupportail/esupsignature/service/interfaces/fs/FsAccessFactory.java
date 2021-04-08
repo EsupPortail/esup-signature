@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +16,27 @@ import java.util.List;
 @Service
 public class FsAccessFactory {
 
-	@Autowired
-	private ObjectProvider<SmbAccessImpl> smbAccessImpl;
 
-	@Autowired
-	private ObjectProvider<VfsAccessImpl> vfsAccessImpl;
+	private SmbAccessImpl smbAccessImpl;
 
-	@Autowired
-	private ObjectProvider<CmisAccessImpl> cmisAccessImpl;
+	private VfsAccessImpl vfsAccessImpl;
+
+	private CmisAccessImpl cmisAccessImpl;
+
+	@Autowired(required = false)
+	public void setSmbAccessImpl(SmbAccessImpl smbAccessImpl) {
+		this.smbAccessImpl = smbAccessImpl;
+	}
+
+	@Autowired(required = false)
+	public void setVfsAccessImpl(VfsAccessImpl vfsAccessImpl) {
+		this.vfsAccessImpl = vfsAccessImpl;
+	}
+
+	@Autowired(required = false)
+	public void setCmisAccessImpl(CmisAccessImpl cmisAccessImpl) {
+		this.cmisAccessImpl = cmisAccessImpl;
+	}
 
 	public FsAccessService getFsAccessService(String path) throws EsupSignatureFsException {
 		return  getFsAccessService(getPathIOType(path));
@@ -33,11 +45,11 @@ public class FsAccessFactory {
 	public FsAccessService getFsAccessService(DocumentIOType type) {
 		switch (type) {
 			case smb:
-				return smbAccessImpl.getIfAvailable();
+				return smbAccessImpl;
 			case vfs:
-				return vfsAccessImpl.getIfAvailable();
+				return vfsAccessImpl;
 			case cmis:
-				return cmisAccessImpl.getIfAvailable();
+				return cmisAccessImpl;
 			default:
 				return null;
 		}
@@ -45,9 +57,15 @@ public class FsAccessFactory {
 
 	public List<FsAccessService> getFsAccessServices() {
 		List<FsAccessService> fsAccessServices = new ArrayList<>();
-		smbAccessImpl.ifAvailable(sai -> fsAccessServices.add(sai));
-		vfsAccessImpl.ifAvailable(vai -> fsAccessServices.add(vai));
-		cmisAccessImpl.ifAvailable(cai -> fsAccessServices.add(cai));
+		if(smbAccessImpl != null) {
+			fsAccessServices.add(smbAccessImpl);
+		}
+		if(vfsAccessImpl != null) {
+			fsAccessServices.add(vfsAccessImpl);
+		}
+		if(cmisAccessImpl != null) {
+			fsAccessServices.add(cmisAccessImpl);
+		}
 		return fsAccessServices;
 	}
 
