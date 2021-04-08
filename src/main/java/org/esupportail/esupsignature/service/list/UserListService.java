@@ -14,6 +14,9 @@ public class UserListService {
 
     public List<String> getUsersEmailFromList(String listName) {
         if(userList != null) {
+            if(listName.contains("*")) {
+                listName = listName.split("\\*")[1];
+            }
             return userList.getUsersEmailFromList(listName);
         } else {
             return new ArrayList<>();
