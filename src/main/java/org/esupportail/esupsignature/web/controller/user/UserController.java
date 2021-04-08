@@ -153,6 +153,7 @@ public class UserController {
 	@GetMapping(value = "/search-user-list")
 	@ResponseBody
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
+
     	return userListService.getUsersEmailFromList(searchString);
 	}
 
