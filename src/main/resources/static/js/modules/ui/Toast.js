@@ -49,7 +49,6 @@ export default class Toast {
             toastBackdrop.removeClass("backdrop");
             toastBackdrop.unbind();
         })
-
         toastBackdrop.addClass("backdrop");
         toastBackdrop.on("click", function () {
             toast.toast('hide');
