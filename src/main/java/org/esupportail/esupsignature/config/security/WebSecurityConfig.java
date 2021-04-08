@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,14 +45,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Resource
 	private List<SecurityService> securityServices;
 	
-	@Autowired
-	private ObjectProvider<DevSecurityFilter> devSecurityFilters;
-	
+	private List<DevSecurityFilter> devSecurityFilters;
+
+	@Autowired(required = false)
+	public void setDevSecurityFilters(List<DevSecurityFilter> devSecurityFilters) {
+		this.devSecurityFilters = devSecurityFilters;
+	}
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
-		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
+		if(devSecurityFilters != null) {
+			devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
+		}
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));

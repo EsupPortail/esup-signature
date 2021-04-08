@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.config.ldap;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,9 +22,6 @@ public class LdapConfig {
 
     @Resource
     private GlobalProperties globalProperties;
-
-    @Resource
-    private WebSecurityProperties webSecurityProperties;
 
     @Resource
     private LdapTemplate ldapTemplate;
