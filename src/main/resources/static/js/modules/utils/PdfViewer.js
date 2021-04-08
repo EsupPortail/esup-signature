@@ -436,8 +436,10 @@ export class PdfViewer extends EventFactory {
                     inputField.get(0).type = "number";
                 }
                 if (dataField.type === "radio") {
-                    if (dataField.required) {
-                        inputField.parent().addClass('required-field');
+                    if(this.isFieldEnable(dataField)) {
+                        if (dataField.required) {
+                            inputField.parent().addClass('required-field');
+                        }
                     }
                     inputField.val(items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {
