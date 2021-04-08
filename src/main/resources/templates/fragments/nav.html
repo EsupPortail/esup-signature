@@ -334,8 +334,8 @@
                     <div class="form-group">
                         <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
-                            import {default as FilesInputSimple} from "/static/js/modules/utils/FilesInputSimple.js";
-                            new FilesInputSimple($("#inputGroupFile02"));
+                            import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
+                            new FilesInput($("#inputGroupFile02"));
                         </script>
                     </div>
                     <div class="form-group">
