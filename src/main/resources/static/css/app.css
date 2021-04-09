@@ -1636,6 +1636,8 @@ progress:before {
 }
 
 .badge-status {
+    width: 185px;
+    text-align: left;
     font-size: 100%;
     font-weight: 500;
     border-radius: revert !important;
@@ -1652,7 +1654,9 @@ progress:before {
     color: white;
 }
 
-.badge > span {
+.badge-status > span {
+    width: 100% !important;
+    text-align: center;
     padding: 0 6px 1px 6px;
     line-height: 25px;
 }
