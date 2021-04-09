@@ -868,8 +868,10 @@ public class SignRequestService {
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
+		boolean needSignInWorkflow = recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
 		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).max(Comparator.comparing(Recipient::getId)).get();
-		return signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
+		boolean needSign = signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
+		return needSign || needSignInWorkflow;
 	}
 
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
