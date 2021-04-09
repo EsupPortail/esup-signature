@@ -15,7 +15,6 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -53,8 +52,12 @@ public class ScheduledTaskService {
 	@Resource
 	private UserService userService;
 
-	@Autowired
-	private ObjectProvider<OJService> oJService;
+	private OJService oJService;
+
+	@Autowired(required = false)
+	public void setoJService(OJService oJService) {
+		this.oJService = oJService;
+	}
 
 	@Scheduled(fixedRate = 300000)
 	@Transactional
@@ -111,13 +114,17 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
-		oJService.ifAvailable(OJService::refresh);
+		if(oJService != null) {
+			oJService.refresh();
+		}
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws EsupSignatureException {
 		workflowService.copyClassWorkflowsIntoDatabase();
-		oJService.ifAvailable(OJService::getCertificats);
+		if(oJService != null) {
+			oJService.getCertificats();
+		}
 	}
 
 }

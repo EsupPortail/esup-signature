@@ -15,7 +15,6 @@ import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -37,8 +36,20 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    @Autowired
-    private ObjectProvider<LdapPersonService> ldapPersonService;
+
+    private LdapPersonService ldapPersonService;
+
+    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    @Autowired(required = false)
+    public void setLdapPersonService(LdapPersonService ldapPersonService) {
+        this.ldapPersonService = ldapPersonService;
+    }
+
+    @Autowired(required = false)
+    public void setLdapOrganizationalUnitService(LdapOrganizationalUnitService ldapOrganizationalUnitService) {
+        this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
+    }
 
     @Resource
     private GlobalProperties globalProperties;
@@ -49,8 +60,6 @@ public class UserService {
     @Resource
     private List<SecurityService> securityServices;
 
-    @Autowired(required = false)
-    private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
     @Resource
     private FileService fileService;
@@ -133,8 +142,8 @@ public class UserService {
         if (!user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
         }
-        if (ldapPersonService.getIfAvailable() != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByEduPersonPrincipalName(eppn);
+        if (ldapPersonService != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(eppn);
             if (personLdaps.size() > 0) {
                 String name = personLdaps.get(0).getSn();
                 String firstName = personLdaps.get(0).getGivenName();
@@ -149,8 +158,8 @@ public class UserService {
 
     @Transactional
     public User createUserWithEmail(String mail) {
-        if (ldapPersonService.getIfAvailable() != null) {
-            List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().getPersonLdapRepository().findByMail(mail);
+        if (ldapPersonService != null) {
+            List<PersonLdap> personLdaps = ldapPersonService.getPersonLdapRepository().findByMail(mail);
             if (personLdaps.size() > 0) {
                 String eppn = personLdaps.get(0).getEduPersonPrincipalName();
                 if (eppn == null) {
@@ -180,7 +189,7 @@ public class UserService {
             authName = authentication.getName();
         }
         logger.info("controle de l'utilisateur " + authName);
-        List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService.getIfAvailable()).getPersonLdap(authName);
+        List<PersonLdap> personLdaps =  Objects.requireNonNull(ldapPersonService).getPersonLdap(authName);
         String eppn = personLdaps.get(0).getEduPersonPrincipalName();
         if (eppn == null) {
             eppn = buildEppn(authName);
@@ -272,8 +281,8 @@ public class UserService {
         for (User user : users) {
             personLdaps.add(getPersonLdapLightFromUser(user));
         }
-        if (ldapPersonService.getIfAvailable() != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
-            List<PersonLdapLight> ldapSearchList = ldapPersonService.getIfAvailable().searchLight(searchString);
+        if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
+            List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
                 List<PersonLdapLight> ldapList = ldapSearchList.stream().sorted(Comparator.comparing(PersonLdapLight::getDisplayName)).collect(Collectors.toList());
                 for (PersonLdapLight personLdapList : ldapList) {
@@ -311,8 +320,8 @@ public class UserService {
 
     public PersonLdap findPersonLdapByUser(User user) {
         PersonLdap personLdap = null;
-        if (ldapPersonService.getIfAvailable() != null) {
-            List<PersonLdap> personLdaps =  ldapPersonService.getIfAvailable().getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
+        if (ldapPersonService != null) {
+            List<PersonLdap> personLdaps =  ldapPersonService.getPersonLdapRepository().findByEduPersonPrincipalName(user.getEppn());
             if (personLdaps.size() > 0) {
                 personLdap = personLdaps.get(0);
             }
@@ -323,7 +332,7 @@ public class UserService {
     }
 
     public OrganizationalUnitLdap findOrganizationalUnitLdapByPersonLdap(PersonLdap personLdap) {
-        if (ldapPersonService.getIfAvailable() != null) {
+        if (ldapPersonService != null) {
             return ldapOrganizationalUnitService.getOrganizationalUnitLdap(personLdap.getSupannEntiteAffectationPrincipale());
         }
         return null;

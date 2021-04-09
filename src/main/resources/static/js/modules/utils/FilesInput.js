@@ -15,12 +15,14 @@ export default class FilesInput extends EventFactory {
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
         this.async = true;
-        this.uploadUrl = null;
-        if(signRequestId == null) {
-            this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
-        } else {
+        this.uploadUrl = ' ';
+        if(signRequestId != null) {
             this.async = false;
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
+        } else {
+            if(workflowName != null) {
+                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
+            }
         }
         this.initListeners();
         this.initFileInput(documents, readOnly);

@@ -146,7 +146,7 @@ public class DataService {
             if (field.getFavorisable()) {
                 fieldPropertieService.createFieldPropertie(authUser, field, formDatas.get(field.getName()));
             }
-            if(field.getExtValueType() != null && field.getExtValueType().equals("system")) {
+            if(field.getExtValueType() != null && field.getExtValueType().equals("system") && !field.getDefaultValue().isEmpty()) {
                 formDatas.put(field.getName(), field.getDefaultValue());
             }
         }

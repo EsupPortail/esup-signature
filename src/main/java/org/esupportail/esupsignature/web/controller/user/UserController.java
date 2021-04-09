@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
@@ -70,6 +71,9 @@ public class UserController {
 
 	@Resource
 	UserListService userListService;
+
+	@Autowired(required = false)
+	private SmsService smsService;
 
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
@@ -244,11 +248,17 @@ public class UserController {
 	@ResponseBody
 	@PostMapping(value ="/check-temp-users")
 	private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-    	if(recipientEmails != null) {
-			return userService.getTempUsersFromRecipientList(recipientEmails);
-		} else {
-    		return new ArrayList<>();
+		if (recipientEmails!= null && recipientEmails.size() > 0) {
+			List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
+			if (smsService != null) {
+				return users;
+			} else {
+				if (users.size() > 0) {
+					return null;
+				}
+			}
 		}
+		return new ArrayList<>();
 	}
 
 	@ResponseBody

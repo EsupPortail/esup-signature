@@ -868,7 +868,7 @@ public class SignRequestService {
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {
-		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).findAny().get();
+		Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).max(Comparator.comparing(Recipient::getId)).get();
 		return signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
 	}
 
