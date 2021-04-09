@@ -334,6 +334,7 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton = $('#signNextImage_' + currentSign);
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
+        this.signExtraOnTopButton = $('#signExtraOnTop_' + currentSign);
         this.signDropButton = $('#signDrop_' + currentSign);
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.displayMoreToolsButton = $('#displayMoreTools_' + currentSign);
