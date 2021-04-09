@@ -99,6 +99,10 @@ td {
     font-weight: 300;
 }
 
+.table {
+    margin-bottom: revert !important;
+}
+
 .table-fix-head {
     overflow-y: auto;
     height: calc(100vh - 250px);
@@ -362,7 +366,10 @@ input:checked + .slider:before {
     font-size: 16px;
     font-weight: bold;
     background-color: #007bff;
+}
 
+.ss-main .ss-single-selected .placeholder, .ss-main .ss-single-selected .placeholder * {
+    overflow: visible;
 }
 
 .ss-main .ss-multi-selected {
@@ -423,7 +430,7 @@ input:checked + .slider:before {
 }
 
 .workspace {
-    margin-top: 130px;
+    margin-top: 170px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
@@ -431,7 +438,7 @@ input:checked + .slider:before {
 }
 
 .workspace-pdf {
-    margin-top: 130px;
+    margin-top: 170px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
@@ -700,7 +707,6 @@ height: 100%;
     padding:3px;
 }
 
-
 .postit {
     width: 350px;
     font: revert !important;
@@ -708,7 +714,7 @@ height: 100%;
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 2;
+    z-index: 5;
     cursor: pointer;
     text-decoration:none;
     float:left;
@@ -1627,4 +1633,30 @@ progress:before {
     position: absolute;
     display: inline-block;
     z-index: -1;
+}
+
+.badge-status {
+    width: 185px;
+    text-align: left;
+    font-size: 100%;
+    font-weight: 500;
+    border-radius: revert !important;
+    height: 25px;
+    display: inline-block;
+    padding: 0 !important;
+}
+
+.badge-status > i {
+    height: 100%;
+    background-color: black;
+    padding: 0 6px 1px 6px;
+    line-height: 25px;
+    color: white;
+}
+
+.badge-status > span {
+    width: 100% !important;
+    text-align: center;
+    padding: 0 6px 1px 6px;
+    line-height: 25px;
 }
