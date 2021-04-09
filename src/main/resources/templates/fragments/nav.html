@@ -29,8 +29,8 @@
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                             href="/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger mt-1 d-none d-md-inline"
-                              th:text="${nbToSign}"></span>
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger d-none d-md-inline" th:text="${nbToSign}">
+                        </span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">

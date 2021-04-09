@@ -47,6 +47,7 @@ export class WorkspacePdf {
         this.spotCursor = this.getCommentPointer("\uf3c5");
         this.commentCursor = this.getCommentPointer("\uf075");
         this.nextCommand = "none";
+        this.initChangeModeSelector();
         this.initListeners();
         this.initDataFields(fields);
     }
@@ -66,20 +67,13 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('renderFinished', e => this.refreshAfterPageChange());
             this.pdfViewer.addEventListener('render', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData());
-            let commentModeButton = $('#commentModeButton');
-            if (commentModeButton.length) {
-                commentModeButton.on('click', e => this.toggleCommentMode());
-                if (this.signable) {
-                    $('#signModeButton').on('click', e => this.toggleSignMode());
-                    let visualButton = $('#visualButton')
-                    if (this.currentSignType !== "pdfImageStamp") {
-                        $('#visualButtonDiv').removeClass("d-none");
-                        visualButton.on('click', e => this.signPosition.toggleVisual());
-                    }
+            if (this.signable) {
+                let visualButton = $('#visualButton')
+                if (this.currentSignType !== "pdfImageStamp") {
+                    $('#visualButtonDiv').removeClass("d-none");
+                    visualButton.on('click', e => this.signPosition.toggleVisual());
                 }
-                $('#hideCommentButton').on('click', e => this.hideComment());
             }
-
             this.wheelDetector.addEventListener("zoomin", e => this.pdfViewer.zoomIn());
             this.wheelDetector.addEventListener("zoomout", e => this.pdfViewer.zoomOut());
             this.wheelDetector.addEventListener("pagetop", e => this.pageTop());
@@ -370,7 +364,12 @@ export class WorkspacePdf {
             $("#submitPostit").click();
             return;
         }
-        let commentUrlParams = "comment=" + $("#postitComment").val() +
+        let postitComment = $("#postitComment");
+        if(postitComment.val() === '') {
+            $("#submitPostit").click();
+            return;
+        }
+        let commentUrlParams = "comment=" + postitComment.val() +
             "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
             "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
@@ -407,7 +406,7 @@ export class WorkspacePdf {
                 postitDiv.unbind('mouseup');
                 postitDiv.on('mouseup', function (e) {
                     e.stopPropagation();
-                    bootbox.confirm("Supprimer ce commentaire ?", function(result) {
+                    bootbox.confirm("Supprimer cette annotation ?", function(result) {
                         if(result) {
                             $.ajax({
                                 method: 'DELETE',
@@ -506,7 +505,8 @@ export class WorkspacePdf {
         this.signPosition.stopDragSignature(true);
     }
 
-    hideComment() {
+    hideComment(e) {
+        e.stopPropagation();
         if(this.mode !== 'comment') {
             return;
         }
@@ -562,6 +562,7 @@ export class WorkspacePdf {
             $(this).show();
             $(this).css('width', '0px');
         })
+        $('#hideCommentButton').on('click', e => this.hideComment(e));
     }
 
     toggleSignMode() {
@@ -636,7 +637,7 @@ export class WorkspacePdf {
         $('#rotateleft').css('opacity', 0);
         $('#rotateright').css('opacity', 0);
         $('#pdf').css('cursor', 'default');
-
+        $('#hideCommentButton').unbind();
         this.hideAllPostits();
     }
 
@@ -668,32 +669,39 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
-        $(e.currentTarget).toggleClass("btn-outline-warning btn-warning");
+        $("#addCommentButton").toggleClass("btn-outline-dark");
+        $("#addSpotButton").removeClass("btn-outline-dark");
+        this.hideComment(e);
         if(this.addCommentEnabled) {
             this.addCommentEnabled = false;
             this.disablePointer();
         } else {
             let postit = $("#postit");
-            postit.removeClass("badge-success");
-            postit.addClass("badge-warning");
+            postit.removeClass("alert-success");
+            postit.addClass("alert-warning");
             this.addCommentEnabled = true;
             this.displayCommentPointer();
+            $("#divSpotStepNumber").hide();
+            $("#postitComment").attr("required", true);
         }
         this.addSpotEnabled = false;
     }
 
     enableSpotAdd(e) {
-        $(e.currentTarget).toggleClass("btn-outline-success btn-success");
+        $("#addCommentButton").removeClass("btn-outline-dark");
+        $("#addSpotButton").toggleClass("btn-outline-dark");
+        this.hideComment(e);
         if(this.addSpotEnabled) {
             this.addSpotEnabled = false;
             this.disablePointer();
+
         } else {
             let postit = $("#postit");
-            postit.addClass("badge-success");
-            postit.removeClass("badge-warning");
-            let divSpotStepNumber = $("#divSpotStepNumber");
-            divSpotStepNumber.show();
+            postit.addClass("alert-success");
+            postit.removeClass("alert-warning");
+            $("#divSpotStepNumber").show();
             this.addSpotEnabled = true;
+            $("#postitComment").removeAttr("required");
             this.displaySpotPointer();
         }
         this.addCommentEnabled = false;
@@ -733,5 +741,34 @@ export class WorkspacePdf {
         let liveStep = $("#liveStep-" + stepNumber);
         liveStep.removeClass("bg-white");
         liveStep.addClass("bg-success");
+    }
+
+    initChangeModeSelector() {
+        new SlimSelect({
+            select: '#changeMode',
+            showSearch: false,
+            valuesUseText: false, // Use text instead of innerHTML for selected values - default false
+            onChange : e => this.changeMode(e),
+            data: [
+                {innerHTML: '<div style="width: 200px"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>', text: 'Remplir et signer', value: 'sign', selected: true},
+                {innerHTML: '<div style="width: 200px"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>', text: 'Annoter', value: 'comment'},
+                {innerHTML: '<div style="width: 200px"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>', text: 'Lecture', value: 'read'},
+            ]
+        })
+    }
+
+    changeMode(e) {
+        let mode = e.value;
+        console.info("change mode to : " + mode);
+        this.disableAllModes();
+        if(mode === "sign") {
+            this.enableSignMode();
+        }
+        if(mode === "comment") {
+            this.enableCommentMode();
+        }
+        if(mode === "read") {
+            this.enableReadMode();
+        }
     }
 }

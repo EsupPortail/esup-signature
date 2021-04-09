@@ -41,7 +41,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,8 +107,8 @@ public class PdfService {
                     signImage = new FileInputStream(fileWithWatermark);
                 }
             } else {
-                if(signRequestParams.getSignImageNumber() == user.getSignImages().size()) {
-                    signImage = SignRequestService.class.getResourceAsStream("/static/images/check.png");
+                if(signRequestParams.getSignImageNumber() < 0) {
+                    signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
                 } else {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                     if(signRequestParams.getAddWatermark()) {

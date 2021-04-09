@@ -1232,7 +1232,6 @@ public class SignRequestService {
 
 						}
 					}
-					signImages.add(fileService.getBase64Image(SignRequestService.class.getResourceAsStream("/static/images/check.png"), "check.png"));
 				}
 			}
 		}
