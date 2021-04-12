@@ -726,7 +726,7 @@ export class PdfViewer extends EventFactory {
                 if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && self.isFieldEnable($(this)[0])) {
                     let page =  $(this)[0].page;
                     let name = $(this)[0].name;
-                    bootbox.alert("Le champ " + name + " n'est pas rempli en page " + page, function () {
+                    bootbox.alert("Un ou plusieurs champs requis n'ont pas été remplis dans ce formulaire", function () {
                         if(page !== self.pageNum) {
                             self.renderPage(page);
                         }
