@@ -723,11 +723,7 @@ export class PdfViewer extends EventFactory {
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
-                let domElement = $("#" + $(this)[0].name);
-                if (Array.isArray(domElement)) {
-                    domElement = domElement[0];
-                }
-                if ($(this)[0].required && !savedField && !domElement.val() && self.isFieldEnable($(this)[0])) {
+                if ($(this)[0].required && !savedField && (!$("#" + $(this)[0].name).val() || $(this)[0].type === "radio") && self.isFieldEnable($(this)[0])) {
                     let page =  $(this)[0].page;
                     let name = $(this)[0].name;
                     bootbox.alert("Un ou plusieurs champs requis n'ont pas été remplis dans ce formulaire", function () {
