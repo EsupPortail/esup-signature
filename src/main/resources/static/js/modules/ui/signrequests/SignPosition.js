@@ -22,7 +22,7 @@ export class SignPosition extends EventFactory {
         this.signable = signable;
         this.forceResetSignPos = forceResetSignPos;
         this.firstDrag = false;
-        if(currentSignRequestParams != null) {
+        if (currentSignRequestParams != null) {
             for (let i = 0; i < currentSignRequestParams.length; i++) {
                 let signRequestParams = new SignRequestParams();
                 if (this.signImageNumber != null) {
@@ -39,7 +39,7 @@ export class SignPosition extends EventFactory {
             }
         } else {
             let signRequestParams = new SignRequestParams();
-            if(this.signImageNumber != null && signType !== 'visa' || signType !== 'hiddenVisa') {
+            if (this.signImageNumber != null && signType !== 'visa' || signType !== 'hiddenVisa') {
                 signRequestParams.signImageNumber = this.signImageNumber;
             }
             this.signRequestParamses.set("0", signRequestParams);
@@ -63,7 +63,7 @@ export class SignPosition extends EventFactory {
         this.watermarkButton = $('#watermark_0');
         this.createColorPicker();
         this.addSignButton = $('#addSignButton');
-        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
+        if (this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
             this.cross.css("position", "absolute");
             this.addSignButton.removeAttr("disabled");
             this.lockCurrentSign(false);
@@ -77,18 +77,21 @@ export class SignPosition extends EventFactory {
         }
         this.confirmEnabled = false;
         this.events = {};
-        if(this.signType !== "visa" && this.signType !== "hiddenVisa" && this.signable) {
+        if (this.signType !== "visa" && this.signType !== "hiddenVisa" && this.signable) {
             // $(document).ready(e => this.toggleExtraInfos());
 
         }
-        if(this.signType === "visa" || this.signType === "hiddenVisa") {
+        if (this.signType === "visa" || this.signType === "hiddenVisa") {
             this.toggleWatermark();
             this.toggleExtraInfos();
             this.visualActive = false;
         }
-        if(this.signType === "visa") {
+        if (this.signType === "visa") {
             this.toggleVisual();
             $("#visualButton").remove();
+        }
+        if (this.signType === "hiddenVisa") {
+            this.alertHiddenVisa();
         }
         this.initListeners();
         this.borders.addClass("anim-border");
@@ -837,6 +840,13 @@ export class SignPosition extends EventFactory {
     addMinusImage() {
         this.addSign();
         this.changeToFaImage(4);
+    }
+
+    alertHiddenVisa() {
+        bootbox.alert({
+            message: "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document. Sa validation implique que vous en acceptez le contenu. Vous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa en y adjoignant vos commentaires.",
+            size: 'large'
+        });
     }
 
 }
