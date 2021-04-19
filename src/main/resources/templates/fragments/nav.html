@@ -323,7 +323,6 @@
             <form id="sendSignRequestForm" th:action="'/user/signrequests/send-sign-request?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
                   method="post" enctype="multipart/form-data">
                 <input type="hidden" id="pending" name="pending" value="false" />
-                <input type="hidden" id="comment" name="comment" />
                 <div class="modal-header">
                     <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
