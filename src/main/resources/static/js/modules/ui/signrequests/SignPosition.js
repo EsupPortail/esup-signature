@@ -734,10 +734,12 @@ export class SignPosition extends EventFactory {
 
     removeExtra() {
         this.getCurrentSignParams().addExtra = false;
-        this.getCurrentSignParams().extraWidth = 0;
-        this.getCurrentSignParams().extraHeight = 0;
-        if(this.getCurrentSignParams().extraOnTop) {
-            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+        if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            this.getCurrentSignParams().extraWidth = 0;
+            this.getCurrentSignParams().extraHeight = 0;
+            if (this.getCurrentSignParams().extraOnTop) {
+                this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+            }
         }
         let textExtra = $("#textExtra_" + this.currentSign);
         this.getCurrentSignParams().extraText = textExtra.val();
