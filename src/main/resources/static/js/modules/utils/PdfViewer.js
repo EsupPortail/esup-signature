@@ -390,6 +390,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
+                inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(dataField.favorisable && !$("#div_" + inputField.attr('id')).length) {
@@ -435,6 +436,9 @@ export class PdfViewer extends EventFactory {
                     inputField.get(0).type = "number";
                 }
                 if (dataField.type === "radio") {
+                    if (dataField.required) {
+                        inputField.parent().addClass('required-field');
+                    }
                     inputField.val(items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {
                         inputField.prop("checked", true);
@@ -521,6 +525,7 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 inputField.attr('name', inputName);
+                inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
@@ -552,6 +557,8 @@ export class PdfViewer extends EventFactory {
                 }
                 if(this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
+                    inputField.prop('disabled', false);
+                    inputField.removeClass('disabled-field disable-selection');
                     if (dataField.required) {
                         inputField.prop('required', true);
                         inputField.addClass('required-field');
@@ -694,12 +701,6 @@ export class PdfViewer extends EventFactory {
         this.fireEvent('rotate', ['right']);
     }
 
-    printPdf() {
-        this.pdfPageView.eventBus.dispatch('print', {
-            source: self
-        });
-    }
-
     autocomplete(response, inputField) {
         let id = inputField.attr('id');
         let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
@@ -720,7 +721,11 @@ export class PdfViewer extends EventFactory {
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
-                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && self.isFieldEnable($(this)[0])) {
+                let domElement = $("#" + $(this)[0].name);
+                if (Array.isArray(domElement)) {
+                    domElement = domElement[0];
+                }
+                if ($(this)[0].required && !savedField && !domElement.val() && self.isFieldEnable($(this)[0])) {                    
                     let page =  $(this)[0].page;
                     let name = $(this)[0].name;
                     bootbox.alert("Le champ " + name + " n'est pas rempli en page " + page, function () {

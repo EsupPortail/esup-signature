@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
+<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
@@ -53,15 +54,12 @@
                             <th:block th:each="comment : ${signRequest.comments}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <li href="#" class="list-group-item list-group-item-action">
-                                        De : <span class="mb-1" th:text="${comment.eppn}"></span> -
+                                        De : <span class="mb-1" th:text="${comment.createBy.eppn}"></span> -
                                         <small>
                                             le : <span
-                                                th:text="${#dates.format(comment.logDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                            <br>
-                                            Action effectuée : <span
-                                                th:text="#{'signbook.status.' + ${comment.finalStatus}}"></span>
+                                                th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </small>
-                                        <p th:if="${comment.comment != null}" th:text="${comment.comment}"></p>
+                                        <p th:if="${comment.text != null}" th:text="${comment.text}"></p>
                                     </li>
                                 </div>
                             </th:block>

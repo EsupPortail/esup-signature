@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.FieldService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.TargetService;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,33 +71,55 @@ public class FormAdminController {
 	private TargetService targetService;
 
 	@PostMapping()
-	public String postForm(@RequestParam("name") String name, @RequestParam(value = "targetType", required = false) String targetType, @RequestParam(value = "targetUri", required = false) String targetUri, @RequestParam("fieldNames[]") String[] fieldNames, @RequestParam(required = false) Boolean publicUsage) throws IOException {
+	public String postForm(@RequestParam("name") String name,
+						   @RequestParam(value = "targetType", required = false) String targetType,
+						   @RequestParam(value = "targetUri", required = false) String targetUri,
+						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		DocumentIOType documentIOType = null;
 		if(targetType != null) {
 			documentIOType = DocumentIOType.valueOf(targetType);
 		}
 		List<Target> targets = new ArrayList<>();
 		targets.add(targetService.createTarget(documentIOType, targetUri));
-		Form form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
+		Form form = null;
+		try {
+			form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
+		} catch (EsupSignatureException e) {
+			logger.error(e.getMessage());
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			return "redirect:/admin/forms/";
+		}
 		return "redirect:/admin/forms/" + form.getId();
 	}
 	
 	@GetMapping("{id}")
-	public String getFormById(@PathVariable("id") Long id, Model model) {
+	public String show(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("workflow", form.getWorkflow());
 		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
-		model.addAttribute("preFillTypes", preFill.getTypes());
+		if(preFill != null) {
+			model.addAttribute("preFillTypes", preFill.getTypes());
+		} else {
+			model.addAttribute("preFillTypes", new HashMap<>());
+		}
 		model.addAttribute("document", form.getDocument());
 		return "admin/forms/show";
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		List<Target> targets = new ArrayList<>();
 		targets.add(targetService.createTarget(targetType, targetUri));
-		Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleName, targets, publicUsage);
+		Form form = null;
+		try {
+			form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleName, targets, publicUsage);
+		} catch (EsupSignatureException e) {
+			logger.error(e.getMessage());
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			return "redirect:/admin/forms/";
+		}
 		return "redirect:/admin/forms/" + form.getId();
 	}
 
@@ -144,7 +168,15 @@ public class FormAdminController {
 	@PostMapping("/update-model/{id}")
 	public String updateFormmodel(@PathVariable("id") Long id,
 								  @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
-		formService.updateFormModel(id, multipartModel);
+		try {
+			if(multipartModel.getSize() > 0) {
+				formService.updateFormModel(id, multipartModel);
+			}
+		} catch (EsupSignatureException e) {
+			logger.error(e.getMessage());
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+			return "redirect:/admin/forms/";
+		}
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + id;
 	}

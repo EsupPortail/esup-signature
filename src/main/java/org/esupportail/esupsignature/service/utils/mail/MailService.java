@@ -30,10 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -106,14 +103,17 @@ public class MailService {
             message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             message.setSubject("Esup-Signature : demande signature terminée");
             message.setFrom(mailConfig.getIfAvailable().getMailFrom());
-            List<User> viewersArray = new ArrayList<>(signBook.getViewers());
 
-            for(Recipient recipient : signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny().get()) {
-                if(!viewersArray.contains(recipient.getUser())) {
-                    viewersArray.add(recipient.getUser());
+            List<User> viewersArray = new ArrayList<>(signBook.getViewers());
+            Optional<List<Recipient>> recipients = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny();
+            if(recipients.isPresent()) {
+                for (Recipient recipient : recipients.get()) {
+                    if (!viewersArray.contains(recipient.getUser())) {
+                        viewersArray.add(recipient.getUser());
+                    }
                 }
+                viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
             }
-            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
             if(viewersArray.size() > 0) {
                 message.setTo(viewersArray.stream().map(User::getEmail).toArray(String[]::new));
                 String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
@@ -199,7 +199,7 @@ public class MailService {
     }
 
     public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) {
-        if (!checkMailSender()) {
+        if (!checkMailSender() || recipientsEmails.size() == 0) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
@@ -323,7 +323,7 @@ public class MailService {
     private void setTemplate(Context ctx) {
         try {
             ctx.setVariable("logo", fileService.getBase64Image(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), "logo.png"));
-            ctx.setVariable("logoUrn", fileService.getBase64Image(new ClassPathResource("/static/images/logo-urn.png", MailService.class).getInputStream(), "logo-urn.png"));
+            ctx.setVariable("logoUrn", fileService.getBase64Image(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), "logo-univ.png"));
             try (Reader reader = new InputStreamReader(new ClassPathResource("/static/css/bootstrap.min.css", MailService.class).getInputStream(), UTF_8)) {
                 ctx.setVariable("css", FileCopyUtils.copyToString(reader));
             } catch (IOException e) {

@@ -143,8 +143,8 @@ public class UserController {
    	@GetMapping(value = "/search-list")
 	@ResponseBody
 	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
-    	logger.debug("ldap search for : " + searchString);
     	if(ldapAliasService != null) {
+			logger.info("ldap search for : " + searchString);
 			return ldapAliasService.searchAlias(searchString);
 		}
     	return new ArrayList<>();
@@ -153,6 +153,7 @@ public class UserController {
 	@GetMapping(value = "/search-user-list")
 	@ResponseBody
 	public List<String> searchUserList(@RequestParam(value="searchString") String searchString) {
+
     	return userListService.getUsersEmailFromList(searchString);
 	}
 

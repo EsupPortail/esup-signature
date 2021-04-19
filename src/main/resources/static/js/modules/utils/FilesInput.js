@@ -15,12 +15,14 @@ export default class FilesInput extends EventFactory {
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
         this.async = true;
-        this.uploadUrl = null;
-        if(signRequestId == null) {
-            this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
-        } else {
+        this.uploadUrl = ' ';
+        if(signRequestId != null) {
             this.async = false;
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
+        } else {
+            if(workflowName != null) {
+                this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
+            }
         }
         this.initListeners();
         this.initFileInput(documents, readOnly);
@@ -96,10 +98,10 @@ export default class FilesInput extends EventFactory {
             initialPreview: urls,
             initialPreviewConfig : previews,
             initialPreviewAsData: true,
-            initialPreviewFileType: 'other',
             initialPreviewShowDelete: !readOnly,
             overwriteInitial: false,
             preferIconicPreview: true,
+            allowedFileTypes : [],
             previewFileIconSettings: {
                 'pdf': '<i class="fas fa-file-pdf text-danger fa-2x"></i>',
                 'doc': '<i class="fas fa-file-word text-primary fa-2x"></i>',
@@ -112,11 +114,18 @@ export default class FilesInput extends EventFactory {
                 'mp3': '<i class="fas fa-file-audio text-warning fa-2x"></i>',
                 'jpg': '<i class="fas fa-file-image text-danger fa-2x"></i>',
                 'gif': '<i class="fas fa-file-image text-muted fa-2x"></i>',
-                'png': '<i class="fas fa-file-image text-primary fa-2x"></i>'
+                'png': '<i class="fas fa-file-image text-primary fa-2x"></i>',
+                'other': '<i class="fas fa-file text-muted fa-2x"></i>'
             },
-            previewFileExtSettings: { // configure the logic for determining icon file extensions
+            previewFileExtSettings: {
+                'other': function() {
+                    return true;
+                },
+                'pdf': function(ext) {
+                    return ext.match(/(pdf)$/i);
+                },
                 'doc': function(ext) {
-                    return ext.match(/(doc|docx)$/i);
+                    return ext.match(/(doc|docx|odt)$/i);
                 },
                 'xls': function(ext) {
                     return ext.match(/(xls|xlsx)$/i);
@@ -142,7 +151,7 @@ export default class FilesInput extends EventFactory {
             },
             fileActionSettings: {
                 showDrag: false,
-                    showZoom: function(config) {
+                showZoom: function(config) {
                     if (config.type === 'pdf' || config.type === 'image') {
                         return true;
                     }
@@ -154,6 +163,7 @@ export default class FilesInput extends EventFactory {
     }
 
     fileUpload() {
+
         console.info("file upload");
         this.input.fileinput('upload');
         let self = this;
@@ -166,7 +176,7 @@ export default class FilesInput extends EventFactory {
 
 
     checkUniqueFile() {
-        if(this.input.fileinput('getFilesCount') > 1) {
+        if(this.input.fileinput('getFilesCount') > 0) {
             $('#unique').removeClass('d-none');
         } else {
             $('#unique').addClass('d-none');
