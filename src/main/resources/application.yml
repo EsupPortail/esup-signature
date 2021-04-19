@@ -100,6 +100,8 @@ spring:
 
 ldap:
 #    search-base: ou=people
+#    list-search-base: ou=aliases-list
+#    list-search-filter: (|(mail={0}*)(cn={0}*))
 #    group-search-base: ou=groups
 #    group-search-filter: member={0}
 #    user-id-search-filter: (uid={0})

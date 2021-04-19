@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ldap.NamingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -148,8 +149,12 @@ public class UserController {
 	@ResponseBody
 	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
     	if(ldapAliasService != null) {
-			logger.info("ldap search for : " + searchString);
-			return ldapAliasService.searchAlias(searchString);
+			logger.debug("ldap search for : " + searchString);
+			try {
+				return ldapAliasService.searchAlias(searchString);
+			} catch (NamingException e) {
+				logger.trace(e.getMessage() + " : " + e.getExplanation());
+			}
 		}
     	return new ArrayList<>();
 	}

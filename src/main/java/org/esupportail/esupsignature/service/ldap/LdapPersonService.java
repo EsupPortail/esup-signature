@@ -18,10 +18,10 @@ import java.util.List;
 public class LdapPersonService {
 
     @Resource
-    private LdapTemplate ldapTemplate;
+    private LdapProperties ldapProperties;
 
     @Resource
-    private LdapProperties ldapProperties;
+    private LdapTemplate ldapTemplate;
 
     @Resource
     private PersonLdapRepository personLdapRepository;
