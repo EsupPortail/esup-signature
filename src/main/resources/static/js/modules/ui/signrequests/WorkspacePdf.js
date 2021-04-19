@@ -664,6 +664,7 @@ export class WorkspacePdf {
     showAllPostits() {
         $(".postit-global").each(function () {
             $(this).removeClass("d-none");
+            $(this).draggable();
         });
     }
 
