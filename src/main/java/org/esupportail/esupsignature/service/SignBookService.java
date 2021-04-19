@@ -483,6 +483,7 @@ public class SignBookService {
             pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn());
             if (comment != null && !comment.isEmpty()) {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
+                    commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
                     signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
                 }
             }

@@ -9,6 +9,7 @@ export class WorkspacePdf {
     constructor(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, signType, fields, stepRepeatable, status, csrf) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
+        this.changeModeSelector = null;
         this.dataId = dataId;
         this.formId = formId;
         this.currentSignRequestParams =  currentSignRequestParams;
@@ -549,6 +550,7 @@ export class WorkspacePdf {
         $('#workspace').toggleClass('alert-warning alert-secondary');
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
+        this.changeModeSelector.set("comment");
         $('#commentsBar').show();
         $('#infos').show();
         this.pdfViewer.renderPage(1);
@@ -745,7 +747,7 @@ export class WorkspacePdf {
     }
 
     initChangeModeSelector() {
-        new SlimSelect({
+        this.changeModeSelector = new SlimSelect({
             select: '#changeMode',
             showSearch: false,
             valuesUseText: false, // Use text instead of innerHTML for selected values - default false
@@ -761,14 +763,16 @@ export class WorkspacePdf {
     changeMode(e) {
         let mode = e.value;
         console.info("change mode to : " + mode);
-        this.disableAllModes();
         if(mode === "sign") {
+            this.disableAllModes();
             this.enableSignMode();
         }
-        if(mode === "comment") {
+        if(mode === "comment" && this.mode !== "comment") {
+            this.disableAllModes();
             this.enableCommentMode();
         }
         if(mode === "read") {
+            this.disableAllModes();
             this.enableReadMode();
         }
     }
