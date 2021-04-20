@@ -929,7 +929,7 @@ input[type="radio"] {
     cursor: pointer !important;
 }
 
-input[type="radio"]:not(:checked).required-field:after {
+input[type="radio"]:not(:checked).required-field {
     background-color: #F8D7DA !important;
 }
 
