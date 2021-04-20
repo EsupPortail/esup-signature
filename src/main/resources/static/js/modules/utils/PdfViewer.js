@@ -390,6 +390,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
+                inputField.attr('title', dataField.description);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
@@ -436,6 +437,7 @@ export class PdfViewer extends EventFactory {
                     inputField.get(0).type = "number";
                 }
                 if (dataField.type === "radio") {
+                    inputField.addClass("field-type-radio");
                     if(this.isFieldEnable(dataField)) {
                         if (dataField.required) {
                             inputField.parent().addClass('required-field');
@@ -720,25 +722,55 @@ export class PdfViewer extends EventFactory {
             console.info("check data name");
             let self = this;
             let resolveOk = "ok";
+            let warningFields = [];
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
                 if ($(this)[0].required && !savedField && (!$("#" + $(this)[0].name).val() || $(this)[0].type === "radio") && self.isFieldEnable($(this)[0])) {
-                    let page =  $(this)[0].page;
-                    let name = $(this)[0].name;
-                    bootbox.alert("Un ou plusieurs champs requis n'ont pas été remplis dans ce formulaire", function () {
-                        if(page !== self.pageNum) {
-                            self.renderPage(page);
-                        }
-                        $('#' + name).focus();
-                    });
-                    resolveOk = $(this)[0].name;
-                    $('#sendModal').modal('hide');
-                    return false;
+                    if(!self.checkObjectInArray(warningFields, $(this)[0].name)) {
+                        warningFields.push($(this)[0]);
+                    }
                 }
-            })
+            });
+            if(warningFields.length > 0) {
+                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
+                if(warningFields.length < 2 && warningFields[0].name != null) {
+                    text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
+                } else {
+                    warningFields.forEach(function (field) {
+                        if(field.description != null && field.description !== "") {
+                            text += "<li>" + field.description + " (en page " + field.page + ")</li>";
+                        } else {
+                            text += "<li>" + field.name + " (en page " + field.page + ")</li>";
+                        }
+                    });
+                }
+                bootbox.alert(text, function () {
+                    let field = $('#' + warningFields[0].name);
+                    let page = warningFields[0].page;
+                    if (page !== self.pageNum) {
+                        self.renderPage(page);
+                        self.addEventListener("renderFinished", function () {
+                            setTimeout(function() { field.focus() }, 100);                        })
+                    } else {
+                        setTimeout(function() { field.focus() }, 100);
+
+                    }
+                });
+                resolveOk = $(this)[0].name;
+                $('#sendModal').modal('hide');
+            }
             resolve(resolveOk);
         });
         return p;
+    }
+
+    checkObjectInArray(fields, name) {
+        for(let i = 0; i < fields.length; i++) {
+            if (fields[i].name === name) {
+                return true;
+            }
+        }
+        return false;
     }
 }
