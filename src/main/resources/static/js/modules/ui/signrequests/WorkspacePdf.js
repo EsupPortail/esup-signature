@@ -179,7 +179,6 @@ export class WorkspacePdf {
         if (this.mode === 'read' || this.mode === 'comment') {
             this.disableForm();
         }
-        this.initFormAction();
     }
 
     listenForChange(input) {
@@ -462,6 +461,7 @@ export class WorkspacePdf {
                 $(this).removeAttr('disabled');
             });
         }
+        this.initFormAction();
     }
 
     toggleSign(e) {
