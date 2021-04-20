@@ -733,6 +733,7 @@ export class PdfViewer extends EventFactory {
                 }
             });
             if(warningFields.length > 0) {
+                warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
                 if(warningFields.length < 2 && warningFields[0].name != null) {
                     text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
