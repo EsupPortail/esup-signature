@@ -188,6 +188,9 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
+        if(signRequest.getData() != null) {
+            model.addAttribute("action", signRequest.getData().getForm().getAction());
+        }
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         model.addAttribute("logs", logs);

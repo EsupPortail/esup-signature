@@ -25,6 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -122,10 +123,10 @@ public class AdminSignRequestController {
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@PathVariable("id") Long id) {
+	public String delete(@PathVariable("id") Long id, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signBookService.delete(signRequest.getParentSignBook().getId());
-		return "redirect:/admin/signrequests/";
+		return "redirect:" + request.getHeader("Referer");
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")
