@@ -188,8 +188,9 @@ export class WorkspacePdf {
     }
 
     pushData(redirect) {
+        console.debug("push data");
         let formData  = new Map();
-        console.info("check data name");
+
         let self = this;
         let pdfViewer = this.pdfViewer;
 
