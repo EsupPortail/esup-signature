@@ -11,7 +11,6 @@ export class WorkspacePdf {
         this.isPdf = isPdf;
         this.changeModeSelector = null;
         this.action = action;
-        this.actionEnable = 0;
         this.dataId = dataId;
         this.formId = formId;
         this.currentSignRequestParams = currentSignRequestParams;
@@ -791,12 +790,8 @@ export class WorkspacePdf {
 
 
     initFormAction() {
-        if (this.actionEnable === 0) {
-            console.info("eval : " + this.action);
-            jQuery.globalEval(this.action);
-            this.actionEnable = true
-        }
-        this.actionEnable++;
+        console.debug("eval : " + this.action);
+        jQuery.globalEval(this.action);
     }
 
 }
