@@ -738,7 +738,7 @@ export class PdfViewer extends EventFactory {
                 warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
                 if(warningFields.length < 2 && warningFields[0].name != null) {
-                    if(field.description != null && field.description !== "") {
+                    if(warningFields[0].description != null && warningFields[0].description !== "") {
                         text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
                     } else {
                         text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
