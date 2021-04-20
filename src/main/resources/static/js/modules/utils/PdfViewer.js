@@ -306,14 +306,16 @@ export class PdfViewer extends EventFactory {
     }
 
     promizeRestoreValue() {
-        if(this.savedFields.size > 0) {
-            this.page.getAnnotations().then(items => this.restoreValues(items));
+        if(this.savedFields.size === 0) {
+            this.promizeSaveValues();
         }
+        this.page.getAnnotations().then(items => this.restoreValues(items));
+
         this.fireEvent('render', ['end']);
     }
 
     restoreValues(items) {
-        console.log("set fields " + items.length);
+       console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
@@ -736,7 +738,11 @@ export class PdfViewer extends EventFactory {
                 warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
                 if(warningFields.length < 2 && warningFields[0].name != null) {
-                    text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
+                    if(field.description != null && field.description !== "") {
+                        text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
+                    } else {
+                        text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
+                    }
                 } else {
                     warningFields.forEach(function (field) {
                         if(field.description != null && field.description !== "") {
