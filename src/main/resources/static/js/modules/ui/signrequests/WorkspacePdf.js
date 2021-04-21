@@ -70,9 +70,9 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('render', e => this.initForm());
             this.pdfViewer.addEventListener('change', e => this.saveData());
             if (this.signable) {
-                let visualButton = $('#visualButton')
+                let visualButton = $('#visualButton');
                 if (this.currentSignType !== "pdfImageStamp") {
-                    $('#visualButtonDiv').removeClass("d-none");
+                    visualButton.removeClass("d-none");
                     visualButton.on('click', e => this.signPosition.toggleVisual());
                 }
             }
