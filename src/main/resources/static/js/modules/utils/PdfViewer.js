@@ -557,6 +557,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField) {
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
+                inputField.removeAttr('size');
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
