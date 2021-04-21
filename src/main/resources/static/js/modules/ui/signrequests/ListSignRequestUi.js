@@ -157,17 +157,29 @@ export default class ListSignRequestUi {
         let waitModal = $("#wait");
         waitModal.modal('show');
         waitModal.modal({backdrop: 'static', keyboard: false});
-        let signRequestUrlParams = "sseId=" + sessionStorage.getItem("sseId") +
-            "&ids=" + JSON.stringify(ids) +
-            "&" + this.csrf.parameterName + "=" + this.csrf.token;
+        let signRequestUrlParams;
         if (!comeFromDispatcher) {
-            signRequestUrlParams += "&password=" + $('#password').val();
+            signRequestUrlParams = {
+                "ids" : JSON.stringify(ids),
+                "password" : $('#password').val()
+            };
+        } else {
+            signRequestUrlParams = {
+                "ids" : JSON.stringify(ids)
+            };
         }
         this.reset();
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('POST', '/user/signrequests/mass-sign', true);
-        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        xmlHttp.send(signRequestUrlParams);
+        $.ajax({
+            url: "/user/signrequests/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            type: 'POST',
+            data: signRequestUrlParams,
+            error: function(e) {
+                bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
+                    document.location.reload();
+                });
+            }
+        });
+
     }
 
     updateWaitModal(e) {

@@ -223,18 +223,18 @@ public class SignRequestController {
     @ResponseBody
     @PostMapping(value = "/sign/{id}")
     public ResponseEntity<String> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                               @RequestParam(value = "sseId") String sseId,
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password,
-                                       HttpSession httpSession) {
+                                       HttpSession httpSession, HttpServletRequest request) {
+        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(request);
         if (visual == null) visual = true;
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        if(signRequestService.initSign(id, sseId, signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
+        if(signRequestService.initSign(id, token.getToken(), signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -580,9 +580,13 @@ public class SignRequestController {
 
     @ResponseBody
     @PostMapping(value = "/mass-sign")
-    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String ids, HttpSession httpSession,
-                                           @RequestParam(value = "sseId") String sseId, @RequestParam(value = "password", required = false) String password) throws JsonProcessingException, InterruptedException {
-        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, sseId, password);
+    public ResponseEntity<String> massSign(@ModelAttribute("userEppn") String userEppn,
+                                           @ModelAttribute("authUserEppn") String authUserEppn,
+                                           @RequestParam String ids,
+                                           @RequestParam(value = "password", required = false) String password,
+                                           HttpSession httpSession, HttpServletRequest request) throws JsonProcessingException, InterruptedException {
+        CsrfToken csrfToken = new HttpSessionCsrfTokenRepository().loadToken(request);
+        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, csrfToken.getToken(), password);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
