@@ -586,7 +586,7 @@ export class PdfViewer extends EventFactory {
     isFieldEnable(dataField) {
         let isIncludeCurrentStep = false;
         for(let i = 0; i < dataField.workflowSteps.length; i++) {
-            if(dataField.workflowSteps[0].id === this.currentStepId) {
+            if(dataField.workflowSteps[i].id === this.currentStepId) {
                 isIncludeCurrentStep = true;
                 break;
             }
