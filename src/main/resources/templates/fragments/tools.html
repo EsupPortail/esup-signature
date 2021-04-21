@@ -68,12 +68,10 @@
 				<!--                                    class="btn btn-sm btn-light btn-outline-success ml-1 d-none">-->
 				<!--                                <i class="fas fa-eye"></i> Inserer un visuel-->
 				<!--                            </button>-->
-				<div id="visualButtonDiv" class="d-none">
-					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
-							id="visualButton" title="Afficher/Masquer un visa visuel"
-							class="btn btn-success ml-1">Afficher/Masquer un visa visuel
-					</button>
-				</div>
+				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
+						id="visualButton" title="Afficher/Masquer un visa visuel"
+						class="btn btn-success ml-1 d-none">Afficher/Masquer un visa visuel
+				</button>
 				<button id="addCheck" class="btn btn-success ml-1"><i class="fas fa-check"></i></button>
 				<button id="addTimes" class="btn btn-success ml-1"><i class="fas fa-times"></i></button>
 				<button id="addCircle" class="btn btn-success ml-1"><i class="far fa-circle"></i></button>
