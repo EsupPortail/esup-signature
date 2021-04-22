@@ -27,17 +27,22 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
-        $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
+        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
+        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launchInfiniteSignButton").on('click', e => this.insertStep());
-        $("#launchSignButton").on('click', e => this.launchSign());
+        $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                $("#launchSignButton").click();
+                $("#launchNoInfiniteSignButton").click();
             }
         });
         $("#copyButton").on('click', e => this.copy());
         document.addEventListener("sign", e => this.updateWaitModal(e));
+    }
+
+    launchNoInfiniteSign() {
+        this.signComment = $("#signCommentNoInfinite");
+        this.launchSign(false);
     }
 
     launchSign(gotoNext) {

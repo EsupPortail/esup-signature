@@ -45,7 +45,7 @@
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
                                     <td class="">
-                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                        <button type="button" th:id="'menu-t    oggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}" style="width:200px; right: 100px;z-index: 1000;">
@@ -199,7 +199,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <textarea placeholder="Vous pouvez ajouter un commentaire" class="form-control" name="comment"></textarea>
+                    <textarea placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>

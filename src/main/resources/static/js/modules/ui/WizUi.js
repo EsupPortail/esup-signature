@@ -14,6 +14,7 @@ export class WizUi {
         this.mode = "";
         this.input;
         this.fileInput;
+        this.recipientCCSelect;
         this.close = false;
         this.end = false;
         this.start = false;
@@ -28,6 +29,7 @@ export class WizUi {
 
     checkOnModalClose() {
         let workflowId = $("#wizWorkflowId").val();
+        this.div.html("");
         if(this.signBookId || workflowId) {
             let self = this;
             bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
@@ -83,10 +85,7 @@ export class WizUi {
         if(!this.workflowId) this.input = $("#multipartFiles_0");
         this.fileInput = new FilesInput(this.input, this.workflowName, this.workflowName, null, false, this.csrf, null);
         this.fileInput.addEventListener("uploaded", e => this.gotoStep2(e));
-        let csrf = this.csrf;
-        $('[id^="recipientsCCEmailsWiz"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, csrf);
-        });
+        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
     }
 
     gotoStep2(e) {
@@ -118,6 +117,7 @@ export class WizUi {
         $('[id^="targetEmailsSelect_"]').each(function (){
             new SelectUser($(this).attr('id'), null, null, csrf);
         });
+        self.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, self.csrf);
         let self = this;
         $("#end").on('click', function (){
             self.end = true;
