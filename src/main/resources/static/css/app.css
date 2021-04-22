@@ -80,6 +80,14 @@ label {
     padding-top: .5rem;
 }
 
+input:invalid {
+    box-shadow:none;
+}
+
+textarea:invalid {
+    box-shadow:none;
+}
+
 #actionDiv {
     position: relative;
     width: 100%;
