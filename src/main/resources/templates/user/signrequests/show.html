@@ -124,16 +124,16 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignRequest != null}">
-                        <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
-                                class="fas fa-arrow-right"></i></a>
-                    </li>
-                    <li th:if="${prevSignRequest != null}">
-                        <a id="prevSignRequestButton" role="button" th:href="'/user/signrequests/' + ${prevSignRequest.id}"
-                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande précédente"><i
-                                class="fas fa-arrow-left"></i></a>
-                    </li>
+<!--                    <li th:if="${nextSignRequest != null}">-->
+<!--                        <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"-->
+<!--                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i-->
+<!--                                class="fas fa-arrow-right"></i></a>-->
+<!--                    </li>-->
+<!--                    <li th:if="${prevSignRequest != null}">-->
+<!--                        <a id="prevSignRequestButton" role="button" th:href="'/user/signrequests/' + ${prevSignRequest.id}"-->
+<!--                           class="btn-lg btn-floating bg-primary waves-effect" title="Demande précédente"><i-->
+<!--                                class="fas fa-arrow-left"></i></a>-->
+<!--                    </li>-->
                 </ul>
             </div>
             <footer th:replace="fragments/tools"></footer>
