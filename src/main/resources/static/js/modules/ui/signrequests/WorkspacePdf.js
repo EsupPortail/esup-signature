@@ -52,8 +52,9 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initListeners();
         this.initDataFields(fields);
-        if (currentSignRequestParams != null && formId != null) {
-            $("#signTools").addClass("d-none");
+        if (currentSignRequestParams == null || formId == null) {
+            $("#second-tools").toggleClass("d-none d-flex");
+            $("#workspace").css("margin-top", "170px");
         }
     }
 
@@ -269,18 +270,19 @@ export class WorkspacePdf {
                         enableInfinite.unbind();
                         enableInfinite.on("click", function () {
                             $("#infiniteForm").toggleClass("d-none");
-                            $("#launchSignButton").toggle();
+                            $("#launchNoInfiniteSignButton").toggle();
+                            $("#signCommentNoInfinite").toggle();
                         });
                         let signModal;
                         if (self.stepRepeatable) {
                             signModal = $('#stepRepeatableModal');
-                            // $('#launchSignButton').hide();
+                            // $('#launchNoInfiniteSignButton').hide();
                         } else {
                             signModal = $("#signModal");
                         }
                         signModal.on('shown.bs.modal', function () {
-                            $("#checkRepeatableButtonEnd").focus();
-                            $("#checkRepeatableButtonNext").focus();
+                            $("#checkValidateSignButtonEnd").focus();
+                            $("#checkValidateSignButtonNext").focus();
                         });
                         signModal.modal('show');
                     }
@@ -290,7 +292,7 @@ export class WorkspacePdf {
             let signModal;
             if (self.stepRepeatable) {
                 signModal = $('#stepRepeatableModal');
-                // $('#launchSignButton').hide();
+                // $('#launchNoInfiniteSignButton').hide();
             } else {
                 signModal = $("#signModal");
             }
@@ -547,6 +549,7 @@ export class WorkspacePdf {
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         this.disableAllModes();
+        $("#postit").removeClass("d-none");
         this.mode = 'comment';
         this.signPosition.pointItEnable = true;
         $('#workspace').toggleClass('alert-warning alert-secondary');

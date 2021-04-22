@@ -124,12 +124,12 @@
                         <i class="fas fa-shield-alt "></i>
                     </a></li>
                    </th:block>
-                    <li th:if="${nextSignRequest != null}">
+                    <li th:if="${nextSignRequest != null}" class="d-none">
                         <a id="nextSignRequestButton" role="button" th:href="'/user/signrequests/' + ${nextSignRequest.id}"
                            class="btn-lg btn-floating bg-primary waves-effect" title="Demande suivante"><i
                                 class="fas fa-arrow-right"></i></a>
                     </li>
-                    <li th:if="${prevSignRequest != null}">
+                    <li th:if="${prevSignRequest != null}" class="d-none">
                         <a id="prevSignRequestButton" role="button" th:href="'/user/signrequests/' + ${prevSignRequest.id}"
                            class="btn-lg btn-floating bg-primary waves-effect" title="Demande précédente"><i
                                 class="fas fa-arrow-left"></i></a>
@@ -144,7 +144,7 @@
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <b th:text="'Postit de ' + ${postit.createBy.firstname + ' ' + postit.createBy.name}"></b>
+                        <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b>
                         <p th:text="'le ' + ${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${postit.text}"></p>
                     </div>
@@ -233,9 +233,9 @@
                     <div class="modal-body">
                         <label th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
                                for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
-                        <textarea id="signComment" placeholder="Commentaire" class="form-control" name="comment"></textarea>
                     </div>
                 </div>
+                <textarea id="signComment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-left">
@@ -265,10 +265,10 @@
                             <br/>
                             <small>Vous pouvez utiliser une clé matérielle ou un keystore</small>
                         </div>
-                        <button id="checkRepeatableButtonEnd" class="mb-1 btn btn-success" title="Signer"
+                        <button id="checkValidateSignButtonEnd" class="mb-1 btn btn-success" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
                         </button>
-                        <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
+                        <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
                                 th:value="${signRequest.id}" autofocus>Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
                         </button>
                     </div>
@@ -280,12 +280,12 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                 <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
-                    <button id="checkRepeatableButtonEnd"
+                    <button id="checkValidateSignButtonEnd"
                             class="btn btn-success mr-1" title="Signer" th:value="${signRequest.id}" autofocus>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et retourner à l'accueil</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et retourner à l'accueil</span>
                     </button>
-                    <button id="checkRepeatableButtonNext" th:if="${nextSignRequest != null}"
+                    <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
                             class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
@@ -315,7 +315,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary col-12" data-dismiss="modal">Annuler</button>
-                <button id="checkRepeatableButton" class="mb-1 col-12 btn btn-success" title="Signer"
+                <button id="checkValidateSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <i class="fas fa-signature"></i> Signer
@@ -364,12 +364,12 @@
                         .
                     </span>
                 </p>
-                <button id="enableInfinite" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                <button id="enableInfinite" class="mb-1 col-12 btn btn-primary" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <th:block th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Choisir les prochain(s) destinataire(s)' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
+                        <i class="fas fa-caret-down"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Signer et choisir les prochain(s) destinataire(s)' : 'Signer et envoyer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span> <i class="fas fa-caret-down"></i>
                     </th:block>
                     <th:block th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Choisir les prochain(s) destinataire(s)' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span>
+                        <i class="fas fa-caret-down"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Viser et choisir les prochain(s) destinataire(s)' : 'Viser et envoyer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span> <i class="fas fa-caret-down"></i>
                     </th:block>
                 </button>
                 <form id="infiniteForm" class="d-none">
@@ -398,15 +398,14 @@
                         </label>
                     </div>
                     <div class="form-group">
-                        <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Commentaire"></textarea>
+                        <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                     </div>
                     <button type="button" id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                         <i class="fas fa-check"></i> Confirmer l'envoi
                     </button>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button id="launchSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
+                <textarea id="signCommentNoInfinite" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control mt-1" name="comment"></textarea>
+                <button id="launchNoInfiniteSignButton" class="mt-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == null ? 'Signer sans modification du circuit' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
@@ -569,84 +568,6 @@
         </div>
     </div>
 </div>
-
-<!--<div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-hidden="true">-->
-<!--    <div class="modal-dialog modal-lg" role="document">-->
-<!--        <div class="modal-content modal-lg">-->
-<!--            <div class="modal-header">-->
-<!--                <h3 class="modal-title">Démarrer le circuit</h3>-->
-<!--                <button type="button" class="close" data-dismiss="modal"-->
-<!--                        aria-label="Close">-->
-<!--                    <i class="fas fa-times"></i>-->
-<!--                </button>-->
-<!--            </div>-->
-<!--            <form th:action="'/user/signrequests/pending/' + ${signRequest.id}" id="send">-->
-<!--                <div class="modal-body">-->
-<!--                    <p>-->
-<!--                        La procédure "<span th:text="${liveWorkflowStep.title}"></span>" comporte <span th:text="${steps.size()}"></span> étape<span th:if="${steps.size()} > 1">s</span>-->
-<!--                    </p>-->
-<!--                    <th:block th:each="liveWorkflowStep,iterator : ${liveWorkflowStep.workflowSteps}">-->
-<!--                        <div class="form-group">-->
-<!--                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>-->
-<!--                        </div>-->
-<!--                        &lt;!&ndash;                        <div th:if="${liveWorkflowStep.changeable == true}" class="form-group">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description}"></span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                        </div>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                        <div th:unless="${liveWorkflowStep.changeable == true}" class="form-group d-inline">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${liveWorkflowStep.description} + ' ('"></span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient,iterator : ${liveWorkflowStep.recipients}">&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                <span th:if="${iterator.index > 0}"> ou </span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                                <span th:text="${recipient.user.firstname} + ' ' + ${recipient.user.name}"></span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            </th:block>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                            <span>)</span>&ndash;&gt;-->
-<!--                        &lt;!&ndash;                        </div>&ndash;&gt;-->
-<!--                        <br/>-->
-<!--                    </th:block>-->
-<!--                    <hr>-->
-<!--                    <th:block th:each="liveWorkflowStep,iterator : ${steps}">-->
-<!--                        <div th:if="${liveWorkflowStep.changeable == true}" class="form-group">-->
-<!--                            <label><span th:text="'L\' étape ' + ${iterator.index + 1} + ' est modifiable '"></span><span th:if="${liveWorkflowStep.name}" th:text="' : ' + ${liveWorkflowStep.name}"></span></label>-->
-<!--                            <select class="select-users" th:id="'recipientEmailsSelect_' + ${liveWorkflowStep.stepNumber}" multiple="multiple" name="recipientEmails" required="required" >-->
-<!--                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">-->
-<!--                                    <option th:if="${recipient.user.email != null}" selected="selected" th:text="${recipient.user.email}" th:value="${liveWorkflowStep.stepNumber} + '*' + ${recipient.user.email}"></option>-->
-<!--                                </th:block>-->
-<!--                            </select>-->
-<!--                            <p class="small">-->
-<!--                                Les signataires sont pré-sélectionnés en fonction de vos précédentes saisies.-->
-<!--                            </p>-->
-<!--                        </div>-->
-<!--                    </th:block>-->
-<!--                    <div th:if="${signRequest.parentSignBook.targetType.name() == 'mail'}" class="form-group">-->
-<!--                        <label>Etape finale : Envoi par mail à </label>-->
-<!--                        <select id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>-->
-<!--                            <th:block th:each="targetEmail : ${targetEmails}">-->
-<!--                                <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>-->
-<!--                            </th:block>-->
-<!--                        </select>-->
-<!--                        <script th:inline="javascript" type="module">-->
-<!--                            import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";-->
-<!--                            new SelectUser("targetEmailsSelect");-->
-<!--                        </script>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="modal-footer">-->
-<!--                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>-->
-<!--                    <button type="submit" class="btn btn-success">Valider</button>-->
-<!--                </div>-->
-<!--            </form>-->
-<!--            <script type="javascript">-->
-<!--                $("#send").on('submit', function(e){-->
-<!--                    e.preventDefault();-->
-<!--                    alert("Merci de saisir les participants");-->
-<!--                    if( $(e.target).is(':invalid') ){-->
-<!--                        alert("Merci de saisir les participants");-->
-<!--                    }-->
-<!--                });-->
-<!--            </script>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
-
 
 <div th:if="${signRequest.createBy.eppn == userEppn}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
