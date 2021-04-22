@@ -52,6 +52,9 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initListeners();
         this.initDataFields(fields);
+        if (currentSignRequestParams != null && formId != null) {
+            $("#signTools").addClass("d-none");
+        }
     }
 
     initListeners() {
