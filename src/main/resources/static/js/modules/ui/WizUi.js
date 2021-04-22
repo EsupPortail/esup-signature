@@ -106,7 +106,6 @@ export class WizUi {
     }
 
     initWiz2(html) {
-        let csrf = this.csrf;
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
             new SelectUser("recipientsEmailsWiz", null, null, csrf);
@@ -117,7 +116,7 @@ export class WizUi {
         $('[id^="targetEmailsSelect_"]').each(function (){
             new SelectUser($(this).attr('id'), null, null, csrf);
         });
-        self.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, self.csrf);
+        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
         let self = this;
         $("#end").on('click', function (){
             self.end = true;
