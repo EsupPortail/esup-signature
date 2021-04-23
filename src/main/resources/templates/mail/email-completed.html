@@ -24,13 +24,15 @@
 
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-            <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}" style="box-sizing:border-box;" >
-                <th:block th:each="recipient : ${liveWorkflowStep.recipients}" style="box-sizing:border-box;" >
+            <th:block th:each="signRequest : ${signBook.signRequests}" style="box-sizing:border-box;" >
+            <th:block th:each="action : ${signRequest.recipientHasSigned}" style="box-sizing:border-box;" >
+                <th:block th:if="${action.value.actionType.name() == 'signed'}" style="box-sizing:border-box;" >
                 <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
-                    <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
-                    <span th:text="'(' + #{'signbook.signtype.' + ${liveWorkflowStep.signType}} + ')'" style="box-sizing:border-box;" ></span>
+                    <span th:text="${action.key.user.firstname + ' ' + action.key.user.name} + ' le '" style="box-sizing:border-box;" ></span>
+                    <span th:text="${#dates.format(action.value.date, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span>
                 </li>
                 </th:block>
+            </th:block>
             </th:block>
             </ul>
             <ul>
