@@ -440,7 +440,7 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
 	}
 
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException {
+	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -652,7 +652,7 @@ public class SignRequestService {
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
 					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
 				} else {
-					signBookService.completeSignBook(signRequest.getParentSignBook(), authUserEppn);
+					signBookService.completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
 				}
 			}
 		} else {
@@ -672,7 +672,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) {
+	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) throws EsupSignatureMailException {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (!UserType.external.equals(recipientUser.getUserType()) 
@@ -862,7 +862,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) {
+	public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = getById(signRequestId);
 		signBookService.refuse(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
 	}
@@ -985,7 +985,7 @@ public class SignRequestService {
 		return null;
 	}
 
-	public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) {
+	public void sendSignRequestEmailAlert(SignRequest signRequest, User recipientUser, Data data) throws EsupSignatureMailException {
 		Date date = new Date();
 		Set<String> toEmails = new HashSet<>();
 		toEmails.add(recipientUser.getEmail());
@@ -1007,7 +1007,7 @@ public class SignRequestService {
 	}
 
 
-	public void sendEmailAlertSummary(User recipientUser) {
+	public void sendEmailAlertSummary(User recipientUser) throws EsupSignatureMailException {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = getToSignRequests(recipientUser.getEppn());
 		toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser.getEppn()));
@@ -1153,7 +1153,11 @@ public class SignRequestService {
 	@Transactional
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
-		signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
+		try {
+			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
+		} catch (EsupSignatureMailException e) {
+			throw new EsupSignatureException(e.getMessage());
+		}
 		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
 	}
 
@@ -1316,7 +1320,7 @@ public class SignRequestService {
 		return signRequestRepository.findByRecipientAndActionType(userEppn, ActionType.refused);
 	}
 
-	public void replayNotif(Long id) {
+	public void replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));

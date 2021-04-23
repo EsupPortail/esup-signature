@@ -47,6 +47,8 @@ public class Workflow {
 
     private Boolean scanPdfMetadatas = false;
 
+    private Boolean sendAlertToAllRecipients = false;
+
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
     
@@ -222,6 +224,14 @@ public class Workflow {
 
     public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
         this.scanPdfMetadatas = scanPdfMetadatas;
+    }
+
+    public Boolean getSendAlertToAllRecipients() {
+        return sendAlertToAllRecipients;
+    }
+
+    public void setSendAlertToAllRecipients(Boolean sendAlertToAllRecipients) {
+        this.sendAlertToAllRecipients = sendAlertToAllRecipients;
     }
 
     public Boolean getFromCode() {
