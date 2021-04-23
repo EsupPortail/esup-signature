@@ -108,15 +108,17 @@ export class WizUi {
     initWiz2(html) {
         this.div.html(html);
         if($("#recipientsEmailsWiz").length) {
-            new SelectUser("recipientsEmailsWiz", null, null, csrf);
+            new SelectUser("recipientsEmailsWiz", null, null, this.csrf);
         }
         $('[id^="recipientEmailsWizSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, csrf);
+            new SelectUser($(this).attr('id'), null, null, this.csrf);
         });
         $('[id^="targetEmailsSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, csrf);
+            new SelectUser($(this).attr('id'), null, null, this.csrf);
         });
-        this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
+        if($("#recipientsCCEmailsWiz").length) {
+            this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
+        }
         let self = this;
         $("#end").on('click', function (){
             self.end = true;

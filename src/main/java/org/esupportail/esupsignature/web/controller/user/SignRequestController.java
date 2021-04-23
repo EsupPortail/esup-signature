@@ -300,18 +300,20 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     @PostMapping(value = "/send-sign-request")
-    public String sendSignBook(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                               @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                               @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                               @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                               @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                               @RequestParam(value = "pending", required = false) Boolean pending,
-                               @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam(value = "emails", required = false) List<String> emails,
-                               @RequestParam(value = "names", required = false) List<String> names,
-                               @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-                               @RequestParam(value = "phones", required = false) List<String> phones,
-                               @RequestParam("signType") SignType signType, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+    public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                  @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                                  @RequestParam("signType") SignType signType,
+                                  @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                                  @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
+                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
+                                  @RequestParam(value = "pending", required = false) Boolean pending,
+                                  @RequestParam(value = "comment", required = false) String comment,
+                                  @RequestParam(value = "emails", required = false) List<String> emails,
+                                  @RequestParam(value = "names", required = false) List<String> names,
+                                  @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                                  @RequestParam(value = "phones", required = false) List<String> phones,
+                                  Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
