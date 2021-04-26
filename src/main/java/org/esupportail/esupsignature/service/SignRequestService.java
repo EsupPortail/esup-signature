@@ -233,8 +233,18 @@ public class SignRequestService {
 		return new ArrayList<>(signRequests);
 	}
 
-	public Long nbToSignSignRequests(String userEppn) {
-		return signRequestRepository.countByRecipientUserToSign(userEppn);
+	public Page<SignRequest> getSignRequestsByForm(Form form, Pageable pageable) {
+		List<SignRequest> signRequests = new ArrayList<>();
+		List<Data> datas = dataService.getDatasByForm(form.getId());
+		for(Data data : datas) {
+			signRequests.add(data.getSignBook().getSignRequests().get(0));
+		}
+		if(pageable.getSort().iterator().hasNext()) {
+			Sort.Order order = pageable.getSort().iterator().next();
+			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
+			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
+		}
+		return new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
@@ -892,7 +902,9 @@ public class SignRequestService {
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
-			if(signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
+			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+			User authUser = userService.getUserByEppn(authUserEppn);
+			if((data != null && data.getForm().getManagers().contains(authUser.getEmail())) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}

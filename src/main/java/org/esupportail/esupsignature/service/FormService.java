@@ -390,8 +390,9 @@ public class FormService {
 	}
 
 
-	public List<Form> getFormByManagersContains(String email) {
-		return formRepository.findFormByManagersContains(email);
+	public List<Form> getFormByManagersContains(String eppn) {
+		User user = userService.getUserByEppn(eppn);
+		return formRepository.findFormByManagersContains(user.getEmail());
 	}
 
 	public String getHelpMessage(User user, Form form) {

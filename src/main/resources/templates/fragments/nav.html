@@ -54,12 +54,12 @@
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
-                        <a th:if="${formManaged.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
+                        <a th:if="${managedForms.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
                            title="Vue manager" href="/user/manage"
                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
-                            <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Vue manager</span>
+                            <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace gestionnaire</span>
                         </a>
-                        <div th:if="${formManaged.size() > 0}" class="dropdown-divider"></div>
+                        <div th:if="${managedForms.size() > 0}" class="dropdown-divider"></div>
                         <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
                            data-target="#wizModal"
                            title="Créez un nouveau circuit à l'aide de l'assistant">

@@ -196,8 +196,8 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <nav th:replace="fragments/pagination :: pagination"></nav>
-<!--                                Faire défiler la page pour afficher plus d'éléments-->
+                                <span th:if="${infiniteScrolling}">Faire défiler la page pour afficher plus d'éléments</span>
+                                <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
                             </td>
                         </tr>
                         </tfoot>
