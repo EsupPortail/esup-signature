@@ -376,9 +376,12 @@ export class SignPosition extends EventFactory {
                 if (imageNum == null) {
                     imageNum = 0;
                 }
-                let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-                this.getCurrentSignParams().signImageNumber = imageNum;
-                this.cross.css("background-image", "url('" + img + "')");
+                let img = null;
+                if(this.signImages[imageNum] != null) {
+                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                    this.getCurrentSignParams().signImageNumber = imageNum;
+                    this.cross.css("background-image", "url('" + img + "')");
+                }
                 let sizes = this.getImageDimensions(img);
                 sizes.then(result => this.changeSignSize(result));
             }
@@ -403,11 +406,15 @@ export class SignPosition extends EventFactory {
 
     getImageDimensions(file) {
         return new Promise (function (resolved) {
-            var i = new Image()
-            i.onload = function(){
-                resolved({w: i.width / 3, h: i.height / 3})
-            };
-            i.src = file
+            if(file != null) {
+                let i = new Image();
+                i.onload = function(){
+                    resolved({w: i.width / 3, h: i.height / 3})
+                };
+                i.src = file
+            } else {
+                resolved({w: 200, h: 75})
+            }
         })
     }
 
@@ -443,6 +450,7 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton.unbind();
         this.signPrevImageButton.hide();
         this.signPrevImageButton.unbind();
+        this.forceRemoveExtra();
     }
 
     signZoomOut(e) {
@@ -460,7 +468,9 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().signImageNumber = this.signImageNumber;
         this.changeSignImage(this.signImageNumber);
         this.changeSignColor("#000000");
-        this.removeExtra();
+        if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            this.removeExtra();
+        }
         this.signExtraButton.removeAttr("disabled");
     }
 
@@ -738,7 +748,7 @@ export class SignPosition extends EventFactory {
                 e.stopPropagation();
             });
         }
-        if(this.signType !== "visa" && this.signType !== "hiddenVisa") this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
     refreshExtraText(e) {
@@ -779,6 +789,20 @@ export class SignPosition extends EventFactory {
         this.signExtraOnTopButton.attr("disabled", true);
     }
 
+    forceRemoveExtra() {
+        this.getCurrentSignParams().addExtra = false;
+        this.getCurrentSignParams().extraWidth = 0;
+        this.getCurrentSignParams().extraHeight = 0;
+        if (this.getCurrentSignParams().extraOnTop) {
+            this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+        }
+        let textExtra = $("#textExtra_" + this.currentSign);
+        this.getCurrentSignParams().extraText = textExtra.val();
+        textExtra.remove();
+        this.colorPickerStopPropagation();
+        this.signExtraOnTopButton.attr("disabled", true);
+    }
+
     changeSignColor(color) {
         console.info("change color to : " + color);
         const rgb = Color.hexToRgb(color);
@@ -787,7 +811,7 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().green = rgb[1];
         this.getCurrentSignParams().blue = rgb[2];
 
-        let img = "data:image/jpeg;charset=utf-8;base" +
+        let img = "data:image/jpeg;charset=utf-8;base64" +
             ", " + this.signImages[this.getCurrentSignParams().signImageNumber];
         let cross = this.cross;
         Color.changeColInUri(img, "#000000", color).then(function (e) {
@@ -825,6 +849,7 @@ export class SignPosition extends EventFactory {
     addCheckImage() {
         this.addSign();
         this.changeToFaImage(1);
+        this.forceRemoveExtra();
     }
 
     addTimesImage() {
