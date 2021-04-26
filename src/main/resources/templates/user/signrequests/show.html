@@ -341,7 +341,7 @@
             </div>
             <div class="modal-body">
                 <p>
-                    Vous pouvez choisir le(s) prochain(s) destinataire(s) de ce document.
+                    Vous avez la possibilité de demander une validation intermédiaire avant l'étape suivante.
                 </p>
                 <p>
                     Sans modification de votre part,
@@ -349,11 +349,7 @@
                         vous resterez le dernier destinataire de ce document
                     </span>
                     <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
-                        le document sera envoyé à :
-                        <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).getRecipients()}">
-                            <span th:text="${recipient.user.firstname + ' ' + recipient.user.name} + ' '"></span>
-                        </th:block>
-                        pour l'étape
+                        le document sera envoyé pour l'étape :
                         <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
                               th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
 
@@ -366,10 +362,10 @@
                 </p>
                 <button id="enableInfinite" class="mb-1 col-12 btn btn-primary" title="Signer" th:value="${signRequest.parentSignBook.id}">
                     <th:block th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fas fa-caret-down"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Signer et choisir les prochain(s) destinataire(s)' : 'Signer et envoyer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span> <i class="fas fa-caret-down"></i>
+                        <i class="fas fa-caret-down"></i> Signer le document puis ajouter une étape <i class="fas fa-caret-down"></i>
                     </th:block>
                     <th:block th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fas fa-caret-down"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep == null || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description == null ? 'Viser et choisir les prochain(s) destinataire(s)' : 'Viser et envoyer pour ' + signRequest.parentSignBook.liveWorkflow.currentStep.workflowStep.description.toLowerCase()}"></span> <i class="fas fa-caret-down"></i>
+                        <i class="fas fa-caret-down"></i> Signer le document puis ajouter une étape <i class="fas fa-caret-down"></i>
                     </th:block>
                 </button>
                 <form id="infiniteForm" class="d-none">
@@ -401,18 +397,23 @@
                         <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                     </div>
                     <button type="button" id="launchInfiniteSignButton" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
-                        <i class="fas fa-check"></i> Confirmer l'envoi
+                    <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <i class="fas fa-signature"></i> Confirmer la signature et l'ajout de l'étape
+                    </span>
+                        <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <i class="fas fa-check"></i> Confirmer le visa et l'ajout de l'étape
+                    </span>
                     </button>
                 </form>
                 <textarea id="signCommentNoInfinite" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control mt-1" name="comment"></textarea>
                 <button id="launchNoInfiniteSignButton" class="mt-1 col-12 btn btn-success" title="Signer"
                         th:value="${signRequest.parentSignBook.id}">
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <i class="fas fa-signature"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == null ? 'Signer sans modification du circuit' : 'Signer pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
+                        <i class="fas fa-signature"></i> Signer le document sans ajout d'étape
                     </span>
                     <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                    <i class="fas fa-check"></i> <span th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == '' || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description == null ? 'Viser sans modification du circuit' : 'Viser pour ' + signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description.toLowerCase()}"></span>
-                        </span>
+                        <i class="fas fa-check"></i> Viser le document sans ajout d'étape
+                    </span>
                 </button>
             </div>
         </div>
