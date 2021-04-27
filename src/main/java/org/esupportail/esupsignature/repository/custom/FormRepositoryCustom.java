@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface FormRepositoryCustom {
 
-    List<Form> findAuthorizedFormByRoles(List<String> roles);
+    List<Form> findAuthorizedFormByRole(String role);
 
 
 }

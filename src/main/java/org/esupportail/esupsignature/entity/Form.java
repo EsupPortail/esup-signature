@@ -38,7 +38,8 @@ public class Form {
 	
 	private String preFillType;
 
-	private String role;
+	@ElementCollection
+	private List<String> roles = new ArrayList<>();
 
 	@ElementCollection(targetClass= ShareType.class)
 	private List<ShareType> authorizedShareTypes = new ArrayList<>();
@@ -135,12 +136,12 @@ public class Form {
 		this.preFillType = preFillType;
 	}
 
-	public String getRole() {
-		return role;
+	public List<String> getRoles() {
+		return roles;
 	}
 
-	public void setRole(String role) {
-		this.role = role;
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
 	}
 
 	public List<ShareType> getAuthorizedShareTypes() {
