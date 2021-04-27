@@ -60,6 +60,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.io.*;
@@ -72,6 +73,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class SignRequestService {
@@ -685,10 +688,10 @@ public class SignRequestService {
 	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) throws EsupSignatureMailException {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
-			if (!UserType.external.equals(recipientUser.getUserType()) 
-			&& !recipientUser.getEppn().equals(userEppn) 
-			&& (recipientUser.getEmailAlertFrequency() == null 
-			|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately) 
+			if (!UserType.external.equals(recipientUser.getUserType())
+			&& !recipientUser.getEppn().equals(userEppn)
+			&& (recipientUser.getEmailAlertFrequency() == null
+			|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
 			|| userService.checkEmailAlert(recipientUser))) {
 				sendSignRequestEmailAlert(signRequest, recipientUser, data);
 			}
@@ -1369,5 +1372,27 @@ public class SignRequestService {
 
 	public List<SignRequest> getAll() {
 		return (List<SignRequest>) signRequestRepository.findAll();
+	}
+
+	@Transactional
+	public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException {
+		List<Document> documents = new ArrayList<>();
+		for(Long id : ids) {
+			SignBook signBook = signBookService.getById(id);
+			for (SignRequest signRequest : signBook.getSignRequests()) {
+				if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
+				documents.add(signRequest.getLastSignedDocument());
+			}
+		}
+		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+		int i = 0;
+		for(Document document : documents) {
+			zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
+			IOUtils.copy(document.getInputStream(), zipOutputStream);
+			zipOutputStream.write(document.getInputStream().readAllBytes());
+			zipOutputStream.closeEntry();
+			i++;
+		}
+		zipOutputStream.close();
 	}
 }

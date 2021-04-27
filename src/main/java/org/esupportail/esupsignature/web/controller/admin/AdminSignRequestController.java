@@ -116,7 +116,7 @@ public class AdminSignRequestController {
 	@GetMapping(value = "/getfile/{id}")
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
 		Document document = documentRepository.findById(id).get();
-		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 		response.setContentType(document.getContentType());
 		IOUtils.copy(document.getInputStream(), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -137,7 +137,7 @@ public class AdminSignRequestController {
 				response.sendRedirect("/user/signrequests/" + id);
 			} else {
 				Document document = documents.get(0);
-				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
+				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(document.getFileName(), StandardCharsets.UTF_8.toString()));
 				response.setContentType(document.getContentType());
 				IOUtils.copy(document.getBigFile().getBinaryFile().getBinaryStream(), response.getOutputStream());
 			}

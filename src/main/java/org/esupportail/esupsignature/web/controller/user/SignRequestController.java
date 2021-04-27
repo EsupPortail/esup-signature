@@ -384,6 +384,16 @@ public class SignRequestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
+    @GetMapping(value = "/download-multiple", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        httpServletResponse.flushBuffer();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
@@ -423,7 +433,7 @@ public class SignRequestController {
             Map<String, Object> attachmentResponse = signRequestService.getAttachmentResponse(id, attachementId);
             if (attachmentResponse != null) {
                 httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -441,7 +451,7 @@ public class SignRequestController {
             Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
             if(fileResponse != null) {
                 httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
             return new ResponseEntity<>(HttpStatus.OK);
@@ -459,7 +469,7 @@ public class SignRequestController {
                 Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
                 if(fileResponse != null) {
                     httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                    httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                    httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                     IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -594,7 +604,7 @@ public class SignRequestController {
     public ResponseEntity<Void> getSeda(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         SignRequest signRequest = signRequestService.getById(id);
         InputStream inputStream = sedaExportService.generateSip(id);
-        httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
+        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
         httpServletResponse.setContentType("application/zip");
         IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);

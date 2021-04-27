@@ -68,7 +68,7 @@ public class ManageController {
         Form form = formService.getById(id);
         try {
             response.setContentType("text/csv; charset=utf-8");
-            response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(form.getName().replace(" ", "-"), StandardCharsets.UTF_8.toString()) + ".csv");
+            response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(form.getName().replace(" ", "-"), StandardCharsets.UTF_8.toString()) + ".csv");
             response.getOutputStream().write(EXCEL_UTF8_HACK);
             InputStream csvInputStream = dataExportService.getCsvDatasFromForms(Collections.singletonList(form));
             IOUtils.copy(csvInputStream, response.getOutputStream());
