@@ -79,7 +79,8 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
         model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-        model.addAttribute("formManaged", formService.getFormByManagersContains(authUser.getEmail()));
+        model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
+        model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
         model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
         model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));

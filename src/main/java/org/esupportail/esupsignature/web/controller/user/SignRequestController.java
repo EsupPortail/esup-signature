@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -300,18 +297,20 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     @PostMapping(value = "/send-sign-request")
-    public String sendSignBook(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
-                               @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                               @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
-                               @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
-                               @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
-                               @RequestParam(value = "pending", required = false) Boolean pending,
-                               @RequestParam(value = "comment", required = false) String comment,
-                               @RequestParam(value = "emails", required = false) List<String> emails,
-                               @RequestParam(value = "names", required = false) List<String> names,
-                               @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-                               @RequestParam(value = "phones", required = false) List<String> phones,
-                               @RequestParam("signType") SignType signType, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+    public String sendSignRequest(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                  @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                                  @RequestParam("signType") SignType signType,
+                                  @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+                                  @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
+                                  @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
+                                  @RequestParam(value = "pending", required = false) Boolean pending,
+                                  @RequestParam(value = "comment", required = false) String comment,
+                                  @RequestParam(value = "emails", required = false) List<String> emails,
+                                  @RequestParam(value = "names", required = false) List<String> names,
+                                  @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+                                  @RequestParam(value = "phones", required = false) List<String> phones,
+                                  Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
@@ -343,7 +342,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
         signRequestService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
         return "redirect:/user/signrequests/" + id;
@@ -385,6 +384,16 @@ public class SignRequestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
+    @GetMapping(value = "/download-multiple", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        httpServletResponse.flushBuffer();
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
@@ -424,7 +433,7 @@ public class SignRequestController {
             Map<String, Object> attachmentResponse = signRequestService.getAttachmentResponse(id, attachementId);
             if (attachmentResponse != null) {
                 httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
             } else {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Pièce jointe non trouvée ..."));
@@ -442,7 +451,7 @@ public class SignRequestController {
             Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
             if(fileResponse != null) {
                 httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
             return new ResponseEntity<>(HttpStatus.OK);
@@ -460,7 +469,7 @@ public class SignRequestController {
                 Map<String, Object> fileResponse = signRequestService.getFileResponse(id);
                 if(fileResponse != null) {
                     httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                    httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                    httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                     IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -564,7 +573,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
-    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) {
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
         signRequestService.replayNotif(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;
@@ -595,7 +604,7 @@ public class SignRequestController {
     public ResponseEntity<Void> getSeda(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
         SignRequest signRequest = signRequestService.getById(id);
         InputStream inputStream = sedaExportService.generateSip(id);
-        httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
+        httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + ".zip", StandardCharsets.UTF_8.toString()));
         httpServletResponse.setContentType("application/zip");
         IOUtils.copy(inputStream, httpServletResponse.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);

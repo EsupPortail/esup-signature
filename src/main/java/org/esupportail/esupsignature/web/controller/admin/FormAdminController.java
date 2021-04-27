@@ -7,10 +7,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.FieldService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.TargetService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -59,6 +56,9 @@ public class FormAdminController {
 	private WorkflowService workflowService;
 
 	@Resource
+	private UserService userService;
+
+	@Resource
 	private PreFillService preFillService;
 
 	@Resource
@@ -69,6 +69,32 @@ public class FormAdminController {
 
 	@Resource
 	private TargetService targetService;
+
+	@GetMapping()
+	public String list(Model model) {
+		List<Form> forms = formService.getAllForms();
+		model.addAttribute("forms", forms);
+		model.addAttribute("roles", userService.getAllRoles());
+		model.addAttribute("targetTypes", DocumentIOType.values());
+		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
+		return "admin/forms/list";
+	}
+
+	@GetMapping("{id}")
+	public String show(@PathVariable("id") Long id, Model model) {
+		Form form = formService.getById(id);
+		model.addAttribute("form", form);
+		model.addAttribute("workflow", form.getWorkflow());
+		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+		if(preFill != null) {
+			model.addAttribute("preFillTypes", preFill.getTypes());
+		} else {
+			model.addAttribute("preFillTypes", new HashMap<>());
+		}
+		model.addAttribute("document", form.getDocument());
+		return "admin/forms/show";
+	}
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
@@ -92,29 +118,14 @@ public class FormAdminController {
 		}
 		return "redirect:/admin/forms/" + form.getId();
 	}
-	
-	@GetMapping("{id}")
-	public String show(@PathVariable("id") Long id, Model model) {
-		Form form = formService.getById(id);
-		model.addAttribute("form", form);
-		model.addAttribute("workflow", form.getWorkflow());
-		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
-		if(preFill != null) {
-			model.addAttribute("preFillTypes", preFill.getTypes());
-		} else {
-			model.addAttribute("preFillTypes", new HashMap<>());
-		}
-		model.addAttribute("document", form.getDocument());
-		return "admin/forms/show";
-	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, DocumentIOType targetType, String targetUri, Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
+	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, DocumentIOType targetType, String targetUri, Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		List<Target> targets = new ArrayList<>();
 		targets.add(targetService.createTarget(targetType, targetUri));
 		Form form = null;
 		try {
-			form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleName, targets, publicUsage);
+			form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, targets, publicUsage);
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -128,6 +139,7 @@ public class FormAdminController {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
+		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("document", form.getDocument());
 		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
 		List<PreFill> preFillTypes = preFillService.getPreFillValues();
@@ -138,23 +150,12 @@ public class FormAdminController {
 		return "admin/forms/update";
 	}
 
-
 	@GetMapping("create")
 	public String createForm(Model model) {
 		model.addAttribute("form", new Form());
 		return "admin/forms/create";
 	}
 
-	@GetMapping()
-	public String list(Model model) {
-		List<Form> forms = formService.getAllForms();
-		model.addAttribute("forms", forms);
-		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
-		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
-		return "admin/forms/list";
-	}
-	
 	@PutMapping
 	public String updateForm(@ModelAttribute Form updateForm,
 							 @RequestParam(required = false) List<String> managers,
@@ -194,7 +195,7 @@ public class FormAdminController {
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
-				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
+				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
 				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
 				IOUtils.copy(csvInputStream, response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);
@@ -250,7 +251,7 @@ public class FormAdminController {
 			Map<String, Object> attachmentResponse = formService.getModel(id);
 			if (attachmentResponse != null) {
 				httpServletResponse.setContentType(attachmentResponse.get("contentType").toString());
-				httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+				httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(attachmentResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
 				IOUtils.copyLarge((InputStream) attachmentResponse.get("inputStream"), httpServletResponse.getOutputStream());
 			} else {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Modèle non trouvée ..."));

@@ -113,7 +113,7 @@ public class ValidationController {
 			String simpleReport = (String) session.getAttribute("simpleReportXml");
 
 			response.setContentType(MimeType.PDF.getMimeTypeString());
-			response.setHeader("Content-disposition", "attachment; filename=DSS-Simple-report.pdf");
+			response.setHeader("Content-Disposition", "attachment; filename=DSS-Simple-report.pdf");
 
 			fopService.generateSimpleReport(simpleReport, response.getOutputStream());
 		} catch (Exception e) {
@@ -127,7 +127,7 @@ public class ValidationController {
 			String detailedReport = (String) session.getAttribute("detailedReportXml");
 
 			response.setContentType(MimeType.PDF.getMimeTypeString());
-			response.setHeader("Content-disposition", "attachment; filename=DSS-Detailed-report.pdf");
+			response.setHeader("Content-Disposition", "attachment; filename=DSS-Detailed-report.pdf");
 
 			fopService.generateDetailedReport(detailedReport, response.getOutputStream());
 		} catch (Exception e) {

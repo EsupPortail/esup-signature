@@ -67,7 +67,7 @@ pre {
     user-select: text;
 }
 
-textarea::placeholder {
+:not(section) > textarea::placeholder {
     background-color: #ff8f9e;
     color: black !important;
 }
@@ -78,6 +78,14 @@ header {
 
 label {
     padding-top: .5rem;
+}
+
+input:invalid {
+    box-shadow:none;
+}
+
+textarea:invalid {
+    box-shadow:none;
 }
 
 #actionDiv {

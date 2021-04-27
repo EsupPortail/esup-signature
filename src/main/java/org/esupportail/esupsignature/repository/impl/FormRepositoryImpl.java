@@ -19,16 +19,16 @@ public class FormRepositoryImpl implements FormRepositoryCustom {
 	private EntityManager entityManager;
 
 	@Override
-	public List<Form> findAuthorizedFormByRoles(List<String> roles) {
+	public List<Form> findAuthorizedFormByRole(String role) {
 		CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Form> query = criteriaBuilder.createQuery(Form.class);
         Root<Form> queryRoot = query.from(Form.class);
         query.select(queryRoot);
 		Expression<Boolean> activeExpression = queryRoot.get("activeVersion");
 		Expression<Boolean> publicUsageExpression = queryRoot.get("publicUsage");
-		if(roles.size() >0 ) {
-			Expression<String> roleExpression = queryRoot.get("role");
-			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(roles)), activeExpression.in(true)));
+		if(role != null) {
+			Expression<List<String>> roleExpression = queryRoot.get("roles");
+			query.where(criteriaBuilder.and(criteriaBuilder.or(publicUsageExpression.in(true), roleExpression.in(role)), activeExpression.in(true)));
 		} else {
 			query.where(criteriaBuilder.and(activeExpression.in(true), publicUsageExpression.in(true)));
 		}

@@ -520,6 +520,7 @@ public class WorkflowService {
         workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
+        workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.setRole(workflow.getRole());
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());

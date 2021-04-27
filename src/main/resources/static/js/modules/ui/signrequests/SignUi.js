@@ -182,7 +182,7 @@ export class SignUi {
     }
 
     insertStep() {
-        console.info("insert step");
+        console.info("check insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();

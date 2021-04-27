@@ -2,10 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.exception.EsupSignaturePdfException;
+import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
@@ -23,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.mail.MessagingException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -259,10 +255,15 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(SignBook signBook, String authUser) throws EsupSignatureException {
+    public void completeSignBook(Long signBookId, String authUser) throws EsupSignatureException {
+        SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
-            mailService.sendCompletedMail(signBook);
-            mailService.sendCompletedCCMail(signBook);
+            try {
+                mailService.sendCompletedMail(signBook);
+                mailService.sendCompletedCCMail(signBook);
+            } catch (EsupSignatureMailException e) {
+                throw new EsupSignatureException(e.getMessage());
+            }
         }
         updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
         signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
@@ -392,8 +393,12 @@ public class SignBookService {
             if(liveWorkflowStep != null) {
                 signRequestService.pendingSignRequest(signRequest, userEppn);
                 if (!emailSended) {
-                    signRequestService.sendEmailAlerts(signRequest, userEppn, data);
-                    emailSended = true;
+                    try {
+                        signRequestService.sendEmailAlerts(signRequest, userEppn, data);
+                        emailSended = true;
+                    } catch (EsupSignatureMailException e) {
+                        throw new EsupSignatureException(e.getMessage());
+                    }
                 }
                 for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
                     if(!signRequest.getCreateBy().getEppn().equals(userEppn)) {
@@ -402,14 +407,14 @@ public class SignBookService {
                     if(recipient.getUser().getUserType().equals(UserType.external)) {
                         try {
                             otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
-                        } catch (MessagingException e) {
+                        } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureException(e.getMessage());
                         }
                     }
                 }
                 logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
             } else {
-                completeSignBook(signBook, userEppn);
+                completeSignBook(signBook.getId(), userEppn);
                 logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
                 break;
             }
@@ -433,7 +438,7 @@ public class SignBookService {
         }
     }
 
-    public void refuse(SignBook signBook, String comment, String userEppn, String authUserEppn) {
+    public void refuse(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
         mailService.sendRefusedMail(signBook, comment);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
@@ -589,7 +594,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sendCCEmail(Long signBookId, List<String> recipientsCCEmails) {
+    public void sendCCEmail(Long signBookId, List<String> recipientsCCEmails) throws EsupSignatureMailException {
         SignBook signBook = getById(signBookId);
         if(recipientsCCEmails != null) {
             addViewers(signBookId, recipientsCCEmails);

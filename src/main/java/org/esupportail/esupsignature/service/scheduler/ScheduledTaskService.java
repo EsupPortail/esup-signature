@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -102,7 +103,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(fixedRate = 300000)
 	@Transactional
-	public void sendAllEmailAlerts() {
+	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());

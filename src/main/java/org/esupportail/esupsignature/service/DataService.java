@@ -76,6 +76,10 @@ public class DataService {
         return dataRepository.findById(dataId).get();
     }
 
+    public List<Data> getDatasByForm(Long formId) {
+        return dataRepository.findByFormId(formId);
+    }
+
     public void delete(Long id) {
         Data data = getById(id);
         if (data.getSignBook() != null) {
@@ -317,7 +321,7 @@ public class DataService {
     }
 
     public void nullifyForm(Form form) {
-        List<Data> datas = dataRepository.findByForm(form);
+        List<Data> datas = dataRepository.findByFormId(form.getId());
         for(Data data : datas) {
             data.setForm(null);
         }

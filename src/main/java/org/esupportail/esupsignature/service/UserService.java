@@ -505,4 +505,8 @@ public class UserService {
         }
         return externalUsersInfos;
     }
+
+    public List<String> getAllRoles() {
+        return userRepository.getAllRoles();
+    }
 }

@@ -59,7 +59,7 @@ public class SignBookController {
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         signBookService.delete(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:/user/signrequests";
+        return "redirect:/user/";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
