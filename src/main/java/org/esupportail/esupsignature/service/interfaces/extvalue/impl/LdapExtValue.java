@@ -11,8 +11,6 @@ import org.esupportail.esupsignature.service.ldap.PersonLdap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +30,8 @@ public class LdapExtValue implements ExtValue {
 	@Resource
 	private UserService userService;
 
-	@Autowired
-	private ObjectProvider<LdapPersonService> ldapPersonService;
+	@Resource
+	private LdapPersonService ldapPersonService;
 
 	@Resource
 	private LdapOrganizationalUnitService ldapOrganizationalUnitService;
@@ -75,7 +73,7 @@ public class LdapExtValue implements ExtValue {
 		if(!returnValues[0].isEmpty()) {
 			String methodName = "get" + returnValues[0].substring(0, 1).toUpperCase() + returnValues[0].substring(1);
 			if (returnTypes[0].equals("person")) {
-				List<PersonLdap> personLdaps = ldapPersonService.getIfAvailable().search(searchString);
+				List<PersonLdap> personLdaps = ldapPersonService.search(searchString);
 				for (PersonLdap personLdap : personLdaps) {
 					Map<String, Object> stringObjectMap = new HashMap<>();
 					try {

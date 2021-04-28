@@ -75,9 +75,11 @@ public class FormService {
 
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
 		User user = userService.getByEppn(userEppn);
-		List<Form> forms = new ArrayList<>();
+		Set<Form> forms = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-			forms = formRepository.findAuthorizedFormByRoles(user.getRoles());
+			for(String role : user.getRoles()) {
+				forms.addAll(formRepository.findAuthorizedForms(role));
+			}
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
@@ -86,14 +88,14 @@ public class FormService {
 				}
 			}
 		}
-		return forms;
+		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, String roleName, List<Target> targets, Boolean publicUsage) throws IOException, EsupSignatureException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, List<Target> targets, Boolean publicUsage) throws IOException, EsupSignatureException {
 		Workflow workflow = workflowService.getById(workflowId);
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflow, prefillType, roleName, targets, publicUsage);
+		Form form = createForm(document, name, title, workflow, prefillType, roleNames, targets, publicUsage);
 		return form;
 	}
 
@@ -123,7 +125,8 @@ public class FormService {
 		}
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
-		form.setRole(updateForm.getRole());
+		form.getRoles().clear();
+		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
 		form.setWorkflow(updateForm.getWorkflow());
 		form.getTargets().addAll(updateForm.getTargets());
@@ -205,7 +208,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, String roleName, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
+	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -228,7 +231,8 @@ public class FormService {
 		}
 		form.setDocument(document);
 		form.getTargets().addAll(targets);
-		form.setRole(roleName);
+		form.getRoles().clear();
+		form.getRoles().addAll(roleNames);
 		form.setPreFillType(prefillType);
 		form.setWorkflow(workflow);
 		form.setPublicUsage(publicUsage);
@@ -390,8 +394,9 @@ public class FormService {
 	}
 
 
-	public List<Form> getFormByManagersContains(String email) {
-		return formRepository.findFormByManagersContains(email);
+	public List<Form> getFormByManagersContains(String eppn) {
+		User user = userService.getUserByEppn(eppn);
+		return formRepository.findFormByManagersContains(user.getEmail());
 	}
 
 	public String getHelpMessage(User user, Form form) {

@@ -38,7 +38,8 @@ public class Workflow {
 
     private String updateBy;
 
-    private String role;
+    @ElementCollection
+    private List<String> roles = new ArrayList<>();
 
     @ElementCollection(targetClass= ShareType.class)
     private List<ShareType> authorizedShareTypes = new ArrayList<>();
@@ -46,6 +47,8 @@ public class Workflow {
     private Boolean publicUsage = false;
 
     private Boolean scanPdfMetadatas = false;
+
+    private Boolean sendAlertToAllRecipients = false;
 
     @Enumerated(EnumType.STRING)
     private DocumentIOType sourceType;
@@ -200,12 +203,12 @@ public class Workflow {
 //        this.documentsTargetUri = documentsTargetUri;
 //    }
 
-    public String getRole() {
-        return role;
+    public List<String> getRoles() {
+        return roles;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 
     public List<ShareType> getAuthorizedShareTypes() {
@@ -222,6 +225,14 @@ public class Workflow {
 
     public void setScanPdfMetadatas(Boolean scanPdfMetadatas) {
         this.scanPdfMetadatas = scanPdfMetadatas;
+    }
+
+    public Boolean getSendAlertToAllRecipients() {
+        return sendAlertToAllRecipients;
+    }
+
+    public void setSendAlertToAllRecipients(Boolean sendAlertToAllRecipients) {
+        this.sendAlertToAllRecipients = sendAlertToAllRecipients;
     }
 
     public Boolean getFromCode() {

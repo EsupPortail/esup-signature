@@ -306,14 +306,16 @@ export class PdfViewer extends EventFactory {
     }
 
     promizeRestoreValue() {
-        if(this.savedFields.size > 0) {
-            this.page.getAnnotations().then(items => this.restoreValues(items));
+        if(this.savedFields.size === 0) {
+            this.promizeSaveValues();
         }
+        this.page.getAnnotations().then(items => this.restoreValues(items));
+
         this.fireEvent('render', ['end']);
     }
 
     restoreValues(items) {
-        console.log("set fields " + items.length);
+       console.log("set fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
@@ -390,6 +392,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField != null) {
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
+                inputField.attr('title', dataField.description);
                 inputField.attr('placeholder', " ");
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
@@ -436,8 +439,11 @@ export class PdfViewer extends EventFactory {
                     inputField.get(0).type = "number";
                 }
                 if (dataField.type === "radio") {
-                    if (dataField.required) {
-                        inputField.parent().addClass('required-field');
+                    inputField.addClass("field-type-radio");
+                    if(this.isFieldEnable(dataField)) {
+                        if (dataField.required) {
+                            inputField.parent().addClass('required-field');
+                        }
                     }
                     inputField.val(items[i].buttonValue);
                     if (dataField.defaultValue === items[i].buttonValue) {
@@ -551,6 +557,7 @@ export class PdfViewer extends EventFactory {
             if(inputField.length && dataField) {
                 inputField.attr('name', inputName);
                 inputField.attr('id', inputName);
+                inputField.removeAttr('size');
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
                     // inputField.prop('disabled', true);
@@ -579,7 +586,7 @@ export class PdfViewer extends EventFactory {
     isFieldEnable(dataField) {
         let isIncludeCurrentStep = false;
         for(let i = 0; i < dataField.workflowSteps.length; i++) {
-            if(dataField.workflowSteps[0].id === this.currentStepId) {
+            if(dataField.workflowSteps[i].id === this.currentStepId) {
                 isIncludeCurrentStep = true;
                 break;
             }
@@ -718,25 +725,95 @@ export class PdfViewer extends EventFactory {
             console.info("check data name");
             let self = this;
             let resolveOk = "ok";
+            let warningFields = [];
             $(self.dataFields).each(function() {
                 let savedField = self.savedFields.get($(this)[0].name)
                 formData[$(this)[0].name] = savedField;
-                if ($(this)[0].required && !savedField && !$("#" + $(this)[0].name).val() && self.isFieldEnable($(this)[0])) {
-                    let page =  $(this)[0].page;
-                    let name = $(this)[0].name;
-                    bootbox.alert("Le champ " + name + " n'est pas rempli en page " + page, function () {
-                        if(page !== self.pageNum) {
-                            self.renderPage(page);
-                        }
-                        $('#' + name).focus();
-                    });
-                    resolveOk = $(this)[0].name;
-                    $('#sendModal').modal('hide');
-                    return false;
+                if ($(this)[0].required && !savedField && (!$("#" + $(this)[0].name).val() || $(this)[0].type === "radio") && self.isFieldEnable($(this)[0])) {
+                    if(!self.checkObjectInArray(warningFields, $(this)[0].name)) {
+                        warningFields.push($(this)[0]);
+                    }
                 }
-            })
+            });
+            if(warningFields.length > 0) {
+                warningFields.sort((a, b) => a.compareByPage(b))
+                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
+                if(warningFields.length < 2 && warningFields[0].name != null) {
+                    if(warningFields[0].description != null && warningFields[0].description !== "") {
+                        text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
+                    } else {
+                        text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
+                    }
+                } else {
+                    warningFields.forEach(function (field) {
+                        if(field.description != null && field.description !== "") {
+                            text += "<li>" + field.description + " (en page " + field.page + ")</li>";
+                        } else {
+                            text += "<li>" + field.name + " (en page " + field.page + ")</li>";
+                        }
+                    });
+                }
+                bootbox.alert(text, function () {
+                    let field = $('#' + warningFields[0].name);
+                    let page = warningFields[0].page;
+                    if (page !== self.pageNum) {
+                        self.renderPage(page);
+                        self.addEventListener("renderFinished", function () {
+                            setTimeout(function() {
+                                field = $('#' + warningFields[0].name);
+                                self.focusField(field)
+                            }, 100);
+
+                        });
+                    } else {
+                        setTimeout(function() {
+                            self.focusField(field)
+                        }, 100);                    }
+                });
+                resolveOk = $(this)[0].name;
+                $('#sendModal').modal('hide');
+            }
             resolve(resolveOk);
         });
         return p;
+    }
+
+    focusField(field) {
+        if(field.attr("type") === "radio") {
+            this.highlightRadio(field);
+        }
+        field.focus();
+        let offset = field.offset();
+        $('html, body').animate({
+            scrollTop: offset.top - 170,
+            scrollLeft: offset.left
+        });
+    }
+
+    highlightRadio(field) {
+        $("[name='" + field.attr('name') + "']").each(function() {
+            let radio = $(this);
+            let i = 0;
+            let flashInterval = setInterval(
+                function() {
+                    radio.toggleClass('highlight');
+                    if(i > 4) {
+                        clearInterval(flashInterval);
+                        radio.removeClass('highlight');
+                    }
+                    i++;
+                    },
+                1000
+            );
+        });
+    }
+
+    checkObjectInArray(fields, name) {
+        for(let i = 0; i < fields.length; i++) {
+            if (fields[i].name === name) {
+                return true;
+            }
+        }
+        return false;
     }
 }

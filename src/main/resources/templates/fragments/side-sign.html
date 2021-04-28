@@ -11,36 +11,19 @@
         <th:block th:unless="${signRequest != null}">
             <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
         </th:block>
-        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>
-        <!--
-        <select id="select-innerHTML" name="changeMode" class="mb-2 select-mode"></select>
-<script language="JavaScript">
-        let select = new SlimSelect({
-        select: '#select-innerHTML',
-        showSearch: false,
-        valuesUseText: false, // Use text instead of innerHTML for selected values - default false
-        data: [
-        {innerHTML: '<i class="fas fa-eye p-2"></i> <b>Mode lecture</b>', text: 'Lecture', value: 'read'},
-        {innerHTML: '<i class="fas fa-signature text-success p-2"></i> <b>Signer</b>', text: 'Signer', value: 'sign'},
-        {innerHTML: '<i class="fas fa-comment text-warning p-2"></i> <b>Commentaires</b>', text: 'Commentaires', value: 'comment'},
-        {innerHTML: '<i class="fas fa-pencil-alt text-info p-2"></i> <b>Remplir</b>', text: 'Remplir', value: 'write'}
-        ]
-        })
-</script>
--->
-
-        <button data-toggle="modal" data-target="#signAllModal"
-                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"
-                th:classappend="${signable != 'ok' || nbSignRequestInSignBookParent < 2} ? 'd-none' ">
-            <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>
-        </button>
-        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signable}">
-            <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>
-        </button>
-        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">
-            <i class="ml-1 fas fa-comment"></i><i class="mr-2"></i> <span class="sidebar-label">Annoter</span>
-            <span th:if="${signRequest.comments.size() > 0}" class="float-right badge badge-warning mt-1" th:text="${signRequest.comments.size()}"></span>
-        </button>
+<!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
+<!--        <button data-toggle="modal" data-target="#signAllModal"-->
+<!--                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"-->
+<!--                th:classappend="${signable != 'ok' || nbSignRequestInSignBookParent < 2} ? 'd-none' ">-->
+<!--            <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>-->
+<!--        </button>-->
+<!--        <button id="signModeButton" class="btn btn-light col-12 mb-1 text-left" th:if="${signRequest != null && signable}">-->
+<!--            <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>-->
+<!--        </button>-->
+<!--        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">-->
+<!--            <i class="ml-1 fas fa-comment"></i><i class="mr-2"></i> <span class="sidebar-label">Annoter</span>-->
+<!--            <span th:if="${signRequest.comments.size() > 0}" class="float-right badge badge-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
+<!--        </button>-->
 
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->
 

@@ -32,6 +32,8 @@ public class FileService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
+	private String[] faImages = {"check-solid", "times-solid", "circle-regular", "minus-solid"};
+
 	public String readFileToString(String path) {
 		ResourceLoader resourceLoader = new DefaultResourceLoader();
 		Resource resource = resourceLoader.getResource(path);
@@ -344,5 +346,13 @@ public class FileService {
 		File fileSignImage = getTempFile("sign_image.png");
 		ImageIO.write(bufferedImage, "png", fileSignImage);
 		return fileSignImage;
+	}
+
+	private InputStream getFaImage(String faName) {
+		return FileService.class.getResourceAsStream("/static/images/"+ faName + ".png");
+	}
+
+	public InputStream getFaImageByIndex(int index) {
+		return FileService.class.getResourceAsStream("/static/images/"+ faImages[Math.abs(index) - 1] + ".png");
 	}
 }

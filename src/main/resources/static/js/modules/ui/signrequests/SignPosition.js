@@ -22,7 +22,7 @@ export class SignPosition extends EventFactory {
         this.signable = signable;
         this.forceResetSignPos = forceResetSignPos;
         this.firstDrag = false;
-        if(currentSignRequestParams != null) {
+        if (currentSignRequestParams != null) {
             for (let i = 0; i < currentSignRequestParams.length; i++) {
                 let signRequestParams = new SignRequestParams();
                 if (this.signImageNumber != null) {
@@ -39,7 +39,7 @@ export class SignPosition extends EventFactory {
             }
         } else {
             let signRequestParams = new SignRequestParams();
-            if(this.signImageNumber != null && signType !== 'visa' || signType !== 'hiddenVisa') {
+            if (this.signImageNumber != null && signType !== 'visa' || signType !== 'hiddenVisa') {
                 signRequestParams.signImageNumber = this.signImageNumber;
             }
             this.signRequestParamses.set("0", signRequestParams);
@@ -60,11 +60,10 @@ export class SignPosition extends EventFactory {
         this.signColorPicker = $('#signColorPicker_0');
         this.displayMoreToolsButton = $('#displayMoreTools_0');
         this.hideMoreToolsButton = $('#hideMoreTools_0');
-        this.checkButton = $('#check_0');
         this.watermarkButton = $('#watermark_0');
         this.createColorPicker();
         this.addSignButton = $('#addSignButton');
-        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
+        if (this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1 && forceResetSignPos == null) {
             this.cross.css("position", "absolute");
             this.addSignButton.removeAttr("disabled");
             this.lockCurrentSign(false);
@@ -78,26 +77,34 @@ export class SignPosition extends EventFactory {
         }
         this.confirmEnabled = false;
         this.events = {};
-        if(this.signType !== "visa" && this.signType !== "hiddenVisa" && this.signable) {
+        if (this.signType !== "visa" && this.signType !== "hiddenVisa" && this.signable) {
             // $(document).ready(e => this.toggleExtraInfos());
 
         }
-        if(this.signType === "visa" || this.signType === "hiddenVisa") {
+        if (this.signType === "visa" || this.signType === "hiddenVisa") {
             this.toggleWatermark();
             this.toggleExtraInfos();
             this.visualActive = false;
         }
-        if(this.signType === "visa") {
+        if (this.signType === "visa") {
             this.toggleVisual();
             $("#visualButton").remove();
+        }
+        if (this.signType === "hiddenVisa") {
+            this.alertHiddenVisa();
         }
         this.initListeners();
         this.borders.addClass("anim-border");
         this.borders.removeClass("static-border");
+        this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
     }
 
     initListeners() {
         window.addEventListener("touchmove", e => this.touchIt(e), {passive: false});
+        $("#addCheck").on("click", e => this.addCheckImage());
+        $("#addTimes").on("click", e => this.addTimesImage());
+        $("#addCircle").on("click", e => this.addCircleImage());
+        $("#addMinus").on("click", e => this.addMinusImage());
         this.initCrossListeners();
         this.initCrossToolsListeners();
     }
@@ -113,42 +120,45 @@ export class SignPosition extends EventFactory {
     }
 
     initCrossToolsListeners() {
-        this.showButtons();
-        this.signUndoButton.on('click', e => this.resetSign());
         this.signZoomOutButton.on('click', e => this.signZoomOut(e));
         this.signZoomInButton.on('click', e => this.signZoomIn(e));
-        if(this.signImages != null && this.signImages.length > 2) {
-            this.signNextImageButton.show();
-            this.signPrevImageButton.show();
-            this.signNextImageButton.on('click', e => this.signNextImage(e));
-            this.signPrevImageButton.on('click', e => this.signPrevImage(e));
-        } else {
-            this.signNextImageButton.hide();
-            this.signPrevImageButton.hide();
-        }
-        this.signExtraButton.on('click', e => this.toggleExtraInfos());
-        this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
-        this.displayMoreToolsButton.on('click', e => this.displayMoreTools());
-        this.hideMoreToolsButton.on('click', e => this.hideMoreTools());
-        this.checkButton.on('click', e => this.checkImage(e));
-        this.watermarkButton.on('click', e => this.toggleWatermark());
         if(this.signRequestParamses.size > 1) {
             this.signDropButton.show();
             this.signDropButton.on('click', e => this.removeSign(e));
         } else {
             this.signDropButton.hide();
         }
-        this.createColorPicker();
-        this.crossTools.unbind();
-        this.crossTools.on('click', function (e) {
-            e.stopPropagation();
-        });
-        this.crossTools.children().each(function(){
-            $(this).unbind();
-            $(this).on('click', function (e) {
+        if(this.getCurrentSignParams().signImageNumber >= 0) {
+            this.showButtons();
+            this.signUndoButton.show();
+            this.signUndoButton.on('click', e => this.resetSign());
+            if (this.signImages != null && this.signImages.length > 1) {
+                this.signNextImageButton.show();
+                this.signPrevImageButton.show();
+                this.signNextImageButton.on('click', e => this.signNextImage(e));
+                this.signPrevImageButton.on('click', e => this.signPrevImage(e));
+            } else {
+                this.signNextImageButton.hide();
+                this.signPrevImageButton.hide();
+            }
+            this.signExtraButton.on('click', e => this.toggleExtraInfos());
+            this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
+            this.displayMoreToolsButton.show();
+            this.displayMoreToolsButton.on('click', e => this.displayMoreTools());
+            this.hideMoreToolsButton.on('click', e => this.hideMoreTools());
+            this.watermarkButton.on('click', e => this.toggleWatermark());
+            this.createColorPicker();
+            this.crossTools.unbind();
+            this.crossTools.on('click', function (e) {
                 e.stopPropagation();
             });
-        });
+            this.crossTools.children().each(function () {
+                $(this).unbind();
+                $(this).on('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
+        }
     }
 
     unbindCrossToolsListeners() {
@@ -167,7 +177,6 @@ export class SignPosition extends EventFactory {
         this.signDropButton.unbind();
         this.displayMoreToolsButton.unbind();
         this.hideMoreToolsButton.unbind();
-        this.checkButton.unbind();
         this.watermarkButton.unbind();
         this.hideButtons();
     }
@@ -282,7 +291,6 @@ export class SignPosition extends EventFactory {
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.displayMoreToolsButton = $('#displayMoreTools_' + currentSign);
         this.hideMoreToolsButton = $('#hideMoreTools_' + currentSign);
-        this.checkButton = $('#check_' + currentSign);
         this.watermarkButton = $('#watermark_' + currentSign);
         this.defaultTools = $('#defaultTools_' + currentSign);
         this.moreTools = $('#moreTools_' + currentSign);
@@ -329,11 +337,11 @@ export class SignPosition extends EventFactory {
         this.signNextImageButton = $('#signNextImage_' + currentSign);
         this.signPrevImageButton = $('#signPrevImage_' + currentSign);
         this.signExtraButton = $('#signExtra_' + currentSign);
+        this.signExtraOnTopButton = $('#signExtraOnTop_' + currentSign);
         this.signDropButton = $('#signDrop_' + currentSign);
         this.signColorPicker = $('#signColorPicker_' + currentSign);
         this.displayMoreToolsButton = $('#displayMoreTools_' + currentSign);
         this.hideMoreToolsButton = $('#hideMoreTools_' + currentSign);
-        this.checkButton = $('#check_' + currentSign);
         this.watermarkButton = $('#watermark_' + currentSign);
         this.defaultTools = $('#defaultTools_' + currentSign);
         this.moreTools = $('#moreTools_' + currentSign);
@@ -362,16 +370,30 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignImage(imageNum) {
-        if(this.signImages != null) {
-            console.debug("change sign image to " + imageNum);
-            if(imageNum == null) {
-                imageNum = 0;
+        if(imageNum >= 0) {
+            if (this.signImages != null) {
+                console.debug("change sign image to " + imageNum);
+                if (imageNum == null) {
+                    imageNum = 0;
+                }
+                let img = null;
+                if(this.signImages[imageNum] != null) {
+                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                    this.getCurrentSignParams().signImageNumber = imageNum;
+                    this.cross.css("background-image", "url('" + img + "')");
+                }
+                let sizes = this.getImageDimensions(img);
+                sizes.then(result => this.changeSignSize(result));
             }
-            let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-            this.getCurrentSignParams().signImageNumber = imageNum;
-            this.cross.css("background-image", "url('" + img + "')");
-            let sizes = this.getImageDimensions(img);
-            sizes.then(result => this.changeSignSize(result));
+        } else {
+            if(imageNum < 0) {
+                let self = this;
+                this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
+                    self.cross.css("background-image", "url('" + img + "')");
+                    let sizes = self.getImageDimensions(img);
+                    sizes.then(result => self.changeSignSize(result));
+                });
+            }
         }
     }
 
@@ -384,16 +406,20 @@ export class SignPosition extends EventFactory {
 
     getImageDimensions(file) {
         return new Promise (function (resolved) {
-            var i = new Image()
-            i.onload = function(){
-                resolved({w: i.width / 3, h: i.height / 3})
-            };
-            i.src = file
+            if(file != null) {
+                let i = new Image();
+                i.onload = function(){
+                    resolved({w: i.width / 3, h: i.height / 3})
+                };
+                i.src = file
+            } else {
+                resolved({w: 200, h: 75})
+            }
         })
     }
 
     signNextImage(e) {
-        if(this.getCurrentSignParams().signImageNumber < this.signImages.length - 2) {
+        if(this.getCurrentSignParams().signImageNumber < this.signImages.length - 1) {
             this.getCurrentSignParams().signImageNumber++;
         } else {
             this.getCurrentSignParams().signImageNumber = 0;
@@ -405,24 +431,35 @@ export class SignPosition extends EventFactory {
         if(this.getCurrentSignParams().signImageNumber > 0) {
             this.getCurrentSignParams().signImageNumber--;
         } else {
-            this.getCurrentSignParams().signImageNumber = this.signImages.length - 2;
+            this.getCurrentSignParams().signImageNumber = this.signImages.length - 1;
         }
         this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
-    checkImage(e) {
-        this.getCurrentSignParams().signImageNumber = this.signImages.length - 1;
-        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+    changeToFaImage(number) {
+        this.getCurrentSignParams().signImageNumber = 0 - number;
+        this.changeSignImage(0 - number);
         this.signExtraButton.attr("disabled", true);
         this.removeExtra();
         this.hideMoreTools();
+        this.displayMoreToolsButton.hide();
+        this.displayMoreToolsButton.unbind();
+        this.signUndoButton.hide();
+        this.signUndoButton.unbind();
+        this.signNextImageButton.hide();
+        this.signNextImageButton.unbind();
+        this.signPrevImageButton.hide();
+        this.signPrevImageButton.unbind();
+        this.forceRemoveExtra();
     }
 
     signZoomOut(e) {
+        e.stopPropagation();
         this.updateSignZoom(this.getCurrentSignParams().signScale - 0.1);
     }
 
     signZoomIn(e) {
+        e.stopPropagation();
         this.updateSignZoom(this.getCurrentSignParams().signScale + 0.1);
     }
 
@@ -431,7 +468,9 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().signImageNumber = this.signImageNumber;
         this.changeSignImage(this.signImageNumber);
         this.changeSignColor("#000000");
-        this.removeExtra();
+        if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            this.removeExtra();
+        }
         this.signExtraButton.removeAttr("disabled");
     }
 
@@ -552,7 +591,9 @@ export class SignPosition extends EventFactory {
         }
         this.pointItEnable = false;
         $('body').removeClass('disable-div-selection cursor-move');
-        this.addSignButton.removeAttr("disabled");
+        if(this.getCurrentSignParams().xPos > -1 && this.getCurrentSignParams().yPos > -1) {
+            this.addSignButton.removeAttr("disabled");
+        }
         if(lock) this.lockCurrentSign();
     }
 
@@ -707,7 +748,7 @@ export class SignPosition extends EventFactory {
                 e.stopPropagation();
             });
         }
-        if(this.signType !== "visa" && this.signType !== "hiddenVisa") this.changeSignImage(this.getCurrentSignParams().signImageNumber);
+        this.changeSignImage(this.getCurrentSignParams().signImageNumber);
     }
 
     refreshExtraText(e) {
@@ -734,9 +775,25 @@ export class SignPosition extends EventFactory {
 
     removeExtra() {
         this.getCurrentSignParams().addExtra = false;
+        if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            this.getCurrentSignParams().extraWidth = 0;
+            this.getCurrentSignParams().extraHeight = 0;
+            if (this.getCurrentSignParams().extraOnTop) {
+                this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
+            }
+        }
+        let textExtra = $("#textExtra_" + this.currentSign);
+        this.getCurrentSignParams().extraText = textExtra.val();
+        textExtra.remove();
+        this.colorPickerStopPropagation();
+        this.signExtraOnTopButton.attr("disabled", true);
+    }
+
+    forceRemoveExtra() {
+        this.getCurrentSignParams().addExtra = false;
         this.getCurrentSignParams().extraWidth = 0;
         this.getCurrentSignParams().extraHeight = 0;
-        if(this.getCurrentSignParams().extraOnTop) {
+        if (this.getCurrentSignParams().extraOnTop) {
             this.getCurrentSignParams().signWidth = this.getCurrentSignParams().signWidth - 200;
         }
         let textExtra = $("#textExtra_" + this.currentSign);
@@ -754,7 +811,8 @@ export class SignPosition extends EventFactory {
         this.getCurrentSignParams().green = rgb[1];
         this.getCurrentSignParams().blue = rgb[2];
 
-        let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[this.getCurrentSignParams().signImageNumber];
+        let img = "data:image/jpeg;charset=utf-8;base64" +
+            ", " + this.signImages[this.getCurrentSignParams().signImageNumber];
         let cross = this.cross;
         Color.changeColInUri(img, "#000000", color).then(function (e) {
             cross.css("background-image", "url('" + e + "')");
@@ -769,6 +827,50 @@ export class SignPosition extends EventFactory {
                 e.preventDefault();
                 e.stopPropagation();
             });
+        });
+    }
+
+    convertImgToBase64URL(url, callback, outputFormat){
+        let img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function(){
+            let canvas = document.createElement('CANVAS'),
+                ctx = canvas.getContext('2d'), dataURL;
+            canvas.height = img.height;
+            canvas.width = img.width;
+            ctx.drawImage(img, 0, 0);
+            dataURL = canvas.toDataURL(outputFormat);
+            callback(dataURL);
+            canvas = null;
+        };
+        img.src = url;
+    }
+
+    addCheckImage() {
+        this.addSign();
+        this.changeToFaImage(1);
+        this.forceRemoveExtra();
+    }
+
+    addTimesImage() {
+        this.addSign();
+        this.changeToFaImage(2);
+    }
+
+    addCircleImage() {
+        this.addSign();
+        this.changeToFaImage(3);
+    }
+
+    addMinusImage() {
+        this.addSign();
+        this.changeToFaImage(4);
+    }
+
+    alertHiddenVisa() {
+        bootbox.alert({
+            message: "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document. Sa validation implique que vous en acceptez le contenu. Vous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa en y adjoignant vos commentaires.",
+            size: 'large'
         });
     }
 

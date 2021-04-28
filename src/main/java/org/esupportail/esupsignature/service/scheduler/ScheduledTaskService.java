@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -15,7 +16,6 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -53,8 +53,12 @@ public class ScheduledTaskService {
 	@Resource
 	private UserService userService;
 
-	@Autowired
-	private ObjectProvider<OJService> oJService;
+	private OJService oJService;
+
+	@Autowired(required = false)
+	public void setoJService(OJService oJService) {
+		this.oJService = oJService;
+	}
 
 	@Scheduled(fixedRate = 300000)
 	@Transactional
@@ -99,7 +103,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(fixedRate = 300000)
 	@Transactional
-	public void sendAllEmailAlerts() {
+	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
@@ -111,13 +115,17 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 86400000, fixedRate = 86400000)
 	public void refreshOJKeystore() {
-		oJService.ifAvailable(OJService::refresh);
+		if(oJService != null) {
+			oJService.refresh();
+		}
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws EsupSignatureException {
 		workflowService.copyClassWorkflowsIntoDatabase();
-		oJService.ifAvailable(OJService::getCertificats);
+		if(oJService != null) {
+			oJService.getCertificats();
+		}
 	}
 
 }

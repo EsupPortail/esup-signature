@@ -4,7 +4,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile) {
+    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, signImages, userName, csrf, fields, stepRepeatable, status, profile, action) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -15,8 +15,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf);
-        this.xmlHttpMain = new XMLHttpRequest();
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -28,18 +27,22 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkRepeatableButtonEnd").on('click', e => this.launchSign(false));
-        $("#checkRepeatableButtonNext").on('click', e => this.launchSign(true));
+        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
+        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launchInfiniteSignButton").on('click', e => this.insertStep());
-        $("#launchSignButton").on('click', e => this.launchSign());
-        //$("#launchAllSignButton").on('click', e => this.launchAllSign());
+        $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign());
         $("#password").on('keyup', function (e) {
             if (e.keyCode === 13) {
-                $("#launchSignButton").click();
+                $("#launchNoInfiniteSignButton").click();
             }
         });
         $("#copyButton").on('click', e => this.copy());
         document.addEventListener("sign", e => this.updateWaitModal(e));
+    }
+
+    launchNoInfiniteSign() {
+        this.signComment = $("#signCommentNoInfinite");
+        this.launchSign(false);
     }
 
     launchSign(gotoNext) {
@@ -73,19 +76,6 @@ export class SignUi {
         }
     }
 
-    // launchAllSign() {
-    //     $('#signAllModal').modal('hide');
-    //     this.wait.modal('show');
-    //     this.wait.modal({backdrop: 'static', keyboard: false});
-    //     let csrf = document.getElementsByName("_csrf")[0];
-    //     let signRequestParams = "password=" + document.getElementById("passwordAll").value +
-    //         "&" + csrf.name + "=" + csrf.value;
-    //     let xmlHttp = new XMLHttpRequest();
-    //     xmlHttp.open('POST', '/user/signbooks/sign/' + this.signRequestId, true);
-    //     xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-    //     xmlHttp.send(signRequestParams);
-    // }
-
     submitSignRequest() {
         let formData = { };
         if(this.isPdf) {
@@ -99,18 +89,17 @@ export class SignUi {
             });
         }
         if(this.workspace != null) {
-            this.signRequestUrlParams = "password=" + document.getElementById("password").value +
-                "&sseId=" + sessionStorage.getItem("sseId") +
-                "&signRequestParams=" + JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())) +
-                "&visual=" + this.workspace.signPosition.visualActive +
-                "&comment=" + this.signComment.val() +
-                "&formData=" + JSON.stringify(formData) +
-                "&" + this.csrf.parameterName + "=" + this.csrf.token
-            ;
+            this.signRequestUrlParams = {
+                'password' : document.getElementById("password").value,
+                'signRequestParams' : JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())),
+                'visual' : this.workspace.signPosition.visualActive,
+                'comment' : this.signComment.val(),
+                'formData' : JSON.stringify(formData)
+            };
         } else {
-            this.signRequestUrlParams = "password=" + document.getElementById("password").value +
-                "&sseId=" + sessionStorage.getItem("sseId") +
-                "&" + this.csrf.name + "=" + this.csrf.value;
+            this.signRequestUrlParams = {
+                "password": document.getElementById("password").value,
+            }
         }
         console.info("params to send : " + this.signRequestUrlParams);
         this.sendData(this.signRequestUrlParams);
@@ -118,9 +107,17 @@ export class SignUi {
 
     sendData(signRequestUrlParams) {
         this.reset();
-        this.xmlHttpMain.open('POST', '/user/signrequests/sign/' + this.signRequestId, true);
-        this.xmlHttpMain.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        this.xmlHttpMain.send(signRequestUrlParams);
+        let self = this;
+        $.ajax({
+            url: "/user/signrequests/sign/" + this.signRequestId + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            type: 'POST',
+            data: signRequestUrlParams,
+            error: function(e) {
+                bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
+                    document.location.reload();
+                });
+            }
+        });
     }
 
     updateWaitModal(e) {
@@ -170,14 +167,6 @@ export class SignUi {
         document.getElementById("bar").classList.add("progress-bar-animated");
     }
 
-    end() {
-        if(this.xmlHttpMain.status === 200) {
-            console.info("sign end");
-            document.getElementById("validModal").style.display = "block";
-            setTimeout(e => this.redirect(),500);
-        }
-    }
-
     redirect() {
         document.location.href="/user/signrequests/" + this.signRequestId;
     }
@@ -193,7 +182,7 @@ export class SignUi {
     }
 
     insertStep() {
-        console.info("insert step");
+        console.info("check insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
@@ -215,4 +204,5 @@ export class SignUi {
             success: response => this.launchSign()
         });
     }
+
 }

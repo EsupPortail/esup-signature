@@ -35,6 +35,12 @@
                         </a>
                     </li>
                     <li>
+                        <a type="button" id="downloadMultipleButton"
+                           class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </li>
+                    <li>
                         <a data-toggle="modal" data-target="#newFomModal" type="button"
                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
@@ -62,7 +68,7 @@
                                                 <i class="far fa-minus-square"></i> Tout dé-sélectionner
                                             </button>
                                             <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
-
+                                            <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection</button>
                                         </div>
                                     </div>
                                 </div>
@@ -196,7 +202,8 @@
                         <tfoot>
                         <tr>
                             <td colspan="100%">
-                                <nav th:replace="fragments/pagination :: pagination"></nav>
+                                <span th:if="${infiniteScrolling}">Faire défiler la page pour afficher plus d'éléments</span>
+                                <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
                             </td>
                         </tr>
                         </tfoot>

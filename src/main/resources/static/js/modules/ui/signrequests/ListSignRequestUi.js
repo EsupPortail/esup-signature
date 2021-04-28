@@ -24,6 +24,8 @@ export default class ListSignRequestUi {
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
+        $('#downloadMultipleButton').on("click", e => this.downloadMultiple());
+        $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
@@ -36,10 +38,14 @@ export default class ListSignRequestUi {
         let idDom = $('.sign-requests-ids:checked');
         if (idDom.length > 0) {
             $('#deleteMultipleButton').removeClass('d-none');
+            $('#downloadMultipleButton').removeClass('d-none');
             $('#menuDeleteMultipleButton').removeClass('d-none');
+            $('#menuDownloadMultipleButton').removeClass('d-none');
         } else {
             $('#deleteMultipleButton').addClass('d-none');
+            $('#downloadMultipleButton').addClass('d-none');
             $('#menuDeleteMultipleButton').addClass('d-none');
+            $('#menuDownloadMultipleButton').addClass('d-none');
         }
 
         if (idDom.length > 1 && this.massSignButtonHide) {
@@ -93,6 +99,19 @@ export default class ListSignRequestUi {
                     });
                 }
             });
+        }
+    }
+
+    downloadMultiple() {
+        console.info("launch download multiple");
+        let ids = [];
+        let i = 0;
+        $("input[name='ids[]']:checked").each(function (e) {
+            ids[i] = $(this).attr("data-id-signbook");
+            i++;
+        });
+        if (ids.length > 0) {
+            window.open("/user/signrequests/download-multiple?ids=" + ids, "_blank");
         }
     }
 
@@ -157,17 +176,29 @@ export default class ListSignRequestUi {
         let waitModal = $("#wait");
         waitModal.modal('show');
         waitModal.modal({backdrop: 'static', keyboard: false});
-        let signRequestUrlParams = "sseId=" + sessionStorage.getItem("sseId") +
-            "&ids=" + JSON.stringify(ids) +
-            "&" + this.csrf.parameterName + "=" + this.csrf.token;
+        let signRequestUrlParams;
         if (!comeFromDispatcher) {
-            signRequestUrlParams += "&password=" + $('#password').val();
+            signRequestUrlParams = {
+                "ids" : JSON.stringify(ids),
+                "password" : $('#password').val()
+            };
+        } else {
+            signRequestUrlParams = {
+                "ids" : JSON.stringify(ids)
+            };
         }
         this.reset();
-        let xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('POST', '/user/signrequests/mass-sign', true);
-        xmlHttp.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
-        xmlHttp.send(signRequestUrlParams);
+        $.ajax({
+            url: "/user/signrequests/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
+            type: 'POST',
+            data: signRequestUrlParams,
+            error: function(e) {
+                bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
+                    document.location.reload();
+                });
+            }
+        });
+
     }
 
     updateWaitModal(e) {
