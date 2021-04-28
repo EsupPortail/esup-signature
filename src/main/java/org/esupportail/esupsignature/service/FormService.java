@@ -88,7 +88,7 @@ public class FormService {
 				}
 			}
 		}
-		return new ArrayList<>(forms);
+		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
 
 	@Transactional
