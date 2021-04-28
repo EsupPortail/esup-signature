@@ -153,7 +153,7 @@ public class SignRequestService {
 	@Resource
 	private ReportService reportService;
 
-	@Autowired
+	@Resource
 	private MessageSource messageSource;
 
 	@PostConstruct

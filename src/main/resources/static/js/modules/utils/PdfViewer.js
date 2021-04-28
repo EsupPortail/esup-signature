@@ -792,10 +792,18 @@ export class PdfViewer extends EventFactory {
 
     highlightRadio(field) {
         $("[name='" + field.attr('name') + "']").each(function() {
-            $(this).addClass("highlight");
-            setTimeout(
-                function() { $(this).removeClass('highlight'); },
-                2000
+            let radio = $(this);
+            let i = 0;
+            let flashInterval = setInterval(
+                function() {
+                    radio.toggleClass('highlight');
+                    if(i > 4) {
+                        clearInterval(flashInterval);
+                        radio.removeClass('highlight');
+                    }
+                    i++;
+                    },
+                1000
             );
         });
     }
