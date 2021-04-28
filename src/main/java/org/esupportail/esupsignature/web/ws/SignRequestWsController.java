@@ -100,7 +100,7 @@ public class SignRequestWsController {
             Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
             if (fileResponse != null) {
                 httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
             return new ResponseEntity<>(HttpStatus.OK);

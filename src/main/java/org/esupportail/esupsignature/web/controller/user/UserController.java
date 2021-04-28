@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ldap.NamingException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -148,8 +149,12 @@ public class UserController {
 	@ResponseBody
 	public List<AliasLdap> searchList(@RequestParam(value="searchString") String searchString) {
     	if(ldapAliasService != null) {
-			logger.info("ldap search for : " + searchString);
-			return ldapAliasService.searchAlias(searchString);
+			logger.debug("ldap search for : " + searchString);
+			try {
+				return ldapAliasService.searchAlias(searchString);
+			} catch (NamingException e) {
+				logger.trace(e.getMessage() + " : " + e.getExplanation());
+			}
 		}
     	return new ArrayList<>();
 	}
@@ -233,7 +238,7 @@ public class UserController {
 	}
 
 	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
-		response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
 		response.setContentType(contentType);
 		IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
 		return new ResponseEntity<>(HttpStatus.OK);

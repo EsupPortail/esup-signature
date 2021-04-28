@@ -1,7 +1,7 @@
 export default class SelectUser {
 
     constructor(selectName, limit, signRequestId, csrf) {
-        console.debug("init select-user : " + selectName);
+        console.info("init select-user : " + selectName);
         this.slimSelect = null;
         this.selectField = $("#" + selectName);
         this.selectField.attr("stepSelection", "true");
@@ -119,6 +119,14 @@ export default class SelectUser {
         }
         let csrf = this.csrf;
         let recipientEmails = this.slimSelect.selected();
+        $('[id^="allSignToComplete-"]').each(function(){
+            if (recipientEmails.length > 1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        })
+
         $.ajax({
             url: "/user/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
             type: 'POST',

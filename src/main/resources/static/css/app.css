@@ -50,6 +50,26 @@ body {
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+pre {
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+:not(section) > textarea::placeholder {
+    background-color: #ff8f9e;
+    color: black !important;
 }
 
 header {
@@ -58,6 +78,14 @@ header {
 
 label {
     padding-top: .5rem;
+}
+
+input:invalid {
+    box-shadow:none;
+}
+
+textarea:invalid {
+    box-shadow:none;
 }
 
 #actionDiv {
@@ -97,6 +125,10 @@ td {
     vertical-align: middle !important;
     font-size: 0.9em;
     font-weight: 300;
+}
+
+.table {
+    margin-bottom: revert !important;
 }
 
 .table-fix-head {
@@ -362,7 +394,10 @@ input:checked + .slider:before {
     font-size: 16px;
     font-weight: bold;
     background-color: #007bff;
+}
 
+.ss-main .ss-single-selected .placeholder, .ss-main .ss-single-selected .placeholder * {
+    overflow: visible;
 }
 
 .ss-main .ss-multi-selected {
@@ -423,7 +458,7 @@ input:checked + .slider:before {
 }
 
 .workspace {
-    margin-top: 130px;
+    margin-top: 128px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
@@ -431,14 +466,14 @@ input:checked + .slider:before {
 }
 
 .workspace-pdf {
-    margin-top: 130px;
+    margin-top: 128px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
 }
 
 .workspace-sign {
-    margin-top: 170px;
+    margin-top: 128px;
     display: flex;
 }
 
@@ -700,7 +735,6 @@ height: 100%;
     padding:3px;
 }
 
-
 .postit {
     width: 350px;
     font: revert !important;
@@ -708,7 +742,7 @@ height: 100%;
     position: absolute;
     left: 0px;
     top: 0px;
-    z-index: 2;
+    z-index: 5;
     cursor: pointer;
     text-decoration:none;
     float:left;
@@ -735,7 +769,7 @@ height: 100%;
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     position:relative;
     top:-5px;
-    z-index: 4 !important;
+    z-index: 5 !important;
 }
 
 .box-wrap{
@@ -903,7 +937,27 @@ height: 100%;
     font-size: 10px;
 }
 
+.annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
+    font-family: "LiberationSans-Regular", sans-serif;
+}
+
 input:placeholder-shown.required-field {
+    background-color: #F8D7DA !important;
+}
+
+input[type="checkbox"] {
+    cursor: pointer !important;
+}
+
+input[type="checkbox"]:not(:checked).required-field {
+    background-color: #F8D7DA !important;
+}
+
+input[type="radio"] {
+    cursor: pointer !important;
+}
+
+input[type="radio"]:not(:checked).required-field {
     background-color: #F8D7DA !important;
 }
 
@@ -915,14 +969,14 @@ textarea:placeholder-shown.required-field {
     border-color: red !important;
 }
 
-.annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    font-family: "LiberationSans-Regular", sans-serif;
-    border: 0px !important;
-}
-
 .disabled-field {
     background-color: transparent !important;
     border-color: #eeeeee !important;
+}
+
+.field-type-radio {
+    margin-left: 0.03rem !important;
+    border: 1px solid black !important;
 }
 
 .crop {
@@ -981,7 +1035,7 @@ textarea:placeholder-shown.required-field {
 
 .btn-floating {
     position: relative;
-    z-index: 10;
+    z-index: 6 !important;
     display: inline-block;
     padding: 0;
     margin: 0px;
@@ -1123,7 +1177,7 @@ textarea:placeholder-shown.required-field {
     right: 50px;
     bottom: 80px;
     margin-bottom: 0;
-    z-index: 5;
+    z-index: 6;
     overflow: hidden;
     height: 500px;
     display: -webkit-box;
@@ -1628,3 +1682,37 @@ progress:before {
     display: inline-block;
     z-index: -1;
 }
+
+.badge-status {
+    width: 200px;
+    text-align: left;
+    font-size: 100%;
+    font-weight: 500;
+    border-radius: revert !important;
+    height: 25px;
+    display: inline-block;
+    padding: 0 !important;
+}
+
+.badge-status > i {
+    height: 100%;
+    background-color: black;
+    padding: 0 6px 1px 6px;
+    line-height: 25px;
+    color: white;
+}
+
+.badge-status > span {
+    width: 100% !important;
+    text-align: center;
+    padding: 0 6px 1px 6px;
+    line-height: 25px;
+}
+
+.highlight {
+    border: 1px solid red !important;
+    animation: blink 1s !important;
+    animation-iteration-count: 3 !important;
+}
+
+@keyframes blink { 50% { border-color:#fff !important; }  }

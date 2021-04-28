@@ -52,7 +52,7 @@ public class ExportController {
 		if (forms.size() > 0) {
 			try {
 				response.setContentType("text/csv; charset=utf-8");
-				response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
+				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8.toString()) + ".csv");
 				InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms);
 				IOUtils.copy(csvInputStream, response.getOutputStream());
 				return new ResponseEntity<>(HttpStatus.OK);

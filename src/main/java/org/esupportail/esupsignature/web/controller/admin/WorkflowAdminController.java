@@ -70,7 +70,10 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping(produces = "text/html")
-	public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title") String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+	public String create(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "title", required = false) String title, @RequestParam(name = "description") String description, RedirectAttributes redirectAttributes) {
+		if(title == null) {
+			title = description;
+		}
 		Workflow workflow;
 		try {
 			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());

@@ -9,6 +9,8 @@ import java.util.Map;
 public class LdapProperties {
 
     private String searchBase;
+    private String listSearchBase;
+    private String listSearchFilter;
     private String groupSearchBase;
     private String groupSearchFilter;
     private String memberSearchFilter;
@@ -21,6 +23,22 @@ public class LdapProperties {
 
     public void setSearchBase(String searchBase) {
         this.searchBase = searchBase;
+    }
+
+    public String getListSearchBase() {
+        return listSearchBase;
+    }
+
+    public void setListSearchBase(String listSearchBase) {
+        this.listSearchBase = listSearchBase;
+    }
+
+    public String getListSearchFilter() {
+        return listSearchFilter;
+    }
+
+    public void setListSearchFilter(String listSearchFilter) {
+        this.listSearchFilter = listSearchFilter;
     }
 
     public String getGroupSearchBase() {

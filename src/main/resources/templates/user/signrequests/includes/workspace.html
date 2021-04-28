@@ -13,7 +13,7 @@
                      onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
                      onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"
                      style="display: none;z-index:1027;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
-                    <div id="crossTools_0" class="badge badge-success position-absolute d-none" style="left: 0px; top: -45px;
+                    <div id="crossTools_0" class="badge badge-primary btn-small position-absolute d-none" style="left: 0px; top: -45px;
                         z-index: 3; opacity: .9;user-select: none;
                         -moz-user-select: none;
                         -khtml-user-select: none;
@@ -75,12 +75,6 @@
                                     style="z-index: 3;">
                                 <i class="fas fa-ad"></i>
                             </button>
-                            <button type="button" id="check_0"
-                                    title="Coche"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-check"></i>
-                            </button>
                             <button type="button" id="signExtra_0"
                                     title="Ajouter un texte à la signature"
                                     class="btn btn-sm btn-transparent text-white"
@@ -104,7 +98,7 @@
             <th:block th:each="comment : ${comments}">
                 <div class="circle" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
+                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Supprimer l'annotation">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
@@ -115,7 +109,8 @@
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
             </th:block>
-            <div id="postit" class="postit badge badge-warning">
+            <div id="postit" class="postit alert alert-warning d-none">
+                <form>
                 <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                 <input id="commentPosX" name="commentPosX" type="hidden"/>
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
@@ -131,13 +126,14 @@
                         </th:block>
                     </select>
                 </div>
-                <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire"></textarea>
+                <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire" required></textarea>
                 <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-left">
                     <i class="fas fa-times"></i>
                 </button>
                 <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-right">
                     <i class="fas fa-save"></i>
                 </button>
+                </form>
             </div>
         </div>
     </form>

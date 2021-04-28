@@ -36,14 +36,14 @@
                 <!--                            </div>-->
                 <div class="form-group d-inline">
                     <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
-                    <span th:if="${step.description != '' && step.description != null}" th:text="${step.description}"></span>
-                    <th:block th:if="${step.users.size() > 0}">
+                    <span th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></span>
+                    <th:block th:if="${(step.description == null || step.description == '') && step.users.size() > 0}">
                         <span th:if="${step.description != '' && step.description != null}"> - </span>
                         <th:block th:each="user, iterator : ${step.users}">
                             <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
                         </th:block>
                     </th:block>
-                    <span th:if="${step.repeatable}"> (un ou plusieurs)</span>
+                    <span th:if="${step.repeatable}"> (cette étape peut donner lieu à plusieurs validations en séries)</span>
                 </div>
                 <br/>
             </th:block>

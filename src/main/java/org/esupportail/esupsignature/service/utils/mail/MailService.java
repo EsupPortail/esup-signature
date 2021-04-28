@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.service.utils.mail;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
@@ -25,11 +25,15 @@ import org.thymeleaf.context.Context;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -65,7 +69,7 @@ public class MailService {
     @Resource
     private FileService fileService;
 
-    public void sendCompletedMail(SignBook signBook) throws EsupSignatureException {
+    public void sendCompletedMail(SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -75,26 +79,27 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
         try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : demande signature terminée");
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(user.getEmail());
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-completed.html", ctx);
-            message.setText(htmlContent, true);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            mimeMessage.setSubject("Esup-Signature : demande signature terminée");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(user.getEmail());
             logger.info("send email completes for " + user.getEppn());
             if(mailSender != null) {
-                mailSender.send(mimeMessage);
+                mailSender.send(mimeMessage.getMimeMessage());
             }
-        } catch (MailSendException | MessagingException e) {
-            logger.error("unable to send email", e);
-            throw new EsupSignatureException("Problème lors de l'envoi du mail", e);
+        } catch (MailSendException | MessagingException | IOException e) {
+            logger.error("unable to send COMPLETE email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
-    public void sendCompletedCCMail(SignBook signBook) throws EsupSignatureException {
+    @Transactional
+    public void sendCompletedCCMail(SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -104,41 +109,51 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
-        try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : demande signature terminée");
-            message.setFrom(mailConfig.getMailFrom());
 
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            mimeMessage.setSubject("Esup-Signature : demande signature terminée");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
             List<User> viewersArray = new ArrayList<>(signBook.getViewers());
-            Optional<List<Recipient>> recipients = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getRecipients).findAny();
-            if(recipients.isPresent()) {
-                for (Recipient recipient : recipients.get()) {
-                    if (!viewersArray.contains(recipient.getUser())) {
-                        viewersArray.add(recipient.getUser());
+            if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+                List<LiveWorkflowStep> liveWorkflowSteps = signBook.getLiveWorkflow().getLiveWorkflowSteps();
+                for (LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
+                    List<Recipient> recipients = liveWorkflowStep.getRecipients();
+                    for (Recipient recipient : recipients) {
+                        User user1 = userService.getById(recipient.getUser().getId());
+                        if (!viewersArray.contains(user1)) {
+                            viewersArray.add(user1);
+                        }
                     }
                 }
-                viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
             }
+            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
             if(viewersArray.size() > 0) {
-                message.setTo(viewersArray.stream().map(User::getEmail).toArray(String[]::new));
-                String htmlContent = templateEngine.process("mail/email-completed-cc.html", ctx);
-                message.setText(htmlContent, true);
+                String[] to = new String[viewersArray.size()];
+                int i = 0;
+                for(User userTo : viewersArray) {
+                    to[i] = userTo.getEmail();
+                    i++;
+                }
+                mimeMessage.setTo(to);
                 logger.info("send email completes for " + user.getEppn());
                 if (mailSender != null) {
-                    mailSender.send(mimeMessage);
+                    mailSender.send(mimeMessage.getMimeMessage());
                 }
             } else {
                 logger.debug("no viewers to send mail");
             }
-        } catch (MailSendException | MessagingException e) {
+        } catch (MailSendException | MessagingException | IOException e) {
             logger.error("unable to send email", e);
-            throw new EsupSignatureException("Problème lors de l'envoi du mail", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
-    public void sendRefusedMail(SignBook signBook, String comment) {
+    public void sendRefusedMail(SignBook signBook, String comment) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -148,30 +163,31 @@ public class MailService {
         ctx.setVariable("userService", userService);
         ctx.setVariable("comment", comment);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
         List<String> toEmails = new ArrayList<>();
         toEmails.add(signBook.getCreateBy().getEmail());
         try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : demande signature refusée");
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(toEmails.toArray(String[]::new));
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            mimeMessage.setSubject("Esup-Signature : demande signature refusée");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
             for (int i = 0 ;  i < signBook.getViewers().size() ; i++) {
                 viewersArray[i] =  signBook.getViewers().get(i).getEmail();
             }
-            message.setCc(viewersArray);
-            String htmlContent = templateEngine.process("mail/email-refused.html", ctx);
-            message.setText(htmlContent, true);
+            mimeMessage.setCc(viewersArray);
             logger.info("send email refude for " + toEmails.get(0));
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            logger.error("unable to send email", e);
+            mailSender.send(mimeMessage.getMimeMessage());
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send REFUSE email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
-    public void sendSignRequestAlert(List<String> recipientsEmails, SignRequest signRequest) {
+    public void sendSignRequestAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -186,26 +202,27 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
         try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            User creator = signRequest.getCreateBy();
-            message.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(recipientsEmails.toArray(String[]::new));
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert.html", ctx);
-            message.setText(htmlContent, true);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            User creator = signRequest.getCreateBy();
+            mimeMessage.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage);
+            mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
-        } catch (MessagingException e) {
-            logger.error("unable to send email", e);
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send ALERT email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
 
     }
 
-    public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) {
+    public void sendCCtAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender() || recipientsEmails.size() == 0) {
             return;
         }
@@ -220,26 +237,27 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
         try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            User creator = signRequest.getCreateBy();
-            message.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(recipientsEmails.toArray(String[]::new));
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
-            message.setText(htmlContent, true);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            User creator = signRequest.getCreateBy();
+            mimeMessage.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage);
+            mailSender.send(mimeMessage.getMimeMessage());
             signRequest.setLastNotifDate(new Date());
-        } catch (MessagingException e) {
-            logger.error("unable to send email", e);
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send CC ALERT email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
 
     }
 
-    public void sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) {
+    public void sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
@@ -248,39 +266,46 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
         try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("Esup-Signature : nouveau document à signer");
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(recipientsEmails.toArray(String[]::new));
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-alert-summary.html", ctx);
-            message.setText(htmlContent, true);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            mimeMessage.setSubject("Esup-Signature : nouveau document à signer");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
+            mimeMessage.setText(htmlContent, true);
             logger.info("send email alert for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            logger.error("unable to send email", e);
+            mailSender.send(mimeMessage.getMimeMessage());
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send SUMMARY email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
 
     }
 
-    public void sendOtp(Otp otp, String urlId, SignRequest signRequest) throws MessagingException {
+    public void sendOtp(Otp otp, String urlId, SignRequest signRequest) throws EsupSignatureMailException {
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("url", globalProperties.getRootUrl() + "/otp/" + urlId);
         ctx.setVariable("signRequest", signRequest);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
-        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        message.setSubject("Esup-Signature : nouveau document à signer");
-        message.setFrom(mailConfig.getMailFrom());
-        message.setTo(otp.getEmail());
-        String htmlContent = templateEngine.process("mail/email-otp.html", ctx);
-        message.setText(htmlContent, true);
-        mailSender.send(mimeMessage);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-otp.html", ctx);
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+            mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+            mimeMessage.setSubject("Esup-Signature : nouveau document à signer");
+            mimeMessage.setFrom(mailConfig.getMailFrom());
+            mimeMessage.setTo(otp.getEmail());
+            mailSender.send(mimeMessage.getMimeMessage());
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send OTP email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
+        }
     }
 
     public void sendFile(String title, List<SignRequest> signRequests, String targetUri) throws MessagingException, IOException {
@@ -305,26 +330,21 @@ public class MailService {
 
     }
 
-    public void sendTest(List<String> recipientsEmails) {
+    public void sendTest(List<String> recipientsEmails) throws MessagingException {
         if (!checkMailSender()) {
             return;
         }
         final Context ctx = new Context(Locale.FRENCH);
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
-        try {
-            message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            message.setSubject("esup-signature test mail");
-            message.setFrom(mailConfig.getMailFrom());
-            message.setTo(recipientsEmails.toArray(String[]::new));
-            String htmlContent = templateEngine.process("mail/email-test.html", ctx);
-            message.setText(htmlContent, true);
-            logger.info("send test email for " + recipientsEmails.get(0));
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            logger.error("unable to send test email", e);
-        }
-
+        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        message.setSubject("esup-signature test mail");
+        message.setFrom(mailConfig.getMailFrom());
+        message.setTo(recipientsEmails.toArray(String[]::new));
+        String htmlContent = templateEngine.process("mail/email-test.html", ctx);
+        message.setText(htmlContent, true);
+        logger.info("send test email for " + recipientsEmails.get(0));
+        mailSender.send(mimeMessage);
     }
 
     private void setTemplate(Context ctx) {

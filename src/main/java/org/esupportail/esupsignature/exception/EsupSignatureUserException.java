@@ -19,38 +19,18 @@ package org.esupportail.esupsignature.exception;
 
 public class EsupSignatureUserException extends Exception {
 
-	protected String codeI18n = "exception.general";
+	private static final long serialVersionUID = 1L;
 
-	public EsupSignatureUserException(Exception e) {
-		super(e);
-	}
+	String message;
 
 	public EsupSignatureUserException(String message) {
 		super(message);
+		this.message = message;
 	}
 
-	public EsupSignatureUserException(String message, Exception e) {
+	public EsupSignatureUserException(String message, Throwable e) {
 		super(message, e);
+		this.message = message;
 	}
-
-	public EsupSignatureUserException(String message, String codeI18n) {
-		super(message);
-		this.codeI18n = codeI18n;
-	}
-
-	public String getRootCause() {
-	    Throwable t = this;
-	    while(t.getCause() != null)
-		t = t.getCause();
-	    return t.getMessage();
-	}
-
-	public String getCodeI18n() {
-		return codeI18n;
-	}
-
-
-
-	private static final long serialVersionUID = 1L;
 	
 }

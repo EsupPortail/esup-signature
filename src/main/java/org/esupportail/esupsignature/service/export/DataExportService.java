@@ -1,20 +1,21 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.apache.commons.text.StringEscapeUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class DataExportService {
@@ -22,8 +23,11 @@ public class DataExportService {
     @Resource
     private DataRepository dataRepository;
 
-    public InputStream getCsvDatasFromForms(List<Form> forms) {
-        return csvStringToInputStream(toCSV(getDatasToExport(forms)));
+    @Resource
+    private FileService fileService;
+
+    public InputStream getCsvDatasFromForms(List<Form> forms) throws SQLException, IOException {
+        return mapListToCSV(getDatasToExport(forms));
     }
 
     public List<Map<String, String>> getDatasToExport(List<Form> forms) {
@@ -35,7 +39,7 @@ public class DataExportService {
     }
 
     public List<LinkedHashMap<String, String>> getDatasToExport(Form form) {
-        List<Data> datas = dataRepository.findByForm(form);
+        List<Data> datas = dataRepository.findByFormId(form.getId());
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
@@ -54,8 +58,8 @@ public class DataExportService {
                     toExportDatas.put("form_completed_date", "");
                     toExportDatas.put("form_completed_by", "");
                 }
-                for (Map.Entry<String, String> entry : data.getDatas().entrySet()) {
-                    toExportDatas.put("form_data_" + entry.getKey(), entry.getValue());
+                for(Field field : form.getFields()) {
+                    toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
                 }
                 int step = 1;
                 for (Map.Entry<Recipient, Action> actions : recipientHasSigned.entrySet()) {
@@ -63,8 +67,12 @@ public class DataExportService {
                         toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
                         toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
                         toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
-                        step++;
+                    } else {
+                        toExportDatas.put("sign_step_" + step + "_user_eppn", "");
+                        toExportDatas.put("sign_step_" + step + "_type", "");
+                        toExportDatas.put("sign_step_" + step + "_date", "");
                     }
+                    step++;
                 }
                 dataDatas.add(toExportDatas);
             }
@@ -72,29 +80,18 @@ public class DataExportService {
         return dataDatas;
     }
 
-    public  String toCSV(List<Map<String, String>> list) {
-        List<String> headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().collect(Collectors.toList());
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < headers.size(); i++) {
-            sb.append(headers.get(i));
-            sb.append(i == headers.size()-1 ? "\n" : ",");
-        }
+    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException, SQLException {
+        File csvFile = fileService.getTempFile("export.csv");
+        FileWriter out = new FileWriter(csvFile);
+        String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
+        CSVPrinter printer = new CSVPrinter(out, CSVFormat.EXCEL.withHeader(headers));
         for (Map<String, String> map : list) {
-            for (int i = 0; i < headers.size(); i++) {
-                String value = "";
-                if(map.get(headers.get(i)) != null) {
-                    value = StringEscapeUtils.escapeCsv(map.get(headers.get(i)));
-                }
-                sb.append(value);
-                sb.append(i == headers.size()-1 ? "\n" : ",");
-            }
+            printer.printRecord(map.values());
         }
-        return sb.toString();
-    }
-
-    public InputStream csvStringToInputStream(String csvString) {
-        byte[] bytes = csvString.getBytes();
-        return new ByteArrayInputStream(bytes);
+        out.flush();
+        InputStream inputStream = new FileInputStream(csvFile);
+        csvFile.delete();
+        return inputStream;
     }
 
 }
