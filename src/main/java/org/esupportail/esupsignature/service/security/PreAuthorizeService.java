@@ -27,10 +27,19 @@ public class PreAuthorizeService {
     private WorkflowService workflowService;
 
     @Resource
+    private FormService formService;
+
+    @Resource
     private ReportService reportService;
 
     public boolean notInShare(String userEppn, String authUserEppn) {
         return userEppn.equals(authUserEppn);
+    }
+
+    public boolean formManage(Long id, String userEppn) {
+        Form form = formService.getById(id);
+        User user = userService.getByEppn(userEppn);
+        return form.getManagers().contains(user.getEmail());
     }
 
     public boolean dataUpdate(Long id, String userEppn) {

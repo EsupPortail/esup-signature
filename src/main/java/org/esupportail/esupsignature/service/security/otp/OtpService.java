@@ -8,6 +8,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.slf4j.Logger;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.mail.MessagingException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -48,7 +48,7 @@ public class OtpService {
         });
     }
 
-    public void generateOtpForSignRequest(Long id, User extUser) throws MessagingException {
+    public void generateOtpForSignRequest(Long id, User extUser) throws EsupSignatureMailException {
         SignRequest signRequest = signRequestService.getById(id);
         Otp otp = new Otp();
         otp.setCreateDate(new Data());

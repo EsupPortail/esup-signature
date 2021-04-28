@@ -1,20 +1,26 @@
 package org.esupportail.esupsignature.service.ldap;
 
-import org.esupportail.esupsignature.repository.ldap.AliasLdapRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.text.MessageFormat;
 import java.util.List;
 
 @Service
-@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
+@ConditionalOnProperty({"spring.ldap.base", "ldap.list-search-base", "ldap.list-search-filter"})
 public class LdapAliasService {
 
-    @Autowired(required = false)
-    private AliasLdapRepository aliasLdapRepository;
+    @Resource
+    private LdapProperties ldapProperties;
+
+    @Resource
+    private LdapTemplate ldapTemplate;
 
     public List<AliasLdap> searchAlias(String searchString) {
-        return aliasLdapRepository.findByMailAliasStartingWithOrCnStartingWithAndMailAliasNotNull(searchString, searchString);
+        String formattedFilter = MessageFormat.format(ldapProperties.getListSearchFilter(), new String[] { searchString });
+        return ldapTemplate.search(ldapProperties.getListSearchBase(), formattedFilter, new AliasLdapAttributesMapper());
     }
 }

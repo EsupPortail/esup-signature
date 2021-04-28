@@ -210,7 +210,7 @@ public class DataController {
 	public ResponseEntity<Void> getFile(@PathVariable("id") Long id, HttpServletResponse response) {
 		try {
 			Map<String, Object> modelResponse = dataService.getModelResponse(id);
-			response.setHeader("Content-disposition", "inline; filename=" + URLEncoder.encode(modelResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+			response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(modelResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
 			response.setContentType(modelResponse.get("contentType").toString());
 			IOUtils.copy((InputStream) modelResponse.get("inputStream"), response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -224,19 +224,6 @@ public class DataController {
 	@ResponseBody
 	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
 		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
-	}
-
-	@PostMapping(value = "/delete-multiple", consumes = {"application/json"})
-	@ResponseBody
-	public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
-		for(Long id : ids) {
-			if(preAuthorizeService.dataUpdate(id, authUserEppn)) {
-				dataService.delete(id);
-			}
-		}
-//		eventService.publishEvent(new JsonMessage("info", "Brouillon(s) supprimé(s)"), "user", eventService.getClientIdByEppn(authUserEppn));
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
 }

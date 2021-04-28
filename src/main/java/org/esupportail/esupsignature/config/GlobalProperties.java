@@ -31,6 +31,7 @@ public class GlobalProperties implements Cloneable {
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
     private int hoursBeforeRefreshNotif = 24;
+    private Boolean infiniteScrolling = true;
     /**
      * Choisir le fonctionnement des délégations :
      *  <ul>
@@ -192,5 +193,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setShareMode(int shareMode) {
         this.shareMode = shareMode;
+    }
+
+    public Boolean getInfiniteScrolling() {
+        return infiniteScrolling;
+    }
+
+    public void setInfiniteScrolling(Boolean infiniteScrolling) {
+        this.infiniteScrolling = infiniteScrolling;
     }
 }

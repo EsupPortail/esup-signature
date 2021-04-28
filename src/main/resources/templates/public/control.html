@@ -41,21 +41,19 @@
                                 <th>Nom</th>
                                 <th>Action</th>
                                 <th>Caratéristiques de la signature</th>
-                                <th>Statut</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <th:block th:each="log : ${logs}">
-                                <tr>
+                            <th:block th:each="log, iterator : ${logs}">
+                                <tr th:if="${logs.size() > iterator.index + 1 && (logs[iterator.index + 1].finalStatus == 'checked' || logs[iterator.index + 1].finalStatus == 'signed')}">
                                     <td class="text-left"><span
                                             th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                     <td class="text-left"><span th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
-                                    <td class="text-left"><span th:text="${log.action}"></span></td>
-                                    <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
-                                                                th:text="'Signé en page ' + ${log.pageNumber} + ' aux coordonées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                    </td>
                                     <td class="text-left"><span
-                                            th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                                            th:text="#{'signbook.status.' + ${logs[iterator.index + 1].finalStatus}}"></span></td>
+                                    <td class="text-left"><span th:if="${log.action == 'Apposition de la signature'}"
+                                                                th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
+                                    </td>
                                 </tr>
                             </th:block>
                             </tbody>
