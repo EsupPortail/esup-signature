@@ -759,11 +759,16 @@ export class PdfViewer extends EventFactory {
                     if (page !== self.pageNum) {
                         self.renderPage(page);
                         self.addEventListener("renderFinished", function () {
-                            setTimeout(function() { field.focus() }, 100);                        })
-                    } else {
-                        setTimeout(function() { field.focus() }, 100);
+                            setTimeout(function() {
+                                field = $('#' + warningFields[0].name);
+                                self.focusField(field)
+                            }, 100);
 
-                    }
+                        });
+                    } else {
+                        setTimeout(function() {
+                            self.focusField(field)
+                        }, 100);                    }
                 });
                 resolveOk = $(this)[0].name;
                 $('#sendModal').modal('hide');
@@ -771,6 +776,28 @@ export class PdfViewer extends EventFactory {
             resolve(resolveOk);
         });
         return p;
+    }
+
+    focusField(field) {
+        if(field.attr("type") === "radio") {
+            this.highlightRadio(field);
+        }
+        field.focus();
+        let offset = field.offset();
+        $('html, body').animate({
+            scrollTop: offset.top - 170,
+            scrollLeft: offset.left
+        });
+    }
+
+    highlightRadio(field) {
+        $("[name='" + field.attr('name') + "']").each(function() {
+            $(this).addClass("highlight");
+            setTimeout(
+                function() { $(this).removeClass('highlight'); },
+                2000
+            );
+        });
     }
 
     checkObjectInArray(fields, name) {

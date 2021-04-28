@@ -1093,14 +1093,16 @@ public class SignRequestService {
 								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
 							field.setDefaultValue("");
 						}
-						if (data.getDatas().get(field.getName()) != null
-								&& !data.getDatas().get(field.getName()).isEmpty()) {
-							field.setDefaultValue(data.getDatas().get(field.getName()));
-						}
 					}
 				} else {
 					prefilledFields = data.getForm().getFields();
 				}
+			}
+		}
+		for (Field field : prefilledFields) {
+			if (data.getDatas().get(field.getName()) != null
+					&& !data.getDatas().get(field.getName()).isEmpty()) {
+				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
 		}
 		return prefilledFields;

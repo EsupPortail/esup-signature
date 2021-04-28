@@ -1708,3 +1708,11 @@ progress:before {
     padding: 0 6px 1px 6px;
     line-height: 25px;
 }
+
+.highlight {
+    border: 1px solid red !important;
+    animation: blink 1s !important;
+    animation-iteration-count: 3 !important;
+}
+
+@keyframes blink { 50% { border-color:#fff !important; }  }
