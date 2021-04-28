@@ -133,12 +133,6 @@ export class WorkspacePdf {
             });
         });
 
-        $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        this.signLaunchButton.on('click', e => this.launchSignModal());
-        $("#refuseLaunchButton").on('click', function () {
-            window.onbeforeunload = null;
-        });
-
     }
 
     addSign(e) {
@@ -172,6 +166,11 @@ export class WorkspacePdf {
             }
         }
         this.pdfViewer.adjustZoom();
+        $("#visaLaunchButton").on('click', e => this.launchSignModal());
+        this.signLaunchButton.on('click', e => this.launchSignModal());
+        $("#refuseLaunchButton").on('click', function () {
+            window.onbeforeunload = null;
+        });
         this.pdfViewer.removeEventListener('ready');
     }
 

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.MessageSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -69,6 +70,9 @@ public class MailService {
     @Resource
     private FileService fileService;
 
+    @Resource
+    private MessageSource messageSource;
+
     public void sendCompletedMail(SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
@@ -85,7 +89,7 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-            mimeMessage.setSubject("Esup-Signature : demande signature terminée");
+            mimeMessage.setSubject("Votre demande signature est terminée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(user.getEmail());
             logger.info("send email completes for " + user.getEppn());
@@ -116,7 +120,7 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-            mimeMessage.setSubject("Esup-Signature : demande signature terminée");
+            mimeMessage.setSubject("Une demande signature que vous suivez est terminée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             List<User> viewersArray = new ArrayList<>(signBook.getViewers());
             if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
@@ -171,7 +175,7 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-            mimeMessage.setSubject("Esup-Signature : demande signature refusée");
+            mimeMessage.setSubject("Votre demande de signature a été refusée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(toEmails.toArray(String[]::new));
             String[] viewersArray = new String[signBook.getViewers().size()];
@@ -209,7 +213,7 @@ public class MailService {
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
             User creator = signRequest.getCreateBy();
-            mimeMessage.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            mimeMessage.setSubject("Vous avez une nouvelle demande de signature");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
@@ -244,7 +248,7 @@ public class MailService {
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
             User creator = signRequest.getCreateBy();
-            mimeMessage.setSubject("Nouvelle demande de : " + creator.getFirstname() + " " + creator.getName() + " : " + signRequest.getTitle());
+            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             logger.info("send email alert for " + recipientsEmails.get(0));
@@ -272,7 +276,7 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-            mimeMessage.setSubject("Esup-Signature : nouveau document à signer");
+            mimeMessage.setSubject("Liste des demandes à signer");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
@@ -298,7 +302,7 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
             mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-            mimeMessage.setSubject("Esup-Signature : nouveau document à signer");
+            mimeMessage.setSubject("Vous avez un document à signer émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
             mimeMessage.setFrom(mailConfig.getMailFrom());
             mimeMessage.setTo(otp.getEmail());
             mailSender.send(mimeMessage.getMimeMessage());
@@ -321,7 +325,7 @@ public class MailService {
         final MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper message;
         message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        message.setSubject("Esup-Signature : nouveau document  " + title);
+        message.setSubject("Nouveau document signer à télécharger : " + title);
         message.setFrom(mailConfig.getMailFrom());
         message.setTo(targetUri.split(";"));
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
