@@ -5,13 +5,26 @@ import {SseDispatcher} from "./SseDispatcher.js";
 export class SseSubscribe extends EventFactory {
 
     constructor(sseId) {
+        console.info("Start SSE");
         super();
-        console.log(window.EventSource);
-        // if (!!window.EventSource) {
-            this.eventSource = new EventSource('/sse/' + sseId);
-        // }
+        this.sseId = sseId;
+        this.initSse();
         this.listenToEvent();
         this.sseDispatcher = new SseDispatcher();
+    }
+
+    initSse() {
+        console.info("connect to sse");
+        let self = this;
+        this.eventSource = new EventSource('/sse/' + this.sseId);
+        this.eventSource.onopen = function(e) {
+            console.info("refresh sse : " + self.sseId);
+        }
+        window.onbeforeunload = function(e) {
+            console.info("close sse : " + self.sseId);
+            self.eventSource.close();
+        };
+
     }
 
     listenToEvent() {

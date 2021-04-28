@@ -40,8 +40,6 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,20 +61,20 @@ public class SignService {
 	@Resource
 	private SignConfig signConfig;
 
-	@Autowired
-	private ObjectProvider<CAdESService> cadesService;
+	@Resource
+	private CAdESService cadesService;
 
-	@Autowired
-	private ObjectProvider<PAdESService> padesService;
+	@Resource
+	private PAdESService padesService;
 
-	@Autowired
-	private ObjectProvider<XAdESService> xadesService;
+	@Resource
+	private XAdESService xadesService;
 
-	@Autowired
-	private ObjectProvider<ASiCWithCAdESService> asicWithCAdESService;
+	@Resource
+	private ASiCWithCAdESService asicWithCAdESService;
 
-	@Autowired
-	private ObjectProvider<ASiCWithXAdESService> asicWithXAdESService;
+	@Resource
+	private ASiCWithXAdESService asicWithXAdESService;
 
 	@Resource
 	private DocumentService documentService;
@@ -93,7 +91,7 @@ public class SignService {
 	@Resource
 	private SignRequestService signRequestService;
 
-	@Autowired
+	@Resource
 	private Environment environment;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -428,13 +426,13 @@ public class SignService {
 		} else {
 			switch (signatureForm) {
 			case CAdES:
-				service = cadesService.getIfAvailable();
+				service = cadesService;
 				break;
 			case PAdES:
-				service = padesService.getIfAvailable();
+				service = padesService;
 				break;
 			case XAdES:
-				service = xadesService.getIfAvailable();
+				service = xadesService;
 				break;
 			default:
 				logger.error("Unknow signature form : " + signatureForm);
@@ -472,10 +470,10 @@ public class SignService {
 		MultipleDocumentsSignatureService service = null;
 		switch (signatureForm) {
 		case CAdES:
-			service = asicWithCAdESService.getIfAvailable();
+			service = asicWithCAdESService;
 			break;
 		case XAdES:
-			service = asicWithXAdESService.getIfAvailable();
+			service = asicWithXAdESService;
 			break;
 		default:
 			logger.error("Unknow signature form : " + signatureForm);

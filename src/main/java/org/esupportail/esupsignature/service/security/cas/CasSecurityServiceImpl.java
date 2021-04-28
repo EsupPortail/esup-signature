@@ -8,8 +8,6 @@ import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.jasig.cas.client.validation.Cas20ServiceTicketValidator;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -35,11 +33,11 @@ import java.util.List;
 
 public class CasSecurityServiceImpl implements SecurityService {
 
-	@Autowired
-	private ObjectProvider<WebSecurityProperties> webSecurityProperties;
+	@Resource
+	private WebSecurityProperties webSecurityProperties;
 
-	@Autowired
-	private ObjectProvider<SpelGroupService> spelGroupService;
+	@Resource
+	private SpelGroupService spelGroupService;
 
 	@Resource
 	private LdapGroupService ldapGroupService;
@@ -136,13 +134,13 @@ public class CasSecurityServiceImpl implements SecurityService {
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
 		casLdapAuthoritiesPopulator.setRolePrefix("");
-		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
-		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
+		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
+		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
 		casLdapAuthoritiesPopulator.setLdapGroupService(ldapGroupService);
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
-		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getIfAvailable().getGroupToRoleFilterPattern());
-		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getIfAvailable().getMappingGroupsRoles());
-		group2UserRoleService.setGroupService(spelGroupService.getIfAvailable());
+		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
+		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
+		group2UserRoleService.setGroupService(spelGroupService);
 		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);
 		LdapUserDetailsService ldapUserDetailsService = new LdapUserDetailsService(ldapUserSearch, casLdapAuthoritiesPopulator);
 		LdapUserDetailsMapper ldapUserDetailsMapper = new LdapUserDetailsMapper();

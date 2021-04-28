@@ -26,4 +26,13 @@ export class DataField {
         Object.assign(this, dataField);
     }
 
+    compareByPage(b) {
+        let comparison = 0;
+        if (this.page > b.page) {
+            comparison = 1;
+        } else if (this.page < b.page) {
+            comparison = -1;
+        }
+        return comparison;
+    }
 }

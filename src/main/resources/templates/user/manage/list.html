@@ -7,6 +7,11 @@
 <main role="main">
     <div class="wrapper">
         <nav th:insert="fragments/side"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">Espace gestionnaires</li>
+            </ol>
+        </nav>
         <div id="content" class="content">
             <div class="card">
                 <div class="card-body">
@@ -14,14 +19,19 @@
                         <thead class="thead-dark">
                         <tr>
                             <th>Nom du formulaire</th>
+                            <th>Consulter la liste des demandes</th>
                             <th>Export des données</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="form : ${formManaged}">
+                        <th:block th:each="form : ${managedForms}">
                             <tr>
                                 <td th:text="${form.name}"></td>
-                                <td><a type="button" th:href="'user/manage/form/' + ${form.name} + '/datas/csv'"
+                                <td>
+                                    <a type="button" th:href="'user/manage/form/' + ${form.id}"
+                                       class="btn btn-sm btn-primary"><i class="fas fa-list"></i> Liste des demandes</a>
+                                </td>
+                                <td><a type="button" th:href="'user/manage/form/' + ${form.id} + '/datas/csv'"
                                        class="btn btn-sm btn-primary"><i class="fas fa-file-export"></i></a></td>
                             </tr>
                         </th:block>

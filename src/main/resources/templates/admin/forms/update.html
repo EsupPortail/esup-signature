@@ -86,7 +86,11 @@
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                     ce formulaire</small></div>
                             </label>
-                            <input class="form-control" type="text" th:field="*{role}"/>
+                            <select class="form-control" type="text" th:field="*{roles}" multiple>
+                                <th:block th:each="newRole : ${roles}">
+                                    <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
+                                </th:block>
+                            </select>
                         </div>
                         <div class="form-group" id="managers">
                             <label for="managersSelect"><strong>Gestionnaire(s) du circuit</strong>

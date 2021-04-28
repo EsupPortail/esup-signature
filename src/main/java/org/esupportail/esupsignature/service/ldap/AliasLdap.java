@@ -6,7 +6,7 @@ import org.springframework.ldap.odm.annotations.Id;
 
 import javax.naming.Name;
 
-@Entry(objectClasses = {"nisMailAlias"}, base = "ou=aliases-list")
+@Entry(objectClasses = {"nisMailAlias"})
 public final class AliasLdap {
 
     @Id

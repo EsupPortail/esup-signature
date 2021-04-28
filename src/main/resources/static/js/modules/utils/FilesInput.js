@@ -21,6 +21,7 @@ export default class FilesInput extends EventFactory {
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
         } else {
             if(workflowName != null) {
+                this.async = false;
                 this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
             }
         }
@@ -89,7 +90,7 @@ export default class FilesInput extends EventFactory {
             showBrowse: !readOnly,
             showUpload: false,
             showRemove: !readOnly,
-            dropZoneEnabled: !readOnly,
+            dropZoneEnabled: !readOnly && !this.async,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
             uploadAsync: false,

@@ -16,10 +16,10 @@ import java.util.List;
 @ConditionalOnProperty(name = "extdb.datasources.userListDataSource.name", havingValue = "sympa")
 public class SympaUserList implements UserList {
 
-    JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @Resource
-    ExtDbService extDbService;
+    private ExtDbService extDbService;
 
     @PostConstruct
     public void initJdbcTemplate() {
