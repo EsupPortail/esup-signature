@@ -61,8 +61,16 @@
                             <label for="sendAlertToAllRecipients">Avertir tous les participant à la fin du circuit ?</label>
                         </div>
                         <div class="form-group">
-                            <label for="role">Rôle</label>
-                            <input id="role" class="form-control" type="text" th:field="*{role}"/>
+                            <label for="name">
+                                Rôle
+                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                                    ce formulaire</small></div>
+                            </label>
+                            <select class="form-control" type="text" th:field="*{roles}" multiple>
+                                <th:block th:each="newRole : ${roles}">
+                                    <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
+                                </th:block>
+                            </select>
                         </div>
                         <div class="form-group" id="managers">
                             <label for="managersSelect"><strong>Gestionnaire(s) du circuit</strong>
