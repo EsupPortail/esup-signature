@@ -1,14 +1,13 @@
 package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.repository.custom.FormRepositoryCustom;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface FormRepository extends CrudRepository<Form, Long>, FormRepositoryCustom {
+public interface FormRepository extends CrudRepository<Form, Long> {
 	List<Form> findFormByNameAndActiveVersion(String name, Boolean activeVersion);
 	@Query("select distinct f from Form f join f.managers m where m = :email")
 	List<Form> findFormByManagersContains(@Param("email") String email);

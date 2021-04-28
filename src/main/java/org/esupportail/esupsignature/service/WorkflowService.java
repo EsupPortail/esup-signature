@@ -110,7 +110,8 @@ public class WorkflowService {
                 logger.info("update " + classWorkflow.getName() + " on database");
                 Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
                 toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
-                toUpdateWorkflow.setRole(classWorkflow.getRole());
+                toUpdateWorkflow.getRoles().clear();
+                toUpdateWorkflow.getRoles().addAll(classWorkflow.getRoles());
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
                 toUpdateWorkflow.setTitle(classWorkflow.getTitle());
                 toUpdateWorkflow.setSourceType(classWorkflow.getSourceType());
@@ -223,11 +224,14 @@ public class WorkflowService {
     public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
         User user = userService.getByEppn(userEppn);
         User authUser = userService.getByEppn(authUserEppn);
-        List<Workflow> authorizedWorkflows = workflowRepository.findAuthorizedWorkflowByRoles(user.getRoles());
+        Set<Workflow> authorizedWorkflows = new HashSet<>();
+        for (String role : user.getRoles()) {
+            authorizedWorkflows.addAll(workflowRepository.findAuthorizedForms(role));
+        }
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
             workflows.addAll(workflowRepository.findByCreateByEppn(userEppn));
-            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
+//            workflows.addAll(workflowRepository.findByManagersContains(user.getEmail()));
             workflows.addAll(authorizedWorkflows);
         } else {
             for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userEppn, authUser, ShareType.create)) {
@@ -521,7 +525,8 @@ public class WorkflowService {
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
-        workflowToUpdate.setRole(workflow.getRole());
+        workflowToUpdate.getRoles().clear();
+        workflowToUpdate.getRoles().addAll(workflow.getRoles());
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());
         workflowRepository.save(workflowToUpdate);
