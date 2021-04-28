@@ -88,6 +88,7 @@ public class WorkflowAdminController {
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
+		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
