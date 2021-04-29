@@ -6,10 +6,9 @@ export class UserSignaturePad {
         this.signImageBase64 = $("#signImageBase64");
         this.signaturePad = new SignaturePad(this.canvas[0], {
             minWidth: 1,
-            maxWidth: 2,
-            throttle: 0,
-            minDistance: 5,
-            velocityFilterWeight: 0.1
+            maxWidth: 2.5,
+            minDistance: 1,
+            velocityFilterWeight: 0
         });
         this.firstClear = true;
         this.lastSign = null;

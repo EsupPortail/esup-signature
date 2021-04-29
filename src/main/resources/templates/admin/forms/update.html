@@ -86,7 +86,7 @@
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                     ce formulaire</small></div>
                             </label>
-                            <select class="form-control" type="text" th:field="*{roles}" multiple>
+                            <select class="slim-select-simple" type="text" th:field="*{roles}" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
                                 </th:block>
