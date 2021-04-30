@@ -122,6 +122,7 @@ public class SignRequestParamsService {
                 signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
                 liveWfSignRequestParams.add(signRequestParams);
             } else {
+                liveWfSignRequestParams.get(i).setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 liveWfSignRequestParams.get(i).setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
                 liveWfSignRequestParams.get(i).setxPos(signRequestParamses.get(i).getxPos());
                 liveWfSignRequestParams.get(i).setyPos(signRequestParamses.get(i).getyPos());
