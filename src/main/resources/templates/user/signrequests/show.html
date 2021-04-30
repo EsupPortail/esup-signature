@@ -260,16 +260,13 @@
                         </a>
                     </div>
                     <div id="nexu_ready_alert" style="display: none;">
-                        <div class="alert alert-success float-left mt-1 mb-1 col-12">
+                        <div class="alert alert-success mt-1 mb-1 col-12">
                             L’application NexU est fonctionnelle
                             <br/>
                             <small>Vous pouvez utiliser une clé matérielle ou un keystore</small>
                         </div>
-                        <button id="checkValidateSignButtonEnd" class="mb-1 btn btn-success" title="Signer"
-                                th:value="${signRequest.id}" autofocus>Signer et retourner à l'accueil
-                        </button>
-                        <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}" class="mb-1 btn btn-success float-right" title="Signer"
-                                th:value="${signRequest.id}" autofocus>Signer et aller à la suivante <i class="fas fa-arrow-alt-circle-right"></i>
+                        <button id="checkValidateSignButtonNexu" class="mb-1 btn btn-success float-right" title="Signer"
+                                th:value="${signRequest.id}" autofocus>Signer le document
                         </button>
                     </div>
                 </div>
@@ -329,7 +326,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" tabindex="-1" role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" tabindex="-1" role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">

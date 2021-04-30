@@ -123,7 +123,7 @@ public class MailService {
             mimeMessage.setSubject("Une demande signature que vous suivez est terminée");
             mimeMessage.setFrom(mailConfig.getMailFrom());
             List<User> viewersArray = new ArrayList<>(signBook.getViewers());
-            if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
+            if(signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients() != null && signBook.getLiveWorkflow().getWorkflow().getSendAlertToAllRecipients()) {
                 List<LiveWorkflowStep> liveWorkflowSteps = signBook.getLiveWorkflow().getLiveWorkflowSteps();
                 for (LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
                     List<Recipient> recipients = liveWorkflowStep.getRecipients();
