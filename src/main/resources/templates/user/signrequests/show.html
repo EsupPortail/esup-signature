@@ -326,7 +326,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" tabindex="-1" role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" class="modal fade" id="stepRepeatableModal" tabindex="-1" role="dialog"
      aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
