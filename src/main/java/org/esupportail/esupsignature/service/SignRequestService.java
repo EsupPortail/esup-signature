@@ -171,6 +171,10 @@ public class SignRequestService {
 		return signRequest;
 	}
 
+	public Long nbToSignSignRequests(String userEppn) {
+		return signRequestRepository.countByRecipientUserToSign(userEppn);
+	}
+
 	public List<SignRequest> getSignRequestsByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}

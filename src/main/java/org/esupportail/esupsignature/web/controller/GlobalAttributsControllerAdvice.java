@@ -98,7 +98,7 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userEppn));
-        model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
+        model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
     }
 
     public void parseRoles(User user) {
