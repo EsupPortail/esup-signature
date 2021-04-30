@@ -27,6 +27,7 @@ export class SignUi {
     }
 
     initListeners() {
+        $("#checkValidateSignButtonNexu").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
         $("#launchInfiniteSignButton").on('click', e => this.insertStep());
