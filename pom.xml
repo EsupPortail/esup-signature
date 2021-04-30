@@ -16,7 +16,7 @@
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
-		<bouncycastle.version>1.66</bouncycastle.version>
+		<bouncycastle.version>1.68</bouncycastle.version>
 		<java.version>13</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
@@ -32,6 +32,10 @@
 			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
 			<url>https://maven.springframework.org/release</url>
+		</repository>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 		<repository>
 			<id>cefdigital</id>
@@ -621,9 +625,9 @@
 			<version>2.4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>eu.agno3.jcifs</groupId>
+			<groupId>com.github.AgNO3</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>2.1.5</version>
+			<version>3db3e62157</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.chemistry.opencmis</groupId>
