@@ -369,9 +369,12 @@ public class SignBookService {
                 importWorkflow(signBook, workflow, externalUsersInfos);
                 nextWorkFlowStep(signBook);
                 if(targetEmails != null && targetEmails.size() > 0) {
+                    signBook.getLiveWorkflow().getTargets().clear();
                     StringBuilder targetEmailsToAdd = new StringBuilder();
                     for (String targetEmail : targetEmails) {
-                        targetEmailsToAdd.append(targetEmail).append(";");
+                        if(!targetEmailsToAdd.toString().contains(targetEmail)) {
+                            targetEmailsToAdd.append(targetEmail.split("\\*")[1]).append(";");
+                        }
                     }
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }
