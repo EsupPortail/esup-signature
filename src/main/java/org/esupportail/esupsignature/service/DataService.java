@@ -80,10 +80,10 @@ public class DataService {
         return dataRepository.findByFormId(formId);
     }
 
-    public void delete(Long id) {
+    public void delete(Long id, String userEppn) {
         Data data = getById(id);
         if (data.getSignBook() != null) {
-            signBookService.delete(data.getSignBook().getId());
+            signBookService.delete(data.getSignBook().getId(), userEppn);
         }
         data.setForm(null);
         dataRepository.delete(data);

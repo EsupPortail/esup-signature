@@ -67,7 +67,7 @@ public class FsAccessServiceTest {
                 logger.info(fsAccessService.getDriveName() + " ready");
             }
         } catch (Exception e) {
-            logger.error(fsAccessService.getDriveName() + " configuration error. You can disable it in application.yml", e.getMessage());
+            logger.error(fsAccessService.getDriveName() + " configuration error. You can disable it in application.yml", e);
             fail();
         }
     }

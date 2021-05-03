@@ -13,12 +13,14 @@ import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
 import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
+import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -155,6 +157,12 @@ public class SignRequestService {
 
 	@Resource
 	private MessageSource messageSource;
+
+	@Resource
+	private ValidationService validationService;
+
+	@Resource
+	private FOPService fopService;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -408,10 +416,13 @@ public class SignRequestService {
 				}
 				});
 			return true;
+		} catch (EsupSignatureKeystoreException e) {
+			logger.error(e.getMessage());
+			return true;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			logger.error(e.getMessage());
+			return false;
 		}
-		return false;
 	}
 
 	@Transactional
@@ -932,7 +943,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void delete(Long signRequestId) {
+	public void delete(Long signRequestId, String userEppn) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
 		signRequest.getOriginalDocuments().clear();
@@ -940,6 +951,7 @@ public class SignRequestService {
 			signRequest.getSignedDocuments().clear();
 		}
 		signRequest.setStatus(SignRequestStatus.deleted);
+		logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 		otpService.deleteOtpBySignRequestId(signRequestId);
 	}
 
@@ -1173,6 +1185,9 @@ public class SignRequestService {
 
 	@Transactional
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
+			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+		}
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
 		try {
 			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
@@ -1307,6 +1322,43 @@ public class SignRequestService {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			return fileService.getFileResponse(fsFile.getInputStream().readAllBytes(), fsFile.getName(), fsFile.getContentType());
 		}
+	}
+
+	@Transactional
+	public void getToSignFileReportResponse(Long signRequestId, HttpServletResponse response) throws Exception {
+		SignRequest signRequest = getById(signRequestId);
+		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+		String name = "";
+		InputStream inputStream = null;
+		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+			if(getToSignDocuments(signRequest.getId()).size() == 1) {
+				List<Document> documents = getToSignDocuments(signRequest.getId());
+				name = documents.get(0).getFileName();
+				inputStream = documents.get(0).getInputStream();
+			}
+		} else {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			name = fsFile.getName();
+			inputStream = fsFile.getInputStream();
+		}
+
+		if(inputStream != null) {
+			byte[] fileBytes = inputStream.readAllBytes();
+
+			zipOutputStream.putNextEntry(new ZipEntry(name));
+			IOUtils.copy(new ByteArrayInputStream(fileBytes), zipOutputStream);
+			zipOutputStream.closeEntry();
+			File reportFile = fileService.getTempFile("report.pdf");
+
+			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
+
+			fopService.generateDetailedReport(reports.getXmlDetailedReport(), new FileOutputStream(reportFile));
+			zipOutputStream.putNextEntry(new ZipEntry("report.pdf"));
+			IOUtils.copy(new FileInputStream(reportFile), zipOutputStream);
+			zipOutputStream.closeEntry();
+			reportFile.delete();
+		}
+		zipOutputStream.close();
 	}
 
 	@Transactional
