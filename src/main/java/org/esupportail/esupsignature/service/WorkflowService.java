@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
@@ -257,9 +256,6 @@ public class WorkflowService {
                 if (fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
                     logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
                     fsAccessService.createFile("/", workflow.getDocumentsSourceUri(), "folder");
-                    if (fsAccessService.getFile("/" + workflow.getDocumentsSourceUri() + "/signed") == null) {
-                        fsAccessService.createFile("/" + workflow.getDocumentsSourceUri() + "/", "signed", "folder");
-                    }
                 }
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
@@ -324,7 +320,7 @@ public class WorkflowService {
                         logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
                     }
                 } catch (Exception e) {
-                    throw new EsupSignatureRuntimeException("error on import from " + workflow.getDocumentsSourceUri(), e);
+                    logger.error("error on import from " + workflow.getDocumentsSourceUri());
                 }
                 fsAccessService.close();
             } else {

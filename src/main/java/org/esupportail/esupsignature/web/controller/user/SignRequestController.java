@@ -351,7 +351,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
-        signRequestService.delete(id);
+        signRequestService.delete(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         return "redirect:" + request.getHeader("referer");
     }
@@ -377,7 +377,7 @@ public class SignRequestController {
     public ResponseEntity<Boolean> deleteMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
         for(Long id : ids) {
             if(preAuthorizeService.signBookManage(id, authUserEppn)) {
-                signBookService.delete(id);
+                signBookService.delete(id, authUserEppn);
             }
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
@@ -454,6 +454,18 @@ public class SignRequestController {
                 httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-last-file-report/{id}")
+    public ResponseEntity<Void> getLastFileReport(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
+        try {
+            signRequestService.getToSignFileReportResponse(id, httpServletResponse);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.error("get file error", e);
