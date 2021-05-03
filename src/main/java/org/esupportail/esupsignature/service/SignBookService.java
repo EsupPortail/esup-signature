@@ -184,12 +184,12 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public void delete(Long signBookId) {
+    public void delete(Long signBookId, String userEppn) {
         //TODO critères de suppression ou en conf (if deleteDefinitive)
         SignBook signBook = getById(signBookId);
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
-            signRequestService.delete(signRequestId);
+            signRequestService.delete(signRequestId, userEppn);
         }
         signBook.setStatus(SignRequestStatus.deleted);
     }

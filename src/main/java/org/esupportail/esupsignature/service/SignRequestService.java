@@ -932,7 +932,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void delete(Long signRequestId) {
+	public void delete(Long signRequestId, String userEppn) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
 		signRequest.getOriginalDocuments().clear();
@@ -940,6 +940,7 @@ public class SignRequestService {
 			signRequest.getSignedDocuments().clear();
 		}
 		signRequest.setStatus(SignRequestStatus.deleted);
+		logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 		otpService.deleteOtpBySignRequestId(signRequestId);
 	}
 

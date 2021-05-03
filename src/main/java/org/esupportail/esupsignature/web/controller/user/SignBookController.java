@@ -57,7 +57,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-        signBookService.delete(id);
+        signBookService.delete(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
         return "redirect:/user/";
     }
@@ -66,7 +66,7 @@ public class SignBookController {
     @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
     @ResponseBody
     public void silentDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-        signBookService.delete(id);
+        signBookService.delete(id, authUserEppn);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
