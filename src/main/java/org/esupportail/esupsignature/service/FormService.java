@@ -232,9 +232,11 @@ public class FormService {
 		form.setDocument(document);
 		form.getTargets().addAll(targets);
 		form.getRoles().clear();
+		if(roleNames == null) roleNames = new ArrayList<>();
 		form.getRoles().addAll(roleNames);
 		form.setPreFillType(prefillType);
 		form.setWorkflow(workflow);
+		if(publicUsage == null) publicUsage = false;
 		form.setPublicUsage(publicUsage);
 		document.setParentId(form.getId());
 		if(testForms.size() == 1) {

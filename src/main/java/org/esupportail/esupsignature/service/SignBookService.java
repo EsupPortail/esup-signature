@@ -184,12 +184,12 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public void delete(Long signBookId) {
+    public void delete(Long signBookId, String userEppn) {
         //TODO critères de suppression ou en conf (if deleteDefinitive)
         SignBook signBook = getById(signBookId);
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
-            signRequestService.delete(signRequestId);
+            signRequestService.delete(signRequestId, userEppn);
         }
         signBook.setStatus(SignRequestStatus.deleted);
     }
@@ -369,9 +369,12 @@ public class SignBookService {
                 importWorkflow(signBook, workflow, externalUsersInfos);
                 nextWorkFlowStep(signBook);
                 if(targetEmails != null && targetEmails.size() > 0) {
+                    signBook.getLiveWorkflow().getTargets().clear();
                     StringBuilder targetEmailsToAdd = new StringBuilder();
                     for (String targetEmail : targetEmails) {
-                        targetEmailsToAdd.append(targetEmail).append(";");
+                        if(!targetEmailsToAdd.toString().contains(targetEmail)) {
+                            targetEmailsToAdd.append(targetEmail.split("\\*")[1]).append(";");
+                        }
                     }
                     signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
                 }

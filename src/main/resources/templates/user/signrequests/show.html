@@ -117,6 +117,11 @@
                            th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
                            title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
                     </li>
+                    <li>
+                        <a class="btn-lg btn-floating bg-primary waves-effect"
+                           th:href="'/user/signrequests/get-last-file-report/' + ${id}" target="_blank"
+                           title="Enregistrer le document signé et le rapport de signature"><i class="fas fa-file-archive"></i></a>
+                    </li>
                     <li><a title="Export SEDA" class="btn btn-floating bg-primary aves-effect d-none" th:href="'/user/signrequests/get-seda/' + ${id}">
                         <i class="fas fa-file-export"></i>
                     </a></li>

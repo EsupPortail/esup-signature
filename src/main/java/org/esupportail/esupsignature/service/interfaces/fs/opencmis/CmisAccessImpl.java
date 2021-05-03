@@ -10,7 +10,6 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.Updatability;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
-import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -107,7 +106,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			else
 				path = cmisSession.getRootFolder().getId();
 		} else {
-			path = rootPath + path;
+			path = ("/" + path.replace(uri, "")).replaceAll("(?<!(http:|https:))//", "/");
 		}
 		return path;
 	}
@@ -116,30 +115,28 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 		this.open();
 		try {
 			return cmisSession.getObjectByPath(constructPath(path));
-		} catch (CmisObjectNotFoundException e){
-			logger.error("unable to open path", e);
+		} catch (Exception e){
+			logger.warn("unable to open path : " + path, e.getMessage()) ;
 		}
 		return null;
 	}
 
 	@Override
 	public void open() {
-	
+
 		super.open();
 		
 		if(!this.isOpened()) {
-		
 			Map<String, String> parameters = new HashMap<String, String>();
 			parameters.put(SessionParameter.BINDING_TYPE, BindingType.ATOMPUB.value());
-			parameters.put(SessionParameter.ATOMPUB_URL, uri + "/atom/cmis/");
+			parameters.put(SessionParameter.ATOMPUB_URL, (uri  + "/atom/cmis/").replaceAll("(?<!(http:|https:))//", "/"));
 			parameters.put(SessionParameter.REPOSITORY_ID, respositoryId);
 			parameters.put(SessionParameter.USER, login);
 			parameters.put(SessionParameter.PASSWORD, password);
-
 			try {
 				cmisSession = SessionFactoryImpl.newInstance().createSession(parameters);	
 			} catch(Exception e) {
-				logger.warn("failed to retrieve cmisSession : " + uri + " , repository is not accessible or simply not started ?", e);
+				logger.error("failed to retrieve cmisSession : " + parameters.get(SessionParameter.ATOMPUB_URL) + " , repository is not accessible or simply not started ?");
 			}
 		}
 	}
@@ -160,7 +157,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public void close() {
-		cmisSession.clear();
+		if(cmisSession != null) cmisSession.clear();
 	}
 
 
@@ -206,34 +203,53 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public String createFile(String parentPath, String title, String type) {
-    	logger.info("try to create : " + title + " in " + parentPath);
-		Folder parent = (Folder) getCmisObject(parentPath);
-		CmisObject createdObject = null; 
-		if("folder".equals(type)) {
-			Map<String, String> prop = new HashMap<String, String>();
-			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_FOLDER.value());
-			prop.put(PropertyIds.NAME, String.valueOf(title));
-			if(getCmisObject(parentPath + title) == null) {
-				createdObject = parent.createFolder(prop, null, null, null, cmisSession.getDefaultContext());
+    	if(cmisSession != null) {
+			title = constructPath(title);
+			logger.info("try to create : " + title + " in " + parentPath);
+			Folder parent = (Folder) getCmisObject(parentPath);
+			CmisObject createdObject = null;
+			if ("folder".equals(type)) {
+				Map<String, String> prop = new HashMap<>();
+				prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_FOLDER.value());
+				prop.put(PropertyIds.NAME, title);
+				prop.put(PropertyIds.OBJECT_ID, title);
+				prop.put(PropertyIds.PATH, constructPath(parentPath) + title);
+				if (getCmisObject(parentPath + title) == null) {
+					cd(parentPath);
+					if(parent != null) {
+						createdObject = parent.createFolder(prop, null, null, null, cmisSession.getDefaultContext());
+					}
+				}
+			} else if ("file".equals(type)) {
+				Map<String, String> prop = new HashMap<String, String>();
+				prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
+				prop.put(PropertyIds.NAME, String.valueOf(title));
+				if (getCmisObject(parentPath + title) == null) {
+					createdObject = parent.createDocument(prop, null, null, null, null, null, cmisSession.getDefaultContext());
+				}
 			}
-		} else if("file".equals(type)) {
-			Map<String, String> prop = new HashMap<String, String>();
-			prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
-			prop.put(PropertyIds.NAME, String.valueOf(title));
-			if(getCmisObject(parentPath + title) == null) {
-				createdObject = parent.createDocument(prop, null, null, null, null, null, cmisSession.getDefaultContext());
+			if (createdObject != null) {
+				return parentPath + "/" + title;
+			} else {
+				return null;
 			}
-		}
-		if(createdObject != null) {
-			return parentPath + "/" + createdObject.getName();
 		} else {
-			return null;
+    		logger.error("no cmis session when creating : " + title);
+    		return null;
 		}
 	}
 
 	@Override
 	public void createURITree(String uri) {
-
+		if(getFileFromURI(uri) == null) {
+			String parent = uri.substring(0, uri.lastIndexOf("/"));
+			if(getFileFromURI(parent) == null){
+				createURITree(parent);
+			}
+			createFile(parent, uri.substring(uri.lastIndexOf("/")), "folder");
+		} else {
+			logger.info(uri + " already exist");
+		}
 	}
 
 	@Override
@@ -278,7 +294,11 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public boolean putFile(String dir, String filename, InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException {
 		//must manage the upload option.
-		Folder targetFolder = (Folder)getCmisObject(dir);
+		Folder targetFolder = (Folder) getCmisObject(dir);
+		if(targetFolder == null) {
+			createURITree(dir);
+			targetFolder = (Folder) getCmisObject(dir);
+		}
 		Map<String, String> prop = new HashMap<String, String>();
 		prop.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
 		prop.put(PropertyIds.NAME, String.valueOf(filename));
@@ -314,7 +334,13 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public FsFile getFileFromURI(String uri) {
-		// TODO Auto-generated method stub
+		CmisObject cmisObject = getCmisObject(uri);
+		if(cmisObject != null) {
+			if(cmisObject.getType().getParentTypeId().equals("cmis:folder")) {
+				return new FsFile();
+			}
+			return toFsFile(cmisObject);
+		}
 		return null;
 	}
 

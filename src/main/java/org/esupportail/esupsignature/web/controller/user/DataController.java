@@ -178,7 +178,7 @@ public class DataController {
 	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
 	@DeleteMapping("{id}")
 	public String deleteData(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
-		dataService.delete(id);
+		dataService.delete(id, userEppn);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
 		return "redirect:/user/datas/";
 	}
