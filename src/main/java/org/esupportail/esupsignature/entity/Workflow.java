@@ -38,7 +38,7 @@ public class Workflow {
 
     private String updateBy;
 
-    @ElementCollection
+    @ElementCollection(targetClass=String.class)
     private List<String> roles = new ArrayList<>();
 
     @ElementCollection(targetClass= ShareType.class)

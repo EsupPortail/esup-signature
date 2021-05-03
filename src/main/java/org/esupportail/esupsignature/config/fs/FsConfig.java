@@ -67,7 +67,7 @@ public class FsConfig {
 		cmisAccessImpl.setLogin(fsProperties.getCmisLogin());
 		cmisAccessImpl.setPassword(fsProperties.getCmisPassword());
 		cmisAccessImpl.setRespositoryId(fsProperties.getCmisRespositoryId());
-		cmisAccessImpl.setRootPath(fsProperties.getCmisRootPath());
+//		cmisAccessImpl.setRootPath(fsProperties.getCmisRootPath());
 		return cmisAccessImpl;
 	}
 

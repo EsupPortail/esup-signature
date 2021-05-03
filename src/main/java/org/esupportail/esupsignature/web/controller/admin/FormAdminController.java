@@ -120,18 +120,24 @@ public class FormAdminController {
 	}
 
 	@PostMapping("generate")
-	public String generateForm(@RequestParam("multipartFile") MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, DocumentIOType targetType, String targetUri, Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
+	public String generateForm(
+			@RequestParam("multipartFile") MultipartFile multipartFile,
+			@RequestParam String name,
+			@RequestParam String title,
+			@RequestParam Long workflowId,
+			@RequestParam String prefillType,
+			@RequestParam(required = false) List<String> roleNames,
+			@RequestParam(required = false) Boolean publicUsage,
+			RedirectAttributes redirectAttributes) throws IOException {
 		List<Target> targets = new ArrayList<>();
-		targets.add(targetService.createTarget(targetType, targetUri));
-		Form form = null;
 		try {
-			form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, targets, publicUsage);
+			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, targets, publicUsage);
+			return "redirect:/admin/forms/" + form.getId();
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 			return "redirect:/admin/forms/";
 		}
-		return "redirect:/admin/forms/" + form.getId();
 	}
 
 	@GetMapping("update/{id}")

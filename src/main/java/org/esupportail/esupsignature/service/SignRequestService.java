@@ -1173,6 +1173,9 @@ public class SignRequestService {
 
 	@Transactional
 	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
+			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
+		}
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
 		try {
 			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);

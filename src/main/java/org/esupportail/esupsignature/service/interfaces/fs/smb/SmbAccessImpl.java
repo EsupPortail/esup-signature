@@ -175,7 +175,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			if(getFileFromURI(parent) == null){
 				createURITree(parent);
 			}
-			createFile(parent, uri.substring(uri.lastIndexOf("/"), uri.length()), "folder");
+			createFile(parent, uri.substring(uri.lastIndexOf("/")), "folder");
 		} else {
 			logger.info(uri + " already exist");
 		}
