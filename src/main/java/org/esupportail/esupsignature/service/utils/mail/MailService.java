@@ -322,15 +322,15 @@ public class MailService {
         User user = signRequests.get(0).getCreateBy();
         ctx.setVariable("user", user);
         setTemplate(ctx);
-        final MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper message;
-        message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        message.setSubject("Nouveau document signer à télécharger : " + title);
-        message.setFrom(mailConfig.getMailFrom());
-        message.setTo(targetUri.split(";"));
+        MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
-        message.setText(htmlContent, true);
-        mailSender.send(mimeMessage);
+        mimeMessage.setText(htmlContent, true);
+        mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
+        mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
+        mimeMessage.setSubject("Nouveau document signer à télécharger : " + title);
+        mimeMessage.setFrom(mailConfig.getMailFrom());
+        mimeMessage.setTo(targetUri.split(";"));
+        mailSender.send(mimeMessage.getMimeMessage());
 
     }
 

@@ -1315,17 +1315,39 @@ textarea:placeholder-shown.required-field {
 }
 
 .textWidgetAnnotation input {
-    border: 1px solid;
+    border: 1px solid transparent !important;
 }
 
 .textWidgetAnnotation input:focus {
-    /*border: 1px solid !important;*/
     background-color: #e0e0e0 !important;
 }
 
-.choiceWidgetAnnotation select:focus {
-    /*border: 1px solid !important;*/
+.textWidgetAnnotation textarea:focus {
     background-color: #e0e0e0 !important;
+}
+
+.choiceWidgetAnnotation {
+    border: 1px solid transparent !important;
+
+}
+
+.choiceWidgetAnnotation select {
+    margin-top: -1px !important;
+    font-size: 9px !important;
+    border: 1px solid transparent !important;
+    height: 140% !important;
+}
+
+.choiceWidgetAnnotation select:focus {
+    background-color: #e0e0e0 !important;
+}
+
+.choiceWidgetAnnotation select:hover {
+    border: 1px solid black !important;
+}
+
+.choiceWidgetAnnotation select option {
+    font-size: 14px !important;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -1342,15 +1364,6 @@ input:focus, textarea:focus, select:focus {
     left: 20%;
     top: 20%;
     width: 60%;
-}
-
-.choiceWidgetAnnotation select {
-    font-size: 9px !important;
-    border: 1px solid transparent !important;
-}
-
-.choiceWidgetAnnotation select option {
-    font-size: 14px !important;
 }
 
 .sign-field {

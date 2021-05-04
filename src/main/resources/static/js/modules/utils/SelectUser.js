@@ -117,7 +117,6 @@ export default class SelectUser {
                 $('#end').show();
             }
         }
-        let csrf = this.csrf;
         let recipientEmails = this.slimSelect.selected();
         $('[id^="allSignToComplete-"]').each(function(){
             if (recipientEmails.length > 1) {
@@ -127,15 +126,19 @@ export default class SelectUser {
             }
         })
 
-        $.ajax({
-            url: "/user/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
-            type: 'POST',
-            contentType: "application/json",
-            dataType: 'json',
-            data: JSON.stringify(recipientEmails),
-            success: data => this.displayTempUsersSuccess(data),
-            error: e => this.displayExternalsError()
-        });
+        if(this.csrf) {
+            let csrf = this.csrf;
+            $.ajax({
+                url: "/user/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+                type: 'POST',
+                contentType: "application/json",
+                dataType: 'json',
+                data: JSON.stringify(recipientEmails),
+                success: data => this.displayTempUsersSuccess(data),
+                error: e => this.displayExternalsError()
+            });
+        }
+
         if (this.flag === true && e.length > 0) {
             let text = e[e.length - 1].value;
             console.info("check : " + text);
@@ -237,10 +240,13 @@ export default class SelectUser {
         let typeValues = [];
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
-            typeValues[j] = {
-                text : value,
-                value : this.valuePrefix + value,
-            };
+            if(!this.slimSelect.selected().includes(this.valuePrefix + value)) {
+                let typeValue = {
+                    text: value,
+                    value: this.valuePrefix + value,
+                };
+                typeValues[j] = typeValue;
+            }
         }
         this.favorites = typeValues;
         this.slimSelect.setData(this.favorites);

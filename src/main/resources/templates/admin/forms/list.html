@@ -178,20 +178,6 @@
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="targetType" class="col-form-label">Type de destination</label>
-                        <select class="slim-select-simple" id="targetType" name="targetType">
-                            <th:block th:each="targetType : ${T(org.esupportail.esupsignature.entity.enums.DocumentIOType).values()}">
-                                <option th:value="${targetType}"
-                                        th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="name" class="col-form-label">Destination des documents</label>
-                        <input type="text" name="targetURI" class="form-control">
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
