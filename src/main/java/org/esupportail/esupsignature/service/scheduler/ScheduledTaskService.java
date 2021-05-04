@@ -60,7 +60,7 @@ public class ScheduledTaskService {
 		this.oJService = oJService;
 	}
 
-	@Scheduled(fixedRate = 300000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksSources() {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
@@ -70,7 +70,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
 		logger.trace("scan all signRequest to export");
@@ -101,7 +101,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(fixedRate = 300000)
+	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
 		List<User> users = userService.getAllUsers();

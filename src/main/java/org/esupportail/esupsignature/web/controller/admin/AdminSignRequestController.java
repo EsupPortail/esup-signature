@@ -123,9 +123,9 @@ public class AdminSignRequestController {
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
-	public String delete(@PathVariable("id") Long id, HttpServletRequest request) {
+	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
-		signBookService.delete(signRequest.getParentSignBook().getId());
+		signBookService.delete(signRequest.getParentSignBook().getId(), authUserEppn);
 		return "redirect:" + request.getHeader("Referer");
 	}
 

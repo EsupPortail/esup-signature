@@ -221,7 +221,7 @@ public class PdfService {
                         setMetadatasAttributes(metadatas, xmpMetadata);
                     }
                 } catch (Exception e) {
-                    logger.error("error on search metadatas", e);
+                    logger.warn("error on search metadatas : " + e.getMessage());
                 }
             }
         } catch (IOException e) {
