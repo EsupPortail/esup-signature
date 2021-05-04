@@ -15,17 +15,14 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom {
-    Long countById(Long id);
+    @Query("select count(s.id) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and key(s.recipientHasSigned).user.eppn = :recipientUserEppn and key(s.recipientHasSigned).signed = false and r.user.eppn = :recipientUserEppn and r.signed = false")
+    Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);
-    Long countByToken(String token);
-    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed is false")
+    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
-    @Query("select count(s.id) from SignRequest s where s.status = 'pending' and key(s.recipientHasSigned).user.eppn = :recipientUserEppn and key(s.recipientHasSigned).signed = false")
-    Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByCreateByEppn(String createByEppn);
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
-    List<SignRequest> findByCreateByEppnAndStatusNot(String createByEppn, SignRequestStatus status);
     Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
     Page<SignRequest> findById(Long id, Pageable pageable);
     Page<SignRequest> findAll(Pageable pageable);
@@ -38,5 +35,4 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     SignRequest findSignRequestByCommentsContains(Comment comment);
     List<SignRequest> findByTitle(String title);
     List<SignRequest> findByParentSignBookTitle(String title);
-    List<SignRequest> findByStatus(SignRequestStatus status);
 }
