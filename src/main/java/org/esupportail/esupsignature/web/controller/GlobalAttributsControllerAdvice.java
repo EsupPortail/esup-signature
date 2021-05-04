@@ -29,9 +29,6 @@ public class GlobalAttributsControllerAdvice {
     private SignRequestService signRequestService;
 
     @Resource
-    private SignBookService signBookService;
-
-    @Resource
     private FormService formService;
 
     @Resource
