@@ -15,11 +15,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom {
-    @Query("select count(s.id) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and key(s.recipientHasSigned).user.eppn = :recipientUserEppn and key(s.recipientHasSigned).signed = false and r.user.eppn = :recipientUserEppn and r.signed = false")
+    @Query("select distinct count(s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);
-    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
+    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByCreateByEppn(String createByEppn);
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
