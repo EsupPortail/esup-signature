@@ -179,10 +179,6 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public Long nbToSignSignRequests(String userEppn) {
-		return signRequestRepository.countByRecipientUserToSign(userEppn);
-	}
-
 	public List<SignRequest> getSignRequestsByToken(String token) {
 		return signRequestRepository.findByToken(token);
 	}
@@ -260,6 +256,10 @@ public class SignRequestService {
 			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
 		}
 		return new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
+	}
+
+	public Long nbToSignSignRequests(String userEppn) {
+		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
