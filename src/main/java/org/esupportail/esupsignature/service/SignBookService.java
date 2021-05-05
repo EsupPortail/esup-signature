@@ -370,13 +370,7 @@ public class SignBookService {
                 nextWorkFlowStep(signBook);
                 if(targetEmails != null && targetEmails.size() > 0) {
                     signBook.getLiveWorkflow().getTargets().clear();
-                    StringBuilder targetEmailsToAdd = new StringBuilder();
-                    for (String targetEmail : targetEmails) {
-                        if(!targetEmailsToAdd.toString().contains(targetEmail)) {
-                            targetEmailsToAdd.append(targetEmail.split("\\*")[1]).append(";");
-                        }
-                    }
-                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
+                    addTargetEmails(targetEmails, signBook);
                 }
                 if(recipientsEmails != null) {
                     for (String recipientEmail : recipientsEmails) {
@@ -386,6 +380,16 @@ public class SignBookService {
             }
             pendingSignBook(signBook, null, userEppn, authUserEppn, false);
         }
+    }
+
+    public void addTargetEmails(List<String> targetEmails, SignBook signBook) {
+        StringBuilder targetEmailsToAdd = new StringBuilder();
+        for (String targetEmail : targetEmails) {
+            if(!targetEmailsToAdd.toString().contains(targetEmail)) {
+                targetEmailsToAdd.append(targetEmail.split("\\*")[1]).append(";");
+            }
+        }
+        signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
     }
 
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {

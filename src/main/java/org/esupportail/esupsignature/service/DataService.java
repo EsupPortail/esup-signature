@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -101,11 +100,6 @@ public class DataService {
             recipientsEmails = new ArrayList<>();
         }
         Form form = data.getForm();
-        if (form.getTargets().contains(DocumentIOType.mail)) {
-            if (targetEmails == null || targetEmails.size() == 0) {
-                throw new EsupSignatureException("Target email empty");
-            }
-        }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
@@ -125,12 +119,8 @@ public class DataService {
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargets().size() > 0) {
             targetService.copyTargets(form.getTargets(), signBook);
-            for(Target target : form.getTargets()) {
-                if (target.getTargetType().equals(DocumentIOType.mail)) {
-                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
-                }
-            }
         }
+        signBookService.addTargetEmails(targetEmails, signBook);
         data.setSignBook(signBook);
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
