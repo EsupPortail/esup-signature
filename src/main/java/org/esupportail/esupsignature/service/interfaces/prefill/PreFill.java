@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.prefill;
 
 import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 
 import java.util.List;
@@ -12,6 +13,6 @@ public interface PreFill {
 	String getName();
 	Map<String, List<String>> getTypes();
 	String getDescription();
-	List<Field> preFillFields(List<Field> fields, User user);
+	List<Field> preFillFields(List<Field> fields, User user, SignRequest signRequest);
 
 }
