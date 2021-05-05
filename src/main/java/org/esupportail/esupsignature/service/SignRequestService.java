@@ -1350,6 +1350,15 @@ public class SignRequestService {
 		}
 
 		if(inputStream != null) {
+			int i = 0;
+			for(Document document : signRequest.getAttachments()) {
+				zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
+				IOUtils.copy(document.getInputStream(), zipOutputStream);
+				zipOutputStream.write(document.getInputStream().readAllBytes());
+				zipOutputStream.closeEntry();
+				i++;
+			}
+
 			byte[] fileBytes = inputStream.readAllBytes();
 
 			zipOutputStream.putNextEntry(new ZipEntry(name));
