@@ -25,6 +25,8 @@ public class LiveWorkflowStep {
 
     private Boolean repeatable = false;
 
+    private Boolean multiSign = true;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -72,6 +74,14 @@ public class LiveWorkflowStep {
 
     public void setRepeatable(Boolean repeatable) {
         this.repeatable = repeatable;
+    }
+
+    public Boolean getMultiSign() {
+        return multiSign;
+    }
+
+    public void setMultiSign(Boolean multiSign) {
+        this.multiSign = multiSign;
     }
 
     public SignType getSignType() {
