@@ -569,7 +569,7 @@ public class SignService {
 
 	public boolean checkSignTypeDocType(SignType signType, MultipartFile multipartFile) {
 		boolean check = true;
-		if(!multipartFile.getContentType().toLowerCase().contains("pdf") && !multipartFile.getContentType().toLowerCase().contains("jpeg")) {
+		if(!multipartFile.getContentType().toLowerCase().contains("pdf") && !multipartFile.getContentType().toLowerCase().contains("image")) {
 			if(signType.equals(SignType.pdfImageStamp)) {
 				check = false;
 			}

@@ -321,15 +321,18 @@ public class SignRequestService {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
-				if (multipartFiles.length == 1 && multipartFiles[0].getContentType().equals("application/pdf")) {
-					try {
+				String contentType = multipartFile.getContentType();
+				if (multipartFiles.length == 1) {
+					if(multipartFiles[0].getContentType().equals("application/pdf")) {
 						signRequest.getSignRequestParams().addAll(signRequestParamsService.scanSignatureFields(new FileInputStream(file)));
-					} catch (IOException e) {
-						throw new EsupSignatureIOException("unable to open multipart inputStream", e);
+					} else if(multipartFiles[0].getContentType().contains("image")){
+						file.delete();
+						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
+						contentType = "application/pdf";
 					}
 				}
 				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
-				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
+				Document document = documentService.createDocument(new FileInputStream(file), docName, contentType);
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 				file.delete();
@@ -338,7 +341,6 @@ public class SignRequestService {
 			}
 		}
 	}
-
 
 	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
