@@ -6,7 +6,7 @@ import {SseDispatcher} from "../../utils/SseDispatcher.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, signImages, userName, signType, fields, stepRepeatable, status, csrf, action) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, signImages, userName, signType, fields, stepRepeatable, status, csrf, action) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.changeModeSelector = null;
@@ -52,7 +52,7 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initListeners();
         this.initDataFields(fields);
-        if (currentSignRequestParams == null || formId == null) {
+        if (currentSignRequestParams == null || formId == null || (currentStepMultiSign !== null && currentStepMultiSign)) {
             $("#second-tools").toggleClass("d-none d-flex");
             $("#workspace").css("margin-top", "170px");
         }

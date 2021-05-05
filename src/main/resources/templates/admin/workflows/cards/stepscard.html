@@ -51,6 +51,16 @@
                                 </div>
                                 <div class="form-group">
                                     <label>
+                                        L'utilisateur peut apposer plusieurs signatures
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="multiSign"
+                                               th:checked="${workflowStep.multiSign}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
                                         Tous les participants doivent-ils signer ?
                                     </label>
                                     <label class="switch">

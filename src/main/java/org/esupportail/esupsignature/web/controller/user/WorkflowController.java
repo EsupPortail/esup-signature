@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -56,10 +55,11 @@ public class WorkflowController {
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="description") String description,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
+                                     @RequestParam(name="multiSign", required = false) Boolean multiSign,
                                      @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete);
         return "redirect:/user/workflows/" + id;
     }
 

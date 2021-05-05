@@ -34,6 +34,8 @@ public class WorkflowStep {
 
     private Boolean allSignToComplete = false;
 
+    private Boolean multiSign = true;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -75,6 +77,14 @@ public class WorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getMultiSign() {
+        return multiSign;
+    }
+
+    public void setMultiSign(Boolean multiSign) {
+        this.multiSign = multiSign;
     }
 
     public SignType getSignType() {
