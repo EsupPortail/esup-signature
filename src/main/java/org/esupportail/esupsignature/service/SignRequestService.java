@@ -67,7 +67,9 @@ import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
@@ -1328,6 +1330,8 @@ public class SignRequestService {
 	@Transactional
 	public void getToSignFileReportResponse(Long signRequestId, HttpServletResponse response) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
+		response.setContentType("application/zip; charset=utf-8");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "_report", StandardCharsets.UTF_8.toString()) + ".zip");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 		String name = "";
 		InputStream inputStream = null;
@@ -1353,7 +1357,7 @@ public class SignRequestService {
 
 			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
 
-			fopService.generateDetailedReport(reports.getXmlDetailedReport(), new FileOutputStream(reportFile));
+			fopService.generateSimpleReport(reports.getXmlSimpleReport(), new FileOutputStream(reportFile));
 			zipOutputStream.putNextEntry(new ZipEntry("report.pdf"));
 			IOUtils.copy(new FileInputStream(reportFile), zipOutputStream);
 			zipOutputStream.closeEntry();
@@ -1435,6 +1439,8 @@ public class SignRequestService {
 
 	@Transactional
 	public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException {
+		response.setContentType("application/zip; charset=utf-8");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
 		List<Document> documents = new ArrayList<>();
 		for(Long id : ids) {
 			SignBook signBook = signBookService.getById(id);

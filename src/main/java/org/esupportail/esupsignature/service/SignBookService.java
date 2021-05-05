@@ -259,7 +259,7 @@ public class SignBookService {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
-                mailService.sendCompletedMail(signBook);
+                mailService.sendCompletedMail(signBook, authUser);
                 mailService.sendCompletedCCMail(signBook);
             } catch (EsupSignatureMailException e) {
                 throw new EsupSignatureException(e.getMessage());

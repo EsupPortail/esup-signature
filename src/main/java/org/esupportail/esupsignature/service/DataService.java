@@ -265,12 +265,6 @@ public class DataService {
         }
     }
 
-    public SignBook cloneFromSignRequest(SignRequest signRequest, String userEppn, String authUserEppn, List<String> recipientEmails, List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
-        Data data = getBySignRequest(signRequest);
-        Data dataClone = cloneData(data, authUserEppn);
-        return initSendData(dataClone.getId(), userEppn, recipientEmails, targetEmails, authUserEppn);
-    }
-
     public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {
         List<Field> fields = getPrefilledFields(form, user, data.getSignBook().getSignRequests().get(0));
         for (Field field : fields) {
