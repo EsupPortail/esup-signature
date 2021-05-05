@@ -679,7 +679,7 @@ public class SignRequestService {
 					recipient.setSigned(!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
 				}
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false);
 				} else {
 					signBookService.completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
 				}
@@ -701,14 +701,14 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) throws EsupSignatureMailException {
+	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (!UserType.external.equals(recipientUser.getUserType())
-			&& !recipientUser.getEppn().equals(userEppn)
-			&& (recipientUser.getEmailAlertFrequency() == null
-			|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
-			|| userService.checkEmailAlert(recipientUser))) {
+				&& (!recipientUser.getEppn().equals(userEppn) || forceSend)
+				&& (recipientUser.getEmailAlertFrequency() == null
+				|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
+				|| userService.checkEmailAlert(recipientUser))) {
 				sendSignRequestEmailAlert(signRequest, recipientUser, data);
 			}
 		}
@@ -1185,7 +1185,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
 		}
@@ -1195,7 +1195,7 @@ public class SignRequestService {
 		} catch (EsupSignatureMailException e) {
 			throw new EsupSignatureException(e.getMessage());
 		}
-		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
+		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
 	}
 
 	public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {

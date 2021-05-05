@@ -42,9 +42,11 @@ public class DefaultExtValue implements ExtValue {
 		values.put("time", new SimpleDateFormat("HH:mm").format(date));
 		values.put("dateTime", new SimpleDateFormat("dd/MM/YYYY HH:mm").format(date));
 		values.put("currentUser", user.getFirstname() + " " + user.getName());
-		values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().map(Recipient::getUser).map(User::getEmail).collect(Collectors.joining(",")));
-		values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
-		values.put("id", String.valueOf(signRequest.getId()));
+		if(signRequest != null) {
+			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().map(Recipient::getUser).map(User::getEmail).collect(Collectors.joining(",")));
+			values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
+			values.put("id", String.valueOf(signRequest.getId()));
+		}
 		return values;
 	}
 

@@ -96,7 +96,7 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
         }
@@ -133,7 +133,7 @@ public class DataService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
+        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
@@ -259,7 +259,7 @@ public class DataService {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser);
+                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {

@@ -123,7 +123,7 @@ public class SignBookService {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, false, signType, Collections.singletonList(user.getEmail()), null));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
                 dispatchSignRequestParams(signBook);
-                pendingSignBook(signBook, null, user.getEppn(), authUserEppn);
+                pendingSignBook(signBook, null, user.getEppn(), authUserEppn, false);
                 return signBook;
             } catch (EsupSignatureIOException e) {
                 throw new EsupSignaturePdfException("Impossible de charger le document : documents corrompu", e);
@@ -301,7 +301,7 @@ public class SignBookService {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {
                 dispatchSignRequestParams(signBook);
-                pendingSignBook(signBook, null, userEppn, authUserEppn);
+                pendingSignBook(signBook, null, userEppn, authUserEppn, false);
             }
             return true;
         }else {
@@ -384,11 +384,11 @@ public class SignBookService {
                     }
                 }
             }
-            pendingSignBook(signBook, null, userEppn, authUserEppn);
+            pendingSignBook(signBook, null, userEppn, authUserEppn, false);
         }
     }
 
-    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn) throws EsupSignatureException {
+    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         boolean emailSended = false;
@@ -397,7 +397,7 @@ public class SignBookService {
                 signRequestService.pendingSignRequest(signRequest, userEppn);
                 if (!emailSended) {
                     try {
-                        signRequestService.sendEmailAlerts(signRequest, userEppn, data);
+                        signRequestService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
                         emailSended = true;
                     } catch (EsupSignatureMailException e) {
                         throw new EsupSignatureException(e.getMessage());
@@ -428,7 +428,7 @@ public class SignBookService {
     public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
         nextWorkFlowStep(signBook);
-        pendingSignBook(signBook, data, userEppn, authUserEppn);
+        pendingSignBook(signBook, data, userEppn, authUserEppn, true);
     }
 
     public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, String userEppn, String authUserEppn) {
@@ -476,7 +476,7 @@ public class SignBookService {
         return signBookName;
     }
 
-    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException {
+    public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException {
         String message = null;
         if (allSignToComplete == null) {
             allSignToComplete = false;
@@ -488,7 +488,7 @@ public class SignBookService {
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         dispatchSignRequestParams(signBook);
         if (pending != null && pending) {
-            pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn());
+            pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn(), forceSendEmail);
             if (comment != null && !comment.isEmpty()) {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
                     commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
@@ -536,7 +536,7 @@ public class SignBookService {
         Workflow workflow = workflowService.getById(workflowSignBookId);
         importWorkflow(signBook, workflow, null);
         nextWorkFlowStep(signBook);
-        pendingSignBook(signBook, null, authUserEppn, authUserEppn);
+        pendingSignBook(signBook, null, authUserEppn, authUserEppn, false);
     }
 
     public List<Log> getLogsFromSignBook(SignBook signBook) {
