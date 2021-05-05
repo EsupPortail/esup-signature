@@ -31,7 +31,7 @@ public class FormWsController {
         User user = userService.getByEppn(eppn);
         Data data = dataService.addData(id, user, user);
         try {
-            SignBook signBook = dataService.sendForSign(data, recipientEmails, null, targetEmails, user, user);
+            SignBook signBook = dataService.sendForSign(data, recipientEmails, null, targetEmails, user, user, true);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;

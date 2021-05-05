@@ -238,6 +238,7 @@ export default class SelectUser {
 
     setFavorites(response) {
         let typeValues = [];
+        let i = 0;
         for(let j = 0; j < response.length; j++) {
             let value = response[j];
             if(!this.slimSelect.selected().includes(this.valuePrefix + value)) {
@@ -245,7 +246,8 @@ export default class SelectUser {
                     text: value,
                     value: this.valuePrefix + value,
                 };
-                typeValues[j] = typeValue;
+                typeValues[i] = typeValue;
+                i++;
             }
         }
         this.favorites = typeValues;

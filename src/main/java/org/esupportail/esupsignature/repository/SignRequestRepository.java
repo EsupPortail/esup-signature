@@ -15,7 +15,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom {
-    @Query("select distinct count(s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
+    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);

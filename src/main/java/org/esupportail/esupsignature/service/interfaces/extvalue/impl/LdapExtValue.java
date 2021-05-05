@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
@@ -42,8 +43,8 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public String getValueByName(String name, User user) {
-		Object value = initValues(user).get(name);
+	public String getValueByName(String name, User user, SignRequest signRequest) {
+		Object value = initValues(user, signRequest).get(name);
 		if(value != null){
 			if (name.equals("schacDateOfBirth")) {
 				String schacDateOfBirth = value.toString();
@@ -127,7 +128,7 @@ public class LdapExtValue implements ExtValue {
 	}
 
 	@Override
-	public Map<String, Object> initValues(User user) {
+	public Map<String, Object> initValues(User user, SignRequest signRequest) {
 		Map<String, Object> values = new HashMap<>();
 		if(user != null) {
 			PersonLdap personLdap = userService.findPersonLdapByUser(user);

@@ -73,11 +73,11 @@ public class MailService {
     @Resource
     private MessageSource messageSource;
 
-    public void sendCompletedMail(SignBook signBook) throws EsupSignatureMailException {
-        if (!checkMailSender()) {
+    public void sendCompletedMail(SignBook signBook, String userEppn) throws EsupSignatureMailException {
+        User user = signBook.getCreateBy();
+        if (!checkMailSender() || user.getEppn().equals(userEppn)) {
             return;
         }
-        User user = signBook.getCreateBy();
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariable("signBook", signBook);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
