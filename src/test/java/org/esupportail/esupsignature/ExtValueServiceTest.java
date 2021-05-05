@@ -30,7 +30,7 @@ public class ExtValueServiceTest {
         boolean extValueTest = true;
         for(ExtValue extValue : extValueService.getExtValues()) {
             try {
-                if (extValue.initValues(new User()) != null) {
+                if (extValue.initValues(new User(), null) != null) {
                     logger.info("Test ExtValue : " + extValue.getName() + " OK");
                 } else {
                     extValueTest = false;

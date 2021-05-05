@@ -63,7 +63,7 @@ public class SignRequestWsController {
                        @Parameter(description = "EPPN du créateur/propriétaire de la demande") @RequestParam String eppn) {
         User user = userService.getByEppn(eppn);
         try {
-            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user);
+            Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;

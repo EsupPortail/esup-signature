@@ -653,4 +653,22 @@ public class PdfService {
         return inputStream;
     }
 
+    public InputStream jpegToPdf(InputStream inputStream, String name) throws IOException {
+        PDDocument pdDocument = new PDDocument();
+        byte[] imageBytes = inputStream.readAllBytes();
+        BufferedImage bimg = ImageIO.read(new ByteArrayInputStream(imageBytes));
+        float width = bimg.getWidth();
+        float height = bimg.getHeight();
+        PDPage page = new PDPage(new PDRectangle(width, height));
+        pdDocument.addPage(page);
+        PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, imageBytes, name);
+        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, page);
+        contentStream.drawImage(pdImage, 0, 0);
+        contentStream.close();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        pdDocument.save(out);
+        pdDocument.close();
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
 }

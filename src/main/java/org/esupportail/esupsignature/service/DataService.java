@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -96,16 +95,11 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
         }
         Form form = data.getForm();
-        if (form.getTargets().contains(DocumentIOType.mail)) {
-            if (targetEmails == null || targetEmails.size() == 0) {
-                throw new EsupSignatureException("Target email empty");
-            }
-        }
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
@@ -125,15 +119,11 @@ public class DataService {
         signBookService.nextWorkFlowStep(signBook);
         if (form.getTargets().size() > 0) {
             targetService.copyTargets(form.getTargets(), signBook);
-            for(Target target : form.getTargets()) {
-                if (target.getTargetType().equals(DocumentIOType.mail)) {
-                    signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmails.get(0)));
-                }
-            }
         }
+        signBookService.addTargetEmails(targetEmails, signBook);
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn());
+        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
@@ -142,7 +132,7 @@ public class DataService {
     }
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
-        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
+        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
@@ -233,11 +223,11 @@ public class DataService {
         return datasPage;
     }
 
-    public List<Field> getPrefilledFields(Form form, User user) {
+    public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
             List<Field> fields = new ArrayList<>(form.getFields());
-            prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
+            prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user, signRequest);
             for (Field field : prefilledFields) {
                 if(field.getName().equals("Su_DateSign")) {
                     logger.info("test");
@@ -259,7 +249,7 @@ public class DataService {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser);
+                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {
@@ -275,14 +265,8 @@ public class DataService {
         }
     }
 
-    public SignBook cloneFromSignRequest(SignRequest signRequest, String userEppn, String authUserEppn, List<String> recipientEmails, List<String> targetEmails) throws EsupSignatureIOException, EsupSignatureException {
-        Data data = getBySignRequest(signRequest);
-        Data dataClone = cloneData(data, authUserEppn);
-        return initSendData(dataClone.getId(), userEppn, recipientEmails, targetEmails, authUserEppn);
-    }
-
     public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {
-        List<Field> fields = getPrefilledFields(form, user);
+        List<Field> fields = getPrefilledFields(form, user, data.getSignBook().getSignRequests().get(0));
         for (Field field : fields) {
             if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
                 field.setDefaultValue(data.getDatas().get(field.getName()));

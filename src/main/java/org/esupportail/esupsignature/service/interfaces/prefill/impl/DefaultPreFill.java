@@ -5,6 +5,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
@@ -42,17 +43,17 @@ public class DefaultPreFill implements PreFill {
 	}
 
 	@Override
-	public List<Field> preFillFields(List<Field> fields, User user) {
+	public List<Field> preFillFields(List<Field> fields, User user, SignRequest signRequest) {
 		List<Field> filledFields = new ArrayList<>();
 		PDFont font = PDType1Font.HELVETICA;
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
-		Map<String, Object> defaultValues = extDefaultValue.initValues(user);
+		Map<String, Object> defaultValues = extDefaultValue.initValues(user, signRequest);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
 		Map<String, Object> ldapValues = new HashMap<>();
 		if(extLdapValue != null) {
-			 ldapValues = extLdapValue.initValues(user);
+			 ldapValues = extLdapValue.initValues(user, signRequest);
 		}
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
@@ -64,7 +65,7 @@ public class DefaultPreFill implements PreFill {
 						returnValue = returnValue.trim();
 						if (ldapValues.containsKey(returnValue)) {
 							if (returnValue.equals("schacDateOfBirth")) {
-								result.append(extLdapValue.getValueByName("schacDateOfBirth", user));
+								result.append(extLdapValue.getValueByName("schacDateOfBirth", user, signRequest));
 							} else if (returnValue.equals("supannEntiteAffectationPrincipale")) {
 								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description");
 								if(ouList.size() > 0) {
