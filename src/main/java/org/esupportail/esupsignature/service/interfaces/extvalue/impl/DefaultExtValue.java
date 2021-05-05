@@ -1,18 +1,21 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
+import org.esupportail.esupsignature.entity.Recipient;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class DefaultExtValue implements ExtValue {
 
 	@Override
-	public String getValueByName(String name, User user) {
-		return initValues(user).get(name).toString();
+	public String getValueByName(String name, User user, SignRequest signRequest) {
+		return initValues(user, signRequest).get(name).toString();
 	}
 
 	@Override
@@ -26,7 +29,7 @@ public class DefaultExtValue implements ExtValue {
 	}
 
 	@Override
-	public Map<String, Object> initValues(User user) {
+	public Map<String, Object> initValues(User user, SignRequest signRequest) {
 		Map<String, Object> values = new HashMap<>();
 		Date date = new Date();
 		Calendar cal = Calendar.getInstance();
@@ -39,7 +42,11 @@ public class DefaultExtValue implements ExtValue {
 		values.put("time", new SimpleDateFormat("HH:mm").format(date));
 		values.put("dateTime", new SimpleDateFormat("dd/MM/YYYY HH:mm").format(date));
 		values.put("currentUser", user.getFirstname() + " " + user.getName());
-		values.put("stepUsers", Arrays.asList(""));
+		if(signRequest != null) {
+			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().map(Recipient::getUser).map(User::getEmail).collect(Collectors.joining(",")));
+			values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
+			values.put("id", String.valueOf(signRequest.getId()));
+		}
 		return values;
 	}
 

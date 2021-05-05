@@ -5,6 +5,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
@@ -42,22 +43,22 @@ public class TestPreFill implements PreFill {
 		return description;
 	}
 	@Override
-	public List<Field> preFillFields(List<Field> fields, User user) {
+	public List<Field> preFillFields(List<Field> fields, User user, SignRequest signRequest) {
 		List<Field> filledFields = new ArrayList<>();
 		PDFont font = PDType1Font.HELVETICA;
 		PDResources resources = new PDResources();
 		resources.put(COSName.getPDFName("Helvetica"), font);
 		ExtValue extDefaultValue = extValueService.getExtValueServiceByName("default");
-		Map<String, Object> defaultValues = extDefaultValue.initValues(user);
+		Map<String, Object> defaultValues = extDefaultValue.initValues(user, signRequest);
 		ExtValue extLdapValue = extValueService.getExtValueServiceByName("ldap");
-		Map<String, Object> ldapValues = extLdapValue.initValues(user);
+		Map<String, Object> ldapValues = extLdapValue.initValues(user, signRequest);
 		for(Field field : fields) {
 			if(field.getExtValueServiceName() != null && !field.getExtValueServiceName().isEmpty()) {
 				if(field.getExtValueServiceName().equals("ldap")) {
 					String extValueName = field.getExtValueReturn();
 					if(ldapValues.containsKey(extValueName)) {
 						if(extValueName.equals("schacDateOfBirth")) {
-							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user));
+							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user, signRequest));
 						} else {
 							field.setDefaultValue((String) ldapValues.get(extValueName));
 						}

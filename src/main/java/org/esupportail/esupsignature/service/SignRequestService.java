@@ -67,7 +67,9 @@ import javax.servlet.http.HttpSession;
 import java.awt.*;
 import java.io.*;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
@@ -259,7 +261,8 @@ public class SignRequestService {
 	}
 
 	public Long nbToSignSignRequests(String userEppn) {
-		return signRequestRepository.countByRecipientUserToSign(userEppn);
+		Long nbTosign = signRequestRepository.countByRecipientUserToSign(userEppn);
+		return nbTosign;
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
@@ -318,15 +321,18 @@ public class SignRequestService {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
-				if (multipartFiles.length == 1 && multipartFiles[0].getContentType().equals("application/pdf")) {
-					try {
+				String contentType = multipartFile.getContentType();
+				if (multipartFiles.length == 1) {
+					if(multipartFiles[0].getContentType().equals("application/pdf")) {
 						signRequest.getSignRequestParams().addAll(signRequestParamsService.scanSignatureFields(new FileInputStream(file)));
-					} catch (IOException e) {
-						throw new EsupSignatureIOException("unable to open multipart inputStream", e);
+					} else if(multipartFiles[0].getContentType().contains("image")){
+						file.delete();
+						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
+						contentType = "application/pdf";
 					}
 				}
 				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
-				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
+				Document document = documentService.createDocument(new FileInputStream(file), docName, contentType);
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 				file.delete();
@@ -335,7 +341,6 @@ public class SignRequestService {
 			}
 		}
 	}
-
 
 	public void addAttachmentToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
@@ -371,7 +376,7 @@ public class SignRequestService {
 				formDataMap.remove("_csrf");
 				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null && data.getForm() != null) {
-					List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getUserByEppn(userEppn));
+					List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getUserByEppn(userEppn), signRequest);
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
 						List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
 						if(formfields.size() > 0) {
@@ -678,7 +683,7 @@ public class SignRequestService {
 					recipient.setSigned(!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
 				}
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn);
+					signBookService.pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false);
 				} else {
 					signBookService.completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
 				}
@@ -700,14 +705,14 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data) throws EsupSignatureMailException {
+	public void sendEmailAlerts(SignRequest signRequest, String userEppn, Data data, boolean forceSend) throws EsupSignatureMailException {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
 			User recipientUser = recipient.getUser();
 			if (!UserType.external.equals(recipientUser.getUserType())
-			&& !recipientUser.getEppn().equals(userEppn)
-			&& (recipientUser.getEmailAlertFrequency() == null
-			|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
-			|| userService.checkEmailAlert(recipientUser))) {
+				&& (!recipientUser.getEppn().equals(userEppn) || forceSend)
+				&& (recipientUser.getEmailAlertFrequency() == null
+				|| recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
+				|| userService.checkEmailAlert(recipientUser))) {
 				sendSignRequestEmailAlert(signRequest, recipientUser, data);
 			}
 		}
@@ -1103,7 +1108,7 @@ public class SignRequestService {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();
 				if (!"".equals(data.getForm().getPreFillType())) {
-					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
 								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
@@ -1184,7 +1189,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
 		}
@@ -1194,7 +1199,7 @@ public class SignRequestService {
 		} catch (EsupSignatureMailException e) {
 			throw new EsupSignatureException(e.getMessage());
 		}
-		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser);
+		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
 	}
 
 	public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn) {
@@ -1327,6 +1332,8 @@ public class SignRequestService {
 	@Transactional
 	public void getToSignFileReportResponse(Long signRequestId, HttpServletResponse response) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
+		response.setContentType("application/zip; charset=utf-8");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "_report", StandardCharsets.UTF_8.toString()) + ".zip");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 		String name = "";
 		InputStream inputStream = null;
@@ -1352,7 +1359,7 @@ public class SignRequestService {
 
 			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
 
-			fopService.generateDetailedReport(reports.getXmlDetailedReport(), new FileOutputStream(reportFile));
+			fopService.generateSimpleReport(reports.getXmlSimpleReport(), new FileOutputStream(reportFile));
 			zipOutputStream.putNextEntry(new ZipEntry("report.pdf"));
 			IOUtils.copy(new FileInputStream(reportFile), zipOutputStream);
 			zipOutputStream.closeEntry();
@@ -1434,6 +1441,8 @@ public class SignRequestService {
 
 	@Transactional
 	public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException {
+		response.setContentType("application/zip; charset=utf-8");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
 		List<Document> documents = new ArrayList<>();
 		for(Long id : ids) {
 			SignBook signBook = signBookService.getById(id);

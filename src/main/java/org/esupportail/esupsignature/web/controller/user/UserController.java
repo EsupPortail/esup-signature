@@ -272,6 +272,12 @@ public class UserController {
     	return userPropertieService.getFavoritesEmails(authUserEppn);
 	}
 
+	@GetMapping(value = "/get-favorites/{id}")
+	@ResponseBody
+	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
+	}
+
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
 	private String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
