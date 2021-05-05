@@ -142,7 +142,7 @@ public class DataService {
     }
 
     public Data updateDatas(Form form, Data data, @RequestParam Map<String, String> formDatas, User user, User authUser) {
-        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user);
+        List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
         for(Field field : fields) {
             if(!field.getStepZero()) {
                 field.setDefaultValue("");
@@ -233,11 +233,11 @@ public class DataService {
         return datasPage;
     }
 
-    public List<Field> getPrefilledFields(Form form, User user) {
+    public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
             List<Field> fields = new ArrayList<>(form.getFields());
-            prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user);
+            prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user, signRequest);
             for (Field field : prefilledFields) {
                 if(field.getName().equals("Su_DateSign")) {
                     logger.info("test");
@@ -282,7 +282,7 @@ public class DataService {
     }
 
     public List<Field> setFieldsDefaultsValues(Data data, Form form, User user) {
-        List<Field> fields = getPrefilledFields(form, user);
+        List<Field> fields = getPrefilledFields(form, user, data.getSignBook().getSignRequests().get(0));
         for (Field field : fields) {
             if(data.getDatas().get(field.getName()) != null && !data.getDatas().get(field.getName()).isEmpty()) {
                 field.setDefaultValue(data.getDatas().get(field.getName()));

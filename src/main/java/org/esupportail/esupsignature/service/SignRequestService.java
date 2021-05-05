@@ -259,7 +259,8 @@ public class SignRequestService {
 	}
 
 	public Long nbToSignSignRequests(String userEppn) {
-		return signRequestRepository.countByRecipientUserToSign(userEppn);
+		Long nbTosign = signRequestRepository.countByRecipientUserToSign(userEppn);
+		return nbTosign;
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
@@ -371,7 +372,7 @@ public class SignRequestService {
 				formDataMap.remove("_csrf");
 				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null && data.getForm() != null) {
-					List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getUserByEppn(userEppn));
+					List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getUserByEppn(userEppn), signRequest);
 					for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
 						List<Field> formfields = fields.stream().filter(f -> f.getName().equals(entry.getKey())).collect(Collectors.toList());
 						if(formfields.size() > 0) {
@@ -1103,7 +1104,7 @@ public class SignRequestService {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();
 				if (!"".equals(data.getForm().getPreFillType())) {
-					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user);
+					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
 								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
