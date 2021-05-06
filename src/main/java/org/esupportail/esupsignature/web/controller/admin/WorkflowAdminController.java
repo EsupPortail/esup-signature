@@ -53,7 +53,7 @@ public class WorkflowAdminController {
 	@GetMapping
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
 		if(displayWorkflowType == null) {
-			displayWorkflowType = DisplayWorkflowType.all;
+			displayWorkflowType = DisplayWorkflowType.system;
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
@@ -184,8 +184,11 @@ public class WorkflowAdminController {
 							@RequestParam("targetType") String targetType,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
 							RedirectAttributes redirectAttributes) {
-		workflowService.addTarget(id, targetType, documentsTargetUri);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+		if(workflowService.addTarget(id, targetType, documentsTargetUri)) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
+		}
 		return "redirect:/admin/workflows/update/" + id;
 	}
 

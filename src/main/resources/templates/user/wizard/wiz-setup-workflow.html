@@ -92,9 +92,9 @@
         <th:block th:each="target, iterator : ${signBook.liveWorkflow.workflow.targets}">
                 <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
                     <label>Etape finale : Envoi par mail à </label>
-                    <select class="select-users" th:id="'targetEmailsSelect_' + ${iterator.index}" multiple="multiple" name="targetEmails" required>
+                    <select class="select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails">
                         <th:block th:each="targetEmail : ${target.targetUri.split(';')}">
-                            <option selected="selected" th:text="${targetEmail}" th:value="${iterator.index} + '*' + ${targetEmail}"></option>
+                            <option selected="selected" th:text="${targetEmail}" th:value="${targetEmail}"></option>
                         </th:block>
                     </select>
                 </div>

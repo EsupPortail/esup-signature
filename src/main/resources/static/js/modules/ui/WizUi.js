@@ -113,9 +113,7 @@ export class WizUi {
         $('[id^="recipientEmailsWizSelect_"]').each(function (){
             new SelectUser($(this).attr('id'), null, null, this.csrf);
         });
-        $('[id^="targetEmailsSelect_"]').each(function (){
-            new SelectUser($(this).attr('id'), null, null, this.csrf);
-        });
+        new SelectUser("targetEmailsSelect", null, null, this.csrf);
         if($("#recipientsCCEmailsWiz").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmailsWiz", null, null, this.csrf);
         }

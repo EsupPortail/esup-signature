@@ -309,7 +309,7 @@ public class WorkflowService {
                                     }
                                 }
                             } else {
-                                targetService.copyTargets(workflow.getTargets(), signBook);
+                                targetService.copyTargets(workflow.getTargets(), signBook, null);
                                 signBookService.importWorkflow(signBook, workflow, null);
                             }
                             signBookService.nextStepAndPending(signBook.getId(), null, user.getEppn(), authUser.getEppn());
@@ -539,10 +539,14 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void addTarget(Long id, String targetType, String documentsTargetUri) {
+    public boolean addTarget(Long id, String targetType, String documentsTargetUri) {
         Workflow workflow = getById(id);
-        Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
-        workflow.getTargets().add(target);
+        if(workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
+            Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
+            workflow.getTargets().add(target);
+            return true;
+        }
+        return false;
     }
 
     @Transactional

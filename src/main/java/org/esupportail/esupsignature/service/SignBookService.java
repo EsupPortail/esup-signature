@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
@@ -50,9 +49,6 @@ public class SignBookService {
     private WorkflowStepService workflowStepService;
 
     @Resource
-    private FileService fileService;
-
-    @Resource
     private EventService eventService;
 
     @Resource
@@ -75,9 +71,6 @@ public class SignBookService {
 
     @Resource
     private WebUtilsService webUtilsService;
-
-    @Resource
-    private ReportService reportService;
 
     @Resource
     private TargetService targetService;
@@ -144,14 +137,6 @@ public class SignBookService {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri()));
         }
     }
-
-    public List<SignBook> getByCreateBy(String userEppn) {
-        return signBookRepository.findByCreateByEppn(userEppn);
-    }
-
-//    public SignBook getByName(String name) {
-//        return signBookRepository.findByName(name).get(0);
-//    }
 
     public SignBook getById(Long id) {
         SignBook signBook = signBookRepository.findById(id).get();
@@ -368,10 +353,7 @@ public class SignBookService {
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, userEppn, false);
                 importWorkflow(signBook, workflow, externalUsersInfos);
                 nextWorkFlowStep(signBook);
-                if(targetEmails != null && targetEmails.size() > 0) {
-                    signBook.getLiveWorkflow().getTargets().clear();
-                    addTargetEmails(targetEmails, signBook);
-                }
+                targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
                 if(recipientsEmails != null) {
                     for (String recipientEmail : recipientsEmails) {
                         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
@@ -382,17 +364,6 @@ public class SignBookService {
         }
     }
 
-    public void addTargetEmails(List<String> targetEmails, SignBook signBook) {
-        if(targetEmails != null) {
-            StringBuilder targetEmailsToAdd = new StringBuilder();
-            for (String targetEmail : targetEmails) {
-                if (!targetEmailsToAdd.toString().contains(targetEmail)) {
-                    targetEmailsToAdd.append(targetEmail.split("\\*")[1]).append(";");
-                }
-            }
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.mail, targetEmailsToAdd.toString()));
-        }
-    }
 
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
