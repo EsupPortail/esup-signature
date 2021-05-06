@@ -51,6 +51,7 @@
         [[${currentStepNumber}]],
         [[${currentStepId}]],
         [[${currentStepMultiSign}]],
+        [[${workflow}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
         [[${_csrf}]],
@@ -384,6 +385,15 @@
                         </label>
                         <label class="switch">
                             <input type="checkbox" name="allSignToComplete" id="allSignToCompleteInfinite"/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="form-group" id="multi-sign">
+                        <label for="multiSign">
+                            L'utilisateur peut apposer plusieurs signatures ?
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" name="multiSign" id="multiSign"/>
                             <span class="slider round"></span>
                         </label>
                     </div>

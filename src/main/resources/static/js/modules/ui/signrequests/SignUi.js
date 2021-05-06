@@ -4,7 +4,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, signImages, userName, csrf, fields, stepRepeatable, status, profile, action) {
+    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, profile, action) {
         console.info("Starting sign UI");
         this.signRequestId = id;
         this.percent = 0;
@@ -15,7 +15,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -196,6 +196,7 @@ export class SignUi {
         step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
+        step.multiSign = $('#multiSign').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,
