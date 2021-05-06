@@ -78,7 +78,7 @@ public class WorkflowAdminController {
 		try {
 			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
 		} catch (EsupSignatureException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows/";
 		}
 		return "redirect:/admin/workflows/" + workflow.getId();

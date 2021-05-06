@@ -31,6 +31,7 @@ public class TargetService {
 
 
     public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) {
+        signBook.getLiveWorkflow().getTargets().clear();
         for(Target target : targets) {
             if(target.getTargetType() != DocumentIOType.none && target.getTargetType() != DocumentIOType.mail && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
                 signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetType(), target.getTargetUri()));
@@ -57,7 +58,11 @@ public class TargetService {
                 }
             }
         }
-        return createTarget(DocumentIOType.mail, targetEmailsToAdd.toString());
+        if(!targetEmailsToAdd.toString().isEmpty()) {
+            return createTarget(DocumentIOType.mail, targetEmailsToAdd.toString());
+        } else {
+            return null;
+        }
     }
 
     public void delete(Target target) {

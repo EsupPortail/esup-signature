@@ -350,10 +350,11 @@ public class SignBookService {
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
             if (signBook.getLiveWorkflow().getWorkflow() != null) {
+                List<Target> targets = new ArrayList<>(workflowService.getById(signBook.getLiveWorkflow().getWorkflow().getId()).getTargets());
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), recipientsEmails, userEppn, false);
                 importWorkflow(signBook, workflow, externalUsersInfos);
                 nextWorkFlowStep(signBook);
-                targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
+                targetService.copyTargets(targets, signBook, targetEmails);
                 if(recipientsEmails != null) {
                     for (String recipientEmail : recipientsEmails) {
                         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(recipientEmail.split("\\*")[1]));
