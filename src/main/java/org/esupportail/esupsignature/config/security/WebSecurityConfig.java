@@ -81,7 +81,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.ignoringAntMatchers("/log/**")
 			.ignoringAntMatchers("/actuator/**")
 			.ignoringAntMatchers("/h2-console/**");
-		http.antMatcher("/ws/**").cors().disable();
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
