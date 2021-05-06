@@ -173,12 +173,15 @@ public class SignRequestService {
 	}
 
 	public SignRequest getById(long id) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		Data data = dataService.getBySignBook(signRequest.getParentSignBook());
-		if(data != null) {
-			signRequest.setData(data);
+		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
 		}
-		return signRequest;
+		return null;
 	}
 
 	public List<SignRequest> getSignRequestsByToken(String token) {
