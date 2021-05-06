@@ -173,12 +173,15 @@ public class SignRequestService {
 	}
 
 	public SignRequest getById(long id) {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
-		Data data = dataService.getBySignBook(signRequest.getParentSignBook());
-		if(data != null) {
-			signRequest.setData(data);
+		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
 		}
-		return signRequest;
+		return null;
 	}
 
 	public List<SignRequest> getSignRequestsByToken(String token) {
@@ -1185,7 +1188,7 @@ public class SignRequestService {
 
 	public void addStep(Long id, List<String> recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, authUserEppn);
+		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, true, authUserEppn);
 	}
 
 	@Transactional

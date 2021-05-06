@@ -147,6 +147,7 @@ public class SignRequestController {
             model.addAttribute("notifTime", Duration.between(signRequest.getLastNotifDate().toInstant(), new Date().toInstant()).toHours());
         }
         model.addAttribute("signRequest", signRequest);
+        model.addAttribute("workflow", signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
         model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
         model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
@@ -154,7 +155,7 @@ public class SignRequestController {
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
             model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
-            model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getMultiSign());
+            model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
