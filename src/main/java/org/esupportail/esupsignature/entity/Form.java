@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import javax.persistence.*;
@@ -49,9 +48,6 @@ public class Form {
 	private Boolean pdfDisplay = true;
 
 	private Boolean activeVersion = false;
-
-	@OneToMany
-	private List<Target> targets = new ArrayList<>();
 
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -176,14 +172,6 @@ public class Form {
 		this.activeVersion = activeVersion;
 	}
 
-	public List<Target> getTargets() {
-		return targets;
-	}
-
-	public void setTargets(List<Target> targets) {
-		this.targets = targets;
-	}
-
 	public Document getDocument() {
 		return document;
 	}
@@ -206,15 +194,6 @@ public class Form {
 
 	public void setAction(String action) {
 		this.action = action;
-	}
-
-	public boolean getTargetOfType(DocumentIOType documentIOType) {
-		for(Target target : getTargets()) {
-			if(target.getTargetType().equals(documentIOType)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 }

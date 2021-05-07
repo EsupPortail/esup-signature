@@ -95,7 +95,8 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Data data, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+        Data data = getById(dataId);
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
         }
@@ -117,10 +118,8 @@ public class DataService {
         signRequestService.addDocsToSignRequest(signRequest, multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signBookService.nextWorkFlowStep(signBook);
-        if (form.getTargets().size() > 0) {
-            targetService.copyTargets(form.getTargets(), signBook);
-        }
-        signBookService.addTargetEmails(targetEmails, signBook);
+        Workflow workflow = workflowService.getById(form.getWorkflow().getId());
+        targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         data.setSignBook(signBook);
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
@@ -249,7 +248,7 @@ public class DataService {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(data, recipientEmails, null, targetEmails, user, authUser, false);
+                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, user, authUser, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {

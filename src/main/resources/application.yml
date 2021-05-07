@@ -180,6 +180,8 @@ server:
     tomcat:
         mbeanregistry:
             enabled: true
+        remoteip:
+            remote-ip-header: X-Forwarded-For
 
 sign:
     cades-digest-algorithm: SHA256

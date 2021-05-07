@@ -92,10 +92,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, List<Target> targets, Boolean publicUsage) throws IOException, EsupSignatureException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
 		Workflow workflow = workflowService.getById(workflowId);
 		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflow, prefillType, roleNames, targets, publicUsage);
+		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
 		return form;
 	}
 
@@ -129,7 +129,6 @@ public class FormService {
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
 		form.setWorkflow(updateForm.getWorkflow());
-		form.getTargets().addAll(updateForm.getTargets());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -208,7 +207,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, List<Target> targets, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
+	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
 		Form form = new Form();
 		form.setName(name);
@@ -230,7 +229,6 @@ public class FormService {
 			}
 		}
 		form.setDocument(document);
-		form.getTargets().addAll(targets);
 		form.getRoles().clear();
 		if(roleNames == null) roleNames = new ArrayList<>();
 		form.getRoles().addAll(roleNames);

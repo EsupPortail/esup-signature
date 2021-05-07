@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,25 +96,17 @@ public class FormAdminController {
 
 	@PostMapping()
 	public String postForm(@RequestParam("name") String name,
-						   @RequestParam(value = "targetType", required = false) String targetType,
-						   @RequestParam(value = "targetUri", required = false) String targetUri,
 						   @RequestParam("fieldNames[]") String[] fieldNames,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
-		DocumentIOType documentIOType = null;
-		if(targetType != null) {
-			documentIOType = DocumentIOType.valueOf(targetType);
-		}
-		List<Target> targets = new ArrayList<>();
-		targets.add(targetService.createTarget(documentIOType, targetUri));
-		Form form = null;
 		try {
-			form = formService.createForm(null, name, null, null, null, null, targets, publicUsage, fieldNames);
+			Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames);
+			return "redirect:/admin/forms/" + form.getId();
+
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 			return "redirect:/admin/forms/";
 		}
-		return "redirect:/admin/forms/" + form.getId();
 	}
 
 	@PostMapping("generate")
@@ -129,9 +119,8 @@ public class FormAdminController {
 			@RequestParam(required = false) List<String> roleNames,
 			@RequestParam(required = false) Boolean publicUsage,
 			RedirectAttributes redirectAttributes) throws IOException {
-		List<Target> targets = new ArrayList<>();
 		try {
-			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, targets, publicUsage);
+			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
 			return "redirect:/admin/forms/" + form.getId();
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());

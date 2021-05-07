@@ -30,11 +30,38 @@ public class TargetService {
     }
 
 
-    public void copyTargets(List<Target> targets, SignBook signBook) {
+    public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) {
+        signBook.getLiveWorkflow().getTargets().clear();
         for(Target target : targets) {
-            if(target.getTargetType() != DocumentIOType.none) {
+            if(target.getTargetType() != DocumentIOType.none && target.getTargetType() != DocumentIOType.mail && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
                 signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetType(), target.getTargetUri()));
             }
+        }
+        signBook.getLiveWorkflow().getTargets().add(addTargetEmails(targetEmails, targets));
+    }
+
+    public Target addTargetEmails(List<String> targetEmails, List<Target> targets) {
+        StringBuilder targetEmailsToAdd = new StringBuilder();
+        for(Target target1 : targets) {
+            if(target1.getTargetType().equals(DocumentIOType.mail)) {
+                for(String targetEmail : target1.getTargetUri().split(";")) {
+                    if (!targetEmailsToAdd.toString().contains(targetEmail)) {
+                        targetEmailsToAdd.append(targetEmail).append(";");
+                    }
+                }
+            }
+        }
+        if(targetEmails != null) {
+            for (String targetEmail : targetEmails) {
+                if (!targetEmailsToAdd.toString().contains(targetEmail)) {
+                    targetEmailsToAdd.append(targetEmail).append(";");
+                }
+            }
+        }
+        if(!targetEmailsToAdd.toString().isEmpty()) {
+            return createTarget(DocumentIOType.mail, targetEmailsToAdd.toString());
+        } else {
+            return null;
         }
     }
 
