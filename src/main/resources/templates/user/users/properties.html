@@ -68,7 +68,8 @@
                                             <span th:text="${#dates.format(favorite.value, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
                                         <td>
-                                            <form th:action="'/user/users/delete-field-propertie/' + ${fieldPropertie.id} + '/' + ${favorite.key}" th:method="'delete'">
+                                            <form th:action="'/user/users/delete-field-propertie/' + ${fieldPropertie.id}" th:method="'delete'">
+                                                <input type="hidden" name="key" th:value="${favorite.key}">
                                                 <button type="submit" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
                                             </form>
                                         </td>
@@ -83,6 +84,6 @@
         </div>
     </div>
 </main>
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="fragments/footer"></footer>
 </body>
 </html>

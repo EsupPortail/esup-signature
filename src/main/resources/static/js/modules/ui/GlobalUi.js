@@ -237,6 +237,7 @@ export class GlobalUi {
                 this.hideSideBar();
             }
             if(!url.match("/user/users+[\\w\\W]+")
+                && !url.match("/user/users")
                 && !url.match("/admin/+[\\w\\W]+")
                 && !url.match("^/user/$")
                 && !url.match("^/user/signrequests$")

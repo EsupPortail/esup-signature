@@ -26,6 +26,8 @@ public class JsonWorkflowStep {
 
 	private Boolean allSignToComplete = false;
 
+	private Boolean multiSign = true;
+
 	public Long getWorkflowId() {
 		return workflowId;
 	}
@@ -98,4 +100,11 @@ public class JsonWorkflowStep {
 		this.allSignToComplete = allSignToComplete;
 	}
 
+	public Boolean getMultiSign() {
+		return multiSign;
+	}
+
+	public void setMultiSign(Boolean multiSign) {
+		this.multiSign = multiSign;
+	}
 }

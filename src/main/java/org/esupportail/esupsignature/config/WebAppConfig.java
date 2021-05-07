@@ -59,7 +59,6 @@ public class WebAppConfig implements WebMvcConfigurer {
 				.addResourceLocations("classpath:/META-INF/resources/");
     }
 
-
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();
