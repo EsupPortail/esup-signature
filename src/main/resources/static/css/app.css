@@ -50,6 +50,9 @@ body {
     margin-bottom: 40px;
     overflow-y: scroll;
     width: 100%;
+}
+
+main {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
