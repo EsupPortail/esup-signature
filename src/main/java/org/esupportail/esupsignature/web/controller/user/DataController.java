@@ -70,7 +70,7 @@ public class DataController {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, user, authUser);
-			SignBook signBook = dataService.sendForSign(data, recipientEmails, externalUsersInfos, targetEmails, user, authUser, false);
+			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, user, authUser, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));

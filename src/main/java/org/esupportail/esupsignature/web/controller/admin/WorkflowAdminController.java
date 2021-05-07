@@ -53,7 +53,7 @@ public class WorkflowAdminController {
 	@GetMapping
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
 		if(displayWorkflowType == null) {
-			displayWorkflowType = DisplayWorkflowType.all;
+			displayWorkflowType = DisplayWorkflowType.system;
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
@@ -78,7 +78,7 @@ public class WorkflowAdminController {
 		try {
 			workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
 		} catch (EsupSignatureException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit porte déjà ce nom"));
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
 			return "redirect:/admin/workflows/";
 		}
 		return "redirect:/admin/workflows/" + workflow.getId();
@@ -131,10 +131,11 @@ public class WorkflowAdminController {
 									 @RequestParam(name="signType") SignType signType,
 									 @RequestParam(name="description") String description,
 									 @RequestParam(name="repeatable", required = false) Boolean repeatable,
+									 @RequestParam(name="multiSign", required = false) Boolean multiSign,
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, allSignToComplete);
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete);
 		return "redirect:/admin/workflows/" + id;
 	}
 
@@ -183,8 +184,11 @@ public class WorkflowAdminController {
 							@RequestParam("targetType") String targetType,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
 							RedirectAttributes redirectAttributes) {
-		workflowService.addTarget(id, targetType, documentsTargetUri);
-		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+		if(workflowService.addTarget(id, targetType, documentsTargetUri)) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
+		}
 		return "redirect:/admin/workflows/update/" + id;
 	}
 

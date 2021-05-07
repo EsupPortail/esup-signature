@@ -88,7 +88,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean allSignToComplete) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete) {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
@@ -101,6 +101,11 @@ public class WorkflowStepService {
             workflowStep.setRepeatable(false);
         } else {
             workflowStep.setRepeatable(repeatable);
+        }
+        if(multiSign == null) {
+            workflowStep.setMultiSign(false);
+        } else {
+            workflowStep.setMultiSign(multiSign);
         }
         if(allSignToComplete == null) {
             workflowStep.setAllSignToComplete(false);
