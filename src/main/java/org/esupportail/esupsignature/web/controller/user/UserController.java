@@ -191,8 +191,8 @@ public class UserController {
 		return "redirect:/user/users/properties";
 	}
 
-	@DeleteMapping("/delete-field-propertie/{id}/{key}")
-	public String deleteFieldPropertie(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("key	") String key, RedirectAttributes redirectAttributes) {
+	@DeleteMapping("/delete-field-propertie/{id}")
+	public String deleteFieldPropertie(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam("key") String key, RedirectAttributes redirectAttributes) {
 		FieldPropertie fieldPropertie = fieldPropertieService.getById(id);
 		if(fieldPropertie.getUser().getEppn().equals(authUserEppn)) {
 			fieldPropertieService.delete(id, key);

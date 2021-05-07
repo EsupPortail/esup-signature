@@ -255,10 +255,11 @@
                                     </div>
                                     <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
                                 </th:block>
-                                <th:block th:each="target : ${form.targets}">
+                                <th:block th:each="target : ${form.workflow.targets}">
                                     <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
                                         <label>Etape finale : Envoi par mail à </label>
-                                        <select class="select-users" th:id="'targetEmailsSelect' + ${form.id}" multiple="multiple" name="targetEmails" required>
+                                        <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
+                                            <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri}" th:text="${target.targetUri}" selected></option>
                                         </select>
                                     </div>
                                 </th:block>
