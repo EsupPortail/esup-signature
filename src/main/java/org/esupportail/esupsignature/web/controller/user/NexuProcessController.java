@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.model.ToBeSigned;
-import io.swagger.v3.oas.annotations.Hidden;
+import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -47,7 +46,6 @@ public class NexuProcessController implements Serializable {
 	public String showSignatureParameters(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @PathVariable("id") Long id, HttpSession httpSession, Model model) {
 		httpSession.removeAttribute("abstractSignatureForm");
-		httpSession.removeAttribute("abstractSignatureParameters");
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + id);
 		model.addAttribute("id", signRequest.getId());
@@ -67,12 +65,15 @@ public class NexuProcessController implements Serializable {
 		abstractSignatureForm.setBase64Certificate(params.getSigningCertificate());
 		abstractSignatureForm.setBase64CertificateChain(params.getCertificateChain());
 		abstractSignatureForm.setEncryptionAlgorithm(params.getEncryptionAlgorithm());
-		AbstractSignatureParameters<?> abstractSignatureParameters = signService.getSignatureParameters(id, userEppn, abstractSignatureForm);
-		ToBeSigned dataToSign = signService.getDataToSign((SignatureDocumentForm) abstractSignatureForm, abstractSignatureParameters);
+		if (abstractSignatureForm.isAddContentTimestamp()) {
+			abstractSignatureForm.setContentTimestamp(DssUtils.fromTimestampToken(signService.getContentTimestamp((SignatureDocumentForm) abstractSignatureForm)));
+		}
+		httpSession.setAttribute("abstractSignatureForm", abstractSignatureForm);
+
+//		AbstractSignatureParameters<?> abstractSignatureParameters = signService.getSignatureParameters(id, userEppn, abstractSignatureForm);
+		ToBeSigned dataToSign = signService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
-		httpSession.setAttribute("abstractSignatureForm", abstractSignatureForm);
-		httpSession.setAttribute("abstractSignatureParameters", abstractSignatureParameters);
 		return responseJson;
 	}
 
@@ -82,12 +83,11 @@ public class NexuProcessController implements Serializable {
 	@ResponseBody
 	public SignDocumentResponse signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 											 @RequestBody @Valid SignatureValueAsString signatureValue,
-											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureException {
+											 @ModelAttribute("id") Long id, HttpSession httpSession) throws EsupSignatureException, IOException {
 		AbstractSignatureForm abstractSignatureForm = (AbstractSignatureForm) httpSession.getAttribute("abstractSignatureForm");
-		AbstractSignatureParameters<?> abstractSignatureParameters = (AbstractSignatureParameters<?>) httpSession.getAttribute("abstractSignatureParameters");
-		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, abstractSignatureParameters, userEppn, authUserEppn);
+		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
+		SignDocumentResponse signDocumentResponse = signService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, authUserEppn);
 		httpSession.removeAttribute("abstractSignatureForm");
-		httpSession.removeAttribute("abstractSignatureParameters");
 		return signDocumentResponse;
 	}
 
