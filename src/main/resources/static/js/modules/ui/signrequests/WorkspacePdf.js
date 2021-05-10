@@ -26,7 +26,7 @@ export class WorkspacePdf {
         this.first = true;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
-            if (field.workflowSteps.includes(currentStepNumber) && field.required) {
+            if (field.workflowSteps != null && field.workflowSteps.includes(currentStepNumber) && field.required) {
                 this.forcePageNum = field.page;
                 break;
             }
