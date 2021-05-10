@@ -10,7 +10,7 @@ import java.util.List;
 public abstract class AbstractSignatureForm implements Serializable {
 
 	// @AssertTrue(message = "{error.nexu.not.found}")
-	private boolean nexuDetected;
+	private boolean nexuDetected = true;
 
 	private Date signingDate;
 
