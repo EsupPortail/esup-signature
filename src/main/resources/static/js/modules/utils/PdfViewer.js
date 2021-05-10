@@ -536,6 +536,7 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
                 }
                 if(this.isFieldEnable(dataField)) {
                     inputField.prop('disabled', false);
@@ -550,6 +551,7 @@ export class PdfViewer extends EventFactory {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
+                    inputField.prop('disabled', true);
                 }
             }
 
