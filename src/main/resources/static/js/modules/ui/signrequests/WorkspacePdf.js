@@ -76,7 +76,7 @@ export class WorkspacePdf {
             if (this.signable) {
                 let visualButton = $('#visualButton');
                 if (this.currentSignType !== "pdfImageStamp") {
-                    visualButton.removeClass("d-none");
+                    // visualButton.removeClass("d-none");
                     visualButton.on('click', e => this.signPosition.toggleVisual());
                 }
             }
@@ -598,7 +598,10 @@ export class WorkspacePdf {
         });
         $('#signButtons').removeClass('d-none');
         $('#signModeButton').toggleClass('btn-outline-success');
-        $('#signTools').show();
+
+        if(this.signType !== 'hiddenVisa') {
+            $('#signTools').show();
+        }
 
         $('#infos').show();
         if (this.signPosition.visualActive) {
