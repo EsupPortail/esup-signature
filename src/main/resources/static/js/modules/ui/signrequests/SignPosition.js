@@ -90,6 +90,9 @@ export class SignPosition extends EventFactory {
             this.toggleVisual();
             $("#visualButton").remove();
         }
+        if(this.signType === "nexuSign") {
+            $("#visualButton").removeClass("d-none");
+        }
         if (this.signType === "hiddenVisa") {
             this.alertHiddenVisa();
         }
@@ -642,9 +645,11 @@ export class SignPosition extends EventFactory {
             this.visualActive = false;
             this.toggleExtraInfos();
             this.cross.hide();
+            this.getCurrentSignParams().visual = false;
             this.cross.addClass("d-none");
         } else {
             this.visualActive = true;
+            this.getCurrentSignParams().visual = true;
             this.cross.show();
             this.cross.removeClass("d-none");
             this.toggleExtraInfos();
