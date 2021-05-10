@@ -401,10 +401,12 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
-        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
-        this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
-        this.updateSignSize();
+        if(this.signImages[this.getCurrentSignParams().signImageNumber] != null) {
+            this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
+            this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
+            this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
+            this.updateSignSize();
+        }
     }
 
     getImageDimensions(file) {
