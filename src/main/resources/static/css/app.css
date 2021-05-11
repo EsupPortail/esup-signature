@@ -62,6 +62,7 @@ main {
 }
 
 pre {
+    white-space: pre-wrap;
     -webkit-touch-callout: default;
     -webkit-user-select: text;
     -khtml-user-select: text;

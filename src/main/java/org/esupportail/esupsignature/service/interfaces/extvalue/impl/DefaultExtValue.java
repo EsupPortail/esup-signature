@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
-import org.esupportail.esupsignature.entity.Recipient;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
@@ -43,7 +42,7 @@ public class DefaultExtValue implements ExtValue {
 		values.put("dateTime", new SimpleDateFormat("dd/MM/YYYY HH:mm").format(date));
 		values.put("currentUser", user.getFirstname() + " " + user.getName());
 		if(signRequest != null) {
-			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().map(Recipient::getUser).map(User::getEmail).collect(Collectors.joining(",")));
+			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().stream().map(User::getEmail).collect(Collectors.joining(",")));
 			values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
 			values.put("id", String.valueOf(signRequest.getId()));
 		}
