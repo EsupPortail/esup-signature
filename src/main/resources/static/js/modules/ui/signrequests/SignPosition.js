@@ -93,9 +93,6 @@ export class SignPosition extends EventFactory {
         if(this.signType === "nexuSign") {
             $("#visualButton").removeClass("d-none");
         }
-        if (this.signType === "hiddenVisa") {
-            this.alertHiddenVisa();
-        }
         this.initListeners();
         this.borders.addClass("anim-border");
         this.borders.removeClass("static-border");
@@ -872,13 +869,6 @@ export class SignPosition extends EventFactory {
     addMinusImage() {
         this.addSign();
         this.changeToFaImage(4);
-    }
-
-    alertHiddenVisa() {
-        bootbox.alert({
-            message: "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document. Sa validation implique que vous en acceptez le contenu. Vous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa en y adjoignant vos commentaires.",
-            size: 'large'
-        });
     }
 
 }

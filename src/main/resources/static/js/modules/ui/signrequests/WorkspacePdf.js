@@ -802,5 +802,4 @@ export class WorkspacePdf {
         console.debug("eval : " + this.action);
         jQuery.globalEval(this.action);
     }
-
 }
