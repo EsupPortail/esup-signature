@@ -69,8 +69,6 @@ public class NexuProcessController implements Serializable {
 			abstractSignatureForm.setContentTimestamp(DssUtils.fromTimestampToken(signService.getContentTimestamp((SignatureDocumentForm) abstractSignatureForm)));
 		}
 		httpSession.setAttribute("abstractSignatureForm", abstractSignatureForm);
-
-//		AbstractSignatureParameters<?> abstractSignatureParameters = signService.getSignatureParameters(id, userEppn, abstractSignatureForm);
 		ToBeSigned dataToSign = signService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
