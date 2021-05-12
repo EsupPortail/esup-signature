@@ -6,27 +6,26 @@ import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShibAuthenticationSuccessHandler.class);
 
 	@Resource
 	private UserService userService;
 
-	//private RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-	
-	//pas de redirection ici !
 	@Override
-	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
+	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws ServletException, IOException {
 		String eppn = authentication.getName();
         String email = httpServletRequest.getHeader("mail");
         String name = httpServletRequest.getHeader("sn");
@@ -39,11 +38,6 @@ public class ShibAuthenticationSuccessHandler implements AuthenticationSuccessHa
 			userService.createUser(eppn, name, firstName, email, UserType.shib, true);
 		}
 		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
-        /*
-		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) request.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-		String targetURL = defaultSavedRequest.getRedirectUrl();
-        redirectStrategy.sendRedirect(request, response, targetURL);
-        */
 	}
 	
 }
