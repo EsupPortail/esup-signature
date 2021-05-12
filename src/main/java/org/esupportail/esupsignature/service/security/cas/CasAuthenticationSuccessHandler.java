@@ -27,8 +27,12 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
         userService.createUserWithAuthentication(authentication);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "CasSecurityServiceImpl");
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-		String test = defaultSavedRequest.getQueryString().split("=")[1];
-		this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, test);
+		String queryString = defaultSavedRequest.getQueryString();
+		if(queryString.split("=")[0].equals("redirect")) {
+			this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, queryString.split("=")[1]);
+		} else {
+			this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, "/");
+		}
 	}
 
 }

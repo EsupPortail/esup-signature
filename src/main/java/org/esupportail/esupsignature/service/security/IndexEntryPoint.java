@@ -4,8 +4,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.util.UrlUtils;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -25,14 +23,6 @@ public class IndexEntryPoint extends LoginUrlAuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException, ServletException {
         String redirectUrl = buildRedirectUrlToLoginPage(httpServletRequest, httpServletResponse, authException);
         this.redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, redirectUrl);
-    }
-
-    @Override
-    protected String determineUrlToUseForThisRequest(HttpServletRequest httpServletRequest, HttpServletResponse response,
-                                                     AuthenticationException exception) {
-        String continueParamValue = UrlUtils.buildRequestUrl(httpServletRequest);
-        String redirect = super.determineUrlToUseForThisRequest(httpServletRequest, response, exception);
-        return UriComponentsBuilder.fromPath(redirect).queryParam("referer", continueParamValue).toUriString();
     }
 
 }
