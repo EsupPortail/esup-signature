@@ -552,24 +552,18 @@ public class SignBookService {
         }
     }
 
-    public List<SignBook> getByLiveWorkflowAndStatus(LiveWorkflow liveWorkflow, SignRequestStatus signRequestStatus) {
-        return signBookRepository.findByLiveWorkflowAndStatus(liveWorkflow, signRequestStatus);
-    }
-
-    public Long nbToSignSignBooks(String userEppn) {
-        return signBookRepository.countByRecipientUserToSign(userEppn);
-    }
-
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             int i = 0;
             for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                if(signRequest.getSignRequestParams().size() >= i + 1) {
-                    liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                } else {
-                    break;
+                if(!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                    if (signRequest.getSignRequestParams().size() >= i + 1) {
+                        liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                    } else {
+                        break;
+                    }
+                    i++;
                 }
-                i++;
             }
         }
     }
