@@ -93,9 +93,6 @@ export class SignPosition extends EventFactory {
         if(this.signType === "nexuSign") {
             $("#visualButton").removeClass("d-none");
         }
-        if (this.signType === "hiddenVisa") {
-            this.alertHiddenVisa();
-        }
         this.initListeners();
         this.borders.addClass("anim-border");
         this.borders.removeClass("static-border");
@@ -401,10 +398,12 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
-        this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
-        this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
-        this.updateSignSize();
+        if(this.signImages[this.getCurrentSignParams().signImageNumber] != null) {
+            this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
+            this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
+            this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
+            this.updateSignSize();
+        }
     }
 
     getImageDimensions(file) {
@@ -870,13 +869,6 @@ export class SignPosition extends EventFactory {
     addMinusImage() {
         this.addSign();
         this.changeToFaImage(4);
-    }
-
-    alertHiddenVisa() {
-        bootbox.alert({
-            message: "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document. Sa validation implique que vous en acceptez le contenu. Vous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa en y adjoignant vos commentaires.",
-            size: 'large'
-        });
     }
 
 }
