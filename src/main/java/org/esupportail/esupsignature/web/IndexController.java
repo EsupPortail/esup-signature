@@ -80,11 +80,17 @@ public class IndexController {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
-				model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+				if(defaultSavedRequest != null) {
+					model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+				}
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				return "redirect:" + defaultSavedRequest.getServletPath();
+				if(defaultSavedRequest != null) {
+					return "redirect:" + defaultSavedRequest.getServletPath();
+				} else {
+					return "redirect:/user/";
+				}
 			}
 		}
 	}
