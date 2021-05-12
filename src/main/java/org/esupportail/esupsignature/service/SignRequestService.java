@@ -1110,7 +1110,7 @@ public class SignRequestService {
 		if(data != null) {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();
-				if (!"".equals(data.getForm().getPreFillType())) {
+				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null

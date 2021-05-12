@@ -410,8 +410,13 @@ export class PdfViewer extends EventFactory {
                 }
                 console.debug(dataField);
                 if(this.isFieldEnable(dataField)) {
-                    inputField.prop('disabled', false);
-                    inputField.removeClass('disabled-field disable-selection');
+                    if(dataField.readOnly) {
+                        inputField.addClass('disabled-field disable-selection');
+                        inputField.prop('disabled', true);
+                    } else {
+                        inputField.prop('disabled', false);
+                        inputField.removeClass('disabled-field disable-selection');
+                    }
                     inputField.val(items[i].fieldValue);
                     if(dataField.defaultValue != null) {
                         inputField.val(dataField.defaultValue);
@@ -536,10 +541,16 @@ export class PdfViewer extends EventFactory {
                 inputField.attr('id', inputName);
                 if(items[i].readOnly || dataField.readOnly) {
                     inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
                 }
                 if(this.isFieldEnable(dataField)) {
-                    inputField.prop('disabled', false);
-                    inputField.removeClass('disabled-field disable-selection');
+                    if(dataField.readOnly) {
+                        inputField.addClass('disabled-field disable-selection');
+                        inputField.prop('disabled', true);
+                    } else {
+                        inputField.prop('disabled', false);
+                        inputField.removeClass('disabled-field disable-selection');
+                    }
                     inputField.val(dataField.defaultValue);
                     if (dataField.required) {
                         inputField.prop('required', true);
@@ -550,6 +561,7 @@ export class PdfViewer extends EventFactory {
                     inputField.prop('required', false);
                     inputField.addClass('disabled-field disable-selection');
                     inputField.parent().addClass('disable-div-selection');
+                    inputField.prop('disabled', true);
                 }
             }
 
@@ -564,7 +576,11 @@ export class PdfViewer extends EventFactory {
                 }
                 if(this.isFieldEnable(dataField)) {
                     inputField.val(dataField.defaultValue);
-                    inputField.prop('disabled', false);
+                    if(dataField.readOnly) {
+                        inputField.prop('disabled', true);
+                    } else {
+                        inputField.prop('disabled', false);
+                    }
                     inputField.removeClass('disabled-field disable-selection');
                     if (dataField.required) {
                         inputField.prop('required', true);

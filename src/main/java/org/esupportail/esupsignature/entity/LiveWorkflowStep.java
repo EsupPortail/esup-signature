@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
@@ -106,5 +107,9 @@ public class LiveWorkflowStep {
 
     public void setWorkflowStep(WorkflowStep workflowStep) {
         this.workflowStep = workflowStep;
+    }
+
+    public List<User> getUsers() {
+        return recipients.stream().map(Recipient::getUser).collect(Collectors.toList());
     }
 }
