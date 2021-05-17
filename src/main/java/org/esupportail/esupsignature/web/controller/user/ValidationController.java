@@ -100,7 +100,7 @@ public class ValidationController {
 		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 		model.addAttribute("diagnosticTree", reports.getXmlDiagnosticData());
 		try {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(new FileInputStream(file), true));
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
 		} catch (EsupSignatureException e) {
 			logger.error("enable to check pdf");
 		}
