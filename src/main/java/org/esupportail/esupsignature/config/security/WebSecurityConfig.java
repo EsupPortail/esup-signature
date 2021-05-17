@@ -1,10 +1,7 @@
 package org.esupportail.esupsignature.config.security;
 
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.service.security.DevSecurityFilter;
-import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
-import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +56,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		if(devSecurityFilters != null) {
 			devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		}
+		http.exceptionHandling().defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/"));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
 			http.exceptionHandling().defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), new AntPathRequestMatcher(securityService.getLoginUrl()));
@@ -93,7 +91,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		String hasIpAddresses = "";
 		int nbIps = 0;
 		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
-			hasIpAddresses = "denyAll";
+			hasIpAddresses = "	denyAll";
 		} else {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;

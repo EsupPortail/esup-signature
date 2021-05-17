@@ -9,9 +9,7 @@ import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.model.DSSDocument;
-import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.model.x509.CertificateToken;
-import eu.europa.esig.dss.spi.DSSUtils;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.codec.binary.Base64;
@@ -70,6 +68,8 @@ import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
@@ -619,14 +619,16 @@ public class SignRequestService {
 				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
 			}
 			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
-			AbstractSignatureParameters<?> parameters;
+			AbstractSignatureParameters parameters;
 			if(signatureForm.equals(SignatureForm.CAdES)) {
 				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
 				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+				aSiCWithCAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithCAdESSignatureParameters;
 			} else if(signatureForm.equals(SignatureForm.XAdES)) {
 				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user);
@@ -637,10 +639,10 @@ public class SignRequestService {
 			} else {
 				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), channel, sseId);
 			}
-
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
+			parameters.bLevel().setSigningDate(signatureDocumentForm.getSigningDate());
 			DSSDocument dssDocument;
 			if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
 				dssDocument = signService.certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
@@ -648,9 +650,9 @@ public class SignRequestService {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			}
 			pkcs12SignatureToken.close();
-			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
+//			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), channel, sseId);
-			documentService.addSignedFile(signRequest, signedPdfDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), signedPdfDocument.getMimeType().getMimeTypeString());
+			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
 		} catch (EsupSignatureKeystoreException e) {
 			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();

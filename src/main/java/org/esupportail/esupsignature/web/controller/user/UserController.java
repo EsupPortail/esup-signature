@@ -203,10 +203,10 @@ public class UserController {
 
 	@GetMapping("/mark-intro-as-read/{name}")
 	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
-		logger.info("user " + authUserEppn + " mark into " + name + " as read");
+		logger.info("user " + authUserEppn + " mark intro " + name + " as read");
 		userService.disableIntro(authUserEppn, name);
 		String referer = httpServletRequest.getHeader("Referer");
-		return "redirect:"+ referer;
+		return "redirect:" + referer;
 	}
 
 	@GetMapping("/mark-as-read/{id}")

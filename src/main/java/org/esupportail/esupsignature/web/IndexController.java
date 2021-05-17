@@ -17,7 +17,6 @@
  */
 package org.esupportail.esupsignature.web;
 
-import io.swagger.v3.oas.annotations.Hidden;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -32,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +69,8 @@ public class IndexController {
 	private LdapPersonService ldapPersonService;
 
 	@GetMapping
-	public String index(Model model) {
+	public String index(Model model, HttpServletRequest httpServletRequest) {
+		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		if(authUser != null && !authUser.getEppn().equals("system")) {
@@ -79,10 +80,17 @@ public class IndexController {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
+				if(defaultSavedRequest != null) {
+					model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
+				}
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				return "redirect:/user/";
+				if(defaultSavedRequest != null) {
+					return "redirect:" + defaultSavedRequest.getServletPath();
+				} else {
+					return "redirect:/user/";
+				}
 			}
 		}
 	}
