@@ -175,7 +175,6 @@ public class SignRequestController {
                 List<String> signImages = signRequestService.getSignImagesForSignRequest(signRequest, userEppn, authUserEppn, userShareId);
                 model.addAttribute("signImages", signImages);
             } catch (EsupSignatureUserException e) {
-                logger.error(e.getMessage());
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
             }
         }

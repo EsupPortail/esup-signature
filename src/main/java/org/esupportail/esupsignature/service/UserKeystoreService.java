@@ -41,7 +41,7 @@ public class UserKeystoreService {
 			if(e.getCause().getMessage().equals("keystore password was incorrect")) {
 				logger.warn("keystore password was incorrect");
 			} else {
-				logger.error("open keystore fail", e);
+				logger.error("open keystore fail :" + e.getMessage());
 			}
 			throw new EsupSignatureKeystoreException("open keystore fail", e);
 		}
