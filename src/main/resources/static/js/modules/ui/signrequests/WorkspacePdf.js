@@ -105,7 +105,8 @@ export class WorkspacePdf {
                     postitButton.removeClass('circle-border');
                 });
             });
-
+        } else {
+            this.initLaunchButtons();
         }
         $('#addSignButton').on('click', e => this.addSign(e));
 
@@ -166,12 +167,16 @@ export class WorkspacePdf {
             }
         }
         this.pdfViewer.adjustZoom();
+        this.initLaunchButtons();
+        this.pdfViewer.removeEventListener('ready');
+    }
+
+    initLaunchButtons() {
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
         this.signLaunchButton.on('click', e => this.launchSignModal());
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
-        this.pdfViewer.removeEventListener('ready');
     }
 
     initForm(e) {
@@ -754,30 +759,32 @@ export class WorkspacePdf {
     }
 
     initChangeModeSelector() {
-        this.changeModeSelector = new SlimSelect({
-            select: '#changeMode',
-            showSearch: false,
-            valuesUseText: false, // Use text instead of innerHTML for selected values - default false
-            onChange: e => this.changeMode(e),
-            data: [
-                {
-                    innerHTML: '<div style="width: 200px"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
-                    text: 'Remplir et signer',
-                    value: 'sign',
-                    selected: true
-                },
-                {
-                    innerHTML: '<div style="width: 200px"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
-                    text: 'Annoter',
-                    value: 'comment'
-                },
-                {
-                    innerHTML: '<div style="width: 200px"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>',
-                    text: 'Lecture',
-                    value: 'read'
-                },
-            ]
-        })
+        if($("#changeMode").length) {
+            this.changeModeSelector = new SlimSelect({
+                select: '#changeMode',
+                showSearch: false,
+                valuesUseText: false, // Use text instead of innerHTML for selected values - default false
+                onChange: e => this.changeMode(e),
+                data: [
+                    {
+                        innerHTML: '<div style="width: 200px"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
+                        text: 'Remplir et signer',
+                        value: 'sign',
+                        selected: true
+                    },
+                    {
+                        innerHTML: '<div style="width: 200px"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
+                        text: 'Annoter',
+                        value: 'comment'
+                    },
+                    {
+                        innerHTML: '<div style="width: 200px"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>',
+                        text: 'Lecture',
+                        value: 'read'
+                    },
+                ]
+            });
+        }
     }
 
     changeMode(e) {

@@ -237,11 +237,8 @@
                 <div id="signFormConfirm">
                     <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"
                          class="alert alert-success"></div>
-                    <div class="modal-body">
-                        <label th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
-                               for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
-                    </div>
                 </div>
+                <label for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
                 <textarea id="signComment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
@@ -278,7 +275,7 @@
                     </div>
                 </div>
                 <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign} ? 'd-none'"
-                       class="form-control" type="password" id="password" name="password" value=""
+                       class="form-control mt-2 mb-1" type="password" id="password" name="password" value=""
                        placeholder="Mot de passe du keystore"/>
             </div>
             <div class="modal-footer">
