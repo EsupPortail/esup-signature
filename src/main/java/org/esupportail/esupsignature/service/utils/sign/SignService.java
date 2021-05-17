@@ -120,12 +120,13 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
 	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) {
+		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		ToBeSigned toBeSigned = null;
 		try {
 			DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
-			AbstractSignatureParameters parameters = getSignatureParameters(id, userEppn, form);
+			AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
 			toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		} catch (Exception e) {
 			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
@@ -373,7 +374,7 @@ public class SignService {
 		logger.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		fillCommonsParameters(parameters, signatureDocumentForm);
-		DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign()));
+		DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign()));
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
@@ -395,14 +396,17 @@ public class SignService {
 	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Transactional
 	public DSSDocument nexuSignDocument(Long id, String userEppn, SignatureDocumentForm form) throws IOException {
-		AbstractSignatureParameters parameters = getSignatureParameters(id, userEppn, form);
+		SignRequest signRequest = signRequestService.getById(id);
+		Document toSignDocument = signRequestService.getToSignDocuments(id).get(0);
+		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
+		DSSDocument toSignDssDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
 		SignatureAlgorithm sigAlgorithm = SignatureAlgorithm.getAlgorithm(form.getEncryptionAlgorithm(), form.getDigestAlgorithm());
 		SignatureValue signatureValue = new SignatureValue(sigAlgorithm, Utils.fromBase64(form.getBase64SignatureValue()));
-		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
+		DSSDocument signedDocument = service.signDocument(toSignDssDocument, parameters, signatureValue);
 		logger.info("End signDocument with one document");
 		return signedDocument;
 	}
@@ -519,8 +523,7 @@ public class SignService {
 	}
 
 	@Transactional
-	public AbstractSignatureParameters<?> getSignatureParameters(Long signRequestId, String userEppn, AbstractSignatureForm abstractSignatureForm) throws IOException {
-		SignRequest signRequest = signRequestService.getById(signRequestId);
+	public AbstractSignatureParameters<?> getSignatureParameters(SignRequest signRequest, String userEppn, AbstractSignatureForm abstractSignatureForm) throws IOException {
 		User user = userService.getByEppn(userEppn);
 		AbstractSignatureParameters<?> parameters;
 		if(abstractSignatureForm.getClass().equals(SignatureMultipleDocumentsForm.class)) {
@@ -568,7 +571,7 @@ public class SignService {
 
 		InMemoryDocument signedDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
 
-		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), signedDocument.getMimeType().getMimeTypeString());
+		return documentService.addSignedFile(signRequest, signedDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(signedDocument.getName()), "");
 	}
 
 	public boolean checkSignTypeDocType(SignType signType, MultipartFile multipartFile) {
