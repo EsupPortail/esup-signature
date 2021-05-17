@@ -473,6 +473,11 @@
 			<artifactId>truezip-driver-zip</artifactId>
 			<version>7.7.10</version>
 		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.12.1</version>
+		</dependency>
 
 		<!-- Other dependencies -->
 		<dependency>
