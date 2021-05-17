@@ -71,7 +71,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public LoginUrlAuthenticationEntryPoint getAuthenticationEntryPoint() {
-		return new LoginUrlAuthenticationEntryPoint("/");
+		return new LoginUrlAuthenticationEntryPoint("/aa");
 	}
 
 	@Override
