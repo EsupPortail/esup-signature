@@ -509,4 +509,8 @@ public class UserService {
     public List<String> getAllRoles() {
         return userRepository.getAllRoles();
     }
+
+    public List<User> getByManagersRoles(String role) {
+        return userRepository.findByManagersRolesIn(Collections.singletonList(role));
+    }
 }
