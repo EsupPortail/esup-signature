@@ -214,7 +214,7 @@ public class UserController {
     	logger.info("user " + authUserEppn + " mark " + id + " as read");
 		messageService.disableMessageForUser(authUserEppn, id);
 		String referer = httpServletRequest.getHeader("Referer");
-		return "redirect:"+ referer;
+		return "redirect:" + referer;
 	}
 
 	@GetMapping("/mark-help-as-read/{id}")
