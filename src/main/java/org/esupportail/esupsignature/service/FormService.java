@@ -399,7 +399,9 @@ public class FormService {
 		return formRepository.findFormByManagersContains(user.getEmail());
 	}
 
-	public String getHelpMessage(User user, Form form) {
+	@Transactional
+	public String getHelpMessage(String userEppn, Form form) {
+		User user = userService.getUserByEppn(userEppn);
 		String messsage = null;
 		boolean sendMessage = true;
 		if(user.getFormMessages() != null) {
