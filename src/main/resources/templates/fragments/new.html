@@ -211,8 +211,8 @@
                     </div>
                     <form th:action="'/user/datas/sendForm/' + ${form.id}" method="post">
                         <div class="modal-body">
-                            <p th:unless="${form.workflow.workflowSteps.size() > 0}">Après la validation, vous pourrez télécharger le document</p>
-                            <div th:if="${form.workflow.workflowSteps.size() > 0}">
+                            <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
+                            <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">
                                 <p>
                                     Le circuit associé à ce formulaire comporte <span
                                         th:text="${form.workflow.workflowSteps.size()}"></span> étape<span th:if="${form.workflow.workflowSteps.size()} > 1">(s) : </span>
