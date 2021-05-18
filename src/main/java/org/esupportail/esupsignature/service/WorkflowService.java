@@ -556,5 +556,9 @@ public class WorkflowService {
         workflow.getTargets().remove(target);
         targetService.delete(target);
     }
+
+    public List<Workflow> getWorkflowsByRoles(String role) {
+        return workflowRepository.findByRolesIn(Collections.singletonList(role));
+    }
 }
 

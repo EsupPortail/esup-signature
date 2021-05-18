@@ -1,0 +1,20 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
+<nav th:fragment="side-manager" id="sidebar">
+    <div class="ml-1 mt-2">
+        <h5 class="text-center"><b>Management</b></h5>
+
+        <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
+           title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
+        </a>
+        <a th:classappend="${activeMenu == 'forms'} ? 'btn-secondary' : 'btn-light'"
+           title="Formulaires" href="/admin/forms" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
+        </a>
+
+    </div>
+</nav>
+</html>
