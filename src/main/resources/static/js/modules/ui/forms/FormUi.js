@@ -32,6 +32,9 @@ export default class FormUi {
         $("#multipartModel").on('change', function () {
             $("#submitModel").removeClass("d-none");
         });
+        $("#saveButton").on("click", function() {
+            $('#formUpdate').submit();}
+        );
     }
 
     toggleSelect(e) {

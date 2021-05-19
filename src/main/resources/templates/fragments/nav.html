@@ -57,7 +57,7 @@
                         <a th:if="${managedForms.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
                            title="Vue manager" href="/user/manage"
                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
-                            <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace gestionnaire</span>
+                            <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
                         <div th:if="${managedForms.size() > 0}" class="dropdown-divider"></div>
                         <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
