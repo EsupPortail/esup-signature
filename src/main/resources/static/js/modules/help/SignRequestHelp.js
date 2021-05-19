@@ -11,10 +11,6 @@ export class SignRequestHelp {
     initListeners() {
         this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
-        this.intro.oncomplete(function () {
-            $.get("/user/users/mark-intro-as-read/signRequestHelp");
-        });
-
         this.intro.onexit(function () {
             $.get("/user/users/mark-intro-as-read/signRequestHelp");
         });

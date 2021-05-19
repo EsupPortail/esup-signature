@@ -16,12 +16,11 @@
 			<i class="fas fa-file-signature"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge badge-status badge-danger"
-			 th:title="#{'signbook.status.' + ${signBook.status}} + ' : ' + ${signRequest.comments.get(signRequest.comments.size() - 1).text}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge badge-status badge-danger">
 			<i class="fas fa-ban"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 			<br>
-			<span th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger"></span>
+			<span th:if="${signRequest.comments.size() > 0}" th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge badge-status badge-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-check-circle"></i>

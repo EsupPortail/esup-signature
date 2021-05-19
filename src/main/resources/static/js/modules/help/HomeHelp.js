@@ -11,10 +11,6 @@ export class HomeHelp {
     initListeners() {
         this.intro.onbeforechange(e => this.scrollTop(e));
         this.intro.onafterchange(e => this.modButtons());
-        this.intro.oncomplete(function () {
-            $.get("/user/users/mark-intro-as-read/homeHelp");
-        });
-
         this.intro.onexit(function () {
             $.get("/user/users/mark-intro-as-read/homeHelp");
         });
