@@ -19,6 +19,6 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findByRolesIn(List<String> roles);
     Long countByName(String name);
     Long countByNameAndCreateByEppn(String name, String userEppn);
-    @Query("select distinct w from Workflow w where w.publicUsage = true or :role member of w.roles order by w.name")
+    @Query("select distinct w from Workflow w where w.publicUsage = true or (w.visibility = true and :role member of w.roles) order by w.name")
     List<Workflow> findAuthorizedForms(String role);
 }

@@ -3,23 +3,23 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
-    new FormUi("admin");
+    new FormUi("managers");
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-admin"></nav>
+        <nav th:insert="fragments/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav-full">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/managers/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active">Nouveau formulaire</li>
             </ol>
         </nav>
         <div id="content" class="content">
             <div class="card">
                 <div class="card-body">
-                    <form th:action="'/admin/forms'" method="post">
+                    <form th:action="'/managers/forms'" method="post">
                         <div class="form-group">
                             <label for="name">Name</label>
                             <input id="name" class="form-control" type="text" name="name"/>

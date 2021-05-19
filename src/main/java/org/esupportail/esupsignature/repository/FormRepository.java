@@ -15,5 +15,6 @@ public interface FormRepository extends CrudRepository<Form, Long> {
 	List<Form> findFormByName(String name);
 	@Query("select distinct f from Form f where f.activeVersion = true and (f.publicUsage = true or :role member of f.roles) order by f.name")
 	List<Form> findAuthorizedForms(String role);
+	List<Form> findByRolesIn(List<String> role);
 
 }

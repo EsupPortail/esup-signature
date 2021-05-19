@@ -29,7 +29,7 @@ import java.util.*;
 
 public class ManagerWorkflowController {
 
-    private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManagerWorkflowController.class);
 
     @ModelAttribute("managerMenu")
     public String getAdminMenu() {
@@ -52,13 +52,7 @@ public class ManagerWorkflowController {
 
     @GetMapping
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        Set<Workflow> workflowsManaged = new HashSet<>();
-        User manager = userService.getByEppn(authUserEppn);
-        for (String role : manager.getManagersRoles()) {
-            workflowsManaged.addAll(workflowService.getWorkflowsByRoles(role));
-        }
-        workflowsManaged.addAll(workflowService.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
-        model.addAttribute("workflows", workflowsManaged);
+        model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
         return "managers/workflows/list";
     }
 
@@ -91,7 +85,7 @@ public class ManagerWorkflowController {
         Workflow workflow = workflowService.getById(id);
         User manager = userService.getByEppn(authUserEppn);
         model.addAttribute("workflow", workflow);
-        model.addAttribute("roles", manager.getRoles());
+        model.addAttribute("roles", manager.getManagersRoles());
         model.addAttribute("sourceTypes", DocumentIOType.values());
         model.addAttribute("targetTypes", DocumentIOType.values());
         model.addAttribute("shareTypes", ShareType.values());
@@ -105,6 +99,7 @@ public class ManagerWorkflowController {
                          @RequestParam(value = "types", required = false) String[] types,
                          @RequestParam(required = false) List<String> managers, Model model) {
         User authUser = (User) model.getAttribute("authUser");
+        workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
         return "redirect:/managers/workflows/update/" + updateWorkflow.getId();
     }

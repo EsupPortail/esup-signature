@@ -134,6 +134,7 @@ public class FormService {
 		form.setPublicUsage(updateForm.getPublicUsage());
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
+		form.setActiveVersion(updateForm.getActiveVersion());
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
@@ -424,5 +425,9 @@ public class FormService {
 			return fileService.getFileResponse(attachement.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), attachement.getFileName(), attachement.getContentType());
 		}
 		return null;
+	}
+
+	public List<Form> getByRoles(String role) {
+		return formRepository.findByRolesIn(Collections.singletonList(role));
 	}
 }

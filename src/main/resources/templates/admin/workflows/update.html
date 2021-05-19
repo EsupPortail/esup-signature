@@ -56,6 +56,10 @@
                             <input id="sendAlertToAllRecipients" class="form-check-input" type="checkbox" th:field="*{sendAlertToAllRecipients}"/>
                             <label for="sendAlertToAllRecipients">Avertir tous les participants à la fin du circuit ?</label>
                         </div>
+                        <div class="form-check">
+                            <input id="hidden" class="form-check-input" type="checkbox" th:field="*{visibility}"/>
+                            <label for="hidden">Diffusion du workflow pour les rôles</label>
+                        </div>
                         <div class="form-group">
                             <label for="name">
                                 Rôle
