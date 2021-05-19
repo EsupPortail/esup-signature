@@ -147,4 +147,90 @@ export class Nexu {
         console.log("NexU script loaded");
     }
 
+/*
+var NexU = (function() {
+
+    var latestVersion = "1.8";
+    
+    var bindingPorts = "9886, 9887, 9888";
+    
+    var runningPort;
+    var runningVersion;
+    var isInitialized;
+    var that;
+    
+    function NexU(successCallback, oldVersionDetectedCallback, notInstalledCallback, cannotLoadScriptCallback, progressCallback) {
+        that = this;
+        isInitialized = false;
+        _initRunningPortAndVersion(successCallback, oldVersionDetectedCallback, notInstalledCallback,
+                cannotLoadScriptCallback, progressCallback);
+    }
+    
+    function _initRunningPortAndVersion(successCallback, oldVersionDetectedCallback, notInstalledCallback,
+            cannotLoadScriptCallback, progressCallback) {
+        _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
+                cannotLoadScriptCallback, progressCallback, 0, bindingPorts.split(","));
+    }
+    
+    function _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
+            cannotLoadScriptCallback, progressCallback, index, ports) {
+        if(progressCallback) {
+            progressCallback(index, ports, "BEFORE");
+        }
+        
+        port = ports[index].trim();
+        $.get("http://localhost:" + port + "/nexu-info", function(data) {
+            runningPort = port;
+            runningVersion = data.version;
+            if(runningVersion === latestVersion) {
+                $.getScript("http://localhost:" + port + "/nexu.js")
+                    .done(function() {
+                        isInitialized = true;
+                        successCallback(that);
+                    })
+                    .fail(function() {
+                        isInitialized = true;
+                        cannotLoadScriptCallback(that);
+                    });
+            } else {
+                isInitialized = true;
+                oldVersionDetectedCallback(that);
+            }
+        }).fail(function() {
+            if(progressCallback) {
+                progressCallback(index, ports, "AFTER");
+            }
+            
+            if(index+1 < ports.length) {
+                _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
+                        cannotLoadScriptCallback, progressCallback, index+1, ports);
+            } else {
+                isInitialized = true;
+                notInstalledCallback(that);
+            }
+        });
+    }
+    
+    NexU.prototype.getRunningPort = function() {
+        return runningPort;
+    };
+    
+    NexU.prototype.getRunningVersion = function() {
+        return runningVersion;
+    };
+    
+    NexU.prototype.isInitialized = function() {
+        return isInitialized;
+    };
+    
+    NexU.prototype.isInstalled = function() {
+        return typeof runningPort !== 'undefined';
+    };
+    
+    return NexU;
+}());
+
+*/
+
+
 }
