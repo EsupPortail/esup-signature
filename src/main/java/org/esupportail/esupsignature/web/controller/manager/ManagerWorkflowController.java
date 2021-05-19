@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.web.controller.admin.WorkflowAdminControlle
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,8 @@ public class ManagerWorkflowController {
     }
 
     @GetMapping(value = "/{id}")
-    public String show(@PathVariable("id") Long id, Model model) {
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
+    public String show(@PathVariable("id") Long id, Model model, @ModelAttribute("authUserEppn") String authUserEppn) {
         model.addAttribute("fromAdmin", true);
         model.addAttribute("signTypes", SignType.values());
         Workflow workflow = workflowService.getById(id);
@@ -81,6 +83,7 @@ public class ManagerWorkflowController {
     }
 
     @GetMapping(value = "/update/{id}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         Workflow workflow = workflowService.getById(id);
         User manager = userService.getByEppn(authUserEppn);
@@ -94,6 +97,7 @@ public class ManagerWorkflowController {
     }
 
     @PostMapping(value = "/update")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#workflow.id, #authUserEppn)")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
                          @Valid Workflow workflow,
                          @RequestParam(value = "types", required = false) String[] types,
@@ -105,6 +109,7 @@ public class ManagerWorkflowController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
@@ -112,6 +117,7 @@ public class ManagerWorkflowController {
     }
 
     @PostMapping(value = "/add-step/{id}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam("signType") String signType,
                           @RequestParam(name="description", required = false) String description,
@@ -123,6 +129,7 @@ public class ManagerWorkflowController {
     }
 
     @PostMapping(value = "/update-step/{id}/{step}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn,
                                      @PathVariable("id") Long id,
                                      @PathVariable("step") Integer step,
@@ -138,6 +145,7 @@ public class ManagerWorkflowController {
     }
 
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String removeStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                       @PathVariable("workflowStepId") Long workflowStepId,
                                       @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes) {
@@ -147,6 +155,7 @@ public class ManagerWorkflowController {
     }
 
     @PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
@@ -157,6 +166,7 @@ public class ManagerWorkflowController {
     }
 
     @DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("stepNumber") Integer stepNumber) {
@@ -166,6 +176,7 @@ public class ManagerWorkflowController {
     }
 
     @GetMapping(value = "/get-files-from-source/{id}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         User authUser = (User) model.getAttribute("authUser");
         int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
@@ -178,9 +189,11 @@ public class ManagerWorkflowController {
     }
 
     @PostMapping(value = "/add-target/{id}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String addTarget(@PathVariable("id") Long id,
                             @RequestParam("targetType") String targetType,
                             @RequestParam("documentsTargetUri") String documentsTargetUri,
+                            @ModelAttribute("authUserEppn") String authUserEppn,
                             RedirectAttributes redirectAttributes) {
         if(workflowService.addTarget(id, targetType, documentsTargetUri)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
@@ -191,8 +204,10 @@ public class ManagerWorkflowController {
     }
 
     @GetMapping(value = "/delete-target/{id}/{targetId}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String deleteTarget(@PathVariable("id") Long id,
                                @PathVariable("targetId") Long targetId,
+                               @ModelAttribute("authUserEppn") String authUserEppn,
                                RedirectAttributes redirectAttributes) {
         workflowService.deleteTarget(id, targetId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));

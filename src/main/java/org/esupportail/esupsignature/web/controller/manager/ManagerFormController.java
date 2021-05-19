@@ -11,11 +11,13 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -67,6 +69,9 @@ public class ManagerFormController {
     @Resource
     private TargetService targetService;
 
+    @Resource
+    PreAuthorizeService preAuthorizeService;
+
     @GetMapping()
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Set<Form> forms = new HashSet<>();
@@ -83,7 +88,8 @@ public class ManagerFormController {
     }
 
     @GetMapping("{id}")
-    public String show(@PathVariable("id") Long id, Model model) {
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+    public String show(@PathVariable("id") Long id, Model model, @ModelAttribute("authUserEppn") String authUserEppn) {
         Form form = formService.getById(id);
         model.addAttribute("form", form);
         model.addAttribute("workflow", form.getWorkflow());
@@ -133,6 +139,7 @@ public class ManagerFormController {
     }
 
     @GetMapping("update/{id}")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") long id, Model model) {
         Form form = formService.getById(id);
         User manager = userService.getUserByEppn(authUserEppn);
@@ -156,9 +163,11 @@ public class ManagerFormController {
     }
 
     @PutMapping
+    @PreAuthorize("@preAuthorizeService.formManager(#updateForm.id, #authUserEppn)")
     public String updateForm(@ModelAttribute Form updateForm,
                              @RequestParam(required = false) List<String> managers,
                              @RequestParam(value = "types", required = false) String[] types,
+                             @ModelAttribute("authUserEppn") String authUserEppn,
                              RedirectAttributes redirectAttributes) {
         updateForm.setPublicUsage(false);
         updateForm.setAction("");
@@ -168,7 +177,9 @@ public class ManagerFormController {
     }
 
     @PostMapping("/update-model/{id}")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public String updateFormmodel(@PathVariable("id") Long id,
+                                  @ModelAttribute("authUserEppn") String authUserEppn,
                                   @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
         try {
             if(multipartModel.getSize() > 0) {
@@ -184,7 +195,8 @@ public class ManagerFormController {
     }
 
     @DeleteMapping("{id}")
-    public String deleteForm(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
+    public String deleteForm(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         formService.deleteForm(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
         return "redirect:/managers/forms";
@@ -212,6 +224,7 @@ public class ManagerFormController {
 
     @ResponseBody
     @PostMapping("/field/{id}/update")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public ResponseEntity<String> updateField(@PathVariable("id") Long id,
                                               @RequestParam(value = "description", required = false) String description,
                                               @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,
@@ -224,7 +237,8 @@ public class ManagerFormController {
                                               @RequestParam(value = "valueType", required = false) String valueType,
                                               @RequestParam(value = "valueReturn", required = false) String valueReturn,
                                               @RequestParam(value = "stepZero", required = false, defaultValue = "false") Boolean stepZero,
-                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds) {
+                                              @RequestParam(value = "workflowStepsIds", required = false) List<Long> workflowStepsIds,
+                                              @ModelAttribute("authUserEppn") String authUserEppn) {
 
         String extValueServiceName = "";
         String extValueType = "";

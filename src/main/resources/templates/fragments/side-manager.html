@@ -14,6 +14,10 @@
            title="Formulaires" href="/managers/forms" class="btn col-12 mb-1 text-left">
             <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
         </a>
+        <a th:classappend="${activeMenu == 'rolesManagers'} ? 'btn-secondary' : 'btn-light'"
+           title="Roles managers" href="/managers/rolesManagers" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-users"></i> <span class="sidebar-label">Roles managers</span>
+        </a>
 
     </div>
 </nav>

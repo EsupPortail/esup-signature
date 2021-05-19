@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.service.security;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 
 @Service
 @Transactional
@@ -87,4 +89,20 @@ public class PreAuthorizeService {
         return userEppn.equals(workflow.getCreateBy().getEppn()) || workflow.getCreateBy().equals(userService.getSystemUser());
     }
 
+    public boolean workflowManager(Long id, String userEppn) {
+        Workflow workflow = workflowService.getById(id);
+        User manager = userService.getByEppn(userEppn);
+        return workflow.getCreateBy().getEppn().equals(manager.getEppn()) || CollectionUtils.containsAny(manager.getManagersRoles(), workflow.getRoles());
+    }
+
+    public boolean formManager(Long id, String userEppn) {
+        Form form = formService.getById(id);
+        User manager = userService.getByEppn(userEppn);
+        return CollectionUtils.containsAny(manager.getManagersRoles(), form.getRoles());
+    }
+
+    public boolean roleManager(String role, String userEppn) {
+        User manager = userService.getByEppn(userEppn);
+        return manager.getManagersRoles().contains(role);
+    }
 }
