@@ -8,9 +8,23 @@ export class Nexu {
         Nexu.id = id;
         this.tokenId = null;
         this.keyId = null;
-        this.checkNexuClient();
+        this.bindingPorts = "9886, 9887, 9888, 9795";
+        this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
+        $("#warning-text").html("NexU not detected or not started ! ");
+        $("#nexu_missing_alert").show();
+        $("#signFormConfirm").hide();
+        let self = this;
+        this.checkNexuClient().then(function (){
+            console.warn("NexU detected");
+            $("#warning-text").html("");
+            $("#nexu_missing_alert").hide();
+            $("#signFormConfirm").show();
+            if(id != null) {
+                self.loadScript();
+            }
+        });
     }
 
     getCertificates() {
@@ -105,28 +119,35 @@ export class Nexu {
     }
 
     checkNexuClient() {
-        console.log("Start checking NexU");
-        $.ajax({
-            type: "GET",
-            url: this.nexuUrl + "/nexu-info",
-            crossDomain: true,
-            dataType: "json",
-            context : this,
-            success: data => this.checkNexu(data)
-        }).fail(function (error) {
-            console.warn("NexU not detected or not started ! " + JSON.stringify(error));
-            $("#warning-text").html("NexU not detected or not started ! ");
-            $("#nexu_missing_alert").show();
-            $("#signFormConfirm").hide();
+        return new Promise((resolve, reject) => {
+            console.log("Start checking NexU");
+            let ports = this.bindingPorts.split(",");
+            let detectNexu = false;
+            let self = this;
+            ports.forEach(function (port){
+                let url = "http://localhost:" + port.trim() + "/nexu-info";
+                console.info("check " + url);
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    crossDomain: true,
+                    dataType: "json",
+                    context : this,
+                    success: function (data) {
+                        console.info("nexu detected on " + url);
+                        detectNexu = true;
+                        self.detectedPort = port.trim();
+                        self.checkNexu(data);
+                        resolve("nexu detected");
+                    }
+                });
+            });
         });
-
     }
 
     checkNexu(data) {
         console.log("Check NexU");
-        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22")) {
-            console.log("Loading script...");
-            this.loadScript();
+        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);
         } else {
@@ -137,100 +158,11 @@ export class Nexu {
     }
 
     loadScript() {
-        let xhrObj = new XMLHttpRequest();
-        xhrObj.open('GET', this.nexuUrl + "/nexu.js");
-        xhrObj.send(null);
-        let se = document.createElement('script');
-        se.type = "text/javascript";
-        se.text = xhrObj.responseText;
-        document.getElementsByTagName('head')[0].appendChild(se);
-        console.log("NexU script loaded");
-    }
-
-/*
-var NexU = (function() {
-
-    var latestVersion = "1.8";
-    
-    var bindingPorts = "9886, 9887, 9888";
-    
-    var runningPort;
-    var runningVersion;
-    var isInitialized;
-    var that;
-    
-    function NexU(successCallback, oldVersionDetectedCallback, notInstalledCallback, cannotLoadScriptCallback, progressCallback) {
-        that = this;
-        isInitialized = false;
-        _initRunningPortAndVersion(successCallback, oldVersionDetectedCallback, notInstalledCallback,
-                cannotLoadScriptCallback, progressCallback);
-    }
-    
-    function _initRunningPortAndVersion(successCallback, oldVersionDetectedCallback, notInstalledCallback,
-            cannotLoadScriptCallback, progressCallback) {
-        _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
-                cannotLoadScriptCallback, progressCallback, 0, bindingPorts.split(","));
-    }
-    
-    function _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
-            cannotLoadScriptCallback, progressCallback, index, ports) {
-        if(progressCallback) {
-            progressCallback(index, ports, "BEFORE");
-        }
-        
-        port = ports[index].trim();
-        $.get("http://localhost:" + port + "/nexu-info", function(data) {
-            runningPort = port;
-            runningVersion = data.version;
-            if(runningVersion === latestVersion) {
-                $.getScript("http://localhost:" + port + "/nexu.js")
-                    .done(function() {
-                        isInitialized = true;
-                        successCallback(that);
-                    })
-                    .fail(function() {
-                        isInitialized = true;
-                        cannotLoadScriptCallback(that);
-                    });
-            } else {
-                isInitialized = true;
-                oldVersionDetectedCallback(that);
-            }
-        }).fail(function() {
-            if(progressCallback) {
-                progressCallback(index, ports, "AFTER");
-            }
-            
-            if(index+1 < ports.length) {
-                _initRunningPortAndVersionRecursive(successCallback, oldVersionDetectedCallback, notInstalledCallback,
-                        cannotLoadScriptCallback, progressCallback, index+1, ports);
-            } else {
-                isInitialized = true;
-                notInstalledCallback(that);
-            }
+        let url = "http://localhost:" + this.detectedPort + "/nexu.js";
+        console.info("loading nexu script : " + url);
+        $.getScript(url, function() {
+            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         });
     }
     
-    NexU.prototype.getRunningPort = function() {
-        return runningPort;
-    };
-    
-    NexU.prototype.getRunningVersion = function() {
-        return runningVersion;
-    };
-    
-    NexU.prototype.isInitialized = function() {
-        return isInitialized;
-    };
-    
-    NexU.prototype.isInstalled = function() {
-        return typeof runningPort !== 'undefined';
-    };
-    
-    return NexU;
-}());
-
-*/
-
-
 }

@@ -2,11 +2,9 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="fragments/head"></head>
-<script th:src="${globalProperties.nexuUrl} + '/nexu.js'"></script>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
     let nexu = new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], [[${globalProperties.rootUrl}]], [[${addExtra}]], [[${id}]]);
-    nexu.getCertificates();
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
