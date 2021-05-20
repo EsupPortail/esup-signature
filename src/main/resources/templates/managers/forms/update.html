@@ -4,16 +4,16 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
-    new FormUi("admin");
+    new FormUi("managers");
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-admin"></nav>
+        <nav th:insert="fragments/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/managers/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
@@ -28,15 +28,15 @@
                     <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id}">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/managers/forms/' + ${form.id}">Configuration des champs</a>
                 </li>
             </ul>
             <br>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                    <form id="formUpdateModel" th:action="'/managers/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <div class="form-group">
-                            Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank">
+                            Modele actuel : <a th:href="'/managers/forms/get-file/' + ${form.id}" target="_blank">
                             <span th:text="${form.document.fileName}"></span></a>
                         </div>
                         <div class="form-group">
@@ -49,7 +49,7 @@
                         </div>
                         <button id="submitModel" type="submit" class="btn btn-success d-none">Modifier le modèle</button>
                     </form>
-                    <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
+                    <form id="formUpdate" th:action="'/managers/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group">
                             <label for="name">Titre (titre affiché aux utilisateurs)</label>
@@ -67,10 +67,6 @@
                             <label for="message">Message d'accueil</label>
                             <textarea id="message" class="summer-note"   th:field="*{message}"></textarea>
                         </div>
-                        <div class="form-check">
-                            <input id="publicUsage" class="form-check-input" type="checkbox" th:field="*{publicUsage}"/>
-                            <label for="publicUsage">Visibilité publique ?</label>
-                        </div>
                         <div class="form-group">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
@@ -86,7 +82,7 @@
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                     ce formulaire</small></div>
                             </label>
-                            <select class="slim-select-simple" type="text" th:field="*{roles}" multiple>
+                            <select required class="slim-select-simple" type="text" th:field="*{roles}" multiple>
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
                                 </th:block>
@@ -152,26 +148,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="actionDiv">Actions (javascript)</label>
-                            <textarea id="actionText" class="form-control" type="text" th:field="*{action}"></textarea>
-                            <div id="actionDiv"></div>
-                            <script language="JavaScript">
-                                ace.require("ace/ext/language_tools");
-                                let editor = ace.edit("actionDiv", {
-                                    mode: "ace/mode/javascript",
-                                    autoScrollEditorIntoView: true,
-                                    enableBasicAutocompletion: true,
-                                    selectionStyle: "text"
-                                });
-                                let textarea = $('#actionText');
-                                textarea.hide();
-                                editor.getSession().setValue(textarea.val());
-                                editor.getSession().on('change', function(){
-                                    textarea.val(editor.getSession().getValue());
-                                });
-                            </script>
                         </div>
                     </form>
                 </div>
