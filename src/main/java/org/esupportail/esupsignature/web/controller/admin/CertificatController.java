@@ -1,10 +1,9 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +17,6 @@ import java.util.List;
 @RequestMapping("/admin/certificats")
 @Controller
 public class CertificatController {
-
-    private static final Logger logger = LoggerFactory.getLogger(CertificatController.class);
 
     @ModelAttribute("adminMenu")
     String getCurrentMenu() {

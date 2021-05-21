@@ -187,6 +187,7 @@ server:
             remote-ip-header: X-Forwarded-For
 
 sign:
+    aes-key : "0000000000000000"
     cades-digest-algorithm: SHA256
     cades-signature-level: CAdES_BASELINE_T
     container-type: ASiC_E

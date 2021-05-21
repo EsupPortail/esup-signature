@@ -428,10 +428,10 @@ public class SignRequestService {
 				});
 			return true;
 		} catch (EsupSignatureKeystoreException e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(), e);
 			return true;
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(), e);
 			return false;
 		}
 	}
@@ -612,7 +612,7 @@ public class SignRequestService {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			} else {
 				Certificat certificat = certificatService.getCertificatByUser(user).get(0);
-				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificat.getPassword());
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
