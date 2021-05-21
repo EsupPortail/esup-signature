@@ -83,7 +83,7 @@ public class FormService {
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
-				if(userShare.getForm() != null){
+				if(userShare.getForm() != null && !userShare.getForm().getDeleted()){
 					forms.add(userShare.getForm());
 				}
 			}
