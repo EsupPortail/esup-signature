@@ -7,11 +7,13 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.FieldService;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Controller
-@RequestMapping("/managers/forms")
+@RequestMapping("/manager/forms")
 public class ManagerFormController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManagerFormController.class);
@@ -65,12 +67,6 @@ public class ManagerFormController {
 
     @Resource
     private FieldService fieldService;
-
-    @Resource
-    private TargetService targetService;
-
-    @Resource
-    PreAuthorizeService preAuthorizeService;
 
     @GetMapping()
     public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
@@ -109,12 +105,12 @@ public class ManagerFormController {
                            @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
         try {
             Form form = formService.createForm(null, name, null, null, null, null, publicUsage, fieldNames);
-            return "redirect:/managers/forms/" + form.getId();
+            return "redirect:/manager/forms/" + form.getId();
 
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            return "redirect:/managers/forms/";
+            return "redirect:/manager/forms/";
         }
     }
 
@@ -130,11 +126,11 @@ public class ManagerFormController {
             RedirectAttributes redirectAttributes) throws IOException {
         try {
             Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
-            return "redirect:/managers/forms/" + form.getId();
+            return "redirect:/manager/forms/" + form.getId();
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            return "redirect:/managers/forms/";
+            return "redirect:/manager/forms/";
         }
     }
 
@@ -173,12 +169,12 @@ public class ManagerFormController {
         updateForm.setAction("");
         formService.updateForm(updateForm.getId(), updateForm, managers, types);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
-        return "redirect:/managers/forms/update/" + updateForm.getId();
+        return "redirect:/manager/forms/update/" + updateForm.getId();
     }
 
     @PostMapping("/update-model/{id}")
     @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
-    public String updateFormmodel(@PathVariable("id") Long id,
+    public String updateFormModel(@PathVariable("id") Long id,
                                   @ModelAttribute("authUserEppn") String authUserEppn,
                                   @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
         try {
@@ -188,10 +184,10 @@ public class ManagerFormController {
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-            return "redirect:/managers/forms/";
+            return "redirect:/manager/forms/";
         }
         redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Modifications enregistrées"));
-        return "redirect:/managers/forms/update/" + id;
+        return "redirect:/manager/forms/update/" + id;
     }
 
     @DeleteMapping("{id}")
@@ -199,7 +195,7 @@ public class ManagerFormController {
     public String deleteForm(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         formService.deleteForm(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le formulaire à bien été supprimé"));
-        return "redirect:/managers/forms";
+        return "redirect:/manager/forms";
     }
 
     @GetMapping(value = "/{name}/datas/csv", produces="text/csv")

@@ -5,7 +5,7 @@
 <nav th:replace="fragments/nav"></nav>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-manager"></nav>
+        <nav th:insert="/fragments/sides/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Managers Roles</li>
@@ -31,7 +31,7 @@
                         <tbody>
                         <th:block th:each="role, status :${roleManagers.keySet}">
                             <tr>
-                                <form th:action="'/managers/rolesManagers/editRole'" method="post">
+                                <form th:action="'/manager/rolesManagers/editRole'" method="post">
 
                                     <td th:text="${role}"></td>
                                     <input name="role" type="hidden" th:value="${role}">

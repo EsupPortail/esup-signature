@@ -69,7 +69,7 @@
 </script>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-sign"></nav>
+        <nav th:insert="/fragments/sides/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
@@ -235,11 +235,13 @@
             </div>
             <div class="modal-body">
                 <div id="signFormConfirm">
-                    <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"
-                         class="alert alert-success"></div>
+                    <div class="alert alert-success">
+                        <p th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"></p>
+                        <p th:if="${user.keystore == null}">à l'aide du certificat de votre établissement</p>
+                    </div>
                 </div>
                 <label for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
-                <textarea id="signComment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-left">
@@ -274,9 +276,9 @@
                         </button>
                     </div>
                 </div>
-                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign} ? 'd-none'"
+                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
                        class="form-control mt-2 mb-1" type="password" id="password" name="password" value=""
-                       placeholder="Mot de passe du keystore"/>
+                       placeholder="Mot de passe du keystore" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>

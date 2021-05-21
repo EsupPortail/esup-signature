@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Logs</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div id="addButton" class="fixed-action-btn-simple" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a title="Ajouter un certificat" data-toggle="modal" data-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
+            </div>
+            <div class="card mb-1 col-lg-10 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Logs</b></h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Roles</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="certificat : ${certificats}">
+                            <tr>
+                                <td><span th:text="${certificat.keystore.fileName}"></span></td>
+                                <td><span th:text="${certificat.roles}"></span></td>
+                                <td><form th:action="'/admin/certificats'" th:method="'delete'"><button type="submit" name="id" th:value="${certificat.id}" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button></form></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="newCertificat" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un certificat</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="addCertificat" th:action="'/admin/certificats?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="col-form-label">Keystore au format PKCS12</label>
+                            <div class="custom-file">
+                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                                       data-buttonText="Choisir fichier" id="keystore" name="keystore"
+                                       type="file" required/>
+                                <label class="custom-file-label" for="keystore" id="inputGroupLabel01">
+                                    Choisir un fichier
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                            <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
+                                <th:block th:each="newRole : ${roles}">
+                                    <option th:text="${newRole}" th:value="${newRole}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="password" class="col-form-label">Mot de passe du keystore</label>
+                            <input id="password" class="form-control" type="password" name="password">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <input type="submit" class="btn btn-success" value="Valider">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

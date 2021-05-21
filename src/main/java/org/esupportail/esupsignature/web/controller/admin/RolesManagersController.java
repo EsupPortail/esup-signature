@@ -36,7 +36,7 @@ public class RolesManagersController {
             roleManagers.put(role, userService.getByManagersRoles(role));
         }
         model.addAttribute("roleManagers", roleManagers);
-        return "admin/managersRoles";
+        return "admin/managerRoles";
     }
 
     @PostMapping("/editRole")

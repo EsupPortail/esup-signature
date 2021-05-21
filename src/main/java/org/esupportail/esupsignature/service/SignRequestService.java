@@ -155,6 +155,9 @@ public class SignRequestService {
 	private SignRequestParamsService signRequestParamsService;
 
 	@Resource
+	private CertificatService certificatService;
+
+	@Resource
 	private ReportService reportService;
 
 	@Resource
@@ -605,7 +608,12 @@ public class SignRequestService {
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
 			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), channel, sseId);
-			pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			if(user.getKeystore() != null) {
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			} else {
+				Certificat certificat = certificatService.getCertificatByUser(user).get(0);
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificat.getPassword());
+			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
 			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), channel, sseId);
@@ -1274,7 +1282,10 @@ public class SignRequestService {
 						}
 					}
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+						if (checkUserSignRights(signRequest, userEppn, authUserEppn)
+							&& user.getKeystore() == null
+							&& certificatService.getCertificatByUser(user).size() == 0
+							&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
 						}

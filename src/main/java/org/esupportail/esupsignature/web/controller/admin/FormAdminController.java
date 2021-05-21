@@ -65,9 +65,6 @@ public class FormAdminController {
 	@Resource
 	private FieldService fieldService;
 
-	@Resource
-	private TargetService targetService;
-
 	@GetMapping()
 	public String list(Model model) {
 		List<Form> forms = formService.getAllForms();
@@ -162,7 +159,7 @@ public class FormAdminController {
 	}
 
 	@PostMapping("/update-model/{id}")
-	public String updateFormmodel(@PathVariable("id") Long id,
+	public String updateFormModel(@PathVariable("id") Long id,
 								  @RequestParam(value = "multipartModel", required=false) MultipartFile multipartModel, RedirectAttributes redirectAttributes) {
 		try {
 			if(multipartModel.getSize() > 0) {
