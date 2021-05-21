@@ -607,7 +607,7 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
     }
 
     renderPdfForm(items) {

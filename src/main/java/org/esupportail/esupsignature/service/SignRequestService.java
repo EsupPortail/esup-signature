@@ -932,7 +932,7 @@ public class SignRequestService {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
 			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 			User authUser = userService.getUserByEppn(authUserEppn);
-			if((data != null && data.getForm().getManagers().contains(authUser.getEmail())) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
+			if((data != null && (data.getForm() != null && data.getForm().getManagers().contains(authUser.getEmail()))) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}
@@ -956,13 +956,17 @@ public class SignRequestService {
 	public void delete(Long signRequestId, String userEppn) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
-		signRequest.getOriginalDocuments().clear();
-		if(signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
-			signRequest.getSignedDocuments().clear();
+		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+			deleteDefinitive(signRequestId);
+		} else {
+			signRequest.getOriginalDocuments().clear();
+			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+				signRequest.getSignedDocuments().clear();
+			}
+			signRequest.setStatus(SignRequestStatus.deleted);
+			logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			otpService.deleteOtpBySignRequestId(signRequestId);
 		}
-		signRequest.setStatus(SignRequestStatus.deleted);
-		logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
-		otpService.deleteOtpBySignRequestId(signRequestId);
 	}
 
 	@Transactional
@@ -1304,7 +1308,7 @@ public class SignRequestService {
 		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
 	}
 
-	public Long getNbByCreateAndStatus(String userEppn) {
+	public Long getNbPendingSignRequests(String userEppn) {
 		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
 	}
 

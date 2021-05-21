@@ -111,6 +111,7 @@ public class SignRequestController {
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        if(statusFilter == null) statusFilter = "pending";
         Page<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signRequests", signRequests);
@@ -189,7 +190,7 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
-        if(signRequest.getData() != null) {
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
         }
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
