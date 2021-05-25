@@ -3,11 +3,13 @@ package org.esupportail.esupsignature.web.controller.admin;
 import eu.europa.esig.dss.spi.tsl.LOTLInfo;
 import eu.europa.esig.dss.spi.tsl.TLInfo;
 import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
+import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.dss.DSSService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,21 +42,19 @@ public class DSSController {
 	@Resource
 	private KeystoreService keystoreService;
 
+	@Resource
+	@Qualifier("european-trusted-list-certificate-source")
+	private TrustedListsCertificateSource trustedListsCertificateSource;
+
 	@GetMapping
 	public String tlInfoPage(Model model) {
-		TLValidationJobSummary summary = dssService.getTrustedListsCertificateSource().getSummary();
+		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
 		model.addAttribute("summary", summary);
-		return "admin/dss/tl-summary";
-	}
-
-	@GetMapping(value = "/oj")
-	public String showCertificates(Model model) {
 		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getTrustedListsCertificateSource().getCertificates()));
 		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) dssService.getLotlSource().getSigningCertificatesAnnouncementPredicate();
 		model.addAttribute("currentOjUrl", ojUriInfo.getOfficialJournalURL());
 		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
-		model.addAttribute("customCertificates", keystoreService.getCertificatesDTOFromKeyStore(dssService.getMyTrustedCertificateSource().getCertificates()));
-		return "admin/dss/oj-certificates";
+		return "admin/dss/tl-summary";
 	}
 
 	@GetMapping(value = "/lotl/{id}")

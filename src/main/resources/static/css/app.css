@@ -1,3 +1,5 @@
+@import 'flags.css';
+
 @font-face {
     font-family: 'FontAwesome';
     src: url('/webjars/font-awesome/5.15.2/webfonts/fa-solid-900.woff') format('woff'),

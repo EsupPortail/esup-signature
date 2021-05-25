@@ -6,7 +6,6 @@ import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
-import eu.europa.esig.dss.utils.Utils;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 @Service
 @ConditionalOnBean(DSSBeanConfig.class)
@@ -39,19 +36,8 @@ public class OJService {
 	private CommonTrustedCertificateSource myTrustedCertificateSource;
 
 	public void getCertificats() {
-		try {
-			log.info("start offline refreshing oj keystore");
-			dssBeanConfig.job().offlineRefresh();
-			refresh();
-			ojContentKeyStore.addAllCertificatesToKeyStore(trustedListsCertificateSource.getCertificates());
-			ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
-			OutputStream fos = new FileOutputStream(dssBeanConfig.getDssProperties().getKsFilename());
-			ojContentKeyStore.store(fos);
-			Utils.closeQuietly(fos);
-			log.info("init trusted lists OK");
-		} catch(IOException e) {
-			log.error("Error getting certificats", e);
-		}
+		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
+		dssBeanConfig.job().offlineRefresh();
 	}
 	
 	public void refresh() {
@@ -67,8 +53,9 @@ public class OJService {
 		}
 	}	
 
-	public boolean checkOjFreshness() {
+	public boolean checkOjFreshness() throws IOException {
 		TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
+		if(summary == null) return true;
 		LOTLInfo lotlInfo = summary.getLOTLInfos().get(0);
 		return !lotlInfo.getValidationCacheInfo().isValid()
 				|| lotlInfo.getValidationCacheInfo().isRefreshNeeded()

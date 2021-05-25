@@ -137,7 +137,6 @@ dss:
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
-    trusted-certificat-url-list:
 
 fs:
 #    smb-login: esup-signature
