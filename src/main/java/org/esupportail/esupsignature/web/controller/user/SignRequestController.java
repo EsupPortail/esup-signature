@@ -69,6 +69,9 @@ public class SignRequestController {
     private UserService userService;
 
     @Resource
+    private CertificatService certificatService;
+
+    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     @Resource
@@ -182,6 +185,7 @@ public class SignRequestController {
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
             }
         }
+        model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -243,13 +247,14 @@ public class SignRequestController {
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password,
+                               @RequestParam(value = "certType", required = false) String certType,
                                        HttpSession httpSession, HttpServletRequest request) {
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(request);
         if (visual == null) visual = true;
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        if(signRequestService.initSign(id, token.getToken(), signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
+        if(signRequestService.initSign(id, token.getToken(), signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn)) {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -623,9 +628,10 @@ public class SignRequestController {
                                            @ModelAttribute("authUserEppn") String authUserEppn,
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
+                                           @RequestParam(value = "certType", required = false) String certType,
                                            HttpSession httpSession, HttpServletRequest request) throws JsonProcessingException, InterruptedException {
         CsrfToken csrfToken = new HttpSessionCsrfTokenRepository().loadToken(request);
-        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, csrfToken.getToken(), password);
+        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, csrfToken.getToken(), password, certType);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

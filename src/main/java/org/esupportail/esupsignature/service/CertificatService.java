@@ -1,8 +1,11 @@
 package org.esupportail.esupsignature.service;
 
+import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.Key;
 import java.util.*;
@@ -21,6 +25,12 @@ import java.util.*;
 public class CertificatService {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificatService.class);
+
+    @Resource
+    private UserService userService;
+
+    @Resource
+    private UserKeystoreService userKeystoreService;
 
     @Resource
     private CertificatRepository certificatRepository;
@@ -40,7 +50,8 @@ public class CertificatService {
         return certificatRepository.findByRolesIn(Collections.singletonList(role)).get(0);
     }
 
-    public List<Certificat> getCertificatByUser(User user) {
+    public List<Certificat> getCertificatByUser(String userEppn) {
+        User user = userService.getUserByEppn(userEppn);
         Set<Certificat> certificats = new HashSet<>(certificatRepository.findByRolesIn(user.getRoles()));
         return new ArrayList<>(certificats);
     }
@@ -52,11 +63,15 @@ public class CertificatService {
     }
 
     @Transactional
-    public void addCertificat(MultipartFile keystore, List<String> roles, String password) throws IOException {
+    public void addCertificat(MultipartFile keystore, List<String> roles, String password) throws IOException, EsupSignatureKeystoreException {
         Certificat certificat = new Certificat();
-        certificat.setKeystore(documentService.createDocument(keystore.getInputStream(), keystore.getName(), keystore.getContentType()));
+        byte[] keystoreBytes = keystore.getBytes();
+        Pkcs12SignatureToken pkcs12SignatureToken = userKeystoreService.getPkcs12Token(new ByteArrayInputStream(keystoreBytes), password);
+        CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
+        certificat.setKeystore(documentService.createDocument(new ByteArrayInputStream(keystoreBytes), certificateToken.getSubject().getPrincipal().getName("CANONICAL"), keystore.getContentType()));
         certificat.setRoles(roles);
         certificat.setPassword(encryptPassword(password));
+        certificat.setExpireDate(certificateToken.getNotAfter());
         certificatRepository.save(certificat);
     }
 

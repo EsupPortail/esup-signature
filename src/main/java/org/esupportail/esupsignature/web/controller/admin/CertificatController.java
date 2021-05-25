@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -46,9 +46,14 @@ public class CertificatController {
             @RequestParam MultipartFile keystore,
             @RequestParam List<String> roleNames,
             @RequestParam String password,
-            RedirectAttributes redirectAttributes) throws IOException {
-        certificatService.addCertificat(keystore, roleNames, password);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Certificat ajouté"));
+            RedirectAttributes redirectAttributes) {
+        try {
+            certificatService.addCertificat(keystore, roleNames, password);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Certificat ajouté"));
+        } catch (IOException | EsupSignatureKeystoreException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Erreur lors de l'ajout du keystore : <br>" + e.getMessage()));
+        }
+
         return "redirect:/admin/certificats";
     }
 

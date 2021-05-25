@@ -276,6 +276,12 @@
                         </button>
                     </div>
                 </div>
+
+                <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-control mt-2">
+                    <option th:if="${user.keystore != null}" value="profil">Utiliser le certificat lié à mon profil</option>
+                    <option th:if="${certificats.size() > 0}" value="etab">Utiliser le certificat de l'établissement</option>
+                </select>
+
                 <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
                        class="form-control mt-2 mb-1" type="password" id="password" name="password" value=""
                        placeholder="Mot de passe du keystore" />

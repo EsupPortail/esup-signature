@@ -372,7 +372,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userShareId, String userEppn, String authUserEppn) {
+	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String certType, Long userShareId, String userEppn, String authUserEppn) {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -420,7 +420,7 @@ public class SignRequestService {
 			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
 			User user = userService.getByEppn(userEppn);
 			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
+			sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
 			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
 					public void afterCommit() {
 					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
@@ -437,7 +437,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password) throws JsonProcessingException, InterruptedException {
+	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password, String certType) throws JsonProcessingException, InterruptedException {
 		eventService.publishEvent(new JsonMessage("", "Démarrage de la signature en masse", null), "massSign", sseId);
 		List<String> idsString = objectMapper.readValue(ids, List.class);
 		List<Long> idsLong = new ArrayList<>();
@@ -463,7 +463,7 @@ public class SignRequestService {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
 				error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
 			}
-			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn)) {
+			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id, sseId, null, null, null, true, password, certType, userShareId, userEppn, authUserEppn)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
 				error = null;
 			}
@@ -479,7 +479,7 @@ public class SignRequestService {
 		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
 	}
 
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+	public void sign(SignRequest signRequest, String password, String certType, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -533,7 +533,7 @@ public class SignRequestService {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
-			certSign(signRequest, signerUser, password, visual, sseId, "sign");
+			certSign(signRequest, signerUser, password, certType, visual, sseId, "sign");
 			eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
 			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
 		}
@@ -598,7 +598,7 @@ public class SignRequestService {
 //
 //	}
 
-	public void certSign(SignRequest signRequest, User user, String password, boolean visual, String sseId, String channel) throws EsupSignatureException, InterruptedException {
+	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual, String sseId, String channel) throws EsupSignatureException, InterruptedException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest.getId())) {
@@ -608,10 +608,10 @@ public class SignRequestService {
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
 			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), channel, sseId);
-			if(user.getKeystore() != null) {
+			if(user.getKeystore() != null && certType.equals("profil")) {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			} else {
-				Certificat certificat = certificatService.getCertificatByUser(user).get(0);
+				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
@@ -1284,7 +1284,7 @@ public class SignRequestService {
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
 						if (checkUserSignRights(signRequest, userEppn, authUserEppn)
 							&& user.getKeystore() == null
-							&& certificatService.getCertificatByUser(user).size() == 0
+							&& certificatService.getCertificatByUser(userEppn).size() == 0
 							&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
@@ -1433,7 +1433,9 @@ public class SignRequestService {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
-		mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		if(recipientEmails.size() > 0) {
+			mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		}
 	}
 
 	public SignRequest getSignRequestByComment(Comment comment) {

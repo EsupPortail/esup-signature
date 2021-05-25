@@ -72,7 +72,7 @@ pre {
 }
 
 :not(section) > textarea::placeholder {
-    background-color: #ff8f9e;
+    background-color: #ffeeba;
     color: black !important;
 }
 
