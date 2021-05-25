@@ -8,7 +8,7 @@ export class Nexu {
         Nexu.id = id;
         this.tokenId = null;
         this.keyId = null;
-        this.bindingPorts = "9886, 9887, 9888, 9795";
+        this.bindingPorts = "9795, 9886, 9887, 9888";
         this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
@@ -25,20 +25,6 @@ export class Nexu {
                 self.loadScript();
             }
         });
-    }
-
-    getCertificates() {
-        Nexu.updateProgressBar("Chargement des certificats", "25%");
-        try {
-            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
-        }
-        catch(e) {
-            console.error(e);
-            const merror = {
-                errorMessage: "Problème avec l'application NexU"
-            };
-            error(Object.create(merror));
-        }
     }
 
     static getDataToSign(certificateData) {
@@ -164,5 +150,5 @@ export class Nexu {
             nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         });
     }
-    
+
 }

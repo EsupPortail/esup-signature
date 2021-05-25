@@ -114,7 +114,7 @@
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${!user.managersRoles.isEmpty()}" title="Menu managers">
-                    <a href="/managers/workflows" th:class="'btn text-white btn-transparent ' + ${managerMenu}"
+                    <a href="/manager/workflows" th:class="'btn text-white btn-transparent ' + ${managerMenu}"
                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-user-tie"></i><span class="nav-item-label d-none d-xxl-inline">Manager</span>
                     </a>

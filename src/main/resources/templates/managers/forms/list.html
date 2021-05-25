@@ -8,7 +8,7 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-manager"></nav>
+        <nav th:insert="/fragments/sides/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Liste des formulaires</li>
@@ -20,7 +20,7 @@
                     <i class="fas fa-plus"></i>
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
-                    <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-primary waves-effect" onclick="location.href='/managers/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
+                    <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-primary waves-effect" onclick="location.href='/manager/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
                     <li><a title="Créer un formulaire depuis un formulaire PDF" data-toggle="modal" data-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
                 </ul>
             </div>
@@ -58,15 +58,15 @@
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
                                             <div class=" card-body">
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/managers/forms/update/' + ${form.id}">
+                                                   th:href="'/manager/forms/update/' + ${form.id}">
                                                     <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/managers/forms/' + ${form.id}">
+                                                   th:href="'/manager/forms/' + ${form.id}">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                                                   th:href="'/managers/forms/' + ${form.name} + '/datas/csv'">
+                                                   th:href="'/manager/forms/' + ${form.name} + '/datas/csv'">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
@@ -80,7 +80,7 @@
                                     <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="command" th:action="'/managers/forms/' + ${form.id}" th:method="delete">
+                                                <form id="command" th:action="'/manager/forms/' + ${form.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <button type="button" class="close" data-dismiss="modal"
                                                                 aria-label="Close">
@@ -128,7 +128,7 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="addModel" th:action="'/managers/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+            <form id="addModel" th:action="'/manager/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group">
                         <label for="name" class="col-form-label">Nom</label>

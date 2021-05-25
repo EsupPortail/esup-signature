@@ -83,7 +83,7 @@ public class FormService {
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
-				if(userShare.getForm() != null){
+				if(userShare.getForm() != null && !userShare.getForm().getDeleted()){
 					forms.add(userShare.getForm());
 				}
 			}
@@ -107,12 +107,12 @@ public class FormService {
 
 	public List<Form> getAllForms(){
 		List<Form> list = new ArrayList<>();
-		formRepository.findAll().forEach(e -> list.add(e));
+		formRepository.findFormByDeletedIsNullOrDeletedIsFalse().forEach(e -> list.add(e));
 		return list;
 	}
 
 	public List<Form> getAuthorizedToShareForms() {
-		return formRepository.findDistinctByAuthorizedShareTypesIsNotNull();
+		return formRepository.findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();
 	}
 
 	@Transactional
@@ -176,21 +176,25 @@ public class FormService {
 	@Transactional
 	public void deleteForm(Long formId) {
 		Form form = formRepository.findById(formId).get();
-		List<UserShare> userShares = userShareService.getUserSharesByForm(form);
-		for(UserShare userShare : userShares) {
-			userShareService.delete(userShare);
-		}
-		dataService.nullifyForm(form);
-		List<Long> fieldToDelete = form.getFields().stream().map(Field::getId).collect(Collectors.toList());
-		form.getFields().clear();
-		for(Long fieldId : fieldToDelete) {
-			List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldPropertie(fieldId);
-			for(FieldPropertie fieldPropertie : fieldProperties) {
-				fieldPropertieService.delete(fieldPropertie.getId());
+		if(form.getDeleted() != null && form.getDeleted()) {
+			List<UserShare> userShares = userShareService.getUserSharesByForm(form);
+			for (UserShare userShare : userShares) {
+				userShareService.delete(userShare);
 			}
-			fieldService.deleteField(fieldId);
+			dataService.nullifyForm(form);
+			List<Long> fieldToDelete = form.getFields().stream().map(Field::getId).collect(Collectors.toList());
+			form.getFields().clear();
+			for (Long fieldId : fieldToDelete) {
+				List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldPropertie(fieldId);
+				for (FieldPropertie fieldPropertie : fieldProperties) {
+					fieldPropertieService.delete(fieldPropertie.getId());
+				}
+				fieldService.deleteField(fieldId);
+			}
+			formRepository.delete(form);
+		} else {
+			form.setDeleted(true);
 		}
-		formRepository.delete(form);
 	}
 
 	private Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
@@ -209,7 +213,7 @@ public class FormService {
 
 	@Transactional
 	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
-		List<Form> testForms = formRepository.findFormByNameAndActiveVersion(name, true);
+		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, true);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
@@ -387,17 +391,17 @@ public class FormService {
 	}
 
 	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
-		return formRepository.findFormByNameAndActiveVersion(name, activeVersion);
+		return formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, activeVersion);
 	}
 
 	public List<Form> getFormByName(String name) {
-		return formRepository.findFormByName(name);
+		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
 
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getUserByEppn(eppn);
-		return formRepository.findFormByManagersContains(user.getEmail());
+		return formRepository.findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(user.getEmail());
 	}
 
 	@Transactional
@@ -428,6 +432,6 @@ public class FormService {
 	}
 
 	public List<Form> getByRoles(String role) {
-		return formRepository.findByRolesIn(Collections.singletonList(role));
+		return formRepository.findByRolesInAndDeletedIsNullOrDeletedIsFalse(Collections.singletonList(role));
 	}
 }

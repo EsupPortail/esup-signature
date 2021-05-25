@@ -13,7 +13,7 @@
                             <h5>Étape : <span class="bs-stepper-circle bg-primary"
                                               th:text="${iterator.index + 1}"></span></h5>
 
-                            <form th:action="${fromAdmin == true ? '/managers/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
+                            <form th:action="${fromAdmin == true ? '/manager/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
                                 <div class="form-group">
                                     <label>Description de l’étape:</label>
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
@@ -74,7 +74,7 @@
                                     <i class="fas fa-save"></i></button>
                             </form>
                             <form th:id="'del_' + ${iterator.index}"
-                                  th:action="${fromAdmin == true ? '/managers/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
+                                  th:action="${fromAdmin == true ? '/manager/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
                                   th:method="delete">
                                 <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
                                         class="btn btn-danger float-right del-step-btn">
@@ -100,7 +100,7 @@
                                             <span th:text="${user.firstname + ' ' + user.name}"></span>
                                         </td>
                                         <td>
-                                            <form th:action="${fromAdmin == true ? '/managers/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
+                                            <form th:action="${fromAdmin == true ? '/manager/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
                                                     onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
@@ -121,7 +121,7 @@
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <form class="form-group"
-                                  th:action="${fromAdmin == true ? '/managers/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id : '/user/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id}"
+                                  th:action="${fromAdmin == true ? '/manager/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id : '/user/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id}"
                                   method="post">
                                 <div class="modal-header">
                                     <h3 class="modal-title">Ajout de destinataire(s)</h3>

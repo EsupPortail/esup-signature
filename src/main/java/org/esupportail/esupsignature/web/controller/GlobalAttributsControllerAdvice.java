@@ -94,7 +94,7 @@ public class GlobalAttributsControllerAdvice {
         	signTypes.remove(SignType.nexuSign);
         }
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
-        model.addAttribute("nbSignRequests", signRequestService.getNbByCreateAndStatus(userEppn));
+        model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
     }
 

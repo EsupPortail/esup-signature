@@ -12,10 +12,10 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-manager"></nav>
+        <nav th:insert="/fragments/sides/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/managers/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/manager/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
@@ -31,7 +31,7 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/managers/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/manager/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="#" onclick="return false;">Configuration des champs</a>
@@ -61,7 +61,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/managers/forms/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/manager/forms/field/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>

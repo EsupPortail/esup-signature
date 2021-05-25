@@ -23,6 +23,7 @@ export class SignUi {
         this.currentStepNumber = currentStepNumber;
         this.gotoNext = false;
         this.profile = profile;
+        this.certTypeSelect = $("#certType");
         this.initListeners();
     }
 
@@ -37,8 +38,21 @@ export class SignUi {
                 $("#launchNoInfiniteSignButton").click();
             }
         });
+        if(this.certTypeSelect) {
+            this.certTypeSelect.on("change", e => this.togglePasswordField());
+        }
+
         $("#copyButton").on('click', e => this.copy());
         document.addEventListener("sign", e => this.updateWaitModal(e));
+    }
+
+    togglePasswordField(){
+        let value = $("#certType").val();
+        if(value === "etab") {
+            $("#password").hide();
+        } else {
+            $("#password").show();
+        }
     }
 
     launchNoInfiniteSign() {
@@ -91,7 +105,8 @@ export class SignUi {
         }
         if(this.workspace != null) {
             this.signRequestUrlParams = {
-                'password' : document.getElementById("password").value,
+                'password' : $("#password").val(),
+                'certType' : $("#certType").val(),
                 'signRequestParams' : JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())),
                 'visual' : this.workspace.signPosition.visualActive,
                 'comment' : this.signComment.val(),

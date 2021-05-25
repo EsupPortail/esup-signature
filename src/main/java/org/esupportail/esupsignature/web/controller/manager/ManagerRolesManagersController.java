@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/managers/rolesManagers")
+@RequestMapping("/manager/rolesManagers")
 @Controller
 public class ManagerRolesManagersController {
 
-    @ModelAttribute("adminMenu")
+    @ModelAttribute("managerMenu")
     String getCurrentMenu() {
         return "active";
     }
@@ -30,9 +30,6 @@ public class ManagerRolesManagersController {
     @Resource
     UserService userService;
 
-    @Resource
-    PreAuthorizeService preAuthorizeService;
-
     @GetMapping
     public String getRoles(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         Map<String, List<User>> roleManagers = new HashMap<>();
@@ -42,7 +39,7 @@ public class ManagerRolesManagersController {
             roleManagers.put(role, userService.getByManagersRoles(role));
         }
         model.addAttribute("roleManagers", roleManagers);
-        return "managers/managersRoles";
+        return "managers/managerRoles";
     }
 
     @PostMapping("/editRole")
@@ -61,7 +58,7 @@ public class ManagerRolesManagersController {
             }
         }
 
-        return "redirect:/managers/rolesManagers";
+        return "redirect:/manager/rolesManagers";
 
     }
 }

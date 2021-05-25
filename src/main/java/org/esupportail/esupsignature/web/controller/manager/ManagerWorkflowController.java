@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.manager;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
-import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -11,7 +10,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.web.controller.admin.WorkflowAdminController;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +21,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-@RequestMapping("/managers/workflows")
+@RequestMapping("/manager/workflows")
 @Controller
 
 public class ManagerWorkflowController {
@@ -77,9 +76,9 @@ public class ManagerWorkflowController {
             workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Un circuit possède déjà ce préfixe"));
-            return "redirect:/managers/workflows/";
+            return "redirect:/manager/workflows/";
         }
-        return "redirect:/managers/workflows/" + workflow.getId();
+        return "redirect:/manager/workflows/" + workflow.getId();
     }
 
     @GetMapping(value = "/update/{id}")
@@ -105,7 +104,7 @@ public class ManagerWorkflowController {
         User authUser = (User) model.getAttribute("authUser");
         workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
-        return "redirect:/managers/workflows/update/" + updateWorkflow.getId();
+        return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
@@ -113,7 +112,7 @@ public class ManagerWorkflowController {
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
-        return "redirect:/managers/workflows";
+        return "redirect:/manager/workflows";
     }
 
     @PostMapping(value = "/add-step/{id}")
@@ -125,7 +124,7 @@ public class ManagerWorkflowController {
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, authUserEppn, false);
-        return "redirect:/managers/workflows/" + id;
+        return "redirect:/manager/workflows/" + id;
     }
 
     @PostMapping(value = "/update-step/{id}/{step}")
@@ -141,7 +140,7 @@ public class ManagerWorkflowController {
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
         workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete);
-        return "redirect:/managers/workflows/" + id;
+        return "redirect:/manager/workflows/" + id;
     }
 
     @DeleteMapping(value = "/remove-step-recipent/{id}/{workflowStepId}")
@@ -151,7 +150,7 @@ public class ManagerWorkflowController {
                                       @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes) {
         WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant supprimé"));
-        return "redirect:/managers/workflows/" + id + "#" + workflowStep.getId();
+        return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
     }
 
     @PostMapping(value = "/add-step-recipents/{id}/{workflowStepId}")
@@ -162,7 +161,7 @@ public class ManagerWorkflowController {
                                    @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
         WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
-        return "redirect:/managers/workflows/" + id + "#" + workflowStep.getId();
+        return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
     }
 
     @DeleteMapping(value = "/remove-step/{id}/{stepNumber}")
@@ -172,7 +171,7 @@ public class ManagerWorkflowController {
                           @PathVariable("stepNumber") Integer stepNumber) {
         Workflow workflow = workflowService.getById(id);
         workflowStepService.removeStep(workflow, stepNumber);
-        return "redirect:/managers/workflows/" + id;
+        return "redirect:/manager/workflows/" + id;
     }
 
     @GetMapping(value = "/get-files-from-source/{id}")
@@ -185,7 +184,7 @@ public class ManagerWorkflowController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
         }
-        return "redirect:/managers/workflows/" + id;
+        return "redirect:/manager/workflows/" + id;
     }
 
     @PostMapping(value = "/add-target/{id}")
@@ -200,7 +199,7 @@ public class ManagerWorkflowController {
         } else {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
         }
-        return "redirect:/managers/workflows/update/" + id;
+        return "redirect:/manager/workflows/update/" + id;
     }
 
     @GetMapping(value = "/delete-target/{id}/{targetId}")
@@ -211,7 +210,7 @@ public class ManagerWorkflowController {
                                RedirectAttributes redirectAttributes) {
         workflowService.deleteTarget(id, targetId);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
-        return "redirect:/managers/workflows/update/" + id;
+        return "redirect:/manager/workflows/update/" + id;
     }
 
 }

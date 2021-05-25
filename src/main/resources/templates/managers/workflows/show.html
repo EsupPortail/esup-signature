@@ -10,10 +10,10 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-manager"></nav>
+        <nav th:insert="/fragments/sides/side-manager"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item"><a href="/managers/workflows">Liste des circuits</a></li>
+                <li class="breadcrumb-item"><a href="/manager/workflows">Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
@@ -29,7 +29,7 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/managers/workflows/update/' + ${workflow.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/manager/workflows/update/' + ${workflow.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="#" onclick="return false;">Étapes</a>
@@ -48,7 +48,7 @@
             <div class="modal fade" id="addStep" tabindex="-1" role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/managers/workflows/add-step/' + ${workflow.id}" method="post">
+                        <form th:action="'/manager/workflows/add-step/' + ${workflow.id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
                             </div>
