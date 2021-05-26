@@ -43,7 +43,7 @@ public class UserKeystoreService {
 			} else {
 				logger.error("open keystore fail :" + e.getMessage());
 			}
-			throw new EsupSignatureKeystoreException("open keystore fail", e);
+			throw new EsupSignatureKeystoreException("Mot de passe incorrect", e);
 		}
 	}
 

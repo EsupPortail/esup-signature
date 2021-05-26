@@ -41,7 +41,7 @@
 
                         <!-- LOTL -->
                         <h2>
-                            <a th:href="@{/tl-info/lotl/} + ${lotl.getIdentifier().asXmlId()}">
+                            <a th:href="@{/admin/dss/lotl/} + ${lotl.getIdentifier().asXmlId()}">
 							<span th:if="${parsingResult != null and parsingResult.resultExist and parsingResult.territory != null}"
                                   th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
                             </a>

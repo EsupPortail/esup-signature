@@ -1,15 +1,15 @@
-import {SseDispatcher} from "../../utils/SseDispatcher.js";
 import {Message} from "../../../prototypes/Message.js";
+import Toast from "../Toast.js";
 
 export default class FormUi {
 
     constructor(domain, formId, prefillTypes) {
         console.info("Starting Form UI for " + formId);
+        this.toast = new Toast();
         this.formId = formId;
         this.btnAddField = $('#btn-add-field');
         this.btnRemove = $('#btn-remove');
         this.btnSaveFields = $('#saveButton');
-        this.sseDispatcher = new SseDispatcher();
         this.prefillTypes = prefillTypes;
         this.domain = domain;
         this.initListeners();
@@ -98,7 +98,6 @@ export default class FormUi {
         message.type = "info";
         message.text = "Enregistrement en cours";
         message.object = null;
-        this.sseDispatcher.dispatchEvent("user", message);
         let self = this;
         let fieldsUpdates = $('form[name^="field-update"]');
         let i = 1;
@@ -117,7 +116,7 @@ export default class FormUi {
                         message.type = "success";
                         message.text = "Modifications enregistrées";
                         message.object = null;
-                        self.sseDispatcher.dispatchEvent("user", message);
+                        self.toast.launch(message);
                     }
                     i++;
                 },
@@ -126,7 +125,7 @@ export default class FormUi {
                     message.type = "error";
                     message.text = "Problème lors de l'enregistrement";
                     message.object = null;
-                    this.sseDispatcher.dispatchEvent("user", message);
+                    self.toast.launch(message);
                 },
             });
         });

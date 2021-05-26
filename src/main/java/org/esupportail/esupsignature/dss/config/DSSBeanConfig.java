@@ -39,7 +39,6 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,9 +66,6 @@ public class DSSBeanConfig {
 	public DSSProperties getDssProperties() {
 		return dssProperties;
 	}
-
-	@Value("${dss.default-validation-policy}")
-	private String defaultValidationPolicy;
 
 	@Autowired(required = false)
 	private ProxyConfig proxyConfig;
@@ -102,6 +98,8 @@ public class DSSBeanConfig {
 	public TSPSource tspSource() {
 		OnlineTSPSource tspSource = new OnlineTSPSource(dssProperties.getTspServer());
 		TimestampDataLoader timestampDataLoader = new TimestampDataLoader();
+		timestampDataLoader.setTimeoutConnection(10000);
+		timestampDataLoader.setTrustStrategy(new TrustAllStrategy());
 		if(proxyConfig != null) {
 			timestampDataLoader.setProxyConfig(proxyConfig);
 		}
@@ -112,10 +110,16 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader dataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
+		dataLoader.setProxyConfig(proxyConfig);
+		return dataLoader;
+	}
+
+	@Bean
+	public CommonsDataLoader trustAllDataLoader() {
+		CommonsDataLoader dataLoader = new CommonsDataLoader();
 		if(proxyConfig != null) {
 			dataLoader.setProxyConfig(proxyConfig);
 		}
-		dataLoader.setTimeoutConnection(10000);
 		dataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		return dataLoader;
 	}
@@ -134,7 +138,7 @@ public class DSSBeanConfig {
 	@Bean
 	public OnlineCRLSource onlineCRLSource() {
 		OnlineCRLSource onlineCRLSource = new OnlineCRLSource();
-		onlineCRLSource.setDataLoader(dataLoader());
+		onlineCRLSource.setDataLoader(trustAllDataLoader());
 		return onlineCRLSource;
 	}
 
@@ -176,7 +180,7 @@ public class DSSBeanConfig {
 	public DSSFileLoader onlineLoader() {
 		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
 		onlineFileLoader.setCacheExpirationTime(0);
-		onlineFileLoader.setDataLoader(dataLoader());
+		onlineFileLoader.setDataLoader(trustAllDataLoader());
 		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory());
 		return onlineFileLoader;
 	}
@@ -202,6 +206,7 @@ public class DSSBeanConfig {
 		job.setListOfTrustedListSources(europeanLOTL());
 		job.setOfflineDataLoader(offlineLoader());
 		job.setOnlineDataLoader(onlineLoader());
+		job.setDebug(false);
 		return job;
 	}
 
@@ -232,16 +237,14 @@ public class DSSBeanConfig {
 		certificateVerifier.setOcspSource(onlineOcspSource());
 		certificateVerifier.setDataLoader(dataLoader());
 		certificateVerifier.setTrustedCertSources(trustedListSource());
-		// Default configs
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setCheckRevocationForUntrustedChains(false);
-
 		return certificateVerifier;
 	}
 
 	@Bean
 	public ClassPathResource defaultPolicy() {
-		return new ClassPathResource(defaultValidationPolicy);
+		return new ClassPathResource(dssProperties.getDefaultValidationPolicy());
 	}
 
 	@Bean
@@ -317,21 +320,6 @@ public class DSSBeanConfig {
 		LOTLLocationChangeDetection lotlLocationDetection = new LOTLLocationChangeDetection(source);
 		LogLOTLLocationChangeAlertHandler handler = new LogLOTLLocationChangeAlertHandler();
 		return new LOTLAlert(lotlLocationDetection, handler);
-	}
-
-	@Bean
-	public SSLCertificateLoader sslCertificateLoader() {
-		SSLCertificateLoader sslCertificateLoader = new SSLCertificateLoader();
-		sslCertificateLoader.setCommonsDataLoader(trustAllDataLoader());
-		return sslCertificateLoader;
-	}
-
-	@Bean
-	public CommonsDataLoader trustAllDataLoader() {
-		CommonsDataLoader dataLoader = new CommonsDataLoader();
-		dataLoader.setProxyConfig(proxyConfig);
-		dataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
-		return dataLoader;
 	}
 
 }

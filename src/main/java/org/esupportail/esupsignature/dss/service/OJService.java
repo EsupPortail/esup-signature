@@ -20,7 +20,7 @@ import java.io.IOException;
 @ConditionalOnBean(DSSBeanConfig.class)
 public class OJService {
 
-	private static final Logger log = LoggerFactory.getLogger(OJService.class);
+	private static final Logger logger = LoggerFactory.getLogger(OJService.class);
 
 	@Resource
 	private DSSBeanConfig dssBeanConfig;
@@ -38,18 +38,19 @@ public class OJService {
 	public void getCertificats() {
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
 		dssBeanConfig.job().offlineRefresh();
+		refresh();
 	}
 	
 	public void refresh() {
 		try {
 			if(checkOjFreshness()) {
-				log.info("start online refreshing oj keystore");
+				logger.info("start online refreshing oj keystore");
 				dssBeanConfig.job().onlineRefresh();
 			} else {
-				log.info("no online refresh needed for trusted lists");
+				logger.info("no online refresh needed for trusted lists");
 			}
 		} catch(IOException e) {
-			log.error("Error refreshing dss", e);
+			logger.error("Error refreshing dss", e);
 		}
 	}	
 

@@ -2,7 +2,6 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 import {SignPosition} from "./SignPosition.js";
 import {WheelDetector} from "../../utils/WheelDetector.js";
 import {Message} from "../../../prototypes/Message.js";
-import {SseDispatcher} from "../../utils/SseDispatcher.js";
 
 export class WorkspacePdf {
 
@@ -42,7 +41,6 @@ export class WorkspacePdf {
             userName, signable, this.forcePageNum);
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
-        this.sseDispatcher = new SseDispatcher();
         this.signLaunchButton = $("#signLaunchButton");
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
@@ -220,7 +218,6 @@ export class WorkspacePdf {
                     message.type = "success";
                     message.text = "Modifications enregistrées";
                     message.object = null;
-                    // self.sseDispatcher.dispatchEvent("user", message);
                     dataId.val(response);
                     if (redirect) {
                         location.href = "/user/datas/" + response + "/update";
