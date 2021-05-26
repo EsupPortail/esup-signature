@@ -183,10 +183,6 @@ code {
     margin-top: 10px;
 }
 
-.nav-item {
-    margin-right: 5px;
-}
-
 .loader {
     border: 5px solid #f3f3f3;
     -webkit-animation: spin 1s linear infinite;
@@ -914,6 +910,17 @@ height: 100%;
     border-bottom : 1px solid #000000;
 }
 
+
+.nav-item.ws-tab {
+    margin-bottom: -1px;
+    margin-right: 5px;
+    border-bottom : 1px solid #000000;
+}
+
+.nav-item.ws-tab.active {
+    border-bottom : 1px solid #e2e3e5;
+}
+
 .nav-tabs .nav-link {
     color: #6c757d;
     border-color: #6c757d !important;
@@ -921,7 +928,7 @@ height: 100%;
     /*background-color: #dee2e6;*/
 }
 
-.nav-tabs .nav-link.current {
+.nav-link.current {
     color: black;
     border-color: #000 #000 #e2e3e5 #000 !important;
 

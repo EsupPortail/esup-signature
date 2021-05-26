@@ -16,7 +16,7 @@
             </span>
         </a>
         <div class="hr">Mes demandes</div>
-        <a th:classappend="${status == statusFilter} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests">Tout voir</a>
+        <a th:classappend="${statusFilter == 'all'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=all">Tout voir</a>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Demandes signées</a>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
         <div class="hr">Historique</div>

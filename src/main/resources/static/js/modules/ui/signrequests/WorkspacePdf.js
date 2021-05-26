@@ -52,7 +52,12 @@ export class WorkspacePdf {
         this.initDataFields(fields);
         if ((formId == null && workflow == null) || (currentStepMultiSign !== null && currentStepMultiSign)) {
             $("#second-tools").toggleClass("d-none d-flex");
-            $("#workspace").css("margin-top", "170px");
+            if($("#ws-tabs") != null) {
+                $("#workspace").css("margin-top", "212px");
+            } else {
+                $("#workspace").css("margin-top", "170px");
+            }
+
         }
     }
 
