@@ -2,10 +2,13 @@ package org.esupportail.esupsignature.web.controller;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +25,8 @@ import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 public class GlobalAttributsControllerAdvice {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
     @Resource
     private GlobalProperties globalProperties;
@@ -42,6 +48,9 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private ReportService reportService;
+
+    @Resource
+    private OJService ojService;
 
     @Autowired
     private Environment environment;
@@ -96,6 +105,11 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
+        try {
+            model.addAttribute("dssStatus", ojService.checkOjFreshness());
+        } catch (IOException e) {
+            logger.debug("enable to get dss status");
+        }
     }
 
     public void parseRoles(User user) {

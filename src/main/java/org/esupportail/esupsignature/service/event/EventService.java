@@ -30,7 +30,7 @@ public class EventService {
         return sseClientIds.get(eppn.split("@")[0]);
     }
 
-    public void publishEvent(JsonMessage jsonMessage, String channel, String id) {
+    private void publishEvent(JsonMessage jsonMessage, String channel, String id) {
         ObjectMapper mapper = new ObjectMapper();
         String jsonMessageString= "";
         try {

@@ -132,7 +132,7 @@ public class WizardController {
         try {
             signBookService.saveWorkflow(id, name, name, user);
         } catch (EsupSignatureException e) {
-            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
+//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save";
         }
         return "user/wizard/wizend";
@@ -184,7 +184,7 @@ public class WizardController {
         } else {
             Workflow workflow = workflowService.getById(id);
             model.addAttribute("workflow", workflow);
-            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
+//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save-workflow";
         }
     }

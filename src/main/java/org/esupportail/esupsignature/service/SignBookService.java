@@ -11,7 +11,6 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.mail.MailService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
-import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -382,9 +381,9 @@ public class SignBookService {
                     }
                 }
                 for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-                    if(!signRequest.getCreateBy().getEppn().equals(userEppn)) {
-                        eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(recipient.getUser().getEppn()));
-                    }
+//                    if(!signRequest.getCreateBy().getEppn().equals(userEppn)) {
+//                        eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(recipient.getUser().getEppn()));
+//                    }
                     if(recipient.getUser().getUserType().equals(UserType.external)) {
                         try {
                             otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());

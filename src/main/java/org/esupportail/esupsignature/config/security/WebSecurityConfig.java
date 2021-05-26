@@ -109,7 +109,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
-				.antMatchers("/sse/", "/sse/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();

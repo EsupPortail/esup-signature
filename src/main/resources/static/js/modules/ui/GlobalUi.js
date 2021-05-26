@@ -1,5 +1,4 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
-import {SseSubscribe} from "../utils/SseSubscribe.js";
 import {CsrfToken} from "../../prototypes/CsrfToken.js";
 import {WizUi} from "./WizUi.js";
 
@@ -21,10 +20,6 @@ export class GlobalUi {
         this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
-        if(authUserEppn != null) {
-            sessionStorage.setItem("sseId", this.csrf.token)
-            this.sseSubscribe = new SseSubscribe(this.csrf.token);
-        }
         this.initListeners();
         this.initBootBox();
         this.initSideBar();

@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -51,8 +50,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -372,7 +369,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String certType, Long userShareId, String userEppn, String authUserEppn) {
+	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String certType, Long userShareId, String userEppn, String authUserEppn) throws EsupSignatureMailException, IOException, InterruptedException, EsupSignatureException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -405,7 +402,6 @@ public class SignRequestService {
 		for (String toRemoveKey : toRemoveKeys) {
 			formDataMap.remove(toRemoveKey);
 		}
-		try {
 			List<SignRequestParams> signRequestParamses;
 			if (signRequestParamsJsonString == null) {
 				signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
@@ -414,31 +410,17 @@ public class SignRequestService {
 			}
 			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
-				return true;
+				throw new EsupSignatureException("initNexu");
 			}
-			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
 			User user = userService.getByEppn(userEppn);
 			User authUser = userService.getByEppn(authUserEppn);
 			sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
-			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-					public void afterCommit() {
-					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
-				}
-				});
 			return true;
-		} catch (EsupSignatureKeystoreException e) {
-			logger.error(e.getMessage(), e);
-			return true;
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			return false;
-		}
 	}
 
 	@Transactional
-	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password, String certType) throws JsonProcessingException, InterruptedException {
-		eventService.publishEvent(new JsonMessage("", "Démarrage de la signature en masse", null), "massSign", sseId);
+	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
+//		eventService.publishEvent(new JsonMessage("", "Démarrage de la signature en masse", null), "massSign", sseId);
 		List<String> idsString = objectMapper.readValue(ids, List.class);
 		List<Long> idsLong = new ArrayList<>();
 		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
@@ -450,7 +432,7 @@ public class SignRequestService {
 		}
 		for (Long id : idsLong) {
 			SignRequest signRequest = getById(id);
-			eventService.publishEvent(new JsonMessage("nextSign", "Document : " + signRequest.getTitle(), null), "massSign", sseId);
+//			eventService.publishEvent(new JsonMessage("nextSign", "Document : " + signRequest.getTitle(), null), "massSign", sseId);
 			String error = "";
 			if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
@@ -471,12 +453,12 @@ public class SignRequestService {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
 			}
 			if(error != null) {
-				eventService.publishEvent(new JsonMessage("nextError", error, null), "massSign", sseId);
+//				eventService.publishEvent(new JsonMessage("nextError", error, null), "massSign", sseId);
 			} else {
-				eventService.publishEvent(new JsonMessage("nextSuccess", "Succès", null), "massSign", sseId);
+//				eventService.publishEvent(new JsonMessage("nextSuccess", "Succès", null), "massSign", sseId);
 			}
 		}
-		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
+//		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
 	}
 
 	public void sign(SignRequest signRequest, String password, String certType, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
@@ -505,7 +487,7 @@ public class SignRequestService {
 			}
 		}
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", sseId);
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
@@ -517,7 +499,7 @@ public class SignRequestService {
 
 			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
+//				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
 					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
 					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
@@ -534,7 +516,7 @@ public class SignRequestService {
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
 			}
 			certSign(signRequest, signerUser, password, certType, visual, sseId, "sign");
-			eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
 			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
 		}
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
@@ -604,10 +586,10 @@ public class SignRequestService {
 		for(Document document : getToSignDocuments(signRequest.getId())) {
 			toSignDocuments.add(document);
 		}
-		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), channel, sseId);
+//		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), channel, sseId);
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
-			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), channel, sseId);
 			if(user.getKeystore() != null && certType.equals("profil")) {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
 			} else {
@@ -616,11 +598,11 @@ public class SignRequestService {
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
-			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), channel, sseId);
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), channel, sseId);
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
 			for (CertificateToken token : certificateTokenChain) {
@@ -642,11 +624,11 @@ public class SignRequestService {
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user);
 			}
 
-			if(signatureForm.equals(SignatureForm.PAdES)) {
-				eventService.publishEvent(new JsonMessage("step", "Signature du document", null), channel, sseId);
-			} else {
-				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), channel, sseId);
-			}
+//			if(signatureForm.equals(SignatureForm.PAdES)) {
+//				eventService.publishEvent(new JsonMessage("step", "Signature du document", null), channel, sseId);
+//			} else {
+//				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), channel, sseId);
+//			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
@@ -659,14 +641,14 @@ public class SignRequestService {
 			}
 			pkcs12SignatureToken.close();
 //			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), channel, sseId);
 			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
 		} catch (EsupSignatureKeystoreException e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
+//			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureException(e.getMessage(), e);
 		}
