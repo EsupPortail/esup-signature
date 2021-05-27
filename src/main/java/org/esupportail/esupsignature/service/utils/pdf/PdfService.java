@@ -93,25 +93,26 @@ public class PdfService {
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             InputStream signImage;
-            if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
-                File fileSignImage = fileService.getEmptyImage();
-                signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
-                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
-                signImage = new FileInputStream(fileWithWatermark);
-            } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType);
-                if(signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
+            if(signRequestParams.getSignImageNumber() < 0) {
+                signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
             } else {
-                if(signRequestParams.getSignImageNumber() < 0) {
-                    signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
+                if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
+                    File fileSignImage = fileService.getEmptyImage();
+                    signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
+                    signImage = new FileInputStream(fileWithWatermark);
+                } else if (signRequestParams.getAddExtra()) {
+                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType);
+                    if (signRequestParams.getAddWatermark()) {
+                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                        signImage = new FileInputStream(fileWithWatermark);
+                    }
                 } else {
+
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                    if(signRequestParams.getAddWatermark()) {
+                    if (signRequestParams.getAddWatermark()) {
                         File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                         fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
                         signImage = new FileInputStream(fileWithWatermark);

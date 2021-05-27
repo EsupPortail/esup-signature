@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/admin/rolesManagers")
+@RequestMapping("/admin/roles-managers")
 @Controller
 public class RolesManagersController {
 
@@ -36,7 +36,7 @@ public class RolesManagersController {
             roleManagers.put(role, userService.getByManagersRoles(role));
         }
         model.addAttribute("roleManagers", roleManagers);
-        return "admin/managerRoles";
+        return "admin/roles-managers";
     }
 
     @PostMapping("/editRole")
@@ -54,7 +54,7 @@ public class RolesManagersController {
             }
         }
 
-        return "redirect:/admin/rolesManagers";
+        return "redirect:/admin/roles-managers";
 
     }
 }

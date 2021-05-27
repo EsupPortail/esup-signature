@@ -57,6 +57,7 @@
 		<title th:text="#{application.title}"></title>
 	</head>
 	<script th:inline="javascript" type="module">
+		sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
 		import {GlobalUi} from "/static/js/modules/ui/GlobalUi.js";
 		new GlobalUi([[${authUserEppn}]], [[${_csrf}]]);
 	</script>

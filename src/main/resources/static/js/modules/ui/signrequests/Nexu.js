@@ -1,9 +1,10 @@
 export class Nexu {
 
-    constructor(nexuUrl, nexuVersion, rootUrl, addExtra, id) {
-        this.nexuUrl = nexuUrl;
-        this.nexuVersion = nexuVersion;
-        Nexu.rootUrl = rootUrl;
+    constructor(addExtra, id) {
+        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.nexuUrl = this.globalProperties.nexuUrl;
+        this.nexuVersion = this.globalProperties.nexuVersion;
+        Nexu.rootUrl = this.globalProperties.rootUrl;
         Nexu.addExtra = addExtra;
         Nexu.id = id;
         this.tokenId = null;

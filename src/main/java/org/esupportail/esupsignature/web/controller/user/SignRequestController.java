@@ -174,6 +174,7 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
+        model.addAttribute("toUseSignRequestParams", Collections.singletonList(signRequestService.getToUseSignRequestParams(id)));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {

@@ -4,7 +4,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
-    let nexu = new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], [[${globalProperties.rootUrl}]], [[${addExtra}]], [[${id}]]);
+    let nexu = new Nexu([[${addExtra}]], [[${id}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

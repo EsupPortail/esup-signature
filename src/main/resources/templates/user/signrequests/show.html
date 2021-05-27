@@ -21,7 +21,7 @@
     let signable = [[${signable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
     if (signable && currentSignType === 'nexuSign') {
-        new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
+        new Nexu(null, null);
     }
     new SignUi(
         [[${signRequest.id}]],
@@ -37,12 +37,7 @@
         [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
             null,
         [/]
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
-            [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
-        [/]
-        [# th:unless="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
-            null,
-        [/]
+        [[${toUseSignRequestParams}]],
         [[${user.defaultSignImageNumber}]],
         currentSignType,
         signable,
@@ -64,7 +59,8 @@
         [/]
         [[${signRequest.status}]],
         [[${profile}]],
-        [[${action}]]
+        [[${action}]],
+        [[${signRequest.parentSignBook.signRequests.size()}]]
     );
 </script>
 <main role="main">
@@ -287,8 +283,8 @@
                 <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <button id="checkValidateSignButtonEnd"
                             class="btn btn-success mr-1" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et retourner à l'accueil</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et retourner à l'accueil</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                     </button>
                     <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
                             class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>
