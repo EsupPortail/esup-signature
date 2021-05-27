@@ -110,7 +110,6 @@ public class PdfService {
                         signImage = new FileInputStream(fileWithWatermark);
                     }
                 } else {
-
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                     if (signRequestParams.getAddWatermark()) {
                         File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");

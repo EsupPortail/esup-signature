@@ -250,16 +250,16 @@ public class SignRequestController {
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password,
                                @RequestParam(value = "certType", required = false) String certType,
-                                       HttpSession httpSession, HttpServletRequest request) {
-        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(request);
+                                       HttpSession httpSession) {
         if (visual == null) visual = true;
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            signRequestService.initSign(id, token.getToken(), signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
+            signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -633,9 +633,8 @@ public class SignRequestController {
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
-                                           HttpSession httpSession, HttpServletRequest request) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
-        CsrfToken csrfToken = new HttpSessionCsrfTokenRepository().loadToken(request);
-        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, csrfToken.getToken(), password, certType);
+                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

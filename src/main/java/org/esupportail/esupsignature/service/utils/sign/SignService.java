@@ -199,45 +199,46 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		InputStream signImage;
-		signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign);
-		if(signRequestParams.getAddWatermark()) {
-			File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-			fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
-			signImage = new FileInputStream(fileWithWatermark);
-		}
-		BufferedImage bufferedSignImage = ImageIO.read(signImage);
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		ImageIO.write(bufferedSignImage, "png", os);
-		fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
-		fileDocumentImage.setMimeType(MimeType.PNG);
-		imageParameters.setImage(fileDocumentImage);
-		SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
-		signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
-		imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-		PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
-		if(signRequestParams.getAddExtra()) {
-			signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
-		}
-		int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
-		int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+		if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
+			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign);
+			if(signRequestParams.getAddWatermark()) {
+				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
+				signImage = new FileInputStream(fileWithWatermark);
+			}
+			BufferedImage bufferedSignImage = ImageIO.read(signImage);
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(bufferedSignImage, "png", os);
+			fileDocumentImage = new InMemoryDocument(new ByteArrayInputStream(os.toByteArray()), "sign.png");
+			fileDocumentImage.setMimeType(MimeType.PNG);
+			imageParameters.setImage(fileDocumentImage);
+			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
+			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
+			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
+			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
+			if(signRequestParams.getAddExtra()) {
+				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
+			}
+			int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
+			int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
 
-		if(pdfParameters.getRotation() == 0) {
-			signatureFieldParameters.setWidth(widthAdjusted);
-			signatureFieldParameters.setHeight(heightAdjusted);
-			signatureFieldParameters.setOriginX(signRequestParams.getxPos());
-		} else {
-			signatureFieldParameters.setWidth(heightAdjusted);
-			signatureFieldParameters.setHeight(widthAdjusted);
-			signatureFieldParameters.setOriginX(signRequestParams.getxPos() - 50);
+			if(pdfParameters.getRotation() == 0) {
+				signatureFieldParameters.setWidth(widthAdjusted);
+				signatureFieldParameters.setHeight(heightAdjusted);
+				signatureFieldParameters.setOriginX(signRequestParams.getxPos());
+			} else {
+				signatureFieldParameters.setWidth(heightAdjusted);
+				signatureFieldParameters.setHeight(widthAdjusted);
+				signatureFieldParameters.setOriginX(signRequestParams.getxPos() - 50);
+			}
+			int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
+			signatureFieldParameters.setOriginY(yPos);
+			imageParameters.setFieldParameters(signatureFieldParameters);
+			imageParameters.setDpi(300);
+			imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
+			imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
+			pAdESSignatureParameters.setImageParameters(imageParameters);
 		}
-		int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
-		signatureFieldParameters.setOriginY(yPos);
-		imageParameters.setFieldParameters(signatureFieldParameters);
-		imageParameters.setDpi(300);
-		imageParameters.setAlignmentHorizontal(VisualSignatureAlignmentHorizontal.LEFT);
-		imageParameters.setAlignmentVertical(VisualSignatureAlignmentVertical.TOP);
-		pAdESSignatureParameters.setImageParameters(imageParameters);
 		//signature size 32767 is max for PDF/A-2B
 		pAdESSignatureParameters.setContentSize(32767);
 		pAdESSignatureParameters.setSignaturePackaging(form.getSignaturePackaging());

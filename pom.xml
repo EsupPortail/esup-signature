@@ -180,6 +180,16 @@
 		<!-- Webjars dependencies -->
 
 		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>google-code-prettify</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>popper.js</artifactId>
+			<version>2.5.4</version>
+		</dependency>
+		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
 			<version>3.6.0</version>

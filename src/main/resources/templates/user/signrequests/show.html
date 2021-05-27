@@ -228,7 +228,7 @@
                 <div id="signFormConfirm">
                     <div class="alert alert-success">
                         <p th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"></p>
-                        <p th:if="${user.keystore == null}">à l'aide du certificat de votre établissement</p>
+                        <p th:if="${user.keystore == null && signType == 'certSign'}">à l'aide du certificat de votre établissement</p>
                     </div>
                 </div>
                 <label for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>

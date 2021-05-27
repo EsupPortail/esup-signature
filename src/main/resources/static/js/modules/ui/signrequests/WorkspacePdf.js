@@ -172,6 +172,9 @@ export class WorkspacePdf {
         this.pdfViewer.adjustZoom();
         this.initLaunchButtons();
         this.pdfViewer.removeEventListener('ready');
+        if(this.signPosition.signImages.length === 0) {
+            this.signPosition.toggleVisual();
+        }
     }
 
     initLaunchButtons() {

@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.dss.service;
 
 import eu.europa.esig.dss.DSSXmlErrorListener;
 import eu.europa.esig.dss.DomUtils;
+import eu.europa.esig.dss.diagnostic.DiagnosticDataFacade;
+import eu.europa.esig.dss.diagnostic.jaxb.XmlDiagnosticData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -72,6 +74,17 @@ public class XSLTService {
 			logger.error("Error while generating detailed report : " + e.getMessage(), e);
 		}
 		return writer.toString();
+	}
+
+	public String generateSVG(String diagnosticDataXml) {
+		try (Writer writer = new StringWriter()) {
+			XmlDiagnosticData diagnosticData = DiagnosticDataFacade.newFacade().unmarshall(diagnosticDataXml);
+			DiagnosticDataFacade.newFacade().generateSVG(diagnosticData, new StreamResult(writer));
+			return writer.toString();
+		} catch (Exception e) {
+			logger.error("Error while generating the SVG : " + e.getMessage(), e);
+			return null;
+		}
 	}
 
 }
