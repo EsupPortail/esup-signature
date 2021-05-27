@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.beanutils.BeanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
@@ -72,7 +74,7 @@ public class GlobalAttributsControllerAdvice {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
         User user = userService.getUserByEppn(userEppn);
         model.addAttribute("user", user);
@@ -89,6 +91,8 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
         model.addAttribute("validationToolsEnabled", validationService != null);
         model.addAttribute("globalProperties", this.myGlobalProperties);
+        ObjectMapper objectMapper = new ObjectMapper();
+        model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(this.myGlobalProperties));
         model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
         model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
         if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {

@@ -4,8 +4,9 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, profile, action) {
+    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, action, nbSignRequests) {
         console.info("Starting sign UI");
+        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
         this.percent = 0;
         this.getProgressTimer = null;
@@ -21,8 +22,8 @@ export class SignUi {
         this.stepRepeatable = stepRepeatable;
         this.currentStepNumber = currentStepNumber;
         this.gotoNext = false;
-        this.profile = profile;
         this.certTypeSelect = $("#certType");
+        this.nbSignRequests = nbSignRequests;
         this.initListeners();
     }
 
@@ -131,7 +132,7 @@ export class SignUi {
                 if(self.gotoNext) {
                     document.location.href = $("#nextSignRequestButton").attr('href');
                 } else {
-                    if(self.profile != null && self.profile === "dev") {
+                    if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
                         document.location.href = "/user/signrequests/" + self.signRequestId;
                     } else {
                         document.location.href = "/user/";

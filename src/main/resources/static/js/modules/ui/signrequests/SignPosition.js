@@ -29,10 +29,12 @@ export class SignPosition extends EventFactory {
                     signRequestParams.signImageNumber = signImageNumber;
                 }
                 if (this.signImages != null && this.signImages.length > 0) {
-                    if (currentSignRequestParams[i].xPos > -1 && currentSignRequestParams[i].yPos > -1) {
-                        signRequestParams.xPos = currentSignRequestParams[i].xPos;
-                        signRequestParams.yPos = currentSignRequestParams[i].yPos;
-                        signRequestParams.signPageNumber = currentSignRequestParams[i].signPageNumber;
+                    if (currentSignRequestParams[i] != null) {
+                        if (currentSignRequestParams[i].xPos > -1 && currentSignRequestParams[i].yPos > -1) {
+                            signRequestParams.xPos = currentSignRequestParams[i].xPos;
+                            signRequestParams.yPos = currentSignRequestParams[i].yPos;
+                            signRequestParams.signPageNumber = currentSignRequestParams[i].signPageNumber;
+                        }
                     }
                 }
                 this.signRequestParamses.set(i + "", signRequestParams);
@@ -143,7 +145,9 @@ export class SignPosition extends EventFactory {
             }
             this.signExtraButton.on('click', e => this.toggleExtraInfos());
             this.signExtraOnTopButton.on('click', e => this.toggleExtraPosition());
-            this.displayMoreToolsButton.show();
+            if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+                this.displayMoreToolsButton.show();
+            }
             this.displayMoreToolsButton.on('click', e => this.displayMoreTools());
             this.hideMoreToolsButton.on('click', e => this.hideMoreTools());
             this.watermarkButton.on('click', e => this.toggleWatermark());
@@ -229,7 +233,6 @@ export class SignPosition extends EventFactory {
         let signRequestParams;
         if(this.signRequestParamses.get(currentSign) == null) {
             signRequestParams = new SignRequestParams();
-
             signRequestParams.xPos = -1;
             signRequestParams.yPos = -1;
             signRequestParams.signPageNumber = this.getCurrentSignParams().signPageNumber;
@@ -348,6 +351,11 @@ export class SignPosition extends EventFactory {
         this.hideMoreTools();
         this.initCrossToolsListeners();
         this.dragSignature();
+        let textExtra = $("#textExtra_" + this.currentSign);
+        textExtra.on("input", e => this.refreshExtraText(e));
+        textExtra.on("click mouseup mousedown", function (e){
+            e.stopPropagation();
+        });
     }
 
     lockCurrentSign() {
@@ -398,12 +406,12 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignSize(result) {
-        if(this.signImages[this.getCurrentSignParams().signImageNumber] != null) {
+        // if(this.signImages[this.getCurrentSignParams().signImageNumber] != null) {
             this.getCurrentSignParams().signWidth = Math.round((result.w + this.getCurrentSignParams().extraWidth) * this.getCurrentSignParams().signScale * this.fixRatio);
             this.getCurrentSignParams().signHeight = Math.round((result.h + this.getCurrentSignParams().extraHeight) * this.getCurrentSignParams().signScale * this.fixRatio);
             this.changeSignColor(Color.rgbToHex(this.getCurrentSignParams().red, this.getCurrentSignParams().green, this.getCurrentSignParams().blue));
             this.updateSignSize();
-        }
+        // }
     }
 
     getImageDimensions(file) {
@@ -659,7 +667,7 @@ export class SignPosition extends EventFactory {
                 this.borders.css("height", 150);
                 this.getCurrentSignParams().signWidth = 150;
                 this.getCurrentSignParams().signHeight = 75;
-                $("#displayMoreTools_0").hide();
+                this.displayMoreToolsButton.hide();
                 $("#signUndo_0").hide();
             }
         }
@@ -853,7 +861,6 @@ export class SignPosition extends EventFactory {
     addCheckImage() {
         this.addSign();
         this.changeToFaImage(1);
-        this.forceRemoveExtra();
     }
 
     addTimesImage() {

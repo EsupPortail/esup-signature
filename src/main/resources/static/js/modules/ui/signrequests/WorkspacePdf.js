@@ -52,7 +52,12 @@ export class WorkspacePdf {
         this.initDataFields(fields);
         if ((formId == null && workflow == null) || (currentStepMultiSign !== null && currentStepMultiSign)) {
             $("#second-tools").toggleClass("d-none d-flex");
-            $("#workspace").css("margin-top", "170px");
+            if($("#ws-tabs").length) {
+                $("#workspace").css("margin-top", "212px");
+            } else {
+                $("#workspace").css("margin-top", "170px");
+            }
+
         }
     }
 
@@ -611,7 +616,7 @@ export class WorkspacePdf {
             this.signPosition.cross.removeClass('d-none');
         }
         this.pdfViewer.rotation = 0;
-        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
+        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0 && this.currentSignRequestParams[0] != null) {
             if (!this.forcePageNum) {
                 this.pdfViewer.renderPage(1);
                 let signPage = this.currentSignRequestParams[0].signPageNumber;

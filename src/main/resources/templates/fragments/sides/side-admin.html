@@ -27,7 +27,7 @@
             <i class="fas fa-envelope"></i> <span class="sidebar-label">Messages</span>
         </a>
         <a th:classappend="${activeMenu == 'rolesManagers'} ? 'btn-secondary' : 'btn-light'"
-           title="Gestionnaires de rôles" href="/admin/rolesManagers" class="btn col-12 mb-1 text-left">
+           title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn col-12 mb-1 text-left">
             <i class="fas fa-user-tie"></i> <span class="sidebar-label">Gestionnaires de rôles</span>
         </a>
         <a th:classappend="${activeMenu == 'certificats'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"

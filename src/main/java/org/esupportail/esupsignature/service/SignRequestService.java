@@ -1438,6 +1438,16 @@ public class SignRequestService {
 	}
 
 	@Transactional
+	public SignRequestParams getToUseSignRequestParams(long id) {
+		SignRequest signRequest = getById(id);
+		int index = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
+			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
+		}
+		return null;
+	}
+
+	@Transactional
 	public File getToValidateFile(long id) throws IOException {
 		SignRequest signRequest = getById(id);
 		Document toValideDocument = signRequest.getLastSignedDocument();
