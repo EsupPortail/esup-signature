@@ -29,10 +29,12 @@ export class SignPosition extends EventFactory {
                     signRequestParams.signImageNumber = signImageNumber;
                 }
                 if (this.signImages != null && this.signImages.length > 0) {
-                    if (currentSignRequestParams[i].xPos > -1 && currentSignRequestParams[i].yPos > -1) {
-                        signRequestParams.xPos = currentSignRequestParams[i].xPos;
-                        signRequestParams.yPos = currentSignRequestParams[i].yPos;
-                        signRequestParams.signPageNumber = currentSignRequestParams[i].signPageNumber;
+                    if (currentSignRequestParams[i] != null) {
+                        if (currentSignRequestParams[i].xPos > -1 && currentSignRequestParams[i].yPos > -1) {
+                            signRequestParams.xPos = currentSignRequestParams[i].xPos;
+                            signRequestParams.yPos = currentSignRequestParams[i].yPos;
+                            signRequestParams.signPageNumber = currentSignRequestParams[i].signPageNumber;
+                        }
                     }
                 }
                 this.signRequestParamses.set(i + "", signRequestParams);

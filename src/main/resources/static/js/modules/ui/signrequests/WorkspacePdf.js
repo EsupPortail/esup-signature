@@ -616,7 +616,7 @@ export class WorkspacePdf {
             this.signPosition.cross.removeClass('d-none');
         }
         this.pdfViewer.rotation = 0;
-        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
+        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0 && this.currentSignRequestParams[0] != null) {
             if (!this.forcePageNum) {
                 this.pdfViewer.renderPage(1);
                 let signPage = this.currentSignRequestParams[0].signPageNumber;

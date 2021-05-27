@@ -63,6 +63,7 @@ public class UserKeystoreService {
 			return certificateTokens;
 	}
 
+	@Transactional
 	public String checkKeystore(String authUserEppn, String password) throws EsupSignatureKeystoreException {
 		User authUser = userService.getByEppn(authUserEppn);
 		return checkKeystore(authUser.getKeystore().getInputStream(), password);
