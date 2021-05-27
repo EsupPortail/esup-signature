@@ -506,6 +506,13 @@ public class UserService {
         return externalUsersInfos;
     }
 
+    @Transactional
+    public void updateRoles(String userEppn, List<String> roles) {
+        User user = getUserByEppn(userEppn);
+        user.getRoles().clear();
+        user.getRoles().addAll(roles);
+    }
+
     public List<String> getAllRoles() {
         return userRepository.getAllRoles();
     }

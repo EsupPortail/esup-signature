@@ -92,7 +92,7 @@ export class SignPosition extends EventFactory {
             this.toggleVisual();
             $("#visualButton").remove();
         }
-        if(this.signType === "nexuSign") {
+        if(this.signType === "nexuSign" || this.signType === "certSign") {
             $("#visualButton").removeClass("d-none");
         }
         this.initListeners();

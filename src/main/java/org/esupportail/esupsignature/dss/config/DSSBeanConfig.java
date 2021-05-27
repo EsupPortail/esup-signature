@@ -76,22 +76,10 @@ public class DSSBeanConfig {
 		jdbcCacheCRLSource.initTable();
 	}
 
-	@PostConstruct
-	public void cachedOCSPSourceInitialization() throws SQLException {
-		JdbcCacheOCSPSource jdbcCacheOCSPSource = cachedOCSPSource();
-		jdbcCacheOCSPSource.initTable();
-	}
-
 	@PreDestroy
 	public void cachedCRLSourceClean() throws SQLException {
 		JdbcCacheCRLSource jdbcCacheCRLSource = cachedCRLSource();
 		jdbcCacheCRLSource.destroyTable();
-	}
-
-	@PreDestroy
-	public void cachedOCSPSourceClean() throws SQLException {
-		JdbcCacheOCSPSource jdbcCacheOCSPSource = cachedOCSPSource();
-		jdbcCacheOCSPSource.destroyTable();
 	}
 
 	@Bean
@@ -117,9 +105,7 @@ public class DSSBeanConfig {
 	@Bean
 	public CommonsDataLoader trustAllDataLoader() {
 		CommonsDataLoader dataLoader = new CommonsDataLoader();
-		if(proxyConfig != null) {
-			dataLoader.setProxyConfig(proxyConfig);
-		}
+		dataLoader.setProxyConfig(proxyConfig);
 		dataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
 		return dataLoader;
 	}
@@ -127,11 +113,7 @@ public class DSSBeanConfig {
 	@Bean
 	public OCSPDataLoader ocspDataLoader() {
 		OCSPDataLoader ocspDataLoader = new OCSPDataLoader();
-		if(proxyConfig != null) {
-			ocspDataLoader.setProxyConfig(proxyConfig);
-		}
-		ocspDataLoader.setTimeoutConnection(10000);
-		ocspDataLoader.setTrustStrategy(TrustAllStrategy.INSTANCE);
+		ocspDataLoader.setProxyConfig(proxyConfig);
 		return ocspDataLoader;
 	}
 
@@ -290,11 +272,6 @@ public class DSSBeanConfig {
 		ds.setUsername(dssProperties.getCacheUsername());
 		ds.setPassword(dssProperties.getCachePassword());
 		ds.setAutoCommit(false);
-		try {
-			ds.getConnection();
-		} catch (SQLException throwables) {
-			throwables.printStackTrace();
-		}
 		return ds;
 	}
 

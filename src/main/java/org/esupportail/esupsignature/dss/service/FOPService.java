@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.dss.service;
 
 import eu.europa.esig.dss.DSSXmlErrorListener;
 import eu.europa.esig.dss.DomUtils;
+import eu.europa.esig.dss.detailedreport.DetailedReportFacade;
+import eu.europa.esig.dss.simplereport.SimpleReportFacade;
 import eu.europa.esig.dss.utils.Utils;
 import org.apache.fop.apps.*;
 import org.springframework.stereotype.Component;
@@ -18,7 +20,6 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringReader;
 
 @Component
 public class FOPService {
@@ -53,10 +54,8 @@ public class FOPService {
 
 	public void generateSimpleReport(String simpleReport, OutputStream os) throws Exception {
 		Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, os);
-		Result res = new SAXResult(fop.getDefaultHandler());
-		Transformer transformer = templateSimpleReport.newTransformer();
-		transformer.setErrorListener(new DSSXmlErrorListener());
-		transformer.transform(new StreamSource(new StringReader(simpleReport)), res);
+		Result result = new SAXResult(fop.getDefaultHandler());
+		SimpleReportFacade.newFacade().generatePdfReport(simpleReport, result);
 	}
 
 	public void generateSimpleReport(Document dom, OutputStream os) throws Exception {
@@ -69,10 +68,8 @@ public class FOPService {
 
 	public void generateDetailedReport(String detailedReport, OutputStream os) throws Exception {
 		Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, foUserAgent, os);
-		Result res = new SAXResult(fop.getDefaultHandler());
-		Transformer transformer = templateDetailedReport.newTransformer();
-		transformer.setErrorListener(new DSSXmlErrorListener());
-		transformer.transform(new StreamSource(new StringReader(detailedReport)), res);
+		Result result = new SAXResult(fop.getDefaultHandler());
+		DetailedReportFacade.newFacade().generatePdfReport(detailedReport, result);
 	}
 
 }

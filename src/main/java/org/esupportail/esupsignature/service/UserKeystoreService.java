@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class UserKeystoreService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	@Resource
+	@Autowired
 	private CertificateVerifier certificateVerifier;
 
 	@Resource
