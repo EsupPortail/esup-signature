@@ -13,8 +13,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -31,7 +33,16 @@ public class ValidationService {
     private CertificateVerifier certificateVerifier;
 
     @Resource
+    private SignRequestService signRequestService;
+
+    @Resource
     private org.springframework.core.io.Resource defaultPolicy;
+
+    @Transactional
+    public Reports validate(long signRequestId) throws IOException {
+        byte[] bytes = signRequestService.getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
+        return validate(new ByteArrayInputStream(bytes), null);
+    }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {

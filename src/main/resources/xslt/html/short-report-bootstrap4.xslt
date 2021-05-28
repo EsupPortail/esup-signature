@@ -19,6 +19,7 @@
     <xsl:template match="dss:Signature">
         <xsl:variable name="indicationText" select="dss:Indication/text()"/>
         <xsl:variable name="idToken" select="@Id" />
+        <xsl:variable name="id" select="concat('report_', position())"/>
         <xsl:variable name="nodeName" select="name()" />
         <xsl:variable name="indicationCssClass">
             <xsl:choose>
@@ -30,14 +31,15 @@
             </xsl:choose>
         </xsl:variable>
             <div class="alert alert-info mb-1">
+                <xsl:attribute name="id"><xsl:value-of select="$id"/></xsl:attribute>
+                <xsl:attribute name="name"><xsl:value-of select="$idToken"/></xsl:attribute>
+
                 <xsl:if test="dss:Filename">
                     <dl>
                         <xsl:attribute name="class">row mb-0</xsl:attribute>
-
                         <xsl:if test="$nodeName = 'Signature'">
                             <dt>
                                 <xsl:attribute name="class">col-sm-5</xsl:attribute>
-
                                 Signature filename:
                             </dt>
                         </xsl:if>

@@ -358,7 +358,7 @@ public class PdfService {
 
     public InputStream convertGS(InputStream inputStream, String UUID) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
-        if (!isPdfAComplient(inputStream) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
+        if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";

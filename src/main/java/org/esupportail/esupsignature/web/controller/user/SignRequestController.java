@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -70,6 +71,9 @@ public class SignRequestController {
 
     @Resource
     private CertificatService certificatService;
+
+    @Resource
+    private ValidationService validationService;
 
     @Resource
     private PreAuthorizeService preAuthorizeService;
@@ -187,6 +191,8 @@ public class SignRequestController {
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
             }
         }
+        Reports reports = validationService.validate(id);
+        model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));

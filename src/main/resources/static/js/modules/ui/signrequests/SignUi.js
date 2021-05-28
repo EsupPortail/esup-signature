@@ -25,6 +25,7 @@ export class SignUi {
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
         this.initListeners();
+        this.initReportModal();
     }
 
     initListeners() {
@@ -44,6 +45,29 @@ export class SignUi {
 
         $("#copyButton").on('click', e => this.copy());
         // document.addEventListener("sign", e => this.updateWaitModal(e));
+    }
+
+    initReportModal() {
+        let self = this;
+        $.ajax({
+            url: "/user/validation/short/" + self.signRequestId,
+            type: 'GET',
+            success: function (data, textStatus, xhr) {
+                let modal = "<div class=\"modal fade\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
+                    "<div class=\"modal-dialog modal-lg\">" +
+                    "<div class=\"modal-content\">" +
+                    "<div class=\"modal-body\">" +
+                    data +
+                    "</div></div></div></div>";
+                $("body").append(modal);
+                $('#reportModal').on('hidden.bs.modal', function () {
+                    $("div[id^='report_']").each(function() {
+                        $(this).show();
+                    });
+                })
+                $("#reportModalBtn").removeClass("d-none");
+            }
+        });
     }
 
     togglePasswordField(){
