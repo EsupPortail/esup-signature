@@ -73,7 +73,11 @@ export class SignPosition extends EventFactory {
             this.cross.attr("data-current", "true");
             this.cross.css("position", "fixed");
             this.cross.css("margin-left", "270px");
-            this.cross.css("margin-top", "180px");
+            if($("#ws-tabs").length) {
+                this.cross.css("margin-top", "222px");
+            } else {
+                this.cross.css("margin-top", "180px");
+            }
             this.cross.css("left", "0px");
             this.cross.css("top", "0px");
         }

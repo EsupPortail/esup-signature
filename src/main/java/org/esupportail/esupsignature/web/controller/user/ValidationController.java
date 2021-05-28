@@ -76,7 +76,15 @@ public class ValidationController {
 
 	@PostMapping
 	public String validate(@RequestParam(name = "multipartSignedDoc") MultipartFile multipartSignedDoc, @RequestParam(name = "multipartSignature", required = false) MultipartFile multipartSignature, Model model) throws IOException {
-		Reports reports = validationService.validate(multipartSignedDoc.getInputStream(), multipartSignature.getInputStream());
+		InputStream docInputStream = multipartSignedDoc.getInputStream();
+		InputStream sigInputStream = multipartSignature.getInputStream();
+		extracted(docInputStream, sigInputStream, model);
+		return "user/validation/result";
+	}
+
+	private void extracted(InputStream docInputStream, InputStream sigInputStream, Model model) throws IOException {
+		byte[] docBytes = docInputStream.readAllBytes();
+		Reports reports = validationService.validate(new ByteArrayInputStream(docBytes), sigInputStream);
 		if(reports != null) {
 			String xmlSimpleReport = reports.getXmlSimpleReport();
 			model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
@@ -85,6 +93,7 @@ public class ValidationController {
 			model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
 			model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
 			ValidationReportType etsiValidationReportJaxb = reports.getEtsiValidationReportJaxb();
+
 			if (etsiValidationReportJaxb != null) {
 				model.addAttribute("etsiValidationReport", reports.getXmlValidationReport());
 			}
@@ -93,32 +102,18 @@ public class ValidationController {
 			model.addAttribute("simpleReport", "<h2>Impossible de valider ce document</h2>");
 			model.addAttribute("detailedReport", "<h2>Impossible de valider ce document</h2>");
 		}
-		if(multipartSignedDoc.getContentType().contains("pdf")) {
-			try {
-				model.addAttribute("pdfaReport", pdfService.checkPDFA(multipartSignedDoc.getInputStream(), true));
-			} catch (EsupSignatureException e) {
-				e.printStackTrace();
-			}
-		} else {
+		try {
+			model.addAttribute("pdfaReport", pdfService.checkPDFA(new ByteArrayInputStream(docBytes), true));
+		} catch (EsupSignatureException e) {
 			model.addAttribute("pdfaReport", Arrays.asList("danger", "Impossible de valider ce document"));
+			logger.error(e.getMessage());
 		}
-		return "user/validation/result";
 	}
-	
+
 	@GetMapping(value = "/document/{id}")
 	public String validateDocument(@PathVariable(name="id") long id, Model model) throws IOException {
 		File file = signRequestService.getToValidateFile(id);
-		Reports reports = validationService.validate(new FileInputStream(file), null);
-		String xmlSimpleReport = reports.getXmlSimpleReport();
-		model.addAttribute("simpleReport", xsltService.generateSimpleReport(xmlSimpleReport));
-		String xmlDetailedReport = reports.getXmlDetailedReport();
-		model.addAttribute("detailedReport", xsltService.generateDetailedReport(xmlDetailedReport));
-		model.addAttribute("detailedReportXml", reports.getXmlDetailedReport());
-		try {
-			model.addAttribute("pdfaReport", pdfService.checkPDFA(file, true));
-		} catch (EsupSignatureException e) {
-			logger.error("enable to check pdf");
-		}
+		extracted(new FileInputStream(file), null, model);
 		return "user/validation/result";
 	}
 
@@ -249,6 +244,18 @@ public class ValidationController {
 			return new DiagnosticData(xmlDiagData);
 		} catch (Exception e) {
 			logger.error("An error occurred while generating DiagnosticData from XML : " + e.getMessage(), e);
+		}
+		return null;
+	}
+
+	@GetMapping(value = "/short/{id}")
+	@ResponseBody
+	public String shortValidateDocument(@PathVariable(name="id") long id) throws IOException {
+		File file = signRequestService.getToValidateFile(id);
+		Reports reports = validationService.validate(new FileInputStream(file), null);
+		if(reports != null) {
+			String xmlSimpleReport = reports.getXmlSimpleReport();
+			return xsltService.generateShortReport(xmlSimpleReport);
 		}
 		return null;
 	}

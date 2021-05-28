@@ -358,7 +358,7 @@ public class PdfService {
 
     public InputStream convertGS(InputStream inputStream, String UUID) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
-        if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
+        if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
@@ -406,21 +406,21 @@ public class PdfService {
         }
     }
 
-    public boolean isPdfAComplient(File pdfFile) throws EsupSignatureException {
+    public boolean isPdfAComplient(InputStream pdfFile) throws EsupSignatureException {
         if ("success".equals(checkPDFA(pdfFile, false).get(0))) {
             return true;
         }
         return false;
     }
 
-    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
-        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
-        List<String> checkResult = checkPDFA(file, fillResults);
-        file.delete();
-        return checkResult;
-    }
+//    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
+//        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
+//        List<String> checkResult = checkPDFA(inputStream, fillResults);
+//        file.delete();
+//        return checkResult;
+//    }
 
-    public List<String> checkPDFA(File pdfFile, boolean fillResults) throws EsupSignatureException {
+    public List<String> checkPDFA(InputStream pdfFile, boolean fillResults) throws EsupSignatureException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
         try {

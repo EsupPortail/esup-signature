@@ -140,10 +140,10 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 	}
 
 	@NotNull
-	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException {
+	private SmbFile getSmbFileFromPath(String path) throws URISyntaxException, MalformedURLException, UnsupportedEncodingException {
 		SmbFile smbFile;
 		int pos = path.lastIndexOf('/') + 1;
-		String path2 = path.substring(0, pos) + URLEncoder.encode(path.substring(pos));
+		String path2 = path.substring(0, pos) + URLEncoder.encode(path.substring(pos), "UTF-8");
 		URI uri = new URI(path2);
 
 //		URI uri = new URI(path.replace(" ", "%20"));

@@ -337,7 +337,7 @@ public class SignService {
 				} else {
 					inputStream = toSignFile.getInputStream();
 				}
-				if(signRequest.getSignedDocuments().size() == 0) {
+				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream())) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				}
 			} else {

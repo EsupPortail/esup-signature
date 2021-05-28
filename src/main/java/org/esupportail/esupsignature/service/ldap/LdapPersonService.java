@@ -41,7 +41,7 @@ public class LdapPersonService {
 	}
 
     public List<PersonLdap> getPersonLdap(String authName) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), new String[] { authName });
+        String formattedFilter = MessageFormat.format(ldapProperties.getUserIdSearchFilter(), (Object[]) new String[] { authName });
         return ldapTemplate.search(ldapProperties.getSearchBase(), formattedFilter, new PersonLdapAttributesMapper());
     }
 

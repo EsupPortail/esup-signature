@@ -31,7 +31,7 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
         this.signPosition = new SignPosition(
             signType,
@@ -265,7 +265,7 @@ export class WorkspacePdf {
                     if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signPosition.visualActive) {
                         bootbox.alert("Merci de placer la signature", function () {
                             self.pdfViewer.initSavedValues();
-                            if (self.currentSignRequestParams != null) {
+                            if (self.currentSignRequestParams != null && self.currentSignRequestParams[0] != null) {
                                 self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
                             }
                             self.signPosition.firstDrag = true;

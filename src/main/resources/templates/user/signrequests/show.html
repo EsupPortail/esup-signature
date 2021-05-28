@@ -231,8 +231,10 @@
                         <p th:if="${user.keystore == null && signType == 'certSign'}">à l'aide du certificat de votre établissement</p>
                     </div>
                 </div>
-                <label for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
+                <th:block th:if="${signRequest.createBy.eppn != user.eppn || signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                <label for="signComment">Vous pouvez ajouter un commentaire</label>
                 <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                </th:block>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-left">
