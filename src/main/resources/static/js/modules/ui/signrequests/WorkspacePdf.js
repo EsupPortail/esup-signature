@@ -31,7 +31,7 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields, false, id);
         }
         this.signPosition = new SignPosition(
             signType,

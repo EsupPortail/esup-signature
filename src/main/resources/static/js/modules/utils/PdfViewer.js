@@ -4,10 +4,11 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields, signRequestId) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
+        this.signRequestId = signRequestId;
         this.pdfPageView = null;
         this.currentStepNumber = currentStepNumber;
         this.currentStepId = currentStepId;
@@ -367,16 +368,18 @@ export class PdfViewer extends EventFactory {
         let datePickerIndex = 40;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
+        let self = this;
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldType === undefined) {
                 if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
                     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.addClass("sign-field")
                     signField.append('Champ signature ' + signFieldNumber + '<br>');
-                    signField.addClass("sign-field");
                     // signField.addClass("d-none");
                     // signField.parent().remove();
+
                 }
                 continue;
             }
@@ -613,19 +616,45 @@ export class PdfViewer extends EventFactory {
     renderPdfForm(items) {
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
+        let self = this;
         for (let i = 0; i < items.length; i++) {
             console.debug(">>Start compute item");
             if(items[i].fieldType === undefined) {
                 console.log(items[i]);
-                // if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
-                //     signFieldNumber = signFieldNumber + 1;
-                //     $('.popupWrapper').remove();
-                //     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                //     signField.append('Champ signature ' + signFieldNumber + '<br>');
-                //     signField.addClass("sign-field");
-                //     // signField.addClass("d-none");
-                //     // signField.parent().remove();
-                // }
+                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                    signFieldNumber = signFieldNumber + 1;
+                    $('.popupWrapper').remove();
+                    let section = $('section[data-annotation-id=' + items[i].id +']');
+                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.append('Champ signature ' + signFieldNumber + '<br>');
+                    signField.addClass("sign-field");
+                    signField.unbind();
+                    section.on('click', function () {
+                        $("#sign_" + self.signRequestId).modal("show");
+                    })
+                    // signField.attr("data-toggle", "modal");
+                    // signField.attr("data-target", "#sign_" + self.signRequestId);
+                    let button = "<button type=\"button\" class=\"btn btn-primary\" data-toggle=\"modal\" data-target=\"#sign_"+ self.signRequestId + "\">\n" +
+                        "  check\n" +
+                        "</button>"
+                    signField.append(button);
+                    $.ajax({
+                        url: "/user/validation/short/" + self.signRequestId,
+                        type: 'GET',
+                        success: function (data, textStatus, xhr) {
+                            let modal = "<div class=\"modal fade\" id=\"sign_"+ self.signRequestId + "\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
+                                "<div class=\"modal-dialog modal-lg\">" +
+                                "<div class=\"modal-content\">" +
+                                "<div class=\"modal-body\">" +
+                                data +
+                                "</div></div></div></div>";
+                            $("body").append(modal);
+
+                        }
+                    });
+                    // signField.addClass("d-none");
+                    // signField.parent().remove();
+                }
                 continue;
             }
             let inputName = items[i].fieldName.split(/\$|#|!/)[0];

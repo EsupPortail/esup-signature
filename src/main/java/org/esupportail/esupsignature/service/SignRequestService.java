@@ -394,28 +394,30 @@ public class SignRequestService {
 							toRemoveKeys.add(entry.getKey());
 						}
 					}
+					for (String toRemoveKey : toRemoveKeys) {
+						formDataMap.remove(toRemoveKey);
+					}
+				} else {
+//					formDataMap.clear();
 				}
 			} catch (IOException e) {
 				logger.error("form datas error", e);
 			}
 		}
-		for (String toRemoveKey : toRemoveKeys) {
-			formDataMap.remove(toRemoveKey);
+		List<SignRequestParams> signRequestParamses;
+		if (signRequestParamsJsonString == null) {
+			signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+		} else {
+			signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
 		}
-			List<SignRequestParams> signRequestParamses;
-			if (signRequestParamsJsonString == null) {
-				signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-			} else {
-				signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
-			}
-			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
-				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-				throw new EsupSignatureException("initNexu");
-			}
-			User user = userService.getByEppn(userEppn);
-			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
-			return true;
+		if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
+			signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+			throw new EsupSignatureException("initNexu");
+		}
+		User user = userService.getByEppn(userEppn);
+		User authUser = userService.getByEppn(authUserEppn);
+		sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
+		return true;
 	}
 
 	@Transactional
@@ -481,7 +483,8 @@ public class SignRequestService {
 				}
 			}
 		}
-		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
+		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
