@@ -244,7 +244,7 @@
                                         <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
                                                 multiple="multiple" name="recipientEmails" required="required">
                                             <th:block th:each="user : ${step.users}">
-                                                <option th:if="${user.email != null}" selected="selected"
+                                                <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                         th:text="${user.email}"
                                                         th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
                                             </th:block>
