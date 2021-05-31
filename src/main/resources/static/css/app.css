@@ -548,6 +548,11 @@ input:checked + .slider:before {
     max-width: 60px;
 }
 
+.scrollbar-lite {
+    scrollbar-width: none;
+    overflow-y:scroll;
+}
+
 .scrollbar-lite::-webkit-scrollbar {
     width: 5px;
     background-color: transparent;
