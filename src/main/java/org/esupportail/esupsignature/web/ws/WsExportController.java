@@ -35,7 +35,7 @@ public class WsExportController {
 
     @GetMapping(value = "/form/{name}/datas/csv", produces="text/csv")
     public ResponseEntity<Void> getFormDatasCsv(@PathVariable String name, HttpServletResponse response) {
-        List<Form> forms = formRepository.findFormByName(name);
+        List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (forms.size() > 0) {
             try {
                 response.setContentType("text/csv; charset=utf-8");
@@ -56,7 +56,7 @@ public class WsExportController {
     @ResponseBody
     @GetMapping(value = "/form/{name}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Map<String, String>> getFormDatasJson(@PathVariable String name) {
-        List<Form> forms = formRepository.findFormByName(name);
+        List<Form> forms = formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
         if (forms.size() > 0) {
             try {
                 return dataExportService.getDatasToExport(forms);

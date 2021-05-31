@@ -1,30 +1,31 @@
 export class Nexu {
 
-    constructor(nexuUrl, nexuVersion, rootUrl, addExtra, id) {
-        this.nexuUrl = nexuUrl;
-        this.nexuVersion = nexuVersion;
-        Nexu.rootUrl = rootUrl;
+    constructor(addExtra, id) {
+        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.nexuUrl = this.globalProperties.nexuUrl;
+        this.nexuVersion = this.globalProperties.nexuVersion;
+        Nexu.rootUrl = this.globalProperties.rootUrl;
         Nexu.addExtra = addExtra;
         Nexu.id = id;
         this.tokenId = null;
         this.keyId = null;
-        this.checkNexuClient();
+        this.bindingPorts = "9795, 9886, 9887, 9888";
+        this.detectedPort = "";
         this.successDiv = $("#success");
         this.successDiv.hide();
-    }
-
-    getCertificates() {
-        Nexu.updateProgressBar("Chargement des certificats", "25%");
-        try {
-            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
-        }
-        catch(e) {
-            console.error(e);
-            const merror = {
-                errorMessage: "Problème avec l'application NexU"
-            };
-            error(Object.create(merror));
-        }
+        $("#warning-text").html("NexU not detected or not started ! ");
+        $("#nexu_missing_alert").show();
+        $("#signFormConfirm").hide();
+        let self = this;
+        this.checkNexuClient().then(function (){
+            console.warn("NexU detected");
+            $("#warning-text").html("");
+            $("#nexu_missing_alert").hide();
+            $("#signFormConfirm").show();
+            if(id != null) {
+                self.loadScript();
+            }
+        });
     }
 
     static getDataToSign(certificateData) {
@@ -105,28 +106,35 @@ export class Nexu {
     }
 
     checkNexuClient() {
-        console.log("Start checking NexU");
-        $.ajax({
-            type: "GET",
-            url: this.nexuUrl + "/nexu-info",
-            crossDomain: true,
-            dataType: "json",
-            context : this,
-            success: data => this.checkNexu(data)
-        }).fail(function (error) {
-            console.warn("NexU not detected or not started ! " + JSON.stringify(error));
-            $("#warning-text").html("NexU not detected or not started ! ");
-            $("#nexu_missing_alert").show();
-            $("#signFormConfirm").hide();
+        return new Promise((resolve, reject) => {
+            console.log("Start checking NexU");
+            let ports = this.bindingPorts.split(",");
+            let detectNexu = false;
+            let self = this;
+            ports.forEach(function (port){
+                let url = "http://localhost:" + port.trim() + "/nexu-info";
+                console.info("check " + url);
+                $.ajax({
+                    type: "GET",
+                    url: url,
+                    crossDomain: true,
+                    dataType: "json",
+                    context : this,
+                    success: function (data) {
+                        console.info("nexu detected on " + url);
+                        detectNexu = true;
+                        self.detectedPort = port.trim();
+                        self.checkNexu(data);
+                        resolve("nexu detected");
+                    }
+                });
+            });
         });
-
     }
 
     checkNexu(data) {
         console.log("Check NexU");
-        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22")) {
-            console.log("Loading script...");
-            this.loadScript();
+        if(data.version.startsWith(this.nexuVersion) || data.version.startsWith("1.23") || data.version.startsWith("1.22") || data.version.startsWith("1.8")) {
             $("#nexu_ready_alert").show();
             $("#submit-button").prop('disabled', false);
         } else {
@@ -137,14 +145,11 @@ export class Nexu {
     }
 
     loadScript() {
-        let xhrObj = new XMLHttpRequest();
-        xhrObj.open('GET', this.nexuUrl + "/nexu.js");
-        xhrObj.send(null);
-        let se = document.createElement('script');
-        se.type = "text/javascript";
-        se.text = xhrObj.responseText;
-        document.getElementsByTagName('head')[0].appendChild(se);
-        console.log("NexU script loaded");
+        let url = "http://localhost:" + this.detectedPort + "/nexu.js";
+        console.info("loading nexu script : " + url);
+        $.getScript(url, function() {
+            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
+        });
     }
 
 }

@@ -18,16 +18,15 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.service.security.SessionService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.session.Session;
-import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class CurrentSessionsController {
 	private SessionRegistry sessionRegistry;
 
 	@Resource
-	private SessionRepository<Session> sessionRepository;
+	private SessionService sessionService;
 
 	@GetMapping
 	public String getCurrentSessions(Model model) throws NoSuchMethodException {
@@ -65,7 +64,7 @@ public class CurrentSessionsController {
 			List<Session> sessions = new ArrayList<>();
 			List<SessionInformation> sessionInformations =  sessionRegistry.getAllSessions(principal, true);
 			for(SessionInformation sessionInformation : sessionInformations) {
-				Session session = sessionRepository.findById(sessionInformation.getSessionId());
+				Session session = sessionService.getSessionById(sessionInformation.getSessionId());
 				if(session != null) {
 					for(String attr : session.getAttributeNames()) {
 						sessionSize += session.getAttribute(attr).toString().getBytes().length;
@@ -85,10 +84,10 @@ public class CurrentSessionsController {
 	}
 
 	@DeleteMapping
-	public String deleteSessions(@RequestParam String sessionId, RedirectAttributes redirectAttributes) {
-		Session session = sessionRepository.findById(sessionId);
+	public String deleteSessions(@RequestParam String sessionId) {
+		Session session = sessionService.getSessionById(sessionId);
 		if(session != null) {
-			sessionRepository.deleteById(session.getId());
+			sessionService.deleteSessionById(session.getId());
 		}
 		return "redirect:/admin/currentsessions";
 	}

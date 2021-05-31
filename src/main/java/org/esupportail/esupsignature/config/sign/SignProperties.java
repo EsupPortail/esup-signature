@@ -16,6 +16,7 @@ public class SignProperties {
     private ASiCContainerType containerType;
     private SignaturePackaging signaturePackaging;
     private Long passwordTimeout;
+    private String aesKey;
 
     public SignatureForm getDefaultSignatureForm() {
         return defaultSignatureForm;
@@ -94,5 +95,13 @@ public class SignProperties {
 
     public void setPasswordTimeout(Long passwordTimeout) {
         this.passwordTimeout = passwordTimeout;
+    }
+
+    public String getAesKey() {
+        return aesKey;
+    }
+
+    public void setAesKey(String aesKey) {
+        this.aesKey = aesKey;
     }
 }

@@ -113,10 +113,18 @@
                         <i class="fas fa-stop-circle"></i><span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
                     </a>
                 </li>
+                <li class="nav-item text-white" th:if="${!user.managersRoles.isEmpty()}" title="Menu managers">
+                    <a href="/manager/workflows" th:class="'btn text-white btn-transparent ' + ${managerMenu}"
+                       th:classappend="${managerMenu == 'active'} ? 'bg-secondary'">
+                        <i class="fas fa-user-tie"></i><span class="nav-item-label d-none d-xxl-inline">Manager</span>
+                    </a>
+                </li>
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
+                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge badge-danger d-none d-md-inline">
+                        </span>
                     </a>
                 </li>
             </ul>

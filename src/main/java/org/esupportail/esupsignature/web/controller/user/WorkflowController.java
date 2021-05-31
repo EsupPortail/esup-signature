@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -99,15 +100,19 @@ public class WorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
-        workflowService.delete(workflow);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le circuit à bien été supprimé"));
+        try {
+            workflowService.delete(workflow);
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Le circuit à bien été supprimé"));
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+        }
         return "redirect:/";
     }
 
     @DeleteMapping(value = "/silent-delete/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @ResponseBody
-    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {
+    public void silentDelete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) throws EsupSignatureException {
         Workflow workflow = workflowService.getById(id);
         workflowService.delete(workflow);
     }

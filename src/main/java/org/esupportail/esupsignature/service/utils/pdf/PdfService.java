@@ -93,25 +93,25 @@ public class PdfService {
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
             InputStream signImage;
-            if ( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) ) {
-                File fileSignImage = fileService.getEmptyImage();
-                signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
-                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
-                signImage = new FileInputStream(fileWithWatermark);
-            } else if (signRequestParams.getAddExtra()) {
-                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType);
-                if(signRequestParams.getAddWatermark()) {
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
-                    signImage = new FileInputStream(fileWithWatermark);
-                }
+            if(signRequestParams.getSignImageNumber() < 0) {
+                signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
             } else {
-                if(signRequestParams.getSignImageNumber() < 0) {
-                    signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
+                if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
+                    File fileSignImage = fileService.getEmptyImage();
+                    signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType);
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
+                    signImage = new FileInputStream(fileWithWatermark);
+                } else if (signRequestParams.getAddExtra()) {
+                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType);
+                    if (signRequestParams.getAddWatermark()) {
+                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
+                        signImage = new FileInputStream(fileWithWatermark);
+                    }
                 } else {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                    if(signRequestParams.getAddWatermark()) {
+                    if (signRequestParams.getAddWatermark()) {
                         File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                         fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
                         signImage = new FileInputStream(fileWithWatermark);
@@ -358,7 +358,7 @@ public class PdfService {
 
     public InputStream convertGS(InputStream inputStream, String UUID) throws IOException, EsupSignatureException {
         File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
-        if (!isPdfAComplient(file) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
+        if (!isPdfAComplient(new FileInputStream(file)) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
@@ -406,21 +406,21 @@ public class PdfService {
         }
     }
 
-    public boolean isPdfAComplient(File pdfFile) throws EsupSignatureException {
+    public boolean isPdfAComplient(InputStream pdfFile) throws EsupSignatureException {
         if ("success".equals(checkPDFA(pdfFile, false).get(0))) {
             return true;
         }
         return false;
     }
 
-    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
-        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
-        List<String> checkResult = checkPDFA(file, fillResults);
-        file.delete();
-        return checkResult;
-    }
+//    public List<String> checkPDFA(InputStream inputStream, boolean fillResults) throws IOException, EsupSignatureException {
+//        File file = fileService.inputStreamToTempFile(inputStream, "tmp.pdf");
+//        List<String> checkResult = checkPDFA(inputStream, fillResults);
+//        file.delete();
+//        return checkResult;
+//    }
 
-    public List<String> checkPDFA(File pdfFile, boolean fillResults) throws EsupSignatureException {
+    public List<String> checkPDFA(InputStream pdfFile, boolean fillResults) throws EsupSignatureException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
         try {

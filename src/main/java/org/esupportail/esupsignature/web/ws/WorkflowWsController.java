@@ -52,9 +52,10 @@ public class WorkflowWsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         Workflow workflow = workflowService.getById(id);
-        if (workflowService.delete(workflow)) {
+        try {
+            workflowService.delete(workflow);
             return new ResponseEntity<>(HttpStatus.OK);
-        } else {
+        } catch (EsupSignatureException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
