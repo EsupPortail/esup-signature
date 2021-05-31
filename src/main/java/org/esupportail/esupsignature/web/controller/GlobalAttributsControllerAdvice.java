@@ -100,6 +100,8 @@ public class GlobalAttributsControllerAdvice {
         }
         if (buildProperties != null) {
             model.addAttribute("version", buildProperties.getVersion());
+        } else {
+            model.addAttribute("version", "dev");
         }
         List<SignType> signTypes = Arrays.asList(SignType.values());
         if(userKeystoreService == null) {
