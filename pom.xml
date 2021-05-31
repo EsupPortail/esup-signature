@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.12.3</version>
+	<version>1.13-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -179,6 +179,16 @@
 
 		<!-- Webjars dependencies -->
 
+		<dependency>
+			<groupId>org.webjars.bower</groupId>
+			<artifactId>google-code-prettify</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>popper.js</artifactId>
+			<version>2.5.4</version>
+		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>jquery</artifactId>
@@ -639,9 +649,9 @@
 			<version>2.4.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.github.AgNO3</groupId>
+			<groupId>eu.agno3.jcifs</groupId>
 			<artifactId>jcifs-ng</artifactId>
-			<version>3db3e62157</version>
+			<version>2.1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.chemistry.opencmis</groupId>

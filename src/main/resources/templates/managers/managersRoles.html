@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="/fragments/sides/side-manager"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Managers Roles</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-simple-btn" >
+                <a data-toggle="modal" data-target="#newMessage" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <table class="table table-borderless table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>Roles</th>
+                            <th>Managers</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="role, status :${roleManagers.keySet}">
+                            <tr>
+                                <form th:action="'/manager/rolesManagers/editRole'" method="post">
+
+                                    <td th:text="${role}"></td>
+                                    <input name="role" type="hidden" th:value="${role}">
+                                    <td>
+                                        <select th:id="${'rolesManagersSelect' + status.index}" class="select-users" multiple="multiple" name="rolesManagers">
+                                            <th:block th:each="user : ${roleManagers.get(role)}">
+                                                <option th:value="${user.email}" th:text="${user.firstname} + ' ' + ${user.name}"
+                                                        selected></option>
+                                            </th:block>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="text-center">
+                                            <button id="saveButton" title="Enregistrer" type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </form>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -2,9 +2,9 @@ package org.esupportail.esupsignature.config.pdf;
 
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,7 +25,7 @@ public class PdfConfig {
         return pdfProperties;
     }
 
-    @Bean
+    @PostConstruct
     public void setPdfColorProfileUrl() {
         try {
             Path iccPath = Path.of(PdfConfig.class.getResource("/srgb.icc").getPath());

@@ -1,28 +1,41 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{layout.html}" th:with="currentPage=#{label.summary.lotl.complete}">
-	<head>
-		<title th:text="#{label.summary.lotl.complete}"></title>
-	</head>
-	<body>
-		<div layout:fragment="content">
-			<p th:if="${lotlInfo == null}">No info found for this LOTL</p>
-			
-			<div th:if="${lotlInfo != null}">
-	
-				<div class="lotl" th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
-					<h2>
-						<a th:href="@{/tl-info/lotl/} + ${lotlInfo.getIdentifier().asXmlId()}">
-							<span th:if="${parsingResult.resultExist and parsingResult.territory != null}" 
-							th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
-						</a>
-						<span th:text="#{label.summary.lotl}"></span>&nbsp;
-						<a class="h5 font-weight-bold" th:href="${lotlInfo.url}" th:text="'(' + ${lotlInfo.url} + ')'" target="_blank"></a>
-					</h2>
-					
-					<!-- LOTL Info -->
-					<div th:replace="fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})"></div>
-				</div>
-			</div>
-		</div>
-	</body>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="currentPage=#{label.tsls.summary}">
+<head th:replace="fragments/head"></head>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">DSS List Of Trusted Lists</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="p-2">
+                <p th:if="${lotlInfo == null}">No info found for this LOTL</p>
+                <div th:if="${lotlInfo != null}">
+                    <div class="lotl"
+                         th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
+                        <h2>
+                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getIdentifier().asXmlId()}">
+							<span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
+                                  th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
+                                  th:title="${parsingResult.territory}"></span>
+                            </a>
+                            <span th:text="#{label.summary.lotl}"></span>&nbsp;
+                            <a class="h5 font-weight-bold" th:href="${lotlInfo.url}"
+                               th:text="'(' + ${lotlInfo.url} + ')'" target="_blank"></a>
+                        </h2>
+
+                        <!-- LOTL Info -->
+                        <div th:replace="fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult})"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
 </html>

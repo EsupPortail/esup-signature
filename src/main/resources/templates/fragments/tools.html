@@ -26,8 +26,9 @@
 			<button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark ml-1" aria-label="Précédent">
 				<i class="fas fa-arrow-up"></i>
 			</button>
-			<div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline font-weight-bold"><span>Page <span id="page_num"></span> / <span
-					id="page_count"></span></span></div>
+			<div class="bg-light ml-1 p-1 pt-2  d-none d-lg-inline font-weight-bold" style="width: 100px;">
+				<span>Page <span id="page_num"></span> / <span id="page_count"></span></span>
+			</div>
 			<button id="next" title="Page suivante" class="btn btn-light btn-outline-dark ml-1" aria-label="Prochain">
 				<i class="fas fa-arrow-down"></i>
 			</button>
@@ -63,7 +64,7 @@
 						class="btn btn-primary" disabled>
 					<i class="fas fa-plus"></i> Ajouter une signature
 				</button>
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
+				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
 						id="visualButton" title="Afficher/Masquer le visuel"
 						class="btn btn-primary ml-1 d-none">Afficher/Masquer le visuel
 				</button>
@@ -85,9 +86,9 @@
 			</div>
 		</th:block>
 	</div>
-	<nav class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
+	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-			<li class="nav-item overflow-hidden" th:classappend="${nbSignRequestInSignBookParent > 1} ? 'file-tab'">
+			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
 				<a class="nav-link text-black" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'alert-success' : '')}"
 				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
@@ -97,6 +98,6 @@
 				</a>
 			</li>
 		</th:block>
-	</nav>
+	</ul>
 </div>
 </html>

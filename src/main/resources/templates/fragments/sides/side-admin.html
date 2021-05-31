@@ -13,6 +13,7 @@
            title="Tous les logs" type="button" href="/admin/logs" class="mb-1 col-12 btn text-left">
             <i class="fas fa-clipboard-list"></i> <span class="sidebar-label">Logs</span>
         </a>
+        <hr>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
            title="Circuits de signature" href="/admin/workflows" class="btn col-12 mb-1 text-left">
             <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
@@ -25,6 +26,15 @@
            title="Messages" href="/admin/messages" class="btn col-12 mb-1 text-left">
             <i class="fas fa-envelope"></i> <span class="sidebar-label">Messages</span>
         </a>
+        <a th:classappend="${activeMenu == 'rolesManagers'} ? 'btn-secondary' : 'btn-light'"
+           title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn col-12 mb-1 text-left">
+            <i class="fas fa-user-tie"></i> <span class="sidebar-label">Gestionnaires de rôles</span>
+        </a>
+        <a th:classappend="${activeMenu == 'certificats'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
+           title="Gestion des certificats" type="button" href="/admin/certificats" class="mb-1 col-12 btn text-left">
+            <i class="fas fa-certificate"></i> <span class="sidebar-label">Gestion des certificats</span>
+        </a>
+        <hr>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
            title="Sessions courantes" href="/admin/currentsessions" class="btn col-12 mb-1 text-left">
             <i class="fas fa-users"></i> <span class="sidebar-label">Sessions courantes</span>
@@ -34,8 +44,8 @@
             <i class="fas fa-user-secret"></i> <span class="sidebar-label">Switch user</span>
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
-           title="DSS certs" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">
-            <i class="fas fa-certificate"></i> <span class="sidebar-label">DSS certs</span>
+           title="Statut DSS" type="button" href="/admin/dss" class="mb-1 col-12 btn text-left">
+            <i class="fab fa-expeditedssl"></i> <span class="sidebar-label">Statut DSS</span>
         </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="mb-1 col-12 btn btn-light text-left">
             <i class="fas fa-code"></i> <span class="sidebar-label">APIs Doc</span>

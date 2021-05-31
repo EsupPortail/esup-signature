@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -30,7 +29,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.mail.MailService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -51,8 +50,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -153,6 +150,9 @@ public class SignRequestService {
 
 	@Resource
 	private SignRequestParamsService signRequestParamsService;
+
+	@Resource
+	private CertificatService certificatService;
 
 	@Resource
 	private ReportService reportService;
@@ -369,7 +369,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String sseId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, Long userShareId, String userEppn, String authUserEppn) {
+	public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String certType, Long userShareId, String userEppn, String authUserEppn) throws EsupSignatureMailException, IOException, InterruptedException, EsupSignatureException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -394,48 +394,34 @@ public class SignRequestService {
 							toRemoveKeys.add(entry.getKey());
 						}
 					}
+					for (String toRemoveKey : toRemoveKeys) {
+						formDataMap.remove(toRemoveKey);
+					}
+				} else {
+//					formDataMap.clear();
 				}
 			} catch (IOException e) {
 				logger.error("form datas error", e);
 			}
 		}
-		for (String toRemoveKey : toRemoveKeys) {
-			formDataMap.remove(toRemoveKey);
+		List<SignRequestParams> signRequestParamses;
+		if (signRequestParamsJsonString == null) {
+			signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+		} else {
+			signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
 		}
-		try {
-			List<SignRequestParams> signRequestParamses;
-			if (signRequestParamsJsonString == null) {
-				signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-			} else {
-				signRequestParamses = signRequestParamsService.getSignRequestParamsFromJson(signRequestParamsJsonString);
-			}
-			if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
-				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-				eventService.publishEvent(new JsonMessage("initNexu", "Démarrage de l'application NexU", null), "sign", sseId);
-				return true;
-			}
-			eventService.publishEvent(new JsonMessage("step", "Démarrage de la signature", null), "sign", sseId);
-			User user = userService.getByEppn(userEppn);
-			User authUser = userService.getByEppn(authUserEppn);
-			sign(signRequest, password, visual, signRequestParamses, formDataMap, sseId, user, authUser, userShareId, comment);
-			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-					public void afterCommit() {
-					eventService.publishEvent(new JsonMessage("end", "Signature terminée", null), "sign", sseId);
-				}
-				});
-			return true;
-		} catch (EsupSignatureKeystoreException e) {
-			logger.error(e.getMessage());
-			return true;
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			return false;
+		if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
+			signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+			throw new EsupSignatureException("initNexu");
 		}
+		User user = userService.getByEppn(userEppn);
+		User authUser = userService.getByEppn(authUserEppn);
+		sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
+		return true;
 	}
 
 	@Transactional
-	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String sseId, String password) throws JsonProcessingException, InterruptedException {
-		eventService.publishEvent(new JsonMessage("", "Démarrage de la signature en masse", null), "massSign", sseId);
+	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
 		List<String> idsString = objectMapper.readValue(ids, List.class);
 		List<Long> idsLong = new ArrayList<>();
 		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
@@ -447,7 +433,6 @@ public class SignRequestService {
 		}
 		for (Long id : idsLong) {
 			SignRequest signRequest = getById(id);
-			eventService.publishEvent(new JsonMessage("nextSign", "Document : " + signRequest.getTitle(), null), "massSign", sseId);
 			String error = "";
 			if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
@@ -460,7 +445,7 @@ public class SignRequestService {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
 				error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
 			}
-			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id, sseId, null, null, null, true, password, userShareId, userEppn, authUserEppn)) {
+			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, true, password, certType, userShareId, userEppn, authUserEppn)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
 				error = null;
 			}
@@ -468,15 +453,12 @@ public class SignRequestService {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
 			}
 			if(error != null) {
-				eventService.publishEvent(new JsonMessage("nextError", error, null), "massSign", sseId);
 			} else {
-				eventService.publishEvent(new JsonMessage("nextSuccess", "Succès", null), "massSign", sseId);
 			}
 		}
-		eventService.publishEvent(new JsonMessage("end", "Signatures terminées", null), "massSign", sseId);
 	}
 
-	public void sign(SignRequest signRequest, String password, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, String sseId, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+	public void sign(SignRequest signRequest, String password, String certType, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -501,8 +483,8 @@ public class SignRequestService {
 				}
 			}
 		}
-		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-			eventService.publishEvent(new JsonMessage("step", "Remplissage du document", null), "sign", sseId);
+		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
+		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
 			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
@@ -514,7 +496,6 @@ public class SignRequestService {
 
 			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				eventService.publishEvent(new JsonMessage("step", "Apposition de la signature", null), "sign", sseId);
 				for(SignRequestParams signRequestParams : signRequestParamses) {
 					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
 					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
@@ -529,9 +510,9 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
+				visual = true;
 			}
-			certSign(signRequest, signerUser, password, visual, sseId, "sign");
-			eventService.publishEvent(new JsonMessage("step", "Paramétrage de la prochaine étape", null), "sign", sseId);
+			certSign(signRequest, signerUser, password, certType, visual);
 			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
 		}
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
@@ -595,24 +576,26 @@ public class SignRequestService {
 //
 //	}
 
-	public void certSign(SignRequest signRequest, User user, String password, boolean visual, String sseId, String channel) throws EsupSignatureException, InterruptedException {
+	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest.getId())) {
 			toSignDocuments.add(document);
 		}
-		eventService.publishEvent(new JsonMessage("step", "Initialisation de la procédure", null), channel, sseId);
 		Pkcs12SignatureToken pkcs12SignatureToken = null;
 		try {
-			eventService.publishEvent(new JsonMessage("step", "Déverouillage du keystore", null), channel, sseId);
-			pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			if(user.getKeystore() != null && certType.equals("profil")) {
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			} else {
+				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
+
+			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
-			eventService.publishEvent(new JsonMessage("step", "Formatage des documents", null), channel, sseId);
 			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
-			eventService.publishEvent(new JsonMessage("step", "Préparation de la signature", null), channel, sseId);
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
 			List<String> base64CertificateChain = new ArrayList<>();
 			for (CertificateToken token : certificateTokenChain) {
@@ -633,12 +616,6 @@ public class SignRequestService {
 			} else {
 				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user);
 			}
-
-			if(signatureForm.equals(SignatureForm.PAdES)) {
-				eventService.publishEvent(new JsonMessage("step", "Signature du document", null), channel, sseId);
-			} else {
-				eventService.publishEvent(new JsonMessage("step", "Signature des documents", null), channel, sseId);
-			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
 			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
@@ -650,15 +627,11 @@ public class SignRequestService {
 				dssDocument = signService.certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
 			}
 			pkcs12SignatureToken.close();
-//			InMemoryDocument signedPdfDocument = new InMemoryDocument(DSSUtils.toByteArray(dssDocument), dssDocument.getName(), dssDocument.getMimeType());
-			eventService.publishEvent(new JsonMessage("step", "Enregistrement du/des documents(s)", null), channel, sseId);
 			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
 		} catch (EsupSignatureKeystoreException e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", "Mauvais mot de passe", null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
 		} catch (Exception e) {
-			eventService.publishEvent(new JsonMessage("sign_system_error", e.getMessage(), null), channel, sseId);
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureException(e.getMessage(), e);
 		}
@@ -932,7 +905,7 @@ public class SignRequestService {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
 			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 			User authUser = userService.getUserByEppn(authUserEppn);
-			if((data != null && data.getForm().getManagers().contains(authUser.getEmail())) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
+			if((data != null && (data.getForm() != null && data.getForm().getManagers().contains(authUser.getEmail()))) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
 				return true;
 			}
 		}
@@ -956,13 +929,17 @@ public class SignRequestService {
 	public void delete(Long signRequestId, String userEppn) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
-		signRequest.getOriginalDocuments().clear();
-		if(signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
-			signRequest.getSignedDocuments().clear();
+		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+			deleteDefinitive(signRequestId);
+		} else {
+			signRequest.getOriginalDocuments().clear();
+			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+				signRequest.getSignedDocuments().clear();
+			}
+			signRequest.setStatus(SignRequestStatus.deleted);
+			logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			otpService.deleteOtpBySignRequestId(signRequestId);
 		}
-		signRequest.setStatus(SignRequestStatus.deleted);
-		logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
-		otpService.deleteOtpBySignRequestId(signRequestId);
 	}
 
 	@Transactional
@@ -1270,7 +1247,10 @@ public class SignRequestService {
 						}
 					}
 					if (user.getSignImages().size() > 0 && user.getSignImages().get(0) != null && user.getSignImages().get(0).getSize() > 0) {
-						if (checkUserSignRights(signRequest, userEppn, authUserEppn) && user.getKeystore() == null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
+						if (checkUserSignRights(signRequest, userEppn, authUserEppn)
+							&& user.getKeystore() == null
+							&& certificatService.getCertificatByUser(userEppn).size() == 0
+							&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign)) {
 							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d’ajouter un certificat à votre profil <a href='user/users' target='_blank'>Mes paramètres</a>");
 						}
@@ -1278,7 +1258,7 @@ public class SignRequestService {
 							signImages.add(fileService.getBase64Image(signImage));
 						}
 					} else {
-						if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign))) {
+						if (signRequest.getSignable() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
 							signRequestRef.setSignable(false);
 							throw new EsupSignatureUserException("Pour signer ce document merci d'ajouter une image de votre signature dans <a href='user/users' target='_blank'>Mes paramètres</a>");
 
@@ -1304,7 +1284,7 @@ public class SignRequestService {
 		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
 	}
 
-	public Long getNbByCreateAndStatus(String userEppn) {
+	public Long getNbPendingSignRequests(String userEppn) {
 		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
 	}
 
@@ -1418,7 +1398,9 @@ public class SignRequestService {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
 		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
-		mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		if(recipientEmails.size() > 0) {
+			mailService.sendSignRequestAlert(recipientEmails, signRequest);
+		}
 	}
 
 	public SignRequest getSignRequestByComment(Comment comment) {
@@ -1436,6 +1418,16 @@ public class SignRequestService {
 	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	@Transactional
+	public SignRequestParams getToUseSignRequestParams(long id) {
+		SignRequest signRequest = getById(id);
+		int index = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
+			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
+		}
+		return null;
 	}
 
 	@Transactional

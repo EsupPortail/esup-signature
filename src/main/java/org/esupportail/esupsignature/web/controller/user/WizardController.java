@@ -132,7 +132,7 @@ public class WizardController {
         try {
             signBookService.saveWorkflow(id, name, name, user);
         } catch (EsupSignatureException e) {
-            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
+//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save";
         }
         return "user/wizard/wizend";
@@ -184,7 +184,7 @@ public class WizardController {
         } else {
             Workflow workflow = workflowService.getById(id);
             model.addAttribute("workflow", workflow);
-            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
+//            eventService.publishEvent(new JsonMessage("error", "Un circuit de signature porte déjà ce nom"), "user", eventService.getClientIdByEppn(userEppn));
             return "user/wizard/wiz-save-workflow";
         }
     }
@@ -233,10 +233,11 @@ public class WizardController {
         if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Non autorisé"));
 		} else {
-            if(workflowService.delete(workflow)) {
+            try {
+                workflowService.delete(workflow);
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Circuit supprimé"));
-            } else {
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Impossible de supprimer ce circuit car il contient des demandes"));
+            } catch (EsupSignatureException e) {
+                redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
         }
         return "redirect:/user/";
