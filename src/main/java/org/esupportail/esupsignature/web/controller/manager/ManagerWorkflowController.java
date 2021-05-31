@@ -109,9 +109,13 @@ public class ManagerWorkflowController {
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
-        workflowService.delete(workflow);
+        try {
+            workflowService.delete(workflow);
+        } catch (EsupSignatureException e) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+        }
         return "redirect:/manager/workflows";
     }
 
