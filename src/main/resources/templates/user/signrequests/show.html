@@ -8,7 +8,6 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head"></head>
 <body>
-<header th:if="${frameMode}" th:replace="fragments/nav-empty"></header>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
@@ -21,7 +20,7 @@
     let signable = [[${signable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
     if (signable && currentSignType === 'nexuSign') {
-        new Nexu([[${globalProperties.nexuUrl}]], [[${globalProperties.nexuVersion}]], null);
+        new Nexu(null, null);
     }
     new SignUi(
         [[${signRequest.id}]],
@@ -37,12 +36,7 @@
         [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
             null,
         [/]
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
-            [[${signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams}]],
-        [/]
-        [# th:unless="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.signRequestParams.size() > 0}"]
-            null,
-        [/]
+        [[${toUseSignRequestParams}]],
         [[${user.defaultSignImageNumber}]],
         currentSignType,
         signable,
@@ -63,13 +57,13 @@
             null,
         [/]
         [[${signRequest.status}]],
-        [[${profile}]],
-        [[${action}]]
+        [[${action}]],
+        [[${signRequest.parentSignBook.signRequests.size()}]]
     );
 </script>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-sign"></nav>
+        <nav th:insert="/fragments/sides/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li th:if="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
@@ -199,15 +193,11 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-body text-center">
-                <h5>Signature en cours</h5>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated active" style="width: 100%;"
-                         id="bar">
+                <h5>Signature du document</h5>
+                <div id="signSpinner" class="justify-content-center">
+                    <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="sr-only">En cours...</span>
                     </div>
-                </div>
-                <span id="bar-text"></span>
-                <div id="passwordError" class="alert alert-danger" role="alert">
-                    Mauvais mot de passe
                 </div>
                 <div id="signError" class="alert alert-danger" role="alert">
                     Erreur du système de signature
@@ -235,11 +225,15 @@
             </div>
             <div class="modal-body">
                 <div id="signFormConfirm">
-                    <div th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"
-                         class="alert alert-success"></div>
+                    <div class="alert alert-success">
+                        <p th:text="'Vous allez effectuer une signature de type : ' + #{'signbook.signtype.' + ${signType}}"></p>
+                        <p th:if="${user.keystore == null && signType == 'certSign'}">à l'aide du certificat de votre établissement</p>
+                    </div>
                 </div>
-                <label for="signComment">Vous <b>pouvez</b> ajouter un commentaire</label>
-                <textarea id="signComment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                <th:block th:if="${signRequest.createBy.eppn != user.eppn || signRequest.parentSignBook.liveWorkflow.getLiveWorkflowSteps().size() > signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                <label for="signComment">Vous pouvez ajouter un commentaire</label>
+                <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                </th:block>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <div id="nexu_version_alert" style="display: none;text-align: center;">
                         <div class="alert alert-warning float-left">
@@ -274,17 +268,23 @@
                         </button>
                     </div>
                 </div>
-                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign} ? 'd-none'"
+
+                <select th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign}" id="certType" name="certType" class="form-control mt-2">
+                    <option th:if="${user.keystore != null}" value="profil">Utiliser le certificat lié à mon profil</option>
+                    <option th:if="${certificats.size() > 0}" value="etab">Utiliser le certificat de l'établissement</option>
+                </select>
+
+                <input th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
                        class="form-control mt-2 mb-1" type="password" id="password" name="password" value=""
-                       placeholder="Mot de passe du keystore"/>
+                       placeholder="Mot de passe du keystore" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
                 <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                     <button id="checkValidateSignButtonEnd"
                             class="btn btn-success mr-1" title="Signer" th:value="${signRequest.id}" autofocus>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer et retourner à l'accueil</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et retourner à l'accueil</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}">Signer</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
                     </button>
                     <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
                             class="btn btn-success" title="Signer" th:value="${signRequest.id}" autofocus>

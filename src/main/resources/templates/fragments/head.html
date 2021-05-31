@@ -7,6 +7,7 @@
 
 		<script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
 		<script src="/webjars/jquery-ui/1.12.1/jquery-ui.js"></script>
+		<script src="/webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
 		<script src="/webjars/bootstrap/4.6.0/js/bootstrap.min.js"></script>
 		<script src="/webjars/popper.js/2.5.4/umd/popper.js"></script>
 		<script src="/webjars/bootbox/5.5.2/bootbox.js"></script>
@@ -37,6 +38,7 @@
 		<script src="/webjars/spectrum-seballot/2.0.5/spectrum.min.js"></script>
 		<script src="/webjars/signature_pad/2.3.2/dist/signature_pad.js"></script>
 		<script src="/webjars/bs-stepper/1.7.0/dist/js/bs-stepper.js"></script>
+		<script src="/webjars/google-code-prettify/1.0.5/bin/prettify.min.js"></script>
 
 		<link rel="stylesheet" href="/webjars/jquery-ui/1.12.1/jquery-ui.css" />
 		<link rel="stylesheet" href="/webjars/bootstrap/4.6.0/css/bootstrap.min.css" />
@@ -50,6 +52,7 @@
 		<link rel="stylesheet" href="/webjars/intro.js/3.0.1/introjs.css" />
 		<link rel="stylesheet" href="/webjars/spectrum-seballot/2.0.5/spectrum.min.css" />
 		<link rel="stylesheet" href="/webjars/bs-stepper/1.7.0/dist/css/bs-stepper.css" />
+		<link rel="stylesheet" href="/webjars/google-code-prettify/1.0.5/bin/prettify.min.css" />
 		<link rel="stylesheet" th:href="@{/css/app.css}" />
 
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
@@ -57,6 +60,7 @@
 		<title th:text="#{application.title}"></title>
 	</head>
 	<script th:inline="javascript" type="module">
+		sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
 		import {GlobalUi} from "/static/js/modules/ui/GlobalUi.js";
 		new GlobalUi([[${authUserEppn}]], [[${_csrf}]]);
 	</script>

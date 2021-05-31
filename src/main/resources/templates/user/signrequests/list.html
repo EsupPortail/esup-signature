@@ -13,7 +13,7 @@
 <header th:replace="fragments/nav"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:insert="fragments/side-dashboard"></nav>
+        <nav th:insert="/fragments/sides/side-dashboard"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Tableau de bord</li>
@@ -48,7 +48,7 @@
                     </li>
                 </ul>
             </div>
-            <div class="card col-lg-11">
+            <div class="card col-sm-9 col-md-10 col-xl-11">
                 <div id="myDocs" class="card-body">
                     <div id="listSignRequestTable" class="table-fix-head">
                         <table class="table table-borderless table-hover">
@@ -89,9 +89,9 @@
                                     </th:block>
                                 </select>
                             </th>
-                            <th class="d-none d-lg-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
+                            <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                             <th class="d-none d-xl-table-cell"><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
-                            <th class="d-none d-lg-table-cell">
+                            <th class="d-none d-xl-table-cell">
                                 <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">
                                     <option data-placeholder="true"></option>
                                     <th:block th:each="signRequestRecipient : ${signRequestRecipients}">
@@ -99,7 +99,7 @@
                                     </th:block>
                                 </select>
                             </th>
-                            <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
+                            <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
                             <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
                             <th>Actions</th>
                         </tr>
@@ -114,10 +114,10 @@
                                 </td>
                                 <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
-                                <td class="clickable-td d-none d-lg-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
+                                <td class="clickable-td d-none d-xxl-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                 <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
-                                <td class="clickable-td d-none d-lg-table-cell">
+                                <td class="clickable-td d-none d-xl-table-cell">
                                     <table class="table table-sm">
                                         <tbody th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signRequest.parentSignBook.liveWorkflow.currentStepNumber > 0}">
                                         <th:block th:each="recipient : ${signRequest.parentSignBook.liveWorkflow.currentStep.recipients}">
@@ -141,7 +141,7 @@
                                         </tbody>
                                     </table>
                                 </td>
-                                <td class="clickable-td d-none d-xxl-table-cell">
+                                <td class="clickable-td d-none d-xxxl-table-cell">
                                     <span th:if="${signRequest.endDate != null}" th:text="${#dates.format(signRequest.endDate, 'dd/MM/yyyy HH:mm')}"></span>
                                 </td>
                                 <td class="clickable-td d-none d-md-table-cell"
@@ -270,10 +270,7 @@
                     </div>
                 </div>
                 <span id="bar-text"></span>
-                <div id="passwordError" class="alert alert-danger" role="alert">
-                    Mauvais mot de passe
-                </div>
-                <div id="signError" class="alert alert-danger" role="alert">
+                <div id="signError" class="alert alert-danger mt-2" role="alert">
                     Erreur du système de signature
                 </div>
             </div>

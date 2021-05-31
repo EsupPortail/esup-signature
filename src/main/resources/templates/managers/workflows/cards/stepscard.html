@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
+<div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}">
+    <div class="bs-stepper vertical linear">
+        <div class="bs-stepper-header mx-auto" role="tablist">
+            <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
+                <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
+                    <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab"
+                         aria-selected="false" style="border: 1px solid #555555;">
+                        <div class="bs-stepper-label">
+                            <h5>Étape : <span class="bs-stepper-circle bg-primary"
+                                              th:text="${iterator.index + 1}"></span></h5>
+
+                            <form th:action="${fromAdmin == true ? '/manager/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
+                                <div class="form-group">
+                                    <label>Description de l’étape:</label>
+                                    <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
+                                </div>
+                                <div class="form-group">
+                                    <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
+                                    <br>
+                                    <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}">
+                                        <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
+                                            <option th:value="${signType}"
+                                                    th:text="#{'signbook.signtype.' + ${signType}}"
+                                                    th:selected="${workflowStep.signType == signType}"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        Le createur peut modifier les participants
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="changeable"
+                                               th:checked="${workflowStep.changeable}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        L'utilisateur peut ajouter une étape avant la suivante
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="repeatable"
+                                               th:checked="${workflowStep.repeatable}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        L'utilisateur peut apposer plusieurs signatures
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="multiSign"
+                                               th:checked="${workflowStep.multiSign}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        Tous les participants doivent-ils signer ?
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" name="allSignToComplete"
+                                               th:checked="${workflowStep.allSignToComplete}"/>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-success float-right ml-2 mb-2">
+                                    <i class="fas fa-save"></i></button>
+                            </form>
+                            <form th:id="'del_' + ${iterator.index}"
+                                  th:action="${fromAdmin == true ? '/manager/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
+                                  th:method="delete">
+                                <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
+                                        class="btn btn-danger float-right del-step-btn">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                            <table class="table table-sm table-bordered">
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th>Participants</th>
+                                    <th>
+                                        <button type="button" title="Ajouter un destinataire"
+                                                class="btn btn-sm btn-primary" data-toggle="modal"
+                                                th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                            <i class="fas fa-plus" aria-hidden="true"></i>
+                                        </button>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <th:block th:each="user : ${workflowStep.users}">
+                                    <tr>
+                                        <td class="text-left">
+                                            <span th:text="${user.firstname + ' ' + user.name}"></span>
+                                        </td>
+                                        <td>
+                                            <form th:action="${fromAdmin == true ? '/manager/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id : '/user/workflows/remove-step-recipent/' + workflow.id + '/' + workflowStep.id}" th:method="'delete'">
+                                                <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
+                                                <button title="Supprimer le destinataire"
+                                                    onclick="confirm('Voulez-vous vraiment supprimer cet element ?');"
+                                                    type="submit" class="btn btn-danger btn-sm"><i
+                                                    class="fas fa-minus-circle"></i></button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
+                <div class="modal fade" th:id="'reSendModal' + ${workflowStep.id}" tabindex="-1"
+                     role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <form class="form-group"
+                                  th:action="${fromAdmin == true ? '/manager/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id : '/user/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id}"
+                                  method="post">
+                                <div class="modal-header">
+                                    <h3 class="modal-title">Ajout de destinataire(s)</h3>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="form-group">
+                                        <select class="select-users" name="recipientsEmails"
+                                                th:id="'recipientsEmails' + ${workflowStep.id}"
+                                                size="5" multiple="multiple"
+                                                required="required">
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <textarea class="form-control" name="comment"
+                                                  placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary float-right"
+                                            data-dismiss="modal">Annuler
+                                    </button>
+                                    <button type="submit" class="btn btn-success float-right">
+                                        Ajouter
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+</html>

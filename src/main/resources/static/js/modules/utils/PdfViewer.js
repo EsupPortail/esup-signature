@@ -367,16 +367,18 @@ export class PdfViewer extends EventFactory {
         let datePickerIndex = 40;
         console.debug("rending pdfForm items with fields" + items);
         let signFieldNumber = 0;
+        let self = this;
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldType === undefined) {
                 if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
                     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.addClass("sign-field")
                     signField.append('Champ signature ' + signFieldNumber + '<br>');
-                    signField.addClass("sign-field");
                     // signField.addClass("d-none");
                     // signField.parent().remove();
+
                 }
                 continue;
             }
@@ -607,7 +609,7 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
     }
 
     renderPdfForm(items) {
@@ -617,15 +619,27 @@ export class PdfViewer extends EventFactory {
             console.debug(">>Start compute item");
             if(items[i].fieldType === undefined) {
                 console.log(items[i]);
-                // if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
-                //     signFieldNumber = signFieldNumber + 1;
-                //     $('.popupWrapper').remove();
-                //     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                //     signField.append('Champ signature ' + signFieldNumber + '<br>');
-                //     signField.addClass("sign-field");
-                //     // signField.addClass("d-none");
-                //     // signField.parent().remove();
-                // }
+                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+                    signFieldNumber = signFieldNumber + 1;
+                    $('.popupWrapper').remove();
+                    let section = $('section[data-annotation-id=' + items[i].id +']');
+                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    signField.addClass("sign-field");
+                    signField.unbind();
+                    section.unbind();
+                    section.attr("id", signFieldNumber);
+                    section.on('click', function () {
+                        $("#reportModal").modal("show");
+                        $("div[id^='report_']").each(function() {
+                            $(this).hide();
+                        });
+                        $("#report_" + $(this).attr("id")).show();
+                    })
+                    // signField.attr("data-toggle", "modal");
+                    // signField.attr("data-target", "#sign_" + self.signRequestId);
+                    // signField.addClass("d-none");
+                    // signField.parent().remove();
+                }
                 continue;
             }
             let inputName = items[i].fieldName.split(/\$|#|!/)[0];

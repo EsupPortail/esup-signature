@@ -107,10 +107,14 @@ public class WorkflowAdminController {
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
     	Workflow workflow = workflowService.getById(id);
-		workflowService.delete(workflow);
-        return "redirect:/admin/workflows";
+		try {
+			workflowService.delete(workflow);
+		} catch (EsupSignatureException e) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		}
+		return "redirect:/admin/workflows";
     }
 
 	@PostMapping(value = "/add-step/{id}")

@@ -2,7 +2,6 @@ import {PdfViewer} from "../../utils/PdfViewer.js";
 import {SignPosition} from "./SignPosition.js";
 import {WheelDetector} from "../../utils/WheelDetector.js";
 import {Message} from "../../../prototypes/Message.js";
-import {SseDispatcher} from "../../utils/SseDispatcher.js";
 
 export class WorkspacePdf {
 
@@ -32,7 +31,7 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
         this.signPosition = new SignPosition(
             signType,
@@ -42,7 +41,6 @@ export class WorkspacePdf {
             userName, signable, this.forcePageNum);
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
-        this.sseDispatcher = new SseDispatcher();
         this.signLaunchButton = $("#signLaunchButton");
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
@@ -54,7 +52,12 @@ export class WorkspacePdf {
         this.initDataFields(fields);
         if ((formId == null && workflow == null) || (currentStepMultiSign !== null && currentStepMultiSign)) {
             $("#second-tools").toggleClass("d-none d-flex");
-            $("#workspace").css("margin-top", "170px");
+            if($("#ws-tabs").length) {
+                $("#workspace").css("margin-top", "212px");
+            } else {
+                $("#workspace").css("margin-top", "170px");
+            }
+
         }
     }
 
@@ -169,6 +172,9 @@ export class WorkspacePdf {
         this.pdfViewer.adjustZoom();
         this.initLaunchButtons();
         this.pdfViewer.removeEventListener('ready');
+        if(this.signPosition.signImages.length === 0 && this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            this.signPosition.toggleVisual();
+        }
     }
 
     initLaunchButtons() {
@@ -220,7 +226,6 @@ export class WorkspacePdf {
                     message.type = "success";
                     message.text = "Modifications enregistrées";
                     message.object = null;
-                    // self.sseDispatcher.dispatchEvent("user", message);
                     dataId.val(response);
                     if (redirect) {
                         location.href = "/user/datas/" + response + "/update";
@@ -260,7 +265,7 @@ export class WorkspacePdf {
                     if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signPosition.visualActive) {
                         bootbox.alert("Merci de placer la signature", function () {
                             self.pdfViewer.initSavedValues();
-                            if (self.currentSignRequestParams != null) {
+                            if (self.currentSignRequestParams != null && self.currentSignRequestParams[0] != null) {
                                 self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
                             }
                             self.signPosition.firstDrag = true;
@@ -614,7 +619,7 @@ export class WorkspacePdf {
             this.signPosition.cross.removeClass('d-none');
         }
         this.pdfViewer.rotation = 0;
-        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0) {
+        if (this.currentSignRequestParams != null && this.currentSignRequestParams.length > 0 && this.currentSignRequestParams[0] != null) {
             if (!this.forcePageNum) {
                 this.pdfViewer.renderPage(1);
                 let signPage = this.currentSignRequestParams[0].signPageNumber;

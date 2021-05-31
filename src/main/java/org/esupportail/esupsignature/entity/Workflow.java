@@ -67,6 +67,8 @@ public class Workflow {
 
     private Boolean fromCode;
 
+    private Boolean visibility = false;
+
     public Long getId() {
         return id;
     }
@@ -241,5 +243,16 @@ public class Workflow {
 
     public void setFromCode(Boolean fromCode) {
         this.fromCode = fromCode;
+    }
+
+    public Boolean getVisibility() {
+        if (this.visibility == null) {
+            return false;
+        }
+        return visibility;
+    }
+
+    public void setVisibility(Boolean hidden) {
+        this.visibility = hidden;
     }
 }
