@@ -365,7 +365,7 @@ export class PdfViewer extends EventFactory {
 
     renderPdfFormWithFields(items) {
         let datePickerIndex = 40;
-        console.debug("rending pdfForm items with fields" + items);
+        console.debug("rending pdfForm items");
         let signFieldNumber = 0;
         let self = this;
         for (let i = 0; i < items.length; i++) {
@@ -392,6 +392,7 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
                 inputField.attr('title', dataField.description);
@@ -458,6 +459,7 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === 'checkbox') {
+                    inputField.addClass("field-type-checkbox");
                     inputField.val('on');
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
@@ -529,6 +531,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length && dataField) {
+                inputField.addClass("field-type-textarea");
                 let sendField = inputField;
                 if(dataField.favorisable) {
                     $.ajax({
@@ -616,14 +619,15 @@ export class PdfViewer extends EventFactory {
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
+            let item = items[i];
             console.debug(">>Start compute item");
-            if(items[i].fieldType === undefined) {
-                console.log(items[i]);
-                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+            if(item.fieldType === undefined) {
+                console.log(item);
+                if(item.title && item.title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
-                    let section = $('section[data-annotation-id=' + items[i].id +']');
-                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
+                    let section = $('section[data-annotation-id=' + item.id +']');
+                    let signField = $('section[data-annotation-id=' + item.id + '] > div');
                     signField.addClass("sign-field");
                     signField.unbind();
                     section.unbind();
@@ -642,7 +646,7 @@ export class PdfViewer extends EventFactory {
                 }
                 continue;
             }
-            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+            let inputName = item.fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
@@ -650,15 +654,15 @@ export class PdfViewer extends EventFactory {
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
-                    inputField.val(items[i].buttonValue);
+                    inputField.val(item.buttonValue);
                 }
             } else {
-                inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
+                inputField = $('section[data-annotation-id=' + item.id + '] > textarea');
                 if (inputField.length > 0) {
                     inputField.attr('name', inputName);
                     inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
-                    inputField.val(items[i].fieldValue);
+                    inputField.val(item.fieldValue);
                 }
             }
         }
