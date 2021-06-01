@@ -1,6 +1,7 @@
 export class SignRequestParams {
 
     constructor(signRequestParams) {
+        this.cross;
         this.pdSignatureFieldName;
         this.signImageNumber = 0;
         this.signPageNumber = 1;

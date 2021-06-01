@@ -61,7 +61,7 @@
 			<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;" class="mr-1">
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
 						id="addSignButton" title="Ajouter une signature"
-						class="btn btn-primary" disabled>
+						class="btn btn-primary">
 					<i class="fas fa-plus"></i> Ajouter une signature
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
