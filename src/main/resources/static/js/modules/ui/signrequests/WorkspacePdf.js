@@ -140,7 +140,7 @@ export class WorkspacePdf {
     }
 
     addSign(e) {
-        this.signPosition.addSign(e)
+        this.signPosition.addSign(this.pdfViewer.pageNum);
         // this.pdfViewer.renderPage(this.pdfViewer.pageNum);
     }
 
@@ -262,7 +262,7 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if ((self.signPosition.cross.css("position") === 'fixed' || self.signPosition.getCurrentSignParams().xPos === -1) && self.signPosition.visualActive) {
+                    if (self.signPosition.signRequestParamses.length === 0 && self.signPosition.visualActive) {
                         bootbox.alert("Merci de placer la signature", function () {
                             self.pdfViewer.initSavedValues();
                             if (self.currentSignRequestParams != null && self.currentSignRequestParams[0] != null) {
@@ -342,7 +342,7 @@ export class WorkspacePdf {
 
     refreshWorkspace() {
         console.info("refresh workspace");
-        // this.signPosition.updateScale(this.pdfViewer.scale);
+        this.signPosition.updateScale(this.pdfViewer.scale);
         this.refreshAfterPageChange();
     }
 

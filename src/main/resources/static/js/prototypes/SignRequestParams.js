@@ -2,11 +2,13 @@ export class SignRequestParams {
 
     constructor(signRequestParams) {
         this.cross;
+        this.tools;
         this.pdSignatureFieldName;
         this.signImageNumber = 0;
         this.signPageNumber = 1;
         this.signWidth;
         this.signHeight;
+        this.originalWidth;
         this.xPos = -1;
         this.yPos = -1;
         this.visual = true;

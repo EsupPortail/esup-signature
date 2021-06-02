@@ -128,6 +128,11 @@ export class SignUi {
             });
         }
         if(this.workspace != null) {
+            let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
+            for(let i = 0 ; i < signRequestParamses.length; i++) {
+                signRequestParamses[i].cross = null;
+                signRequestParamses[i].tools = null;
+            }
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : $("#certType").val(),
