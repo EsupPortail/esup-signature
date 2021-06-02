@@ -262,17 +262,12 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (self.signPosition.signRequestParamses.length === 0 && self.signPosition.visualActive) {
+                    if (self.signPosition.signRequestParamses.size === 0 && (self.signType !== "hiddenVisa")) {
                         bootbox.alert("Merci de placer la signature", function () {
                             self.pdfViewer.initSavedValues();
                             if (self.currentSignRequestParams != null && self.currentSignRequestParams[0] != null) {
                                 self.pdfViewer.renderPage(self.currentSignRequestParams[0].signPageNumber);
                             }
-                            self.signPosition.firstDrag = true;
-                            self.signPosition.cross.css("position", "absolute");
-                            self.signPosition.cross.css("margin-left", "0px");
-                            self.signPosition.cross.css("margin-top", "0px");
-                            self.signPosition.updateCrossPosition();
                         });
                     } else {
                         let enableInfinite = $("#enableInfinite");
@@ -342,17 +337,13 @@ export class WorkspacePdf {
 
     refreshWorkspace() {
         console.info("refresh workspace");
-        this.signPosition.updateScale(this.pdfViewer.scale);
+        this.signPosition.updateScales(this.pdfViewer.scale);
         this.refreshAfterPageChange();
     }
 
     clickAction() {
         if (this.mode === 'sign') {
-            // if (this.signPosition.pointItEnable) {
-            //     this.signPosition.stopDragSignature(false);
-            // } else {
-            //     this.signPosition.stopDragSignature(true);
-            // }
+            this.signPosition.lockSigns();
         } else if (this.mode === 'comment') {
             if (this.addSpotEnabled || this.addCommentEnabled) {
                 this.displayDialogBox();
@@ -516,7 +507,8 @@ export class WorkspacePdf {
         $("#spotStepNumber").removeAttr("disabled");
         $("#addSignParams").removeAttr("disabled");
         postit.show();
-        this.signPosition.stopDragSignature(true);
+        this.signPosition.lockSigns();
+        // this.signPosition.stopDragSignature(true);
     }
 
     hideComment(e) {

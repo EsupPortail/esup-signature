@@ -115,7 +115,6 @@ export class PdfViewer extends EventFactory {
     }
 
     adjustZoom() {
-        console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
         if(localStorage.getItem('scale')) {
             newScale = parseFloat(localStorage.getItem('scale'));
@@ -133,6 +132,7 @@ export class PdfViewer extends EventFactory {
             newScale = 0.5;
         }
         if (newScale !== this.scale) {
+            console.info("adjust zoom to screen wide " + window.innerWidth);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.renderPage(this.pageNum);
