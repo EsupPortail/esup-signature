@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
@@ -69,6 +70,12 @@ public class SignRequestController {
     private UserService userService;
 
     @Resource
+    private CertificatService certificatService;
+
+    @Resource
+    private ValidationService validationService;
+
+    @Resource
     private PreAuthorizeService preAuthorizeService;
 
     @Resource
@@ -111,6 +118,8 @@ public class SignRequestController {
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+        if(statusFilter == null) statusFilter = "pending";
+        if(statusFilter.equals("all")) statusFilter = "";
         Page<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signRequests", signRequests);
@@ -169,6 +178,7 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
+        model.addAttribute("toUseSignRequestParams", Collections.singletonList(signRequestService.getToUseSignRequestParams(id)));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
@@ -181,6 +191,9 @@ public class SignRequestController {
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
             }
         }
+        Reports reports = validationService.validate(id);
+        model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -189,7 +202,7 @@ public class SignRequestController {
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", signRequestService.checkUserViewRights(signRequest, userEppn, authUserEppn));
         model.addAttribute("frameMode", frameMode);
-        if(signRequest.getData() != null) {
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
         }
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
@@ -242,16 +255,19 @@ public class SignRequestController {
                                @RequestParam(value = "formData", required = false) String formData,
                                @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password,
-                                       HttpSession httpSession, HttpServletRequest request) {
-        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(request);
+                               @RequestParam(value = "certType", required = false) String certType,
+                                       HttpSession httpSession) {
         if (visual == null) visual = true;
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
-        if(signRequestService.initSign(id, token.getToken(), signRequestParamsJsonString, comment, formData, visual, password, userShareId, userEppn, authUserEppn)) {
+        try {
+            signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -622,9 +638,9 @@ public class SignRequestController {
                                            @ModelAttribute("authUserEppn") String authUserEppn,
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
-                                           HttpSession httpSession, HttpServletRequest request) throws JsonProcessingException, InterruptedException {
-        CsrfToken csrfToken = new HttpSessionCsrfTokenRepository().loadToken(request);
-        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, csrfToken.getToken(), password);
+                                           @RequestParam(value = "certType", required = false) String certType,
+                                           HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
+        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

@@ -425,7 +425,6 @@ public class WorkflowService {
         }
     }
 
-    @Transactional
     public List<User> getFavoriteRecipientEmail(int stepNumber, List<String> recipientEmails) {
         List<User> users = new ArrayList<>();
         if (recipientEmails != null && recipientEmails.size() > 0) {
@@ -454,7 +453,7 @@ public class WorkflowService {
         }
    }
 
-    public boolean delete(Workflow workflow) {
+    public void delete(Workflow workflow) throws EsupSignatureException {
         List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow);
         if(signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
             List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
@@ -463,9 +462,9 @@ public class WorkflowService {
                 liveWorkflow.getLiveWorkflowSteps().forEach(lws -> lws.setWorkflowStep(null));
             }
             workflowRepository.delete(workflow);
-            return true;
+        } else {
+            throw new EsupSignatureException("Le circuit ne peut pas être supprimé car il est en court d'utilisation");
         }
-        return false;
     }
 
     public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
@@ -555,6 +554,20 @@ public class WorkflowService {
         Target target = targetService.getById(targetId);
         workflow.getTargets().remove(target);
         targetService.delete(target);
+    }
+
+    public List<Workflow> getWorkflowsByRoles(String role) {
+        return workflowRepository.findByRolesIn(Collections.singletonList(role));
+    }
+
+    public Set<Workflow> getManagerWorkflows(String userEppn) {
+        User manager = userService.getByEppn(userEppn);
+        Set<Workflow> workflowsManaged = new HashSet<>();
+        for (String role : manager.getManagersRoles()) {
+            workflowsManaged.addAll(this.getWorkflowsByRoles(role));
+        }
+        workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
+        return workflowsManaged;
     }
 }
 

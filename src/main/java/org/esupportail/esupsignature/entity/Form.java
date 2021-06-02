@@ -49,6 +49,8 @@ public class Form {
 
 	private Boolean activeVersion = false;
 
+	private Boolean deleted = false;
+
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
@@ -170,6 +172,14 @@ public class Form {
 
 	public void setActiveVersion(Boolean activeVersion) {
 		this.activeVersion = activeVersion;
+	}
+
+	public Boolean getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(Boolean deleted) {
+		this.deleted = deleted;
 	}
 
 	public Document getDocument() {

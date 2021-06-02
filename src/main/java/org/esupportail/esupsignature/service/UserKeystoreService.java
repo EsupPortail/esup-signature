@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class UserKeystoreService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserKeystoreService.class);
 
-	@Resource
+	@Autowired
 	private CertificateVerifier certificateVerifier;
 
 	@Resource
@@ -43,7 +44,7 @@ public class UserKeystoreService {
 			} else {
 				logger.error("open keystore fail :" + e.getMessage());
 			}
-			throw new EsupSignatureKeystoreException("open keystore fail", e);
+			throw new EsupSignatureKeystoreException("Mot de passe incorrect", e);
 		}
 	}
 
@@ -66,7 +67,11 @@ public class UserKeystoreService {
 	@Transactional
 	public String checkKeystore(String authUserEppn, String password) throws EsupSignatureKeystoreException {
 		User authUser = userService.getByEppn(authUserEppn);
-		InputStream keyStoreFile = authUser.getKeystore().getInputStream();
+		return checkKeystore(authUser.getKeystore().getInputStream(), password);
+	}
+
+	@Transactional
+	public String checkKeystore(InputStream keyStoreFile, String password) throws EsupSignatureKeystoreException {
 		String certInfo = "";
 		Pkcs12SignatureToken pkcs12SignatureToken = getPkcs12Token(keyStoreFile, password);
 		CertificateToken certificateToken = getCertificateToken(pkcs12SignatureToken);

@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.utils.mail;
+package org.esupportail.esupsignature.service.mail;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.mail.MailConfig;

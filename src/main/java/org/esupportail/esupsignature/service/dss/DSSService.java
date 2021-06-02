@@ -21,7 +21,6 @@ public class DSSService {
     @Qualifier("european-trusted-list-certificate-source")
     private TrustedListsCertificateSource trustedListsCertificateSource;
 
-
     @Resource
     @Qualifier("european-lotl-source")
     private LOTLSource lotlSource;

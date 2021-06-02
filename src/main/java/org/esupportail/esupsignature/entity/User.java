@@ -32,6 +32,9 @@ public class User {
     @Column(unique=true)
     private String email;
 
+    @ElementCollection(targetClass=String.class)
+    private List<String> managersRoles = new ArrayList<>();
+
     @ElementCollection
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
@@ -135,6 +138,14 @@ public class User {
 
 	public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<String> getManagersRoles() {
+        return managersRoles;
+    }
+
+    public void setManagersRoles(List<String> managersRoles) {
+        this.managersRoles = managersRoles;
     }
 
     public Map<UiParams, String> getUiParams() {

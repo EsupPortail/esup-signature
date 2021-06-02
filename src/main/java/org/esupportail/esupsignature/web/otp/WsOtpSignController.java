@@ -4,9 +4,9 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.otp.Otp;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -24,6 +25,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import java.util.stream.Collectors;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
 
@@ -60,6 +63,8 @@ public class WsOtpSignController {
                     logger.error(e.getMessage(), e);
                 }
                 otp.setSmsSended(true);
+            } else {
+                return "otp/expired";
             }
             model.addAttribute("urlid", urlId);
             return "otp/signin";
@@ -80,6 +85,7 @@ public class WsOtpSignController {
                 Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 securityContext.setAuthentication(authentication);
+                userService.updateRoles(user.getEppn(), authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
                 HttpSession httpSession = req.getSession(true);
                 httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
                 model.addAttribute("user", user);

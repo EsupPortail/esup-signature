@@ -7,7 +7,7 @@
         <div class="card-body bg-light">
             <button id="toggleNewGrid" class="btn btn-transparent text-dark float-right"><i class="fas fa-th"></i> Affichage</button>
             <h5 class="text-center"><b>Nouveau</b></h5>
-            <div id="newScroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite" style="overflow-y:scroll;">
+            <div id="newScroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Outils de signature</h5>
                     <a id="newfastSign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
@@ -244,7 +244,7 @@
                                         <select class="select-users" th:id="'recipientEmailsSelect-' + ${form.id} + '_' + ${iterator.index + 1}"
                                                 multiple="multiple" name="recipientEmails" required="required">
                                             <th:block th:each="user : ${step.users}">
-                                                <option th:if="${user.email != null}" selected="selected"
+                                                <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                         th:text="${user.email}"
                                                         th:value="${iterator.index + 1} + '*' + ${user.email}"></option>
                                             </th:block>
