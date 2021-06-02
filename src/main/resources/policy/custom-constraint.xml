@@ -417,7 +417,7 @@
 		</BasicSignatureConstraints>
 	</Timestamp>
 	<Revocation>
-		<RevocationFreshness Level="FAIL" Unit="SECONDS" Value="1" />
+		<RevocationFreshness Level="FAIL" Unit="HOURS" Value="1" />
 		<BasicSignatureConstraints>
 			<ReferenceDataExistence Level="FAIL" />
 			<ReferenceDataIntact Level="FAIL" />

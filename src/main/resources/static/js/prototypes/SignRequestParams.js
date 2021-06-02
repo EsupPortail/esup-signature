@@ -14,6 +14,7 @@ export class SignRequestParams  extends EventFactory {
         this.signWidth = 150;
         this.signHeight = 75;
         this.originalWidth = 150;
+        this.originalWidth = 75;
         this.xPos = -1;
         this.yPos = -1;
         this.visual = true;
@@ -59,9 +60,15 @@ export class SignRequestParams  extends EventFactory {
         });
         this.cross.resizable({
             aspectRatio: true,
-            maxHeight: 300,
-            minHeight: 50,
             resize: function( event, ui ) {
+                if(ui.size.width >= (self.originalWidth * 2 * self.currentScale)) {
+                    ui.size.width = (self.originalWidth * 2 * self.currentScale);
+                    ui.size.height = (self.originalHeight * 2 * self.currentScale);
+                }
+                if(ui.size.width <= (self.originalWidth / 2 * self.currentScale)) {
+                    ui.size.width = (self.originalWidth / 2 * self.currentScale);
+                    ui.size.height = (self.originalHeight / 2 * self.currentScale);
+                }
                 self.signScale = Math.round(((ui.size.width) / self.currentScale * self.fixRatio) / (self.originalWidth / self.fixRatio) * 100) / 100;
                 self.signWidth = Math.round(ui.size.width / self.currentScale * self.fixRatio);
                 self.signHeight = Math.round(ui.size.height / self.currentScale * self.fixRatio);
@@ -70,8 +77,8 @@ export class SignRequestParams  extends EventFactory {
 
                 let x = Math.round(thisPos.left * self.fixRatio / self.currentScale);
                 let y = Math.round(thisPos.top * self.fixRatio / self.currentScale);
-                console.log("(" + x + ", " + y + ")" +  self.signScale + " : " + self.signWidth + "*" + self.signHeight);
-            }
+                console.log("(" + x + ", " + y + ")" + self.signScale + " : " + self.signWidth + "*" + self.signHeight);
+            },
         });
 
         let border = "<div id='border_" + this.id +"' class='static-border' style='width: 100%; height: 100%;'></div>"
@@ -184,7 +191,8 @@ export class SignRequestParams  extends EventFactory {
 
     changeSignSize(result) {
         this.signWidth = Math.round((result.w + this.extraWidth) * this.signScale * this.fixRatio);
-        this.originalWidth = Math.round((result.w + this.extraWidth) * this.signScale * this.fixRatio);
+        this.originalWidth = Math.round((result.w + this.extraWidth));
+        this.originalHeight = Math.round((result.h + this.extraWidth));
         this.signHeight = Math.round((result.h + this.extraHeight) * this.signScale * this.fixRatio);
         this.cross.css('width', (this.signWidth / this.fixRatio * this.currentScale));
         this.cross.css('height', (this.signHeight / this.fixRatio * this.currentScale));

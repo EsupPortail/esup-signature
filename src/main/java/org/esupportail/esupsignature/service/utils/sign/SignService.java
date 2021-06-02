@@ -341,8 +341,11 @@ public class SignService {
 				} else {
 					inputStream = toSignFile.getInputStream();
 				}
-				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream())) {
+				byte[] bytes = inputStream.readAllBytes();
+				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
+				} else {
+					inputStream = new ByteArrayInputStream(bytes);
 				}
 			} else {
 				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();

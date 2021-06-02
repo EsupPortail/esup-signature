@@ -65,7 +65,7 @@ export class SignPosition2 extends EventFactory {
                     signRequestParams.signImageNumber = imageNum;
                     signRequestParams.cross.css("background-image", "url('" + img + "')");
                     let sizes = this.getImageDimensions(img);
-                    sizes.then(result => signRequestParams.changeSignSize(result, signRequestParams));
+                    sizes.then(result => signRequestParams.changeSignSize(result));
                 }
             }
         } else {
@@ -74,7 +74,7 @@ export class SignPosition2 extends EventFactory {
                 this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
                     signRequestParams.cross.css("background-image", "url('" + img + "')");
                     let sizes = self.getImageDimensions(img);
-                    sizes.then(result => signRequestParams.changeSignSize(result, signRequestParams));
+                    sizes.then(result => signRequestParams.changeSignSize(result));
                 });
             }
         }
