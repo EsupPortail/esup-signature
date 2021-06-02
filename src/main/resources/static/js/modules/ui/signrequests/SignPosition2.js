@@ -29,6 +29,7 @@ export class SignPosition2 extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
+        this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
         this.id++;
     }
 
@@ -107,5 +108,26 @@ export class SignPosition2 extends EventFactory {
         this.signRequestParamses.forEach(function (signRequestParams){
             signRequestParams.lock();
         });
+    }
+
+
+    changeSignColor(color, signRequestParams) {
+        console.info("change color to : " + color);
+        const rgb = Color.hexToRgb(color);
+
+        signRequestParams.red = rgb[0];
+        signRequestParams.green = rgb[1];
+        signRequestParams.blue = rgb[2];
+
+        let cross = signRequestParams.cross;
+        if (this.signImages[signRequestParams.signImageNumber] != null) {
+            let img = "data:image/jpeg;charset=utf-8;base64" +
+                ", " + this.signImages[signRequestParams.signImageNumber];
+            Color.changeColInUri(img, "#000000", color).then(function (e) {
+                cross.css("background-image", "url('" + e + "')");
+            })
+        }
+        // let textExtra = $("#textExtra_" + this.currentSign);
+        // textExtra.css({"color" : color + ""});
     }
 }

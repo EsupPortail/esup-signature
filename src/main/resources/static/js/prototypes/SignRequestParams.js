@@ -1,4 +1,5 @@
 import {EventFactory} from "../modules/utils/EventFactory.js";
+import {Color} from "../modules/utils/Color.js";
 
 export class SignRequestParams  extends EventFactory {
 
@@ -8,13 +9,14 @@ export class SignRequestParams  extends EventFactory {
         this.cross;
         this.border;
         this.tools;
+        this.signColorPicker;
         this.pdSignatureFieldName;
         this.signImageNumber = 0;
         this.signPageNumber = 1;
         this.signWidth = 150;
         this.signHeight = 75;
         this.originalWidth = 150;
-        this.originalWidth = 75;
+        this.originalHeight = 75;
         this.xPos = -1;
         this.yPos = -1;
         this.visual = true;
@@ -60,7 +62,7 @@ export class SignRequestParams  extends EventFactory {
         });
         this.cross.resizable({
             aspectRatio: true,
-            resize: function( event, ui ) {
+            resize: function(event, ui) {
                 if(ui.size.width >= (self.originalWidth * 2 * self.currentScale)) {
                     ui.size.width = (self.originalWidth * 2 * self.currentScale);
                     ui.size.height = (self.originalHeight * 2 * self.currentScale);
@@ -69,7 +71,7 @@ export class SignRequestParams  extends EventFactory {
                     ui.size.width = (self.originalWidth / 2 * self.currentScale);
                     ui.size.height = (self.originalHeight / 2 * self.currentScale);
                 }
-                self.signScale = Math.round(((ui.size.width) / self.currentScale * self.fixRatio) / (self.originalWidth / self.fixRatio) * 100) / 100;
+                self.signScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
                 self.signWidth = Math.round(ui.size.width / self.currentScale * self.fixRatio);
                 self.signHeight = Math.round(ui.size.height / self.currentScale * self.fixRatio);
                 self.cross.css('background-size', Math.round(ui.size.width));
@@ -79,6 +81,10 @@ export class SignRequestParams  extends EventFactory {
                 let y = Math.round(thisPos.top * self.fixRatio / self.currentScale);
                 console.log("(" + x + ", " + y + ")" + self.signScale + " : " + self.signWidth + "*" + self.signHeight);
             },
+            stop: function(event, ui) {
+                self.signScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
+                localStorage.setItem("zoom", self.signScale);
+            }
         });
 
         let border = "<div id='border_" + this.id +"' class='static-border' style='width: 100%; height: 100%;'></div>"
@@ -90,11 +96,16 @@ export class SignRequestParams  extends EventFactory {
         cross.prepend(tools);
         this.tools = tools;
 
-
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.signPageNumber = page;
-
+        this.moreTools = $("#moreTools_" + this.id);
+        this.defaultTools = $("#defaultTools_" + this.id);
+        this.createColorPicker();
+        this.initSignSize();
+        if(localStorage.getItem('addWatermark') != null && localStorage.getItem('addWatermark') === "true") {
+            this.toggleWatermark();
+        }
     }
 
     initEventListeners() {
@@ -112,6 +123,27 @@ export class SignRequestParams  extends EventFactory {
 
         let signPrevImageButton = $("#signPrevImage_" + this.id);
         signPrevImageButton.on("click", e => this.prevSignImage());
+
+        let displayMoreToolsButton = $("#displayMoreTools_" + this.id);
+        displayMoreToolsButton.on("click", e => this.displayMoreTools());
+
+        let hideMoreToolsButton = $("#hideMoreTools_" + this.id);
+        hideMoreToolsButton.on("click", e => this.hideMoreTools());
+
+        let watermarkButton = $("#watermark_" + this.id);
+        watermarkButton.on("click", e => this.toggleWatermark());
+
+    }
+
+    initSignSize() {
+        if(localStorage.getItem("zoom") != null) {
+            this.signScale = parseFloat(localStorage.getItem("zoom"));
+            this.signWidth = Math.round((this.signScale * this.originalWidth) / this.currentScale * this.fixRatio);
+            this.signHeight = Math.round((this.signScale * this.originalHeight) / this.currentScale * this.fixRatio);
+            this.cross.css('width', (this.signWidth / this.fixRatio) + "px");
+            this.cross.css('height', (this.signHeight / this.fixRatio) + "px");
+            this.cross.css('background-size', Math.round(this.signScale * this.originalWidth));
+        }
     }
 
     deleteSign() {
@@ -128,7 +160,8 @@ export class SignRequestParams  extends EventFactory {
     }
 
     getTools(id) {
-        let tools = $("#crossTools_0").clone();
+        let tools = $("#crossTools_x").clone();
+        tools.attr("id", tools.attr("id").split("_")[0] + "_" + id);
         tools.children().each(function (e) {
             $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + id);
         });
@@ -197,6 +230,45 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css('width', (this.signWidth / this.fixRatio * this.currentScale));
         this.cross.css('height', (this.signHeight / this.fixRatio * this.currentScale));
         this.cross.css('background-size', (this.signWidth - (this.extraWidth * this.signScale * this.fixRatio)) * this.currentScale / this.fixRatio);
+    }
+
+    displayMoreTools() {
+        this.moreTools.removeClass('d-none');
+        this.defaultTools.addClass('d-none');
+    }
+
+    hideMoreTools() {
+        this.moreTools.addClass('d-none');
+        this.defaultTools.removeClass('d-none');
+    }
+
+    createColorPicker() {
+        this.signColorPicker = $('#signColorPicker_' + this.id);
+        this.signColorPicker.spectrum({
+            type: "color",
+            showPaletteOnly: true,
+            hideAfterPaletteSelect: true,
+            preferredFormat: "hex",
+            change: color => this.fireEvent("changeColor", [color])
+        });
+    }
+
+    toggleWatermark() {
+        if(this.addWatermark) {
+            this.cross.removeClass("watermarkWidth");
+            this.cross.removeClass("watermarkHeight");
+            this.addWatermark = false;
+        } else {
+            if(this.extraOnTop) {
+                this.cross.addClass("watermarkWidth");
+            } else {
+                this.cross.addClass("watermarkHeight");
+            }
+            this.addWatermark = true;
+        }
+        if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
+            localStorage.setItem('addWatermark', this.addWatermark);
+        }
     }
 
 }
