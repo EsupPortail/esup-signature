@@ -35,6 +35,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.DocumentService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -92,6 +93,9 @@ public class SignService {
 
 	@Resource
 	private SignRequestService signRequestService;
+
+	@Resource
+	private ValidationService validationService;
 
 	@Resource
 	private Environment environment;
@@ -337,8 +341,11 @@ public class SignService {
 				} else {
 					inputStream = toSignFile.getInputStream();
 				}
-				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream())) {
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
+				byte[] bytes = inputStream.readAllBytes();
+				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
+				} else {
+					inputStream = new ByteArrayInputStream(bytes);
 				}
 			} else {
 				signatureForm = signConfig.getSignProperties().getDefaultSignatureForm();
