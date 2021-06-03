@@ -3,9 +3,10 @@ import {Color} from "../modules/utils/Color.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page) {
+    constructor(signRequestParams, id, scale, page, userName, restore) {
         super();
         this.id = id;
+        this.userName = userName;
         this.cross;
         this.border;
         this.tools;
@@ -22,7 +23,7 @@ export class SignRequestParams  extends EventFactory {
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
-        this.extraOnTop = false;
+        this.extraOnTop = true;
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.extraText = "";
@@ -31,15 +32,17 @@ export class SignRequestParams  extends EventFactory {
         this.red = 0;
         this.green = 0;
         this.blue = 0;
-        Object.assign(this, signRequestParams);
         this.fixRatio = .75;
+        this.fontSize = 12;
+        this.restore = restore;
+        Object.assign(this, signRequestParams);
         this.init(page);
         this.initEventListeners();
     }
 
     init(page) {
         let divName = "cross_" + this.id;
-        let div = "<div id='"+ divName +"'></div>";
+        let div = "<div id='"+ divName +"' class='cross'></div>";
         $("#pdf").prepend(div);
         let cross = $("#" + divName);
         this.cross = cross;
@@ -63,23 +66,25 @@ export class SignRequestParams  extends EventFactory {
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
-                if(ui.size.width >= (self.originalWidth * 2 * self.currentScale)) {
-                    ui.size.width = (self.originalWidth * 2 * self.currentScale);
-                    ui.size.height = (self.originalHeight * 2 * self.currentScale);
+                if(ui.size.width >= ((self.originalWidth + self.extraWidth) * 2 * self.currentScale)) {
+                    ui.size.width = ((self.originalWidth + self.extraWidth) * 2 * self.currentScale);
+                    ui.size.height = ((self.originalHeight + self.extraHeight) * 2 * self.currentScale);
                 }
-                if(ui.size.width <= (self.originalWidth / 2 * self.currentScale)) {
-                    ui.size.width = (self.originalWidth / 2 * self.currentScale);
-                    ui.size.height = (self.originalHeight / 2 * self.currentScale);
+                if(ui.size.width <= ((self.originalWidth + self.extraWidth) / 2 * self.currentScale)) {
+                    ui.size.width = ((self.originalWidth + self.extraWidth) / 2 * self.currentScale);
+                    ui.size.height = ((self.originalHeight + self.extraHeight) / 2 * self.currentScale);
                 }
                 self.signScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
                 self.signWidth = Math.round(ui.size.width / self.currentScale * self.fixRatio);
                 self.signHeight = Math.round(ui.size.height / self.currentScale * self.fixRatio);
                 self.cross.css('background-size', Math.round(ui.size.width));
-                let thisPos = $(this).position();
-
-                let x = Math.round(thisPos.left * self.fixRatio / self.currentScale);
-                let y = Math.round(thisPos.top * self.fixRatio / self.currentScale);
-                console.log("(" + x + ", " + y + ")" + self.signScale + " : " + self.signWidth + "*" + self.signHeight);
+                if(self.extraText) {
+                    self.refreshTextArea();
+                }
+                // let thisPos = $(this).position();
+                // let x = Math.round(thisPos.left * self.fixRatio / self.currentScale);
+                // let y = Math.round(thisPos.top * self.fixRatio / self.currentScale);
+                // console.log("(" + x + ", " + y + ")" + self.signScale + " : " + self.signWidth + "*" + self.signHeight);
             },
             stop: function(event, ui) {
                 self.signScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
@@ -90,6 +95,7 @@ export class SignRequestParams  extends EventFactory {
         let border = "<div id='border_" + this.id +"' class='static-border' style='width: 100%; height: 100%;'></div>"
         cross.prepend(border);
         this.border = $("#border_" + this.id);
+        this.border.css("pointer-events", "none");
 
         let tools = this.getTools(this.id)
         tools.removeClass("d-none");
@@ -102,9 +108,11 @@ export class SignRequestParams  extends EventFactory {
         this.moreTools = $("#moreTools_" + this.id);
         this.defaultTools = $("#defaultTools_" + this.id);
         this.createColorPicker();
-        this.initSignSize();
-        if(localStorage.getItem('addWatermark') != null && localStorage.getItem('addWatermark') === "true") {
-            this.toggleWatermark();
+        if(this.restore) {
+            this.initSignSize();
+            if (localStorage.getItem('addWatermark') != null && localStorage.getItem('addWatermark') === "true") {
+                this.toggleWatermark();
+            }
         }
     }
 
@@ -132,6 +140,10 @@ export class SignRequestParams  extends EventFactory {
 
         let watermarkButton = $("#watermark_" + this.id);
         watermarkButton.on("click", e => this.toggleWatermark());
+
+        let signExtraButton = $("#signExtra_" + this.id);
+        signExtraButton.on("click", e => this.toggleExtra());
+
 
     }
 
@@ -193,6 +205,7 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
         this.currentScale = scale;
+        this.refreshTextArea();
     }
 
     lock() {
@@ -269,6 +282,58 @@ export class SignRequestParams  extends EventFactory {
         if(this.signType !== "visa" && this.signType !== "hiddenVisa") {
             localStorage.setItem('addWatermark', this.addWatermark);
         }
+    }
+
+    toggleExtra() {
+        this.addExtra = !this.addExtra;
+        if(this.addExtra) {
+            if(this.textarea == null) {
+                let textSign = "Signature caligraphique";
+                if (this.signType === "visa" || this.signType === "hiddenVisa") textSign = "Visa";
+                if (this.signType === "certSign" || this.signType === "nexuSign") textSign = "Signature éléctronique";
+                this.extraText = textSign +
+                    "\nde " + this.userName +
+                    "\nle " + moment().format('DD/MM/YYYY HH:mm:ss');
+
+                let textareaHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top visa-text'></textarea>";
+                this.cross.prepend(textareaHtml);
+                this.textarea = $("#textExtra_" + this.id);
+                this.textarea.val(this.extraText);
+                this.textarea.on("input", e => this.refreshTextArea());
+                this.refreshTextArea();
+            } else {
+                this.textarea.removeClass("d-none");
+            }
+            if(this.extraOnTop) {
+                this.extraHeight = parseInt(this.textarea.css("height")) / this.currentScale / this.signScale;
+                this.cross.css("height", (parseInt(this.cross.css("height")) + parseInt(this.textarea.css("height"))) + "px");
+            }
+        } else {
+            this.textarea.addClass("d-none");
+        }
+    }
+
+    refreshTextArea() {
+        let maxLines = 8;
+        if(this.extraOnTop) maxLines = 4;
+        let fontSize = this.fontSize * this.currentScale * this.signScale;
+        this.textarea.css("font-size", fontSize);
+        let text = this.textarea.val();
+        let lines = text.split(/\r|\r\n|\n/);
+        if(lines.length > maxLines) {
+            text = "";
+            lines.pop();
+            for(let i = 0; i < maxLines; i++) {
+                text += lines[i];
+                if(i < maxLines - 1) {
+                    text += "\n";
+                }
+            }
+        }
+        this.extraText = text;
+        this.textarea.val(text);
+        this.textarea.attr("rows", lines.length);
+            // this.textarea.height(nbLines * fontSize / this.fixRatio);
     }
 
 }

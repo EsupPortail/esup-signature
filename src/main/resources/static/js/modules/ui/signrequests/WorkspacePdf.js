@@ -140,7 +140,7 @@ export class WorkspacePdf {
     }
 
     addSign(e) {
-        this.signPosition.addSign(this.pdfViewer.pageNum);
+        this.signPosition.addSign(this.pdfViewer.pageNum, false);
         // this.pdfViewer.renderPage(this.pdfViewer.pageNum);
     }
 

@@ -260,10 +260,6 @@ code {
 	content: "Parcourir" !important;
 }
 
-.static-border {
-    border: 2px solid #008000;
-}
-
 .cross-tools {
     left: 0px;
     top: -45px;
@@ -274,7 +270,19 @@ code {
     -o-user-select: none;"
 }
 
+
+.static-border {
+    position: absolute;
+    top :0;
+    left :0;
+    border: 2px solid #008000;
+}
+
 .anim-border {
+    z-index: 4;
+    position: absolute;
+    top :0;
+    left :0;
     /*background-color: rgba(173, 255, 47, 0.5);*/
     background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
     background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
@@ -493,8 +501,10 @@ input:checked + .slider:before {
     position: relative;
 }
 
-#cross {
+.cross {
     z-index: 3;
+    background-position: bottom;
+    background-repeat: no-repeat;
 }
 
 .sign-textarea {
@@ -508,6 +518,8 @@ input:checked + .slider:before {
     border-radius: 4px;
     background: rgba(255, 255, 255, .5);
     resize: none;
+    z-index: 6;
+    pointer-events: all;
 }
 
 .wrapper {

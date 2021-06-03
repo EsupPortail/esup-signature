@@ -7,6 +7,7 @@ export class SignPosition2 extends EventFactory {
     constructor(signType, currentSignRequestParams, signImageNumber, signImages, userName, signable, forceResetSignPos) {
         super();
         console.info("Starting sign positioning tools");
+        this.userName = userName;
         this.pdf = $("#pdf");
         this.signImages = signImages;
         this.signRequestParamses = new Map();
@@ -17,13 +18,13 @@ export class SignPosition2 extends EventFactory {
             this.currentScale = localStorage.getItem("scale");
         }
         if(signable) {
-            this.addSign(1);
+            this.addSign(1, true);
         }
     }
 
-    addSign(page) {
+    addSign(page, restore) {
         let id = this.id;
-        this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page));
+        this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, restore));
         this.changeSignImage(0, this.signRequestParamses.get(id));
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
