@@ -208,7 +208,7 @@ public class SignService {
 			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
+				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
 				signImage = new FileInputStream(fileWithWatermark);
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);

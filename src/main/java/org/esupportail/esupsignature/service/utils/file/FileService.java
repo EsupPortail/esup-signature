@@ -239,7 +239,11 @@ public class FileService {
 
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-			graphics2D.drawImage(signImage, widthOffset, heightOffset, width - widthOffset, height - heightOffset, null);
+			if(signRequestParams.getExtraOnTop()) {
+				graphics2D.drawImage(signImage, 0, heightOffset, width, height - heightOffset, null);
+			} else {
+				graphics2D.drawImage(signImage, 0, 0, widthOffset, height, null);
+			}
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 1;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
@@ -255,20 +259,20 @@ public class FileService {
 				String typeSign = "Signature calligraphique";
 				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
 				if (signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
-				graphics2D.drawString(typeSign, 0, lineHeight * lineCount);
+				graphics2D.drawString(typeSign, widthOffset, lineHeight * lineCount);
 				lineCount++;
 			}
 			if(signRequestParams.getExtraName()) {
-				graphics2D.drawString(user.getFirstname() + " " + user.getName(), 0, lineHeight * lineCount);
+				graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, lineHeight * lineCount);
 				lineCount++;
 			}
 			if(signRequestParams.getExtraDate()) {
 				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
-				graphics2D.drawString("le " + dateFormat.format(date), 0, lineHeight * lineCount);
+				graphics2D.drawString("le " + dateFormat.format(date), widthOffset, lineHeight * lineCount);
 				lineCount++;
 			}
 			for (String line : text) {
-				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), 0, lineHeight * lineCount);
+				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, lineHeight * lineCount);
 				lineCount++;
 			}
 //			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);
@@ -280,7 +284,7 @@ public class FileService {
 		return textAddedInputStream;
 	}
 
-	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, File destImageFile, Color color) {
+	public void addImageWatermark(InputStream watermarkImageFile, InputStream sourceImageFile, File destImageFile, Color color, boolean extraOnTop) {
 		try {
 			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
 			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
@@ -292,6 +296,11 @@ public class FileService {
 			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
 			int width = (int) (sourceImage.getWidth() * .8);
 			int height = (int) (watermarkImage.getHeight() * factor);
+			if(!extraOnTop) {
+				factor = sourceImage.getHeight() * .6 / watermarkImage.getHeight();
+				width = (int) (watermarkImage.getWidth() * factor);
+				height = (int) (sourceImage.getHeight() * .6);
+			}
 			int topLeftX = (int) ((sourceImage.getWidth() - width) / 2);
 			int topLeftY = (int) ((sourceImage.getHeight() - height) / 2);
 			g2d.drawImage(watermarkImage, topLeftX, topLeftY, width, height, null);
