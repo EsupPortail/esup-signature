@@ -472,17 +472,12 @@ export class WorkspacePdf {
     toggleSign(e) {
         let signId = $(e).attr("id").split("_")[1];
         console.log("toggle sign_ " + signId);
-        let isCurrentSign = $(e).attr("data-current");
-        // let signRequestParams = this.signPosition.signRequestParamses.get(signId);
-        let pageNum = this.pdfViewer.pageNum;
-        // if (isCurrentSign === "true" || signRequestParams.xPos === -1 || (this.signPosition.firstDrag && this.signPosition.currentSign === signId && isCurrentSign === "true") || (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign')) {
-        //     this.signPosition.signRequestParamses.get(signId).signPageNumber = pageNum;
-        //     if (this.signPosition.visualActive) {
-        //         $(e).show();
-        //     }
-        // } else {
-        //     $(e).hide();
-        // }
+        let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
+        if (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign') {
+            $(e).show();
+        } else {
+            $(e).hide();
+        }
         if (this.first) this.first = false;
     }
 

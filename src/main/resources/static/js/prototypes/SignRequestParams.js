@@ -98,6 +98,8 @@ export class SignRequestParams  extends EventFactory {
                 if(self.addExtra) {
                     if (!self.extraOnTop) {
                         self.divExtra.css('width', Math.round(self.extraWidth * self.currentScale) + "px");
+                    } else {
+                        self.divExtra.css('width', Math.round(self.originalWidth * self.signScale * self.currentScale) + "px");
                     }
                 }
                 self.extraHeight = self.extraHeight / self.signScale * newScale;
@@ -334,7 +336,7 @@ export class SignRequestParams  extends EventFactory {
                 this.typeSign = "Signature calligraphique";
                 if (this.signType === "visa" || this.signType === "hiddenVisa") this.typeSign = "Visa";
                 if (this.signType === "certSign" || this.signType === "nexuSign") this.typeSign = "Signature électronique";
-                let divExtraHtml = "<div id='divExtra_" + this.id + "' class='div-extra-top'></div>";
+                let divExtraHtml = "<div id='divExtra_" + this.id + "' class='div-extra div-extra-top'></div>";
                 this.cross.prepend(divExtraHtml);
                 this.divExtra = $("#divExtra_" + this.id);
                 this.divExtra.append("<span id='extraTypeDiv_"+ this.id +"' >" + this.typeSign + "<br/></span>");
@@ -372,7 +374,9 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleExtraOnTop() {
-        this.cross.toggleClass("watermark-width watermark-height")
+        if(this.addWatermark) {
+            this.cross.toggleClass("watermark-width watermark-height")
+        }
         if(!this.extraOnTop) {
             $("#signExtraOnTop_" + this.id).addClass("disabled");
             this.divExtra.addClass("d-none");
