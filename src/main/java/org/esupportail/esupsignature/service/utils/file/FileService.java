@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import java.awt.image.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 
@@ -222,39 +225,61 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
 		List<String> text = Arrays.asList(arr);
-		if(text.size() > 0) {
+		if(signRequestParams.getAddExtra()) {
 			final BufferedImage signImage = ImageIO.read(imageStream);
-			int widthOffset = 0;
-			int heightOffset = 0;
-			if(signRequestParams.getAddExtra()) {
-				if(signRequestParams.getExtraOnTop()) {
-					heightOffset = (int) Math.round((signRequestParams.getSignHeight() / 0.75 / signRequestParams.getSignScale()) - (signImage.getHeight() / 3));
-				} else {
-					widthOffset = (int) Math.round((signRequestParams.getSignWidth() / 0.75 / signRequestParams.getSignScale()) - (signImage.getWidth() / 3));
-				}
-			}
-			BufferedImage  image = new BufferedImage(signImage.getWidth() + (widthOffset * 3),  signImage.getHeight() + (heightOffset * 3), BufferedImage.TYPE_INT_ARGB);
+			int widthOffset = (int) (signRequestParams.getExtraWidth() * 3 * .75);
+			int heightOffset = (int) (signRequestParams.getExtraHeight() * 3 * .75);
+//			if(signRequestParams.getAddExtra()) {
+//				if(signRequestParams.getExtraOnTop()) {
+//					heightOffset = (int) Math.round((signRequestParams.getSignHeight() / 0.75 / signRequestParams.getSignScale()) - (signImage.getHeight() / 3));
+//				} else {
+//					widthOffset = (int) Math.round((signRequestParams.getSignWidth() / 0.75 / signRequestParams.getSignScale()) - (signImage.getWidth() / 3));
+//				}
+//			}
+			int width = (int) (signRequestParams.getSignWidth() * 3 * .75);
+			int height = (int) (signRequestParams.getSignHeight() * 3 * .75);
+
+			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-			graphics2D.drawImage(signImage, 0, heightOffset * 3, null);
+//			graphics2D.drawRect(0,0, width, height);
+			graphics2D.drawImage(signImage, widthOffset, heightOffset, width - widthOffset, height - heightOffset, null);
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 1;
-			Map<TextAttribute, Object> map = new Hashtable<>();
-			int fontSize = 35;
-			map.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+			Map<TextAttribute, Object> attributes = new Hashtable<>();
+			int fontSize = (int) (24 * signRequestParams.getSignScale());
+			attributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+			attributes.put(TextAttribute.TRACKING, 0.03);
 			Font font = new Font("DejaVu Sans Condensed", Font.PLAIN, fontSize);
-			font = font.deriveFont(map);
+			font = font.deriveFont(attributes);
 			graphics2D.setFont(font);
 			graphics2D.setPaint(Color.black);
 			FontMetrics fm = graphics2D.getFontMetrics();
-			for (String line : text) {
-				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset * 3, fm.getHeight() * lineCount);
+			int lineHeight = (int) (fm.getHeight());
+			if(signRequestParams.getExtraType()) {
+				String typeSign = "Signature calligraphique";
+				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
+				if (signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+				graphics2D.drawString(typeSign, 0, lineHeight * lineCount);
 				lineCount++;
 			}
-			graphics2D.drawString("", widthOffset * 3, fm.getHeight() * lineCount + 1);
+			if(signRequestParams.getExtraName()) {
+				graphics2D.drawString(user.getFirstname() + " " + user.getName(), 0, lineHeight * lineCount);
+				lineCount++;
+			}
+			if(signRequestParams.getExtraDate()) {
+				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
+				graphics2D.drawString("le " + dateFormat.format(date), 0, lineHeight * lineCount);
+				lineCount++;
+			}
+			for (String line : text) {
+				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), 0, lineHeight * lineCount);
+				lineCount++;
+			}
+//			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);
 			graphics2D.dispose();
 			File fileImage = getTempFile("sign.png");
 			ImageIO.write(image, "png", fileImage);
@@ -267,14 +292,17 @@ public class FileService {
 		try {
 			BufferedImage sourceImage = ImageIO.read(sourceImageFile);
 			BufferedImage watermarkImage = ImageIO.read(watermarkImageFile);
-			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
-			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
+//			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
+//			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
-			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f);
 			g2d.setComposite(alphaChannel);
-			int topLeftX = (sourceImage.getWidth() - watermarkImage.getWidth()) / 2;
-			int topLeftY = (sourceImage.getHeight() - watermarkImage.getHeight()) / 2;
-			g2d.drawImage(watermarkImage, topLeftX, topLeftY, null);
+			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
+			int width = (int) (sourceImage.getWidth() * .8);
+			int height = (int) (watermarkImage.getHeight() * factor);
+			int topLeftX = (int) ((sourceImage.getWidth() - width) / 2);
+			int topLeftY = (int) ((sourceImage.getHeight() - height) / 2);
+			g2d.drawImage(watermarkImage, topLeftX, topLeftY, width, height, null);
 			ImageIO.write(sourceImage, "png", destImageFile);
 			g2d.dispose();
 		} catch (IOException ex) {

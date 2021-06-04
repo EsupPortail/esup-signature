@@ -508,18 +508,34 @@ input:checked + .slider:before {
 }
 
 .sign-textarea {
-    font-family: "DejaVu Sans Condensed", serif;
+    font-family: "DejaVu Sans Condensed", serif !important;
     color: black;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     width:100%;
-    border: 2px solid #acacac;
-    border-radius: 4px;
+    padding: 0;
+    border: 1px solid #acacac;
     background: rgba(255, 255, 255, .5);
     resize: none;
     z-index: 6;
     pointer-events: all;
+}
+
+.div-extra-top {
+    font-family: "DejaVu Sans Condensed", serif !important;
+    color: black !important;
+    vertical-align: top!important;
+}
+
+.div-extra-right {
+    font-family: "DejaVu Sans Condensed", serif !important;
+    color: black !important;
+}
+
+.sign-textarea-lock {
+    border: 0 solid #acacac !important;
+    background: transparent !important;
 }
 
 .wrapper {
@@ -1756,7 +1772,7 @@ progress:before {
     background-position: center;
     opacity: 0.2;
     width: 80%;
-    top: 0;
+    top: -6%;
     left: 10%;
     bottom: 0;
     right: 0;

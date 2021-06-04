@@ -131,7 +131,12 @@ export class SignUi {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             for(let i = 0 ; i < signRequestParamses.length; i++) {
                 signRequestParamses[i].cross = null;
+                signRequestParamses[i].border = null;
                 signRequestParamses[i].tools = null;
+                signRequestParamses[i].textareaExtra = null;
+                signRequestParamses[i].defaultTools = null;
+                signRequestParamses[i].divExtra = null;
+                signRequestParamses[i].signColorPicker = null;
             }
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
