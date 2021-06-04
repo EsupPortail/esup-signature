@@ -225,40 +225,32 @@ public class FileService {
 	    }
 	}
 
-	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date) throws IOException {
+	public InputStream addTextToImage(InputStream imageStream, SignRequestParams signRequestParams, SignType signType, User user, Date date, double fixFactor) throws IOException {
 		InputStream textAddedInputStream = imageStream;
 		String[] arr = signRequestParams.getExtraText().split("\\s*\n\\s*");
 		List<String> text = Arrays.asList(arr);
 		if(signRequestParams.getAddExtra()) {
+			int qualityFactor = 3;
 			final BufferedImage signImage = ImageIO.read(imageStream);
-			int widthOffset = (int) (signRequestParams.getExtraWidth() * 3 * .75);
-			int heightOffset = (int) (signRequestParams.getExtraHeight() * 3 * .75);
-//			if(signRequestParams.getAddExtra()) {
-//				if(signRequestParams.getExtraOnTop()) {
-//					heightOffset = (int) Math.round((signRequestParams.getSignHeight() / 0.75 / signRequestParams.getSignScale()) - (signImage.getHeight() / 3));
-//				} else {
-//					widthOffset = (int) Math.round((signRequestParams.getSignWidth() / 0.75 / signRequestParams.getSignScale()) - (signImage.getWidth() / 3));
-//				}
-//			}
-			int width = (int) (signRequestParams.getSignWidth() * 3 * .75);
-			int height = (int) (signRequestParams.getSignHeight() * 3 * .75);
+			int widthOffset = (int) (signRequestParams.getExtraWidth() * qualityFactor * fixFactor);
+			int heightOffset = (int) (signRequestParams.getExtraHeight() * qualityFactor * fixFactor);
+			int width = (int) (signRequestParams.getSignWidth() * qualityFactor * fixFactor);
+			int height = (int) (signRequestParams.getSignHeight() * qualityFactor * fixFactor);
 
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
-//			graphics2D.drawRect(0,0, width, height);
 			graphics2D.drawImage(signImage, widthOffset, heightOffset, width - widthOffset, height - heightOffset, null);
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 1;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (24 * signRequestParams.getSignScale());
+			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * .75);
 			attributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-			attributes.put(TextAttribute.TRACKING, 0.03);
 			Font font = new Font("DejaVu Sans Condensed", Font.PLAIN, fontSize);
 			font = font.deriveFont(attributes);
 			graphics2D.setFont(font);
 			graphics2D.setPaint(Color.black);
 			FontMetrics fm = graphics2D.getFontMetrics();
-			int lineHeight = (int) (fm.getHeight());
+			int lineHeight = (int) (fm.getHeight() * signRequestParams.getSignScale());
 			if(signRequestParams.getExtraType()) {
 				String typeSign = "Signature calligraphique";
 				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";

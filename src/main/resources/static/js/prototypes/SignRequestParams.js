@@ -424,6 +424,9 @@ export class SignRequestParams  extends EventFactory {
     }
 
     updateSize() {
+        this.signHeight -= this.extraHeight;
+        this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+        this.signHeight += this.extraHeight;
         this.cross.css("height", this.signHeight * this.currentScale + "px");
     }
 

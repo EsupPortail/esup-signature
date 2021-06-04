@@ -83,6 +83,7 @@ public class PdfService {
     private LogService logService;
 
     public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
+        double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {
@@ -98,12 +99,12 @@ public class PdfService {
             } else {
                 if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
                     File fileSignImage = fileService.getEmptyImage();
-                    signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate);
+                    signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
                     File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                     fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137));
                     signImage = new FileInputStream(fileWithWatermark);
                 } else if (signRequestParams.getAddExtra()) {
-                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate);
+                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
                     if (signRequestParams.getAddWatermark()) {
                         File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
                         fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64));
@@ -126,13 +127,13 @@ public class PdfService {
 
             float tx = 0;
             float ty = 0;
-            float xAdjusted = (float) (signRequestParams.getxPos() * .75);
+            float xAdjusted = (float) (signRequestParams.getxPos() * fixFactor);
             float yAdjusted;
 
             if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-                yAdjusted = (float) (pdfParameters.getHeight() - signRequestParams.getyPos() * .75 - signRequestParams.getSignHeight() * .75 + pdPage.getCropBox().getLowerLeftY());
+                yAdjusted = (float) (pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
             } else {
-                yAdjusted = (float) (pdfParameters.getWidth() - signRequestParams.getyPos() * .75 - signRequestParams.getSignHeight() * .75 + pdPage.getCropBox().getLowerLeftY());
+                yAdjusted = (float) (pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
             }
 
             if (pdfParameters.isLandScape()) {
@@ -151,7 +152,7 @@ public class PdfService {
                     globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
             PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-            PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * .75), (float) (signRequestParams.getSignHeight() * .75));
+            PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
             pdAnnotationLink.setRectangle(position);
             PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
             pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
@@ -189,7 +190,7 @@ public class PdfService {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
             logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * .75), (float) (signRequestParams.getSignHeight() * .75));
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);

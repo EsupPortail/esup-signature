@@ -200,11 +200,12 @@ public class SignService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
+		double fixFactor = .75;
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
-			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign, user, date);
+			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
 				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
