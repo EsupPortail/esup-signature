@@ -344,7 +344,7 @@ public class SignService {
 				}
 				byte[] bytes = inputStream.readAllBytes();
 				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
-					inputStream = pdfService.convertGS(pdfService.writeMetadatas(inputStream, toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
+					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				} else {
 					inputStream = new ByteArrayInputStream(bytes);
 				}
