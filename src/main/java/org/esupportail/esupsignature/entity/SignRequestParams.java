@@ -35,11 +35,17 @@ public class SignRequestParams {
 
     private Boolean addExtra = false;
 
+    private Boolean extraType = false;
+
+    private Boolean extraName = false;
+
+    private Boolean extraDate = false;
+
     private Boolean extraOnTop = true;
 
-	private Boolean addDate = false;
+    private Integer extraWidth = 0;
 
-	private Boolean addName = false;
+    private Integer extraHeight = 0;
 
 	private Float signScale = 1F;
 
@@ -153,28 +159,52 @@ public class SignRequestParams {
         this.addExtra = addExtra;
     }
 
+    public Boolean getExtraType() {
+        return extraType;
+    }
+
+    public void setExtraType(Boolean extraType) {
+        this.extraType = extraType;
+    }
+
+    public Boolean getExtraName() {
+        return extraName;
+    }
+
+    public void setExtraName(Boolean extraName) {
+        this.extraName = extraName;
+    }
+
+    public Boolean getExtraDate() {
+        return extraDate;
+    }
+
+    public void setExtraDate(Boolean extraDate) {
+        this.extraDate = extraDate;
+    }
+
+    public Integer getExtraWidth() {
+        return extraWidth;
+    }
+
+    public void setExtraWidth(Integer extraWidth) {
+        this.extraWidth = extraWidth;
+    }
+
+    public Integer getExtraHeight() {
+        return extraHeight;
+    }
+
+    public void setExtraHeight(Integer extraHeight) {
+        this.extraHeight = extraHeight;
+    }
+
     public Boolean getExtraOnTop() {
         return extraOnTop;
     }
 
     public void setExtraOnTop(Boolean extraOnTop) {
         this.extraOnTop = extraOnTop;
-    }
-
-    public Boolean isAddDate() {
-        return addDate;
-    }
-
-    public void setAddDate(boolean addDate) {
-        this.addDate = addDate;
-    }
-
-    public Boolean isAddName() {
-        return addName;
-    }
-
-    public void setAddName(boolean addName) {
-        this.addName = addName;
     }
 
     public Float getSignScale() {

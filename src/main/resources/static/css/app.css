@@ -260,11 +260,29 @@ code {
 	content: "Parcourir" !important;
 }
 
+.cross-tools {
+    left: 0px;
+    top: -45px;
+    z-index: 3; opacity: .9;user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;"
+}
+
+
 .static-border {
+    position: absolute;
+    top :0;
+    left :0;
     border: 2px solid #008000;
 }
 
 .anim-border {
+    z-index: 4;
+    position: absolute;
+    top :0;
+    left :0;
     /*background-color: rgba(173, 255, 47, 0.5);*/
     background-image: linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(90deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%), linear-gradient(0deg, green 50%, transparent 50%);
     background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
@@ -483,21 +501,50 @@ input:checked + .slider:before {
     position: relative;
 }
 
-#cross {
+.cross {
     z-index: 3;
+    background-position: bottom left;
+    background-repeat: no-repeat;
+    cursor: move;
 }
 
 .sign-textarea {
-    font-family: "DejaVu Sans Condensed", serif;
+    font-family: "DejaVu Sans Condensed", serif !important;
     color: black;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    width:100%;
-    border: 2px solid #acacac;
-    border-radius: 4px;
+    padding: 0;
+    border: 1px solid #acacac;
     background: rgba(255, 255, 255, .5);
     resize: none;
+    z-index: 6;
+    pointer-events: all;
+}
+
+.div-extra-top {
+    font-family: "DejaVu Sans Condensed", serif !important;
+    color: black !important;
+    vertical-align: top!important;
+}
+.div-extra {
+    border: 1px solid transparent;
+}
+
+.div-extra:hover {
+    cursor: pointer;
+    border: 1px solid green;
+}
+
+.div-extra-right {
+    font-family: "DejaVu Sans Condensed", serif !important;
+    color: black !important;
+    float: right;
+}
+
+.sign-textarea-lock {
+    border: 0 solid #acacac !important;
+    background: transparent !important;
 }
 
 .wrapper {
@@ -1709,13 +1756,13 @@ progress:before {
     font-weight: bold;
 }
 
-.watermarkHeight::after {
+.watermark-height::after {
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.2;
+    opacity: 0.1;
     height: 60%;
     top: 20%;
     left: 0;
@@ -1726,15 +1773,15 @@ progress:before {
     z-index: -1;
 }
 
-.watermarkWidth::after {
+.watermark-width::after {
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.2;
+    opacity: 0.1;
     width: 80%;
-    top: 0;
+    top: -6%;
     left: 10%;
     bottom: 0;
     right: 0;

@@ -60,19 +60,19 @@
 			</div>
 			<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;" class="mr-1">
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
-						id="addSignButton" title="Ajouter une signature"
-						class="btn btn-primary" disabled>
-					<i class="fas fa-plus"></i> Ajouter une signature
+						id="addSignButton" title="Inserer une signature"
+						class="btn btn-light btn-outline-primary">
+					<i class="fas fa-plus"></i> Inserer une signature
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
 						id="visualButton" title="Afficher/Masquer le visuel"
-						class="btn btn-primary ml-1 d-none">Afficher/Masquer le visuel
+						class="btn btn-light btn-outline-primary ml-1 d-none">Afficher/Masquer le visuel
 				</button>
-				<button id="addCheck" class="btn btn-primary ml-1"><i class="fas fa-check"></i></button>
-				<button id="addTimes" class="btn btn-primary ml-1"><i class="fas fa-times"></i></button>
-				<button id="addCircle" class="btn btn-primary ml-1"><i class="far fa-circle"></i></button>
-				<button id="addMinus" class="btn btn-primary ml-1 d-none"><i class="fas fa-minus"></i></button>
-				<button id="addText" class="btn btn-primary ml-1 d-none"><i class="fas fa-i-cursor"></i><i class="fas fa-font"></i></button>
+				<button id="addCheck" class="btn btn-light btn-outline-primary ml-1"><i class="fas fa-check"></i></button>
+				<button id="addTimes" class="btn btn-light btn-outline-primary ml-1"><i class="fas fa-times"></i></button>
+				<button id="addCircle" class="btn btn-light btn-outline-primary ml-1"><i class="far fa-circle"></i></button>
+				<button id="addMinus" class="btn btn-light btn-outline-primary ml-1 d-none"><i class="fas fa-minus"></i></button>
+				<button id="addText" class="btn btn-light btn-outline-primary ml-1 d-none"><i class="fas fa-i-cursor"></i><i class="fas fa-font"></i></button>
 			</div>
 			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
 				<button id="addCommentButton" title="Ajouter une annotation"
