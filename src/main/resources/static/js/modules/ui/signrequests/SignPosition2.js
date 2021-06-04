@@ -12,7 +12,6 @@ export class SignPosition2 extends EventFactory {
         this.signImages = signImages;
         this.signRequestParamses = new Map();
         this.id = 0;
-        this.fixRatio = .75;
         this.currentScale = 1;
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
@@ -105,7 +104,6 @@ export class SignPosition2 extends EventFactory {
     }
 
     lockSigns() {
-        console.info("stop drag");
         this.signRequestParamses.forEach(function (signRequestParams){
             signRequestParams.lock();
         });

@@ -30,6 +30,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraType = true;
         this.extraName = true;
         this.extraDate = true;
+        this.isExtraText = true;
         this.extraText = "";
         this.signScale = 1;
         this.currentScale = parseFloat(scale);
@@ -51,8 +52,6 @@ export class SignRequestParams  extends EventFactory {
         this.cross = cross;
         this.cross.css("position", "absolute");
         this.cross.css("z-index", "5");
-        // cross.css("width", 150 * this.currentScale + "px");
-        // cross.css("height", 75 * this.currentScale + "px");
         this.cross.attr("data-id", this.id);
         let self = this;
         this.cross.draggable({
@@ -87,29 +86,36 @@ export class SignRequestParams  extends EventFactory {
                     ui.size.height = minHeight;
                 }
                 // self.saveScale(ui);
-                let newScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
+                let newScale;
+                if(!self.addExtra || self.extraOnTop) {
+                    newScale = Math.round((ui.size.width / self.currentScale) / (self.originalWidth) * 100) / 100;
+                } else {
+                    newScale = Math.round((ui.size.height / self.currentScale) / (self.originalHeight) * 100) / 100;
+                }
                 self.signWidth = self.signWidth / self.signScale * newScale;
                 self.signHeight = self.signHeight / self.signScale * newScale;
                 self.extraWidth = self.extraWidth / self.signScale * newScale;
+                if(self.addExtra) {
+                    if (!self.extraOnTop) {
+                        self.divExtra.css('width', Math.round(self.extraWidth * self.currentScale) + "px");
+                    }
+                }
                 self.extraHeight = self.extraHeight / self.signScale * newScale;
                 self.signScale = newScale;
-                // self.signWidth = Math.round(ui.size.width / self.currentScale);
-                // self.signHeight = Math.round(ui.size.height / self.currentScale);
-                // self.extraWidth = Math.round(ui.size.width / self.currentScale);
-                // self.extraHeight = Math.round(ui.size.height / self.currentScale);
-                self.cross.css('background-size', Math.round(ui.size.width));
+                self.cross.css('background-size', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
                 if(self.addExtra) {
                     self.refreshExtraDiv();
                 }
-                 // self.updateSize();
-                // let thisPos = $(this).position();
-                // let x = Math.round(thisPos.left *  / self.currentScale);
-                // let y = Math.round(thisPos.top *  / self.currentScale);
-                // console.log("(" + x + ", " + y + ")" + self.signScale + " : " + self.signWidth + "*" + self.signHeight);
             },
             stop: function(event, ui) {
-                // self.saveScale(ui);
-                self.signScale = Math.round((ui.size.width / self.currentScale ) / (self.originalWidth ) * 100) / 100;
+                let newScale;
+                if(!self.addExtra || self.extraOnTop) {
+                    newScale = Math.round((ui.size.width / self.currentScale) / (self.originalWidth) * 100) / 100;
+                } else {
+                    newScale = Math.round((ui.size.height / self.currentScale) / (self.originalHeight) * 100) / 100;
+                }
+
+                self.signScale = newScale;
                 localStorage.setItem("zoom", self.signScale);
             }
         });
@@ -173,11 +179,6 @@ export class SignRequestParams  extends EventFactory {
     initSignSize() {
         if(localStorage.getItem("zoom") != null) {
             this.signScale = parseFloat(localStorage.getItem("zoom"));
-            // this.signWidth = Math.round(this.originalWidth * this.signScale / this.currentScale);
-            // this.signHeight = Math.round(this.originalHeight * this.signScale / this.currentScale);
-            // this.cross.css('width', (this.signWidth) + "px");
-            // this.cross.css('height', (this.signHeight) + "px");
-            // this.cross.css('background-size', Math.round(this.signScale * this.originalWidth));
         }
     }
 
@@ -307,15 +308,15 @@ export class SignRequestParams  extends EventFactory {
     toggleWatermark() {
         if(this.addWatermark) {
             $("#watermark_" + this.id).addClass("disabled");
-            this.cross.removeClass("watermarkWidth");
-            this.cross.removeClass("watermarkHeight");
+            this.cross.removeClass("watermark-width");
+            this.cross.removeClass("watermark-height");
             this.addWatermark = false;
         } else {
             $("#watermark_" + this.id).removeClass("disabled");
             if(this.extraOnTop) {
-                this.cross.addClass("watermarkWidth");
+                this.cross.addClass("watermark-width");
             } else {
-                this.cross.addClass("watermarkHeight");
+                this.cross.addClass("watermark-height");
             }
             this.addWatermark = true;
         }
@@ -333,10 +334,6 @@ export class SignRequestParams  extends EventFactory {
                 this.typeSign = "Signature calligraphique";
                 if (this.signType === "visa" || this.signType === "hiddenVisa") this.typeSign = "Visa";
                 if (this.signType === "certSign" || this.signType === "nexuSign") this.typeSign = "Signature électronique";
-                // this.extraText = textSign +
-                //     "\nde " + this.userName +
-                //     "\nle " + moment().format('DD/MM/YYYY HH:mm:ss');
-
                 let divExtraHtml = "<div id='divExtra_" + this.id + "' class='div-extra-top'></div>";
                 this.cross.prepend(divExtraHtml);
                 this.divExtra = $("#divExtra_" + this.id);
@@ -354,35 +351,60 @@ export class SignRequestParams  extends EventFactory {
                     $("#defaultTools_" + self.id).addClass("d-none");
                     $("#extraTools_" + self.id).removeClass("d-none");
                 });
-                // this.divExtra.val(this.extraText);
-                this.refreshExtraDiv();
             } else {
-                this.refreshExtraDiv();
                 this.divExtra.removeClass("d-none");
             }
+            this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
             this.textareaExtra.focus();
         } else {
+            if(!this.extraOnTop) {
+                this.toggleExtraOnTop();
+            }
             $("#signExtra_" + this.id).addClass("disabled");
             $("#signExtraOnTop_" + this.id).attr("disabled", true);
             this.divExtra.addClass("d-none");
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
-
        }
         this.updateSize();
     }
 
     toggleExtraOnTop() {
-        this.extraOnTop = !this.extraOnTop;
-        this.divExtra.toggleClass("div-extra-top div-extra-right");
-        if(this.extraOnTop) {
+        this.cross.toggleClass("watermark-width watermark-height")
+        if(!this.extraOnTop) {
+            $("#signExtraOnTop_" + this.id).addClass("disabled");
+            this.divExtra.addClass("d-none");
+            this.signWidth -= this.extraWidth;
             this.extraWidth = 0;
+            // this.updateSize();
+            this.divExtra.removeClass("d-none");
+            this.extraOnTop = true;
+            this.refreshExtraDiv();
+            this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+            this.signHeight = this.originalHeight * this.signScale + this.extraHeight
+            this.cross.css("width",  this.signWidth * this.currentScale + "px");
+            this.cross.css("height",  this.signHeight * this.currentScale + "px");
+            this.divExtra.addClass("div-extra-top");
+            this.divExtra.removeClass("div-extra-right");
         } else {
+            $("#signExtraOnTop_" + this.id).removeClass("disabled");
+            this.divExtra.addClass("d-none");
+            this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
-            this.extraWidth = this.divExtra.css("width");
+            this.updateSize();
+            this.divExtra.removeClass("d-none");
+            this.extraOnTop = false;
+            this.refreshExtraDiv();
+            this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
+            this.extraWidth = this.signWidth /2;
+            this.cross.css("width",  this.signWidth * this.currentScale + "px");
+            this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+            this.divExtra.addClass("div-extra-right");
+            this.divExtra.removeClass("div-extra-top");
         }
+        // this.updateSize();
     }
 
     refreshDate() {
@@ -390,6 +412,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleType() {
+        if(!this.extraName && !this.extraDate && !this.isExtraText && this.extraType) return;
         $("#extraTypeDiv_" + this.id).toggle();
         $("#extraType_" + this.id).toggleClass("disabled");
         this.extraType = !this.extraType;
@@ -397,6 +420,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleName() {
+        if(!this.extraType && !this.extraDate && !this.isExtraText && this.extraName) return;
         $("#extraNameDiv_" + this.id).toggle();
         $("#extraName_" + this.id).toggleClass("disabled");
         this.extraName = !this.extraName;
@@ -404,6 +428,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleDate() {
+        if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
         $("#extraDateDiv_" + this.id).toggle();
         $("#extraDate_" + this.id).toggleClass("disabled");
         this.extraDate = !this.extraDate;
@@ -411,35 +436,47 @@ export class SignRequestParams  extends EventFactory {
     }
 
     toggleText() {
+        if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
         $("#textExtra_" + this.id).toggle();
         this.textareaExtra.toggleClass("disabled");
         $("#extraText_" + this.id).toggleClass("disabled");
-        let self = this;
         if(this.extraText === "") {
             this.extraText = this.textareaExtra.val();
         } else {
             this.extraText = "";
         }
+        this.isExtraText = !this.isExtraText;
         this.updateSize();
     }
 
     updateSize() {
-        this.signHeight -= this.extraHeight;
-        this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
-        this.signHeight += this.extraHeight;
-        this.cross.css("height", this.signHeight * this.currentScale + "px");
+        if(this.extraOnTop) {
+            this.signHeight -= this.extraHeight;
+            this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+            this.signHeight += this.extraHeight;
+            this.cross.css("height", this.signHeight * this.currentScale + "px");
+        } else {
+            this.signWidth -= this.extraWidth;
+            this.extraWidth = Math.round(this.originalWidth * this.signScale);
+            this.signWidth += this.extraWidth;
+            this.cross.css("width", this.signWidth * this.currentScale + "px");
+            this.divExtra.css("width", this.extraWidth * this.currentScale + "px");
+        }
     }
 
     addTextArea() {
-        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' rows='1'></textarea>";
+        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' rows='1' cols='30' ></textarea>";
         this.divExtra.append(divExtraHtml);
         this.textareaExtra = $("#textExtra_" + this.id);
         this.textareaExtra.on("input", e => this.refreshExtraDiv());
     }
 
     refreshExtraDiv() {
-        let maxLines = 4;
+        let maxLines = 2;
         if(this.extraOnTop) maxLines = 1;
+        if(!this.extraName) maxLines++;
+        if(!this.extraDate) maxLines++;
+        if(!this.extraType) maxLines++;
         let fontSize = this.fontSize * this.currentScale * this.signScale;
         this.divExtra.css("font-size", fontSize);
         let text = this.textareaExtra.val();
@@ -456,7 +493,11 @@ export class SignRequestParams  extends EventFactory {
         }
         this.extraText = text;
         this.textareaExtra.val(text);
-        this.textareaExtra.attr("rows", lines.length);
+        if(lines.length != this.textareaExtra.attr("rows")) {
+            this.textareaExtra.attr("rows", lines.length);
+            this.updateSize();
+        }
+
     }
 
 }

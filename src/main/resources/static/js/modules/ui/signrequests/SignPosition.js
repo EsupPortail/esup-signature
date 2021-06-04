@@ -708,14 +708,14 @@ export class SignPosition extends EventFactory {
 
     toggleWatermark() {
         if(this.getCurrentSignParams().addWatermark) {
-            this.cross.removeClass("watermarkWidth");
-            this.cross.removeClass("watermarkHeight");
+            this.cross.removeClass("watermark-width");
+            this.cross.removeClass("watermark-height");
             this.getCurrentSignParams().addWatermark = false;
         } else {
             if(this.getCurrentSignParams().extraOnTop) {
-                this.cross.addClass("watermarkWidth");
+                this.cross.addClass("watermark-width");
             } else {
-                this.cross.addClass("watermarkHeight");
+                this.cross.addClass("watermark-height");
             }
             this.getCurrentSignParams().addWatermark = true;
         }
@@ -754,11 +754,11 @@ export class SignPosition extends EventFactory {
             let lines = defaultText.split(/\r|\r\n|\n/);
             let count = lines.length;
             textExtra.attr("rows", count);
-            this.cross.removeClass("watermarkWidth");
-            this.cross.removeClass("watermarkHeight");
+            this.cross.removeClass("watermark-width");
+            this.cross.removeClass("watermark-height");
             if(this.getCurrentSignParams().extraOnTop) {
                 if(this.getCurrentSignParams().addWatermark) {
-                    this.cross.addClass("watermarkWidth");
+                    this.cross.addClass("watermark-width");
                 }
                 this.borders.append(textExtra);
                 let textExtraHeight = textExtra.height();
@@ -767,7 +767,7 @@ export class SignPosition extends EventFactory {
                 this.getCurrentSignParams().signHeight = this.getCurrentSignParams().signHeight + textExtraHeight;
             } else {
                 if(this.getCurrentSignParams().addWatermark) {
-                    this.cross.addClass("watermarkHeight");
+                    this.cross.addClass("watermark-height");
                 }
                 this.borders.append(textExtra);
                 console.log(textExtra);

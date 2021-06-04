@@ -287,7 +287,7 @@ public class FileService {
 //			changeColor(watermarkImage, 255, 255, 255, 0, 0, 0);
 //			changeColor(watermarkImage, 0, 0, 0, color.getRed(), color.getGreen(), color.getBlue());
 			Graphics2D g2d = (Graphics2D) sourceImage.getGraphics();
-			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f);
+			AlphaComposite alphaChannel = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f);
 			g2d.setComposite(alphaChannel);
 			double factor = sourceImage.getWidth() * .8 / watermarkImage.getWidth();
 			int width = (int) (sourceImage.getWidth() * .8);

@@ -503,7 +503,7 @@ input:checked + .slider:before {
 
 .cross {
     z-index: 3;
-    background-position: bottom;
+    background-position: bottom left;
     background-repeat: no-repeat;
 }
 
@@ -513,7 +513,6 @@ input:checked + .slider:before {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    width:100%;
     padding: 0;
     border: 1px solid #acacac;
     background: rgba(255, 255, 255, .5);
@@ -531,6 +530,7 @@ input:checked + .slider:before {
 .div-extra-right {
     font-family: "DejaVu Sans Condensed", serif !important;
     color: black !important;
+    float: right;
 }
 
 .sign-textarea-lock {
@@ -1747,13 +1747,13 @@ progress:before {
     font-weight: bold;
 }
 
-.watermarkHeight::after {
+.watermark-height::after {
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.2;
+    opacity: 0.1;
     height: 60%;
     top: 20%;
     left: 0;
@@ -1764,13 +1764,13 @@ progress:before {
     z-index: -1;
 }
 
-.watermarkWidth::after {
+.watermark-width::after {
     content: "";
     background-image: url('/images/watermark.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 0.2;
+    opacity: 0.1;
     width: 80%;
     top: -6%;
     left: 10%;
