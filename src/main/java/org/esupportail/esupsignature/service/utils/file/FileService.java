@@ -238,6 +238,7 @@ public class FileService {
 			int height = (int) (signRequestParams.getSignHeight() * qualityFactor * fixFactor);
 
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+			changeColor(signImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 			if(signRequestParams.getExtraOnTop()) {
 				graphics2D.drawImage(signImage, 0, heightOffset, width, height - heightOffset, null);
