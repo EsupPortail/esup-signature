@@ -374,8 +374,8 @@ export class PdfViewer extends EventFactory {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
                     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                    signField.addClass("sign-field")
-                    signField.append('Champ signature ' + signFieldNumber + '<br>');
+                    // signField.addClass("sign-field")
+                    // signField.append('Champ signature ' + signFieldNumber + '<br>');
                     // signField.addClass("d-none");
                     // signField.parent().remove();
 
@@ -628,16 +628,31 @@ export class PdfViewer extends EventFactory {
                     $('.popupWrapper').remove();
                     let section = $('section[data-annotation-id=' + item.id +']');
                     let signField = $('section[data-annotation-id=' + item.id + '] > div');
-                    signField.addClass("sign-field");
+                    signField.css("font-size", 8);
+                    // signField.addClass("sign-field");
+                    signField.droppable({
+                        tolerance: "touch",
+                        drop: function( event, ui ) {
+                            $( this )
+                                .removeClass( "sign-field" ).html("");
+                        },
+                        out: function( event, ui ) {
+                            $( this )
+                                // .addClass( "sign-field" ).html("Ajouter une signature ici");
+                        }
+                    });
                     signField.unbind();
                     section.unbind();
                     section.attr("id", signFieldNumber);
                     section.on('click', function () {
-                        $("#reportModal").modal("show");
-                        $("div[id^='report_']").each(function() {
-                            $(this).hide();
-                        });
-                        $("#report_" + $(this).attr("id")).show();
+                        let report = $("#report_" + $(this).attr("id"));
+                        if(report.length) {
+                            $("#reportModal").modal("show");
+                            $("div[id^='report_']").each(function () {
+                                $(this).hide();
+                            });
+                            report.show();
+                        }
                     })
                     // signField.attr("data-toggle", "modal");
                     // signField.attr("data-target", "#sign_" + self.signRequestId);

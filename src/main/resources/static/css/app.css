@@ -1452,13 +1452,11 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-field {
-    background-color: rgba(0, 255, 0, .5);
+    background-color: rgba(189, 255, 189, 0.5) !important;
     cursor: default;
-    font-size: 9px;
-    display: none;
 }
 
-.stampAnnotation:hover {
+.sign-field:hover {
     border: 1px solid green !important;
 }
 
