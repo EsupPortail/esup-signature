@@ -112,6 +112,7 @@ export class WorkspacePdf {
             this.initLaunchButtons();
         }
         $('#addSignButton').on('click', e => this.addSign(e));
+        $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
 
         $('[id^="deleteAttachement-"]').each(function () {
             $(this).on('click', function (e) {
@@ -140,7 +141,7 @@ export class WorkspacePdf {
     }
 
     addSign(e) {
-        this.signPosition.addSign(this.pdfViewer.pageNum, false);
+        this.signPosition.addSign(this.pdfViewer.pageNum, false, true);
         // this.pdfViewer.renderPage(this.pdfViewer.pageNum);
     }
 

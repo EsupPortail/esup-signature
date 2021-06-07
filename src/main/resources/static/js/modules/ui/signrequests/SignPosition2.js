@@ -13,17 +13,18 @@ export class SignPosition2 extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
+        this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
         }
         if(signable) {
-            this.addSign(1, true);
+            this.addSign(1, true, true);
         }
     }
 
-    addSign(page, restore) {
+    addSign(page, restore, isSign) {
         let id = this.id;
-        this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, restore));
+        this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, restore, isSign));
         this.changeSignImage(0, this.signRequestParamses.get(id));
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
@@ -31,6 +32,7 @@ export class SignPosition2 extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
         this.id++;
+        return this.signRequestParamses.get(id);
     }
 
     removeSign(id) {
@@ -54,6 +56,7 @@ export class SignPosition2 extends EventFactory {
     }
 
     changeSignImage(imageNum, signRequestParams) {
+        signRequestParams.signImageNumber = imageNum;
         if(imageNum >= 0) {
             if (this.signImages != null) {
                 console.debug("change sign image to " + imageNum);
@@ -63,7 +66,6 @@ export class SignPosition2 extends EventFactory {
                 let img = null;
                 if(this.signImages[imageNum] != null) {
                     img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-                    signRequestParams.signImageNumber = imageNum;
                     signRequestParams.cross.css("background-image", "url('" + img + "')");
                     let sizes = this.getImageDimensions(img);
                     sizes.then(result => signRequestParams.changeSignSize(result));
@@ -129,4 +131,15 @@ export class SignPosition2 extends EventFactory {
         // let textExtra = $("#textExtra_" + this.currentSign);
         // textExtra.css({"color" : color + ""});
     }
+
+    addCheckImage(page) {
+        let signRequestParams =  this.addSign(page, false, false);
+        this.changeSignImage(-1, signRequestParams);
+    }
+
+    addTimesImage(page) {
+        let signRequestParams =  this.addSign(page, false, false);
+        this.changeSignImage(-2, signRequestParams);
+    }
+
 }

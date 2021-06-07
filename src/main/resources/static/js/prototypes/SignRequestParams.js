@@ -2,11 +2,12 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, restore) {
+    constructor(signRequestParams, id, scale, page, userName, restore, isSign) {
         super();
         this.id = id;
         this.userName = userName;
         this.cross;
+        this.isSign = isSign;
         this.border;
         this.tools;
         this.divExtra;
@@ -15,6 +16,7 @@ export class SignRequestParams  extends EventFactory {
         this.pdSignatureFieldName;
         this.signImageNumber = 0;
         this.signPageNumber = 1;
+        if(page != null) this.signPageNumber = page;
         this.originalWidth = 150;
         this.originalHeight = 75;
         this.signWidth = 150;
@@ -40,11 +42,11 @@ export class SignRequestParams  extends EventFactory {
         this.fontSize = 12;
         this.restore = restore;
         Object.assign(this, signRequestParams);
-        this.init(page);
+        this.init();
         this.initEventListeners();
     }
 
-    init(page) {
+    init() {
         let divName = "cross_" + this.id;
         let div = "<div id='"+ divName +"' class='cross'></div>";
         $("#pdf").prepend(div);
@@ -132,17 +134,20 @@ export class SignRequestParams  extends EventFactory {
         this.border = $("#border_" + this.id);
         this.border.css("pointer-events", "none");
 
-        let tools = this.getTools(this.id)
+        let tools = this.getTools()
         tools.removeClass("d-none");
         cross.prepend(tools);
         this.tools = tools;
 
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.signPageNumber = page;
         this.moreTools = $("#moreTools_" + this.id);
         this.defaultTools = $("#defaultTools_" + this.id);
-        this.createColorPicker();
+        if(this.isSign) {
+            this.createColorPicker();
+        } else {
+            this.toggleMinimalTools();
+        }
         if(this.restore) {
             this.initSignSize();
             if (localStorage.getItem('addWatermark') != null && localStorage.getItem('addWatermark') === "true") {
@@ -205,18 +210,19 @@ export class SignRequestParams  extends EventFactory {
         this.yPos = Math.round(y);
     }
 
-    getTools(id) {
+    getTools() {
+        let self = this;
         let tools = $("#crossTools_x").clone();
-        tools.attr("id", tools.attr("id").split("_")[0] + "_" + id);
+        tools.attr("id", tools.attr("id").split("_")[0] + "_" + self.id);
         tools.children().each(function (e) {
-            $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + id);
+            $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + self.id);
         });
         tools.children().children().each(function (e) {
             if($(this).attr("id")) {
                 if($(this).attr('id').split("_")[0] === "textExtra") {
                     $(this).remove();
                 } else {
-                    $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + id);
+                    $(this).attr("id", $(this).attr("id").split("_")[0] + "_" + self.id);
                 }
             }
         });
@@ -239,7 +245,9 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
         this.currentScale = scale;
-        this.refreshExtraDiv();
+        if(this.divExtra != null) {
+            this.refreshExtraDiv();
+        }
     }
 
     lock() {
@@ -485,14 +493,14 @@ export class SignRequestParams  extends EventFactory {
         this.divExtra.css("font-size", fontSize);
         let text = this.textareaExtra.val();
         let lines = text.split(/\r|\r\n|\n/);
+        text = "";
         if(lines.length > maxLines) {
-            text = "";
             lines.pop();
-            for(let i = 0; i < maxLines; i++) {
-                text += lines[i];
-                if(i < maxLines - 1) {
-                    text += "\n";
-                }
+        }
+        for(let i = 0; i < lines.length; i++) {
+            text += lines[i].substring(0, 25);
+            if(i < lines.length - 1) {
+                text += "\n";
             }
         }
         this.extraText = text;
@@ -501,6 +509,18 @@ export class SignRequestParams  extends EventFactory {
             this.textareaExtra.attr("rows", lines.length);
             this.updateSize();
         }
+    }
+
+    toggleMinimalTools() {
+        $("#signPrevImage_" + this.id).hide();
+        $("#signNextImage_" + this.id).hide();
+        $("#hideMoreTools_" + this.id).hide();
+        $("#signExtra_" + this.id).hide();
+        $("#signExtraOnTop_" + this.id).hide();
+        $("#watermark_" + this.id).hide();
+        $("#signColorPicker_" + this.id).hide();
+        this.addWatermark = true;
+        this.toggleWatermark();
 
     }
 
