@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -88,6 +89,8 @@ public class SignRequestParamsService {
                 for (PDField pdField : acroForm.getFields()) {
                     if (pdField instanceof PDSignatureField) {
                         PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        PDSignature pdSignature = pdSignatureField.getSignature();
+                        if(pdSignature != null) { continue; }
                         List<Integer> annotationPages = new ArrayList<>();
                         List<PDAnnotationWidget> kids = pdField.getWidgets();
                         if (kids != null) {

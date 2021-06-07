@@ -24,7 +24,7 @@
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
 		<nexu.version>1.23</nexu.version>
 		<pdfbox.version>2.0.23</pdfbox.version>
-		<pdfjs.version>2.6.347</pdfjs.version>
+		<pdfjs.version>2.8.335</pdfjs.version>
 		<swagger.version>3.0.0</swagger.version>
 	</properties>
 	<repositories>
@@ -207,7 +207,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>2.6.347</version>
+			<version>${pdfjs.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
