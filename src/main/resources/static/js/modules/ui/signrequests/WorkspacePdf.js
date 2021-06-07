@@ -1,5 +1,5 @@
 import {PdfViewer} from "../../utils/PdfViewer.js";
-import {SignPosition2} from "./SignPosition2.js";
+import {SignPosition} from "./SignPosition.js";
 import {WheelDetector} from "../../utils/WheelDetector.js";
 import {Message} from "../../../prototypes/Message.js";
 
@@ -22,6 +22,8 @@ export class WorkspacePdf {
         this.status = status;
         this.csrf = csrf;
         this.forcePageNum = null;
+        this.pointItEnable = true;
+        this.firstInsertSign = true;
         this.first = true;
         for (let i = 0; i < fields.length; i++) {
             let field = fields[i];
@@ -33,7 +35,7 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
-        this.signPosition = new SignPosition2(
+        this.signPosition = new SignPosition(
             signType,
             this.currentSignRequestParams,
             signImageNumber,
@@ -90,8 +92,6 @@ export class WorkspacePdf {
 
             this.pdfViewer.canvas.addEventListener('click', e => this.clickAction());
 
-            $('#pdf').mousemove(e => this.moveAction(e));
-
             $(".postit-global-close").on('click', function () {
                 $(this).parent().toggleClass("postit-small");
             });
@@ -113,6 +113,8 @@ export class WorkspacePdf {
         }
         $('#addSignButton').on('click', e => this.addSign(e));
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
+        $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
+        $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
 
         $('[id^="deleteAttachement-"]').each(function () {
             $(this).on('click', function (e) {
@@ -141,8 +143,17 @@ export class WorkspacePdf {
     }
 
     addSign(e) {
-        this.signPosition.addSign(this.pdfViewer.pageNum, false, true);
-        // this.pdfViewer.renderPage(this.pdfViewer.pageNum);
+        let targetPageNumber = this.pdfViewer.pageNum;
+        if(this.currentSignRequestParams[0] != null && this.firstInsertSign) {
+            let signPageNumber = this.currentSignRequestParams[0].signPageNumber;
+            if (signPageNumber !== this.pdfViewer.pageNum) {
+                this.pdfViewer.renderPage(signPageNumber);
+            }
+            targetPageNumber = signPageNumber;
+            window.scrollTo(0, this.currentSignRequestParams[0].yPos);
+            this.firstInsertSign = false;
+        }
+        this.signPosition.addSign(targetPageNumber, false, 0);
     }
 
     initWorkspace() {
@@ -353,13 +364,19 @@ export class WorkspacePdf {
     }
 
     moveAction(e) {
-        if (this.mode === 'sign') {
-            // this.signPosition.pointIt(e);
-        } else if (this.mode === 'comment') {
-            if (this.addSpotEnabled || this.addCommentEnabled) {
-                // this.signPosition.pointIt2(e);
-            }
+        if (this.addSpotEnabled || this.addCommentEnabled) {
+            this.pointIt2(e);
         }
+    }
+
+    pointIt2(e) {
+            let xPos = e.offsetX ? (e.offsetX) : e.clientX;
+            let yPos = e.offsetY ? (e.offsetY) : e.clientY;
+            $("#commentPosX").val(xPos);
+            $('#commentPosY').val(yPos);
+            $('#commentPageNumber').val(this.pdfViewer.pageNum);
+            console.debug("mouse pos : " + xPos + ", " + yPos);
+
     }
 
     saveComment() {
@@ -370,13 +387,15 @@ export class WorkspacePdf {
             return;
         }
         let postitComment = $("#postitComment");
-        if (postitComment.val() === '') {
+        if (!this.addSpotEnabled && postitComment.val() === '') {
             $("#submitPostit").click();
             return;
         }
+        let xPos = parseInt($("#commentPosX").val());
+        let yPos = parseInt($("#commentPosY").val());
         let commentUrlParams = "comment=" + postitComment.val() +
-            // "&commentPosX=" + Math.round((parseInt($("#commentPosX").val())) * this.signPosition.fixRatio) +
-            // "&commentPosY=" + Math.round((parseInt($("#commentPosY").val())) * this.signPosition.fixRatio) +
+            "&commentPosX=" + Math.round(xPos * .75) +
+            "&commentPosY=" + Math.round(yPos * .75) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&spotStepNumber=" + spotStepNumberVal.val() +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
@@ -404,8 +423,8 @@ export class WorkspacePdf {
             let postitButton = $('#postit' + comment.id);
             if (comment.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 postitDiv.show();
-                // postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
-                // postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale / .75) - 18) + "px");
+                postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale / .75) - 48) + "px");
                 postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                 postitButton.css("background-color", "#FFC");
                 postitDiv.unbind('mouseup');
@@ -433,8 +452,8 @@ export class WorkspacePdf {
             let spotDiv = $('#inDocSpot_' + spot.id);
             if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 spotDiv.show();
-                // spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale / this.signPosition.fixRatio) - 18) + "px");
-                // spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale / this.signPosition.fixRatio) - 48) + "px");
+                spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale / .75) - 18) + "px");
+                spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale / .75) - 48) + "px");
                 spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
                 spotDiv.unbind('mouseup');
                 spotDiv.on('mouseup', function (e) {
@@ -483,6 +502,7 @@ export class WorkspacePdf {
     }
 
     displayDialogBox() {
+        $('#pdf').unbind("mousemove");
         let postit = $("#postit");
         if (this.mode !== 'comment' || postit.is(':visible')) {
             return;
@@ -495,8 +515,8 @@ export class WorkspacePdf {
         if (this.addCommentEnabled) xOffset = 0;
         let xPos = (parseInt(commentPosX.val()) + xOffset) / this.pdfViewer.scale;
         let yPos = (parseInt(commentPosY.val()) + yOffset) / this.pdfViewer.scale;
-        commentPosX.val(xPos);
-        commentPosY.val(yPos);
+        commentPosX.val(Math.round(xPos));
+        commentPosY.val(Math.round(yPos));
         postit.css('left', xPos * this.pdfViewer.scale);
         postit.css('top', yPos * this.pdfViewer.scale);
         $("#postitComment").removeAttr("disabled");
@@ -514,6 +534,7 @@ export class WorkspacePdf {
         }
         this.signPosition.pointItEnable = true;
         $("#postit").hide();
+        $('#pdf').mousemove(e => this.moveAction(e));
     }
 
     enableReadMode() {
@@ -677,6 +698,8 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
+        $('#pdf').mousemove(e => this.moveAction(e));
+        $("#addCommentButton").toggleClass("btn-primary");
         $("#addCommentButton").toggleClass("btn-outline-dark");
         $("#addSpotButton").removeClass("btn-outline-dark");
         this.hideComment(e);
@@ -697,6 +720,7 @@ export class WorkspacePdf {
 
     enableSpotAdd(e) {
         $("#addCommentButton").removeClass("btn-outline-dark");
+        $("#addSpotButton").toggleClass("btn-primary");
         $("#addSpotButton").toggleClass("btn-outline-dark");
         this.hideComment(e);
         if (this.addSpotEnabled) {

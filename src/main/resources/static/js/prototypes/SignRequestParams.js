@@ -4,7 +4,7 @@ export class SignRequestParams  extends EventFactory {
 
     constructor(signRequestParams, id, scale, page, userName, restore, isSign) {
         super();
-        this.id = id;
+        this.firstLaunch = true;
         this.userName = userName;
         this.cross;
         this.isSign = isSign;
@@ -23,8 +23,8 @@ export class SignRequestParams  extends EventFactory {
         this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.xPos = -1;
-        this.yPos = -1;
+        this.xPos = 0;
+        this.yPos = window.scrollY;
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
@@ -41,7 +41,9 @@ export class SignRequestParams  extends EventFactory {
         this.blue = 0;
         this.fontSize = 12;
         this.restore = restore;
+        this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
+        this.id = id;
         this.init();
         this.initEventListeners();
     }
@@ -120,7 +122,9 @@ export class SignRequestParams  extends EventFactory {
                 }
 
                 self.signScale = newScale;
-                localStorage.setItem("zoom", self.signScale);
+                if(self.isSign) {
+                    localStorage.setItem("zoom", self.signScale);
+                }
             }
         });
 
@@ -187,6 +191,11 @@ export class SignRequestParams  extends EventFactory {
         if(localStorage.getItem("zoom") != null) {
             this.signScale = parseFloat(localStorage.getItem("zoom"));
         }
+    }
+
+    applyCurrentSignRequestParams() {
+        this.cross.css('top', this.yPos * this.currentScale / .75 + 'px');
+        this.cross.css('left', this.xPos * this.currentScale / .75 + 'px');
     }
 
     saveScale(ui) {
@@ -292,6 +301,10 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css('width', (this.signWidth * this.currentScale));
         this.cross.css('height', (this.signHeight * this.currentScale));
         this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+        if (this.firstLaunch) {
+            this.firstLaunch = false;
+            this.applyCurrentSignRequestParams();
+        }
     }
 
     displayMoreTools() {
