@@ -14,6 +14,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
+        this.isOneSign = false;
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
@@ -45,7 +46,7 @@ export class SignPosition extends EventFactory {
 
     changeSignImage(imageNum, signRequestParams) {
         signRequestParams.signImageNumber = imageNum;
-        if(imageNum >= 0) {
+        if(imageNum != null && imageNum >= 0) {
             if (this.signImages != null) {
                 console.debug("change sign image to " + imageNum);
                 if (imageNum == null) {
@@ -59,15 +60,13 @@ export class SignPosition extends EventFactory {
                     sizes.then(result => signRequestParams.changeSignSize(result));
                 }
             }
-        } else {
-            if(imageNum < 0) {
-                let self = this;
-                this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
-                    signRequestParams.cross.css("background-image", "url('" + img + "')");
-                    let sizes = self.getImageDimensions(img);
-                    sizes.then(result => signRequestParams.changeSignSize(result));
-                });
-            }
+        } else if(imageNum < 0) {
+            let self = this;
+            this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
+                signRequestParams.cross.css("background-image", "url('" + img + "')");
+                let sizes = self.getImageDimensions(img);
+                sizes.then(result => signRequestParams.changeSignSize(result));
+            });
         }
     }
 
@@ -123,7 +122,7 @@ export class SignPosition extends EventFactory {
 
     addSign(page, restore, signImageNumber) {
         let id = this.id;
-        this.signRequestParamses.set(id, new SignRequestParams(this.currentSignRequestParams[id], id, this.currentScale, page, this.userName, restore, signImageNumber >= 0));
+        this.signRequestParamses.set(id, new SignRequestParams(this.currentSignRequestParams[id], id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0));
         this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
@@ -131,22 +130,29 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
         this.id++;
+        if(signImageNumber != null && signImageNumber >= 0) {
+            this.isOneSign = true;
+        }
         return this.signRequestParamses.get(id);
     }
 
     addCheckImage(page) {
-        let signRequestParams =  this.addSign(page, false, -1);
+        this.addSign(page, false, -1);
     }
 
     addTimesImage(page) {
-        let signRequestParams =  this.addSign(page, false, -2);
+        this.addSign(page, false, -2);
     }
 
     addCircleImage(page) {
-        let signRequestParams =  this.addSign(page, false, -3);
-        // signRequestParams.cross.resizable("option", {resize: ""});
-        // signRequestParams.cross.resizable("option", {stop: ""});
-        // signRequestParams.cross.resizable("option", {aspectRatio: false});
+        this.addSign(page, false, -3);
+    }
+
+    addText(page) {
+        let signRequestParams = this.addSign(page, false, null);
+        signRequestParams.turnToText();
+        signRequestParams.cross.css("background-image", "");
+        signRequestParams.changeSignSize(null);
     }
 
     // addTimesImage(page) {

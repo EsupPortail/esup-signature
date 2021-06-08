@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -246,34 +247,53 @@ public class FileService {
 				graphics2D.drawImage(signImage, 0, 0, widthOffset, height, null);
 			}
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			int lineCount = 1;
+			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
 			int fontSize = (int) (12 * qualityFactor * signRequestParams.getSignScale() * .75);
 			attributes.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
-			Font font = new Font("DejaVu Sans Condensed", Font.PLAIN, fontSize);
+//			attributes.put(TextAttribute.TRACKING, 0.01);
+			Font font = null;
+			try {
+				font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
+			} catch (FontFormatException e) {
+				e.printStackTrace();
+			}
 			font = font.deriveFont(attributes);
 			graphics2D.setFont(font);
 			graphics2D.setPaint(Color.black);
 			FontMetrics fm = graphics2D.getFontMetrics();
-			int lineHeight = (int) (fm.getHeight() * signRequestParams.getSignScale());
+			int lineHeight = Math.round(fontSize + fontSize * .5f);
 			if(signRequestParams.getExtraType()) {
 				String typeSign = "Signature calligraphique";
 				if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
 				if (signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
-				graphics2D.drawString(typeSign, widthOffset, lineHeight * lineCount);
+				graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
 				lineCount++;
 			}
 			if(signRequestParams.getExtraName()) {
-				graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, lineHeight * lineCount);
+				if(lineCount == 0) {
+					graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight());
+				} else {
+					graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight() + lineHeight * lineCount);
+				}
+
 				lineCount++;
 			}
 			if(signRequestParams.getExtraDate()) {
 				DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
-				graphics2D.drawString("le " + dateFormat.format(date), widthOffset, lineHeight * lineCount);
+				if(lineCount == 0) {
+					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
+				} else {
+					graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight() + lineHeight * lineCount);
+				}
 				lineCount++;
 			}
 			for (String line : text) {
-				graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, lineHeight * lineCount);
+				if(lineCount == 0) {
+					graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
+				} else {
+					graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+				}
 				lineCount++;
 			}
 //			graphics2D.drawString("", 0, fm.getHeight() * lineCount + 1);

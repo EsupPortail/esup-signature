@@ -509,7 +509,7 @@ input:checked + .slider:before {
 }
 
 .sign-textarea {
-    font-family: "DejaVu Sans Condensed", serif !important;
+    font-family: "LiberationSans-Regular", serif !important;
     color: black;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -523,12 +523,13 @@ input:checked + .slider:before {
 }
 
 .div-extra-top {
-    font-family: "DejaVu Sans Condensed", serif !important;
+    font-family: "LiberationSans-Regular", serif !important;
     color: black !important;
     vertical-align: top!important;
 }
 .div-extra {
     border: 1px solid transparent;
+    /*width: 100%;*/
 }
 
 .div-extra:hover {
@@ -537,7 +538,7 @@ input:checked + .slider:before {
 }
 
 .div-extra-right {
-    font-family: "DejaVu Sans Condensed", serif !important;
+    font-family: "LiberationSans-Regular", serif !important;
     color: black !important;
     float: right;
 }

@@ -115,6 +115,7 @@ export class WorkspacePdf {
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
+        $("#addText").on("click", e => this.signPosition.addText(this.pdfViewer.pageNum));
 
         $('[id^="deleteAttachement-"]').each(function () {
             $(this).on('click', function (e) {
@@ -274,7 +275,7 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (self.signPosition.signRequestParamses.size === 0 && (self.signType !== "hiddenVisa")) {
+                    if (!self.signPosition.isOneSign && (self.signType !== "hiddenVisa")) {
                         bootbox.alert("Merci de placer la signature", function () {
                             self.pdfViewer.initSavedValues();
                             if (self.currentSignRequestParams != null && self.currentSignRequestParams[0] != null) {
