@@ -47,6 +47,8 @@ public class SignRequestParams {
 
     private Integer extraHeight = 0;
 
+    private String textPart = "";
+
 	private Float signScale = 1F;
 
 	private Integer red = 0;
@@ -197,6 +199,14 @@ public class SignRequestParams {
 
     public void setExtraHeight(Integer extraHeight) {
         this.extraHeight = extraHeight;
+    }
+
+    public String getTextPart() {
+        return textPart;
+    }
+
+    public void setTextPart(String textareaPart) {
+        this.textPart = textareaPart;
     }
 
     public Boolean getExtraOnTop() {

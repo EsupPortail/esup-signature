@@ -93,7 +93,7 @@ public class PdfService {
             PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
             Date newDate = new Date();
             DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
-            InputStream signImage;
+            InputStream signImage = null;
             if(signRequestParams.getSignImageNumber() < 0) {
                 signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
             } else {
@@ -110,7 +110,7 @@ public class PdfService {
                         fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
                         signImage = new FileInputStream(fileWithWatermark);
                     }
-                } else {
+                } else if(signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                     if (signRequestParams.getAddWatermark()) {
                         File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
@@ -119,11 +119,6 @@ public class PdfService {
                     }
                 }
             }
-            BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
-            ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
-            ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
-            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
 
             float tx = 0;
             float ty = 0;
@@ -141,56 +136,37 @@ public class PdfService {
             } else {
                 ty = pdfParameters.getHeight();
             }
-            PDFTextStripper pdfTextStripper = new PDFTextStripper();
-
-            String signatureInfos =
-                    "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
-                    "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
-                    "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
-                    "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
-                    "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
-
-            PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-            PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
-            pdAnnotationLink.setRectangle(position);
-            PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
-            pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
-            pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
-            Color color = new Color(255, 255, 255);
-            float[] components = new float[] {
-                    color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f };
-            PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
-            pdAnnotationLink.setColor(pdColor);
-            PDActionURI action = new PDActionURI();
-            action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
-            pdAnnotationLink.setAction(action);
-            pdAnnotationLink.setPage(pdPage);
-            pdAnnotationLink.setQuadPoints(new float[0]);
-            pdAnnotationLink.setContents(signatureInfos);
-            pdPage.getAnnotations().add(pdAnnotationLink);
-
-            if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
-                PDDocumentOutline outline = new PDDocumentOutline();
-                pdDocument.getDocumentCatalog().setDocumentOutline(outline);
-            }
-            PDOutlineItem pdOutlineItem = new PDOutlineItem();
-            pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
-            pdOutlineItem.setTitle(signatureInfos);
-            pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
-
-//            PDDocumentInformation info = pdDocument.getDocumentInformation();
-//            info.setKeywords(signatureInfos);
-//            info.setCustomMetadataValue("signatureInfos_" + signRequest.getSignedDocuments().size() + 1, signatureInfos);
-//            pdDocument.setDocumentInformation(info);
 
             PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
 
             if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
                 contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
             }
-            logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+            if(signImage != null) {
+                logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
+                BufferedImage bufferedSignImage = ImageIO.read(signImage);
+//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+                ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
+                ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
+                PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
+                contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+                if(signRequestParams.getSignImageNumber() >= 0) {
+                    addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+                }
+            } else if(signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
+                int fontSize = (int) (12 * signRequestParams.getSignScale() * .75);
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+                contentStream.beginText();
+                contentStream.setFont(pdFont, fontSize);
+                contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
+                String[] lines = signRequestParams.getTextPart().split("\n");
+                for(String line : lines) {
+                    contentStream.showText(line);
+                    contentStream.newLineAtOffset(0, -fontSize / .75f);
+                }
+                contentStream.endText();
+            }
+
             contentStream.close();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);
@@ -201,6 +177,46 @@ public class PdfService {
             logger.error("error to add image", e);
         }
         return null;
+    }
+
+    private void addLink(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted) throws IOException {
+        PDFTextStripper pdfTextStripper = new PDFTextStripper();
+
+        String signatureInfos =
+                "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
+                        "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
+                        "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
+                        "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
+                        "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+
+        PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+        PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+        pdAnnotationLink.setRectangle(position);
+        PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
+        pdBorderStyleDictionary.setStyle(PDBorderStyleDictionary.STYLE_INSET);
+        pdAnnotationLink.setBorderStyle(pdBorderStyleDictionary);
+        Color color = new Color(255, 255, 255);
+        float[] components = new float[] {
+                color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f };
+        PDColor pdColor = new PDColor(components, PDDeviceRGB.INSTANCE);
+        pdAnnotationLink.setColor(pdColor);
+        PDActionURI action = new PDActionURI();
+        action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
+        pdAnnotationLink.setAction(action);
+        pdAnnotationLink.setPage(pdPage);
+        pdAnnotationLink.setQuadPoints(new float[0]);
+        pdAnnotationLink.setContents(signatureInfos);
+        pdPage.getAnnotations().add(pdAnnotationLink);
+
+        if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
+            PDDocumentOutline outline = new PDDocumentOutline();
+            pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+        }
+        PDOutlineItem pdOutlineItem = new PDOutlineItem();
+        pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
+        pdOutlineItem.setTitle(signatureInfos);
+        pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
     }
 
     public Map<String, String> readMetadatas(InputStream inputStream) {
