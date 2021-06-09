@@ -548,6 +548,10 @@ input:checked + .slider:before {
     background: transparent !important;
 }
 
+.sign-space {
+    position: absolute;
+}
+
 .wrapper {
     display: block;
 }
@@ -1455,10 +1459,17 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     background-color: rgba(189, 255, 189, 0.5) !important;
     cursor: default;
+    z-index: 1;
 }
 
 .sign-field:hover {
     border: 1px solid green !important;
+}
+
+.sign-field-dropped {
+    background-color: transparent !important;
+    cursor: default;
+    z-index: 1;
 }
 
 .bg-striped {

@@ -33,12 +33,13 @@
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot : ${spots}">
+            <th:block th:each="spot, iterator : ${spots}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
                      th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'"
                      th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
+<!--                <div th:id="'signSpace_' + ${iterator.index}" th:title="'Emplacement de signature ' + ${iterator.index + 1}" class="sign-space sign-field"></div>-->
             </th:block>
             <div id="postit" class="postit alert alert-warning d-none">
                 <form>
@@ -53,7 +54,7 @@
                     <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                         <option></option>
                         <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <option th:if="${step.signRequestParams.size() == 0}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                            <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
                         </th:block>
                     </select>
                 </div>
