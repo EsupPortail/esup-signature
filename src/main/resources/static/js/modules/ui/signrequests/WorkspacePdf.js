@@ -495,7 +495,10 @@ export class WorkspacePdf {
                         signSpaceDiv.css("left", Math.round(spot.posX * self.pdfViewer.scale / .75));
                         signSpaceDiv.css("width", Math.round(150 * self.pdfViewer.scale / .75) + "px");
                         signSpaceDiv.css("height", Math.round(75 * self.pdfViewer.scale / .75) + "px");
-                        signSpaceDiv.text("Vous devez placer une signature ici " + iterator);
+                        signSpaceDiv.css("font-size", 14 * self.pdfViewer.scale);
+                        if(!self.isThereSign($(this))) {
+                            signSpaceDiv.text("Vous devez placer une signature ici");
+                        }
                         signSpaceDiv.droppable({
                             tolerance: 'touch',
                             drop: function (event, ui) {
@@ -514,24 +517,12 @@ export class WorkspacePdf {
                                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
                             },
                             out: function (event, ui) {
-                                let isThereSign = false;
-                                for(let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
-                                    let testX = Array.from(self.signPosition.signRequestParamses.values())[i].xPos;
-                                    let testY = Array.from(self.signPosition.signRequestParamses.values())[i].yPos;
-                                    let xx = Math.round(parseInt($(this).css("left")) / self.pdfViewer.scale);
-                                    let yy = Math.round(parseInt($(this).css("top")) / self.pdfViewer.scale);
-                                    let test = Array.from(self.signPosition.signRequestParamses.values())[i].cross.attr("remove");
-                                    if(testX === xx && testY === yy && test !== "true") {
-                                        isThereSign = true;
-
-                                    }
-                                }
-                                if(!isThereSign) {
+                                if(!self.isThereSign($(this))) {
                                     $(this).addClass("sign-field");
                                     $(this).removeClass("sign-field-dropped");
                                     let id = $(this).attr("id").split("_")[1];
                                     self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                                    $(this).text("Vous devez placer une signature ici " + id);
+                                    $(this).text("Vous devez placer une signature ici");
                                 }
                             }
                         });
@@ -551,6 +542,22 @@ export class WorkspacePdf {
             });
         }
         this.initFormAction();
+    }
+
+    isThereSign(spot) {
+        let isThereSign = false;
+        for (let i = 0; i < this.signPosition.signRequestParamses.size; i++) {
+            let testX = Array.from(this.signPosition.signRequestParamses.values())[i].xPos;
+            let testY = Array.from(this.signPosition.signRequestParamses.values())[i].yPos;
+            let xx = Math.round(parseInt(spot.css("left")) / this.pdfViewer.scale);
+            let yy = Math.round(parseInt(spot.css("top")) / this.pdfViewer.scale);
+            let test = Array.from(this.signPosition.signRequestParamses.values())[i].cross.attr("remove");
+            if (testX === xx && testY === yy && test !== "true") {
+                isThereSign = true;
+
+            }
+        }
+        return isThereSign;
     }
 
     toggleSign(e) {
