@@ -12,12 +12,6 @@
       </ol>
     </nav>
     <div id="content" class="content">
-      <div class="fixed-action-simple-btn" >
-        <a data-toggle="modal" data-target="#newMessage" type="button"
-           class="btn-floating btn-lg bg-primary wave-effect">
-          <i class="fas fa-plus"></i>
-        </a>
-      </div>
       <div class="card col-lg-10 mx-auto">
         <div class="card-body">
           <table class="table table-borderless table-hover">
@@ -31,7 +25,7 @@
             <tbody>
             <th:block th:each="role, status :${roleManagers.keySet}">
               <tr>
-                <form th:action="'/admin/rolesManagers/editRole'" method="post">
+                <form th:action="'/admin/roles-managers/edit-role'" method="post">
 
                   <td th:text="${role}"></td>
                   <input name="role" type="hidden" th:value="${role}">
