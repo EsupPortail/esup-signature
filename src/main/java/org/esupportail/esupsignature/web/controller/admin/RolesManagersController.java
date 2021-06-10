@@ -39,7 +39,7 @@ public class RolesManagersController {
         return "admin/roles-managers";
     }
 
-    @PostMapping("/editRole")
+    @PostMapping("/edit-role")
     public String editRoles(@RequestParam String role, @RequestParam List<String> rolesManagers) {
         for (User user : userService.getByManagersRoles(role)) {
             if (!rolesManagers.contains(user.getEmail())) {

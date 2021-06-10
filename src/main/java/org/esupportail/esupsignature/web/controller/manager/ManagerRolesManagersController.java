@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.manager;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RequestMapping("/manager/rolesManagers")
+@RequestMapping("/manager/roles-managers")
 @Controller
 public class ManagerRolesManagersController {
 
@@ -39,10 +38,10 @@ public class ManagerRolesManagersController {
             roleManagers.put(role, userService.getByManagersRoles(role));
         }
         model.addAttribute("roleManagers", roleManagers);
-        return "managers/managerRoles";
+        return "managers/roles-managers";
     }
 
-    @PostMapping("/editRole")
+    @PostMapping("/edit-role")
     @PreAuthorize("@preAuthorizeService.roleManager(#role, #authUserEppn)")
     public String editRoles(@RequestParam String role, @RequestParam List<String> rolesManagers, @ModelAttribute("authUserEppn") String authUserEppn) {
         for (User user : userService.getByManagersRoles(role)) {
@@ -58,7 +57,7 @@ public class ManagerRolesManagersController {
             }
         }
 
-        return "redirect:/manager/rolesManagers";
+        return "redirect:/manager/roles-managers";
 
     }
 }
