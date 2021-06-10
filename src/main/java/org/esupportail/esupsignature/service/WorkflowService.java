@@ -406,7 +406,8 @@ public class WorkflowService {
             }
             int step = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-                replaceStepSystemUsers(userEppn, workflowStep.getId());
+                entityManager.detach(workflowStep);
+                replaceStepSystemUsers(userEppn, workflowStep);
                 if (workflowStep.getChangeable() != null && workflowStep.getChangeable()) {
                     List<User> recipients = this.getFavoriteRecipientEmail(step, recipientEmails);
                     if(recipients.size() > 0 && !computeForDisplay) {
@@ -437,9 +438,8 @@ public class WorkflowService {
         return users;
     }
 
-    public void replaceStepSystemUsers(String userEppn, Long workflowStepId) {
+    public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) {
         User user = userService.getByEppn(userEppn);
-        WorkflowStep workflowStep = workflowStepService.getById(workflowStepId);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
             for (User oneUser : workflowStep.getUsers()) {
                 if (oneUser.getEppn().equals("creator")) {
