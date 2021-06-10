@@ -235,7 +235,6 @@ public class WizardController {
 		} else {
             try {
                 workflowService.delete(workflow);
-                redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Circuit supprimé"));
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }

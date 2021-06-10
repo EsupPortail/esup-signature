@@ -200,7 +200,7 @@ public class SignService {
 	}
 
 	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
-		double fixFactor = .75;
+		float fixFactor = .75f;
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
@@ -224,19 +224,19 @@ public class SignService {
 			if(signRequestParams.getAddExtra()) {
 				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
 			}
-			int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
-			int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+			int widthAdjusted = Math.round((bufferedSignImage.getWidth() / 3 * fixFactor));
+			int heightAdjusted = Math.round((bufferedSignImage.getHeight() / 3 * fixFactor));
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);
 				signatureFieldParameters.setHeight(heightAdjusted);
-				signatureFieldParameters.setOriginX(signRequestParams.getxPos());
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * fixFactor));
 			} else {
 				signatureFieldParameters.setWidth(heightAdjusted);
 				signatureFieldParameters.setHeight(widthAdjusted);
-				signatureFieldParameters.setOriginX(signRequestParams.getxPos() - 50);
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * fixFactor));
 			}
-			int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
+			int yPos = Math.round(signRequestParams.getyPos() * fixFactor);
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
 			imageParameters.setDpi(300);

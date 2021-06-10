@@ -2,12 +2,13 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, restore, isSign) {
+    constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa) {
         super();
         this.firstLaunch = true;
         this.userName = userName;
         this.cross;
         this.isSign = isSign;
+        this.isVisa = isVisa;
         this.border;
         this.tools;
         this.divExtra;
@@ -74,7 +75,10 @@ export class SignRequestParams  extends EventFactory {
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
-                if(self.textareaPart != null) {
+                if(self.isVisa) {
+                    self.signScale = self.getNewScale(self, ui);
+                    self.refreshExtraDiv();
+                } else if(self.textareaPart != null) {
                     self.signScale = self.getNewScale(self, ui);
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
@@ -154,6 +158,15 @@ export class SignRequestParams  extends EventFactory {
             if (localStorage.getItem('addWatermark') != null && localStorage.getItem('addWatermark') === "true") {
                 this.toggleWatermark();
             }
+        }
+        if(this.isVisa && this.isSign) {
+            this.signHeight = 0;
+            this.toggleWatermark();
+            this.toggleExtra();
+            this.refreshExtraDiv();
+            this.updateSize();
+            this.changeSignSize()
+            // this.simulateDrop();
         }
     }
 
@@ -316,10 +329,23 @@ export class SignRequestParams  extends EventFactory {
             this.cross.css('height', (this.signHeight * this.currentScale));
             this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
         }
-        let self = this;
+        this.simulateDrop();
+    }
+
+    show() {
+        this.cross.show();
+    }
+
+    hide() {
+        this.cross.hide();
+    }
+
+    simulateDrop() {
+        let x = this.xPos * this.currentScale;
+        let y = this.yPos * this.currentScale;
         this.cross.simulate("drag", {
-            dx: self.xPos * self.currentScale / .75,
-            dy: self.yPos * self.currentScale / .75
+            dx: x,
+            dy: y
         });
     }
 
@@ -598,4 +624,30 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css("height", this.textareaPart.css("height"));
     }
 
+    toggleVisual() {
+        console.log("toggle visual");
+        if(this.visualActive) {
+            this.visualActive = false;
+            this.toggleExtra();
+            this.cross.hide();
+            this.visual = false;
+            this.cross.addClass("d-none");
+        } else {
+            this.visualActive = true;
+            this.visual = true;
+            this.cross.show();
+            this.cross.removeClass("d-none");
+            this.toggleExtra();
+            if(this.signType === "visa" || this.signType === "hiddenVisa") {
+                this.cross.css("width", 300);
+                this.cross.css("height", 150);
+                // this.borders.css("width", 300);
+                // this.borders.css("height", 150);
+                this.signWidth = 150;
+                this.signHeight = 75;
+                this.toggleMinimalTools();
+                $("#signUndo_0").hide();
+            }
+        }
+    }
 }

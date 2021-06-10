@@ -18,10 +18,17 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
+        this.signType = signType;
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
         }
+        if (this.signType === "visa") {
+            $("#visualButton").remove();
+        }
+        // if(this.signType === "nexuSign" || this.signType === "certSign") {
+        //     $("#visualButton").removeClass("d-none");
+        // }
         // if(signable) {
         //     this.addSign(1, true, 0);
         // }
@@ -131,18 +138,24 @@ export class SignPosition extends EventFactory {
                 if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
                     currentSignRequestParams = this.currentSignRequestParamses[i];
                     // this.currentSignRequestParamsNum = i;
+                    // if(this.signType === "visa") {
+                    //     this.currentSignRequestParamses[i].ready = true;
+                    // }
                     break;
                 }
             }
         }
-        this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0));
-        this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
+        this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa"));
+        // if(this.signType !== "visa") {
+            this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
+        // }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
         this.id++;
+        window.scrollTo(0, this.signRequestParamses.get(id).yPos);
         return this.signRequestParamses.get(id);
     }
 

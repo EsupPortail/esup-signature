@@ -32,6 +32,7 @@ export class PdfViewer extends EventFactory {
         }
         this.dataFields = jsFields;
         this.savedFields = new Map();
+        this.pdfFields = [];
         this.signable = signable;
         this.events = {};
         this.rotation = 0;
@@ -242,10 +243,6 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    initSavedValues() {
-
-    }
-
     promizeSaveValues() {
         console.info("launch save values");
         return this.page.getAnnotations().then(items => this.saveValues(items));
@@ -364,6 +361,7 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
+        this.pdfFields = items;
         let datePickerIndex = 40;
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
@@ -612,7 +610,17 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
+        return this.isFieldInPdf(dataField) && (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
+    }
+
+    isFieldInPdf(dataField) {
+        let isInPdf = false;
+        for(let i = 0; i < this.pdfFields.length; i++) {
+            if(this.pdfFields[i].fieldName === dataField.name) {
+                isInPdf = true;
+            }
+        }
+        return isInPdf;
     }
 
     renderPdfForm(items) {
@@ -630,17 +638,6 @@ export class PdfViewer extends EventFactory {
                     let signField = $('section[data-annotation-id=' + item.id + '] > div');
                     signField.css("font-size", 8);
                     // signField.addClass("sign-field");
-                    signField.droppable({
-                        tolerance: "touch",
-                        drop: function( event, ui ) {
-                            $( this )
-                                .removeClass( "sign-field" ).html("");
-                        },
-                        out: function( event, ui ) {
-                            $( this )
-                                // .addClass( "sign-field" ).html("Ajouter une signature ici");
-                        }
-                    });
                     signField.unbind();
                     section.unbind();
                     section.attr("id", signFieldNumber);
