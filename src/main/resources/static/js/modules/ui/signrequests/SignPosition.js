@@ -4,17 +4,20 @@ import {Color} from "../../utils/Color.js";
 
 export class SignPosition extends EventFactory {
 
-    constructor(signType, currentSignRequestParams, signImageNumber, signImages, userName, signable, forceResetSignPos) {
+    constructor(signType, currentSignRequestParamses, signImageNumber, signImages, userName, signable, forceResetSignPos) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
         this.pdf = $("#pdf");
         this.signImages = signImages;
-        this.currentSignRequestParams = currentSignRequestParams;
+        this.currentSignRequestParamsNum = 0;
+        this.currentSignRequestParamses = currentSignRequestParamses;
+        this.currentSignRequestParamses.sort((a,b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
+        this.currentSignRequestParamses.sort((a,b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
+
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
-        this.isOneSign = false;
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
             this.currentScale = localStorage.getItem("scale");
@@ -122,7 +125,17 @@ export class SignPosition extends EventFactory {
 
     addSign(page, restore, signImageNumber) {
         let id = this.id;
-        this.signRequestParamses.set(id, new SignRequestParams(this.currentSignRequestParams[id], id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0));
+        let currentSignRequestParams = null;
+        if(signImageNumber >= 0) {
+            for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+                if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                    currentSignRequestParams = this.currentSignRequestParamses[i];
+                    // this.currentSignRequestParamsNum = i;
+                    break;
+                }
+            }
+        }
+        this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0));
         this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
@@ -130,9 +143,6 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
         this.id++;
-        if(signImageNumber != null && signImageNumber >= 0) {
-            this.isOneSign = true;
-        }
         return this.signRequestParamses.get(id);
     }
 

@@ -10,10 +10,11 @@ export default class ListSignRequestUi {
             this.statusFilter = statusFilter;
         }
         this.csrf = new CsrfToken(csrf);
-        this.signRequestTable = $("#signRequestTable")
+        this.signRequestTable = $("#signRequestTable");
         this.page = 1;
         this.initListeners();
         this.massSignButtonHide = true;
+        this.scaleList();
     }
 
     initListeners() {
@@ -32,6 +33,12 @@ export default class ListSignRequestUi {
         $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
+        $(window).resize(e => this.scaleList());
+    }
+
+    scaleList() {
+        let height = parseInt(this.signRequestTable.css("height"))
+        this.signRequestTable.css("height", (height + ($(window ).height() - height)) + "px")
     }
 
     checkNbCheckboxes() {

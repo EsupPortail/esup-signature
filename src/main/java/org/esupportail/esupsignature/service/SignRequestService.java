@@ -647,7 +647,7 @@ public class SignRequestService {
 			}
 		} else {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null,true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
@@ -1421,13 +1421,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public SignRequestParams getToUseSignRequestParams(long id) {
+	public List<SignRequestParams> getToUseSignRequestParams(long id) {
 		SignRequest signRequest = getById(id);
 		int index = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
-			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
-		}
-		return null;
+//		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
+//			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
+//		}
+		return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 	}
 
 	@Transactional
