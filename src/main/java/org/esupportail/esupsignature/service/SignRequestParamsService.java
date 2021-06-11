@@ -43,6 +43,10 @@ public class SignRequestParamsService {
     @Resource
     private ObjectMapper objectMapper;
 
+    public SignRequestParams getById(Long id) {
+        return signRequestParamsRepository.findById(id).get();
+    }
+
     public SignRequestParams createFromPdf(PDSignatureField pdSignatureField, List<Integer> annotationPages, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
@@ -70,7 +74,7 @@ public class SignRequestParamsService {
     public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
-            List<SignRequestParams> signRequestParamses = pdSignatureFieldsToSignRequestParams(pdDocument);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParamsRepository.save(signRequestParams);
             }
@@ -81,7 +85,7 @@ public class SignRequestParamsService {
         }
     }
 
-    public List<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
@@ -152,4 +156,5 @@ public class SignRequestParamsService {
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
+
 }

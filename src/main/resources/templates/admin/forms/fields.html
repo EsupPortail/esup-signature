@@ -5,8 +5,8 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
-    new FormUi("admin", [[${form.id}]], [[${preFillTypes}]]);
+    import {default as FormFieldsUi} from "/static/js/modules/ui/forms/FormFieldsUi.js";
+    new FormFieldsUi("admin", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -36,6 +36,9 @@
                 <li class="nav-item">
                     <a class="nav-link active" href="#" onclick="return false;">Configuration des champs</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                </li>
             </ul>
             <br>
             <div class="card col-lg-11">
@@ -61,7 +64,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/fields/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>
