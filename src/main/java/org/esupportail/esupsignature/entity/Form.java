@@ -58,7 +58,7 @@ public class Form {
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
 
-	@OneToMany(cascade = CascadeType.REMOVE)
+	@OneToMany(cascade = CascadeType.DETACH)
 	private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")

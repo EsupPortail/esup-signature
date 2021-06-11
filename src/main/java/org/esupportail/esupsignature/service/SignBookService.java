@@ -487,7 +487,7 @@ public class SignBookService {
     public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, multipartFile);
         }
     }
 
@@ -503,7 +503,7 @@ public class SignBookService {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
-        signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+        signRequestService.addDocsToSignRequest(signRequest, true, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;
     }
@@ -554,14 +554,21 @@ public class SignBookService {
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             int i = 0;
-            for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                if(!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                    if (signRequest.getSignRequestParams().size() >= i + 1) {
-                        liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                    } else {
-                        break;
+            if(signRequest.getSignRequestParams().size() > 0) {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                        if (signRequest.getSignRequestParams().size() >= i + 1) {
+                            liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                        } else {
+                            break;
+                        }
+                        i++;
                     }
-                    i++;
+                }
+            } else {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                    liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
                 }
             }
         }

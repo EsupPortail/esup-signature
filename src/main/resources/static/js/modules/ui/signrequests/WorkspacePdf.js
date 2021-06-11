@@ -142,23 +142,25 @@ export class WorkspacePdf {
     }
 
     initSignFields() {
-        let signSpaceDiv = $("#signSpace_" + 0);
-        if(signSpaceDiv.length) {
-            signSpaceDiv.remove();
-        }
-        if(this.currentSignRequestParamses[0].signPageNumber === this.pdfViewer.pageNum) {
-            let signSpaceHtml = "<div id='signSpace_" + 0 + "' title='Emplacement de signature' class='sign-space sign-field'></div>";
-            $("#pdf").append(signSpaceHtml);
-            signSpaceDiv = $("#signSpace_" + 0);
-            if(this.currentSignRequestParamses[0].ready) {
-                signSpaceDiv.removeClass("sign-field");
+        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let signSpaceDiv = $("#signSpace_" + i);
+            if (signSpaceDiv.length) {
+                signSpaceDiv.remove();
             }
-            signSpaceDiv.show();
-            signSpaceDiv.css("top", Math.round(this.currentSignRequestParamses[0].yPos * this.pdfViewer.scale));
-            signSpaceDiv.css("left", Math.round(this.currentSignRequestParamses[0].xPos * this.pdfViewer.scale));
-            signSpaceDiv.css("width", Math.round(this.currentSignRequestParamses[0].signWidth * this.pdfViewer.scale / .75) + "px");
-            signSpaceDiv.css("height", Math.round(this.currentSignRequestParamses[0].signHeight * this.pdfViewer.scale / .75) + "px");
-            this.makeItDroppable(signSpaceDiv);
+            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum) {
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-space sign-field'></div>";
+                $("#pdf").append(signSpaceHtml);
+                signSpaceDiv = $("#signSpace_" + i);
+                if (this.currentSignRequestParamses[i].ready) {
+                    signSpaceDiv.removeClass("sign-field");
+                }
+                signSpaceDiv.show();
+                signSpaceDiv.css("top", Math.round(this.currentSignRequestParamses[i].yPos * this.pdfViewer.scale));
+                signSpaceDiv.css("left", Math.round(this.currentSignRequestParamses[i].xPos * this.pdfViewer.scale));
+                signSpaceDiv.css("width", Math.round(this.currentSignRequestParamses[i].signWidth * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("height", Math.round(this.currentSignRequestParamses[i].signHeight * this.pdfViewer.scale / .75) + "px");
+                this.makeItDroppable(signSpaceDiv);
+            }
         }
     }
 
