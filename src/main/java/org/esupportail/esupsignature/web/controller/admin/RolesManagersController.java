@@ -40,20 +40,24 @@ public class RolesManagersController {
     }
 
     @PostMapping("/edit-role")
-    public String editRoles(@RequestParam String role, @RequestParam List<String> rolesManagers) {
-        for (User user : userService.getByManagersRoles(role)) {
-            if (!rolesManagers.contains(user.getEmail())) {
-                user.getRoles().remove(role);
+    public String editRoles(@RequestParam String role, @RequestParam(required = false) List<String> rolesManagers) {
+        if(rolesManagers != null) {
+            for (User user : userService.getByManagersRoles(role)) {
+                if (!rolesManagers.contains(user.getEmail())) {
+                    user.getManagersRoles().remove(role);
+                }
+            }
+            for (String mail : rolesManagers) {
+                User user = userService.getUserByEmail(mail);
+                if (!user.getManagersRoles().contains(role)) {
+                    user.getManagersRoles().add(role);
+                }
+            }
+        } else {
+            for (User user : userService.getByManagersRoles(role)) {
+                user.getManagersRoles().remove(role);
             }
         }
-
-        for (String mail : rolesManagers) {
-            User user = userService.getUserByEmail(mail);
-            if (!user.getManagersRoles().contains(role)) {
-                user.getManagersRoles().add(role);
-            }
-        }
-
         return "redirect:/admin/roles-managers";
 
     }
