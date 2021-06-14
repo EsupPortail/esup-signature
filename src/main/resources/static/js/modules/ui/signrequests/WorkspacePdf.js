@@ -147,7 +147,7 @@ export class WorkspacePdf {
             if (signSpaceDiv.length) {
                 signSpaceDiv.remove();
             }
-            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum) {
+            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum && this.mode === "sign") {
                 let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-field sign-space'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
@@ -460,8 +460,8 @@ export class WorkspacePdf {
         let xPos = parseInt($("#commentPosX").val());
         let yPos = parseInt($("#commentPosY").val());
         let commentUrlParams = "comment=" + postitComment.val() +
-            "&commentPosX=" + Math.round(xPos * .75) +
-            "&commentPosY=" + Math.round(yPos * .75) +
+            "&commentPosX=" + Math.round(xPos) +
+            "&commentPosY=" + Math.round(yPos) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&spotStepNumber=" + spotStepNumberVal.val() +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
@@ -522,8 +522,8 @@ export class WorkspacePdf {
             if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                 spotDiv.show();
                 signSpaceDiv.hide();
-                spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale / .75) - 18) + "px");
-                spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale / .75) - 48) + "px");
+                spotDiv.css('left', ((parseInt(spot.posX) * this.pdfViewer.scale) - 18) + "px");
+                spotDiv.css('top', ((parseInt(spot.posY) * this.pdfViewer.scale) - 48) + "px");
                 spotDiv.width(spotDiv.width() * this.pdfViewer.scale);
                 spotDiv.unbind('mouseup');
                 spotDiv.on('mouseup', function (e) {
@@ -943,13 +943,16 @@ export class WorkspacePdf {
                     },
                 ]
             });
+            if(!this.signable) {
+                this.changeModeSelector.disable();
+            }
         }
     }
 
     changeMode(e) {
         let mode = e.value;
         console.info("change mode to : " + mode);
-        if (mode === "sign") {
+        if (mode === "sign" && this.signable) {
             this.disableAllModes();
             this.enableSignMode();
         }
