@@ -550,7 +550,7 @@ export class WorkspacePdf {
                     signSpaceDiv.css("width", Math.round(150 * self.pdfViewer.scale / .75) + "px");
                     signSpaceDiv.css("height", Math.round(75 * self.pdfViewer.scale / .75) + "px");
                     signSpaceDiv.css("font-size", 14 * self.pdfViewer.scale);
-                    if(!self.isThereSign($(this))) {
+                    if(!self.isThereSign(signSpaceDiv)) {
                         signSpaceDiv.text("Vous devez placer une signature ici");
                     }
                     this.makeItDroppable(signSpaceDiv);
