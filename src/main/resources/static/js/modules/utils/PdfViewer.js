@@ -604,23 +604,13 @@ export class PdfViewer extends EventFactory {
 
     isFieldEnable(dataField) {
         let isIncludeCurrentStep = false;
-        for(let i = 0; i < dataField.workflowSteps.length; i++) {
-            if(dataField.workflowSteps[i].id === this.currentStepId) {
+        for (let i = 0; i < dataField.workflowSteps.length; i++) {
+            if (dataField.workflowSteps[i].id === this.currentStepId) {
                 isIncludeCurrentStep = true;
                 break;
             }
         }
-        return this.isFieldInPdf(dataField) && (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
-    }
-
-    isFieldInPdf(dataField) {
-        let isInPdf = false;
-        for(let i = 0; i < this.pdfFields.length; i++) {
-            if(this.pdfFields[i].fieldName === dataField.name) {
-                isInPdf = true;
-            }
-        }
-        return isInPdf;
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
     }
 
     renderPdfForm(items) {
@@ -772,13 +762,13 @@ export class PdfViewer extends EventFactory {
             let self = this;
             let resolveOk = "ok";
             let warningFields = [];
-            $(self.dataFields).each(function() {
-                let savedField = self.savedFields.get($(this)[0].name)
-                formData[$(this)[0].name] = savedField;
-                if ($(this)[0].required && !savedField && (!$("#" + $(this)[0].name).val() || $(this)[0].type === "radio") && self.isFieldEnable($(this)[0])) {
-                    if(!self.checkObjectInArray(warningFields, $(this)[0].name)) {
+            $(self.dataFields).each(function(e, item) {
+                let savedField = self.savedFields.get(item.name)
+                formData[item.name] = savedField;
+                if (item.required && !savedField && (!$("#" + item.name).val() || item.type === "radio") && self.isFieldEnable(item)) {
+                    // if(!self.checkObjectInArray(warningFields, item.name)) {
                         warningFields.push($(this)[0]);
-                    }
+                    // }
                 }
             });
             if(warningFields.length > 0) {
