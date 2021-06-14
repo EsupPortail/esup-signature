@@ -567,8 +567,10 @@ public class SignBookService {
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                    liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+                    if(liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+                    }
                 }
             }
         }

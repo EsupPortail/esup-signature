@@ -14,7 +14,7 @@ export class SignPosition extends EventFactory {
         this.currentSignRequestParamses = currentSignRequestParamses;
         this.currentSignRequestParamses.sort((a,b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
         this.currentSignRequestParamses.sort((a,b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
-
+        this.currentSignRequestParamses.sort((a,b) => (a.signPageNumber > b.signPageNumber) ? 1 : ((b.signPageNumber > a.signPageNumber) ? -1 : 0))
         this.signRequestParamses = new Map();
         this.id = 0;
         this.currentScale = 1;
@@ -130,18 +130,22 @@ export class SignPosition extends EventFactory {
     }
 
 
-    addSign(page, restore, signImageNumber) {
+    addSign(page, restore, signImageNumber, forceSignNumber) {
         let id = this.id;
         let currentSignRequestParams = null;
         if(signImageNumber >= 0) {
-            for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
-                    currentSignRequestParams = this.currentSignRequestParamses[i];
-                    // this.currentSignRequestParamsNum = i;
-                    // if(this.signType === "visa") {
-                    //     this.currentSignRequestParamses[i].ready = true;
-                    // }
-                    break;
+            if(forceSignNumber != null) {
+                currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
+            } else {
+                for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
+                    if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                        currentSignRequestParams = this.currentSignRequestParamses[i];
+                        // this.currentSignRequestParamsNum = i;
+                        // if(this.signType === "visa") {
+                        //     this.currentSignRequestParamses[i].ready = true;
+                        // }
+                        break;
+                    }
                 }
             }
         }

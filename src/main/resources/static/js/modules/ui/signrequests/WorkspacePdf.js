@@ -110,7 +110,7 @@ export class WorkspacePdf {
         } else {
             this.initLaunchButtons();
         }
-        $('#addSignButton').on('click', e => this.addSign(e));
+        $('#addSignButton').on('click', e => this.addSign());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
@@ -148,9 +148,12 @@ export class WorkspacePdf {
                 signSpaceDiv.remove();
             }
             if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum) {
-                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-space sign-field'></div>";
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-field sign-space'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
+                if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                    signSpaceDiv.text("Cliquez ici pour ajouter votre signature");
+                }
                 if (this.currentSignRequestParamses[i].ready) {
                     signSpaceDiv.removeClass("sign-field");
                 }
@@ -159,14 +162,19 @@ export class WorkspacePdf {
                 signSpaceDiv.css("left", Math.round(this.currentSignRequestParamses[i].xPos * this.pdfViewer.scale));
                 signSpaceDiv.css("width", Math.round(this.currentSignRequestParamses[i].signWidth * this.pdfViewer.scale / .75) + "px");
                 signSpaceDiv.css("height", Math.round(this.currentSignRequestParamses[i].signHeight * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
+                signSpaceDiv.on("click", e => this.addSign(i));
             }
         }
     }
 
-    addSign(e) {
+    addSign(forceSignNumber) {
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
+        if(forceSignNumber != null) {
+            signNum = forceSignNumber;
+        }
         if(this.currentSignRequestParamses[signNum] != null && this.firstInsertSign) {
             let signPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
             if (signPageNumber !== this.pdfViewer.pageNum) {
@@ -176,7 +184,7 @@ export class WorkspacePdf {
             window.scrollTo(0, this.currentSignRequestParamses[signNum].yPos);
             this.firstInsertSign = false;
         }
-        this.signPosition.addSign(targetPageNumber, false, signNum);
+        this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
     }
 
     initWorkspace() {
@@ -294,12 +302,16 @@ export class WorkspacePdf {
     }
 
     checkSignsPositions() {
-        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
-            if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
-                return false;
+        if(this.signPosition.signRequestParamses.size > 0) {
+            for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
+                if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                    return false;
+                }
             }
+            return true;
+        } else {
+            return false;
         }
-        return true;
     }
 
     launchSignModal() {
@@ -504,7 +516,7 @@ export class WorkspacePdf {
         let index = 0;
         this.postits.forEach((spot, iterator) => {
             let spotDiv = $('#inDocSpot_' + spot.id);
-            let signSpaceHtml = "<div id='signSpace_" + iterator + "' title='Emplacement de signature " + (iterator + 1) + "' class='sign-space sign-field'></div>";
+            let signSpaceHtml = "<div id='signSpace_" + iterator + "' title='Emplacement de signature " + (iterator + 1) + "' class='sign-field sign-space'></div>";
             $("#pdf").append(signSpaceHtml);
             let signSpaceDiv = $("#signSpace_" + iterator);
             if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
