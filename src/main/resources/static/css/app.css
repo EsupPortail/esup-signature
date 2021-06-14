@@ -1022,7 +1022,7 @@ input[type="checkbox"] {
 
 input[type="checkbox"]:not(:checked).required-field {
     background-color: #F8D7DA !important;
-    border: 1px solid black !important;
+    border: 1px solid black;
     margin-left: 0.03rem;
 }
 
@@ -1032,7 +1032,7 @@ input[type="radio"] {
 
 input[type="radio"]:not(:checked).required-field {
     background-color: #F8D7DA !important;
-    border: 1px solid black !important;
+    border: 1px solid black;
     margin-left: 0.03rem;
 }
 
