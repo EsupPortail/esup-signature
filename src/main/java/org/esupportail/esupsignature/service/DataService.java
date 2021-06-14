@@ -95,7 +95,9 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+        User user = userService.getUserByEppn(userEppn);
+        User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
@@ -242,13 +244,11 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook initSendData(Long dataId, String userEppn, List<String> recipientEmails, List<String> targetEmails, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
-        User user = userService.getUserByEppn(userEppn);
-        User authUser = userService.getUserByEppn(authUserEppn);
+    public SignBook initSendData(Long dataId, List<String> targetEmails, List<String> recipientEmails, String userEppn, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, user, authUser, false);
+                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, userEppn, authUserEppn, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {
@@ -287,7 +287,9 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, User user, User authUser) {
+    public Data addData(Long id, String userEppn, String authUserEppn) {
+        User user = userService.getUserByEppn(userEppn);
+        User authUser = userService.getUserByEppn(authUserEppn);
         Form form = formService.getById(id);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
