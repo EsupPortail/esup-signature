@@ -2,10 +2,6 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
-    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
-    new FormUi("managers");
-</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">
@@ -19,7 +15,8 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn" >
-                <a id="saveButton" title="Enregistrer" role="button" class="btn-floating btn-lg bg-success wave-effect">
+                <a id="saveButton" title="Enregistrer" role="button" class="btn-floating btn-lg bg-success wave-effect"
+                onclick="$('#formUpdate').submit();">
                     <i class="fas fa-save"></i>
                 </a>
             </div>

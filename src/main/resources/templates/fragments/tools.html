@@ -59,10 +59,20 @@
 			<select id="changeMode" name="changeMode" class=""></select>
 			</div>
 			<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;" class="mr-1">
-				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp}"
+				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
+				||
+				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
+				||
+				signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
+				}"
 						id="addSignButton" title="Inserer une signature"
 						class="btn btn-light btn-outline-primary">
 					<i class="fas fa-plus"></i> Inserer une signature
+				</button>
+				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
+						id="addSignButton" title="Inserer une signature"
+						class="btn btn-light btn-outline-primary">
+					<i class="fas fa-plus"></i> Inserer un visa
 				</button>
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
 						id="visualButton" title="Afficher/Masquer le visuel"

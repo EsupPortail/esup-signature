@@ -290,8 +290,8 @@
                             </div>
                         </div>
                         <br>
-                        <label for="signTypeWiz">Choisir un type de signature</label>
-                        <select name="signType" id="signTypeWiz" class="slim-select-simple">
+                        <label for="signType">Choisir un type de signature</label>
+                        <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
@@ -393,8 +393,11 @@
                 <div class="modal-footer">
                     <button type="submit" id="sendButton" class="btn btn-success d-none"></button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" id="sendDraftButton" class="btn btn-success">
+                        <i class="fas fa-save"></i> Annoter avant envoi
+                    </button>
                     <button type="button" id="sendPendingButton" class="btn btn-success">
-                        <i class="fas fa-paper-plane"></i> Envoyer la demande
+                        <i class="fas fa-paper-plane"></i> Envoyer immédiatement la demande
                     </button>
                 </div>
             </form>

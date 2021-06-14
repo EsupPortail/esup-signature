@@ -84,7 +84,8 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
 
-        $("#sendPendingButton").on('click', e => this.checkUserCertificate());
+        $("#sendPendingButton").on('click', e => this.checkUserCertificate(true));
+        $("#sendDraftButton").on('click', e => this.checkUserCertificate(false));
 
         let csrf = this.csrf;
         $("#startWizardCustomButton").on('click', function(e) {
@@ -130,7 +131,7 @@ export class GlobalUi {
         }
     }
 
-    checkUserCertificate() {
+    checkUserCertificate(send) {
         if ($('#signType2').val() === 'certSign') {
             let csrf = this.csrf;
             $.ajax({
@@ -139,14 +140,14 @@ export class GlobalUi {
                 contentType: "application/json",
                 dataType: 'json',
                 data: JSON.stringify($('#recipientsEmails').find(`[data-check='true']`).prevObject[0].slim.selected()),
-                success: response => this.checkSendPending(response)
+                success: response => this.checkSendPending(response, send)
             });
         } else {
-            this.submitSendPendind();
+            this.submitSendPendind(send);
         }
     }
 
-    checkSendPending(data) {
+    checkSendPending(data, send) {
         if (data.length === 0) {
             this.submitSendPendind();
             return;
@@ -159,13 +160,13 @@ export class GlobalUi {
         stringChain += "Confirmez-vous l'envoie de la demande ? "
         bootbox.confirm(stringChain, function(result) {
            if(result) {
-               self.submitSendPendind();
+               self.submitSendPendind(send);
            }
         });
     }
 
-    submitSendPendind() {
-        $("#pending").val(true);
+    submitSendPendind(send) {
+        $("#pending").val(send);
         $("#sendButton").click();
     }
 

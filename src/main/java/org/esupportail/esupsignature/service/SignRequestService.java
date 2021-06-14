@@ -320,13 +320,13 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public void addDocsToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
-					if(multipartFiles[0].getContentType().equals("application/pdf")) {
+					if(multipartFiles[0].getContentType().equals("application/pdf") && scanSignatureFields) {
 						signRequest.getSignRequestParams().addAll(signRequestParamsService.scanSignatureFields(new FileInputStream(file)));
 					} else if(multipartFiles[0].getContentType().contains("image")){
 						file.delete();

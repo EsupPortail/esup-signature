@@ -277,7 +277,7 @@ public class SignRequestController {
         logger.info("start add documents");
         SignRequest signRequest = signRequestService.getById(id);
         for (MultipartFile multipartFile : multipartFiles) {
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, multipartFile);
         }
         return new String[]{"ok"};
     }

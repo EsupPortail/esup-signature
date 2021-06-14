@@ -39,7 +39,7 @@ public class GlobalProperties implements Cloneable {
      *      <li>0 : système de délégation désactivé</li>
      *      <li>1 : le délégué ne peut signer qu'avec sa propre signature</li>
      *      <li>2 : le délégué ne peut signer qu'avec la signature du mandant</li>
-     *      <li>2 : le mandant ne peut choisir la signature du délégué</li>
+     *      <li>3 : le mandant peut choisir la signature du délégué</li>
      *  </ul>
      */
     private int shareMode = 0;
