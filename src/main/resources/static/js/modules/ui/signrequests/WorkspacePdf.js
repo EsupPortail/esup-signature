@@ -147,7 +147,7 @@ export class WorkspacePdf {
             if (signSpaceDiv.length) {
                 signSpaceDiv.remove();
             }
-            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum && this.mode === "sign") {
+            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum && this.mode === "sign" && this.signable) {
                 let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-field sign-space'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
@@ -595,7 +595,7 @@ export class WorkspacePdf {
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                if (!self.isThereSign($(this)) && self.signable) {
+                if (!self.isThereSign($(this))) {
                     $(this).addClass("sign-field");
                     $(this).removeClass("sign-field-dropped");
                     let id = $(this).attr("id").split("_")[1];
