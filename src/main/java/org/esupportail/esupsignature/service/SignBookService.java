@@ -600,4 +600,14 @@ public class SignBookService {
         }
     }
 
+    @Transactional
+    public List<SignRequest> getSignRequestByViewer(String userEppn) {
+        Set<SignRequest> signRequests = new HashSet<>();
+        List<SignBook> signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn));
+        for (SignBook signBook : signBooks) {
+            signRequests.addAll(signBook.getSignRequests());
+        }
+        return new ArrayList<>(signRequests);
+    }
+
 }

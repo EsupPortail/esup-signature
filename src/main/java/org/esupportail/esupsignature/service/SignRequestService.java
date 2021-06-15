@@ -229,7 +229,7 @@ public class SignRequestService {
 					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 					break;
 				case "followByMe":
-					signRequests.addAll(signRequestRepository.findByRecipient(userEppn));
+					signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 					break;
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));

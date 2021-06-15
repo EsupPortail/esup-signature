@@ -4,26 +4,27 @@
 <nav th:fragment="side-dashboard" id="sidebar" class="scrollbar-lite">
     <div class="ml-1 mt-2">
         <h5 class="text-center"><b>Filtres</b></h5>
-        <div class="hr">En cours</div>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=pending">
-            Demandes envoyés en attente
-            <span title="Demandes en attente" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-warning d-none d-md-inline" th:text="${nbSignRequests}">
-            </span>
-        </a>
+        <a th:classappend="${statusFilter == ''} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=all">Tout voir</a>
+        <div class="hr"><i class="fas fa-inbox mr-1"></i>Demandes reçus</div>
         <a th:classappend="${statusFilter == 'tosign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=tosign">
             A signer
             <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger d-none d-md-inline" th:text="${nbToSign}">
             </span>
         </a>
-        <div class="hr">Mes demandes</div>
-        <a th:classappend="${statusFilter == 'all'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=all">Tout voir</a>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Demandes signées</a>
-        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refused">Demandes refusées</a>
-        <div class="hr">Historique</div>
-        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=signedByMe">Demandes que j'ai signées</a>
-        <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refusedByMe">Demandes que j'ai refusées</a>
-        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes autres</a>
+        <a th:classappend="${statusFilter == 'signedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=signedByMe">Signées</a>
+        <a th:classappend="${statusFilter == 'refusedByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refusedByMe">Refusées</a>
+        <div class="hr"><i class="fas fa-paper-plane mr-1"></i>Demandes envoyées</div>
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=pending">
+            En attente
+            <span title="Demandes en attente" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-warning d-none d-md-inline" th:text="${nbSignRequests}">
+            </span>
+        </a>
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Signées</a>
+        <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=refused">Refusées</a>
+        <div class="hr"><i class="fas fa-archive mr-1"></i>Autres demandes</div>
+        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes suivies</a>
         <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=sharedSign">Demandes que j'ai signées lors d'une délégation</a>
+        <div class="hr"><i class="fas fa-trash-alt mr-1"></i>Corbeille</div>
         <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=deleted">Demandes supprimées</a>
     </div>
 </nav>
