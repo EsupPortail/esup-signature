@@ -4,6 +4,7 @@ export class WorkflowUi {
         console.info("Starting workflow UI");
         this.sourceTypeSelect = $("#sourceTypeSelect");
         this.targetTypeSelect = $("#targetTypeSelect");
+        this.visibility = $("#visibility");
         this.sourceUri = document.getElementById("documentsSourceUriDiv");
         if (this.sourceTypeSelect != null && this.sourceTypeSelect.value === "none") {
             this.sourceUri.style.display = "none";
@@ -16,6 +17,20 @@ export class WorkflowUi {
         $(document).ready(e => this.initDelListerner());
         ;
         $("#delete-button").on("click", e => this.confirmDelete());
+        this.visibility.on("change", function(e){
+            if(this.checked) {
+                $("#roles").next('.ss-main').removeClass("d-none");
+            } else {
+                $("#roles").next('.ss-main').addClass("d-none");
+            }
+        });
+        this.visibility.on("load", function(e){
+            if(this.checked) {
+                $("#roles").next('.ss-main').removeClass("d-none");
+            } else {
+                $("#roles").next('.ss-main').addClass("d-none");
+            }
+        });
     }
 
     confirmDelete() {
