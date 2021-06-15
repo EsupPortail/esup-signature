@@ -595,7 +595,7 @@ export class WorkspacePdf {
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                if (!self.isThereSign($(this))) {
+                if (!self.isThereSign($(this)) && self.signable) {
                     $(this).addClass("sign-field");
                     $(this).removeClass("sign-field-dropped");
                     let id = $(this).attr("id").split("_")[1];
