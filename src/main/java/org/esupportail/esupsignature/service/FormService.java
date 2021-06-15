@@ -444,7 +444,7 @@ public class FormService {
 		Form form = getById(formId);
 		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream(), 0);
 		for(SignRequestParams signRequestParams : findedSignRequestParams) {
-			if(form.getSignRequestParams().stream().noneMatch(s -> s.getxPos() == signRequestParams.getxPos() && s.getyPos() == signRequestParams.getyPos())) {
+			if(form.getSignRequestParams().stream().noneMatch(s -> s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos()))) {
 				form.getSignRequestParams().add(signRequestParams);
 			}
 		}
