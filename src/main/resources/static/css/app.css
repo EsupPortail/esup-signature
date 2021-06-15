@@ -143,6 +143,7 @@ td {
 }
 
 .table-fix-head thead th {
+    z-index: 1;
     vertical-align: middle;
     position: sticky;
     top: 0;
@@ -894,7 +895,7 @@ height: 100%;
     align-items: center;
     display: flex;
     text-align: center;
-    color: #6c757d;
+    font-weight: bold;
 }
 
 .hr::after {
