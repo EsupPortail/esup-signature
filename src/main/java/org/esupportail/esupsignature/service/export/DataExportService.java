@@ -67,7 +67,9 @@ public class DataExportService {
 
     private LinkedHashMap<String, String> getToExportDatas(Data data, SignBook signBook) {
         LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
+        toExportDatas.put("sign_request_id", signBook.getSignRequests().get(0).getId().toString());
         toExportDatas.put("form_name", data.getForm().getName());
+        toExportDatas.put("form_desc", data.getForm().getDescription());
         toExportDatas.put("form_create_date", data.getCreateDate().toString());
         toExportDatas.put("form_create_by", data.getCreateBy().getEppn());
         toExportDatas.put("form_current_status", signBook.getStatus().name());
