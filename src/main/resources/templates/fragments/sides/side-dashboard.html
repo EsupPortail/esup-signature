@@ -24,6 +24,8 @@
         <div class="hr"><i class="fas fa-archive mr-1"></i>Autres demandes</div>
         <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes suivies</a>
         <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=sharedSign">Demandes que j'ai signées lors d'une délégation</a>
+        <div class="hr"><i class="fab fa-firstdraft mr-1"></i>Brouillons</div>
+        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=draft">Brouillons</a>
         <div class="hr"><i class="fas fa-trash-alt mr-1"></i>Corbeille</div>
         <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=deleted">Demandes supprimées</a>
     </div>

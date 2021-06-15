@@ -234,9 +234,6 @@ public class SignRequestService {
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
-				case "deleted":
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
-					break;
 				default:
 					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
 					break;
@@ -248,6 +245,7 @@ public class SignRequestService {
 			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 			signRequests.addAll(getSharedSignedSignRequests(userEppn));
 			signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+			signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.draft));
 		}
 		return new ArrayList<>(signRequests);
 	}
