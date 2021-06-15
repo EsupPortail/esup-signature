@@ -135,6 +135,11 @@ export default class ListSignRequestUi {
             let self = this;
             $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
                 self.signRequestTable.append(data);
+                let clickableRow = $(".clickable-row");
+                clickableRow.unbind();
+                clickableRow.on('click',  function() {
+                    window.location = $(this).closest('tr').attr('data-href');
+                });
             });
         }
     }
