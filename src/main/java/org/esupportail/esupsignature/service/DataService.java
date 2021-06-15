@@ -117,7 +117,7 @@ public class DataService {
             }
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
-        signRequestService.addDocsToSignRequest(signRequest, false, multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, false, 0, multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signBookService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());

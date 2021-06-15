@@ -442,7 +442,7 @@ public class FormService {
 	@Transactional
 	public void updateSignRequestParams(Long formId) throws EsupSignatureIOException {
 		Form form = getById(formId);
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream());
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream(), 0);
 		for(SignRequestParams signRequestParams : findedSignRequestParams) {
 			if(form.getSignRequestParams().stream().noneMatch(s -> s.getxPos() == signRequestParams.getxPos() && s.getyPos() == signRequestParams.getyPos())) {
 				form.getSignRequestParams().add(signRequestParams);

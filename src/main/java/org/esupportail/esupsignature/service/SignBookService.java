@@ -485,9 +485,11 @@ public class SignBookService {
 
 
     public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+        int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
-            signRequestService.addDocsToSignRequest(signRequest, true, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
+            i++;
         }
     }
 
@@ -503,7 +505,7 @@ public class SignBookService {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
-        signRequestService.addDocsToSignRequest(signRequest, true, multipartFiles);
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;
     }

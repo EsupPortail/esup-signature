@@ -2,9 +2,10 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 
 export default class ListSignRequestUi {
 
-    constructor(signRequets, statusFilter, csrf) {
+    constructor(signRequests, statusFilter, csrf) {
         console.info("Starting list sign UI");
-        this.totalElementsToDisplay = signRequets.totalElements - signRequets.numberOfElements;
+        this.signRequests = signRequests;
+        this.totalElementsToDisplay = signRequests.totalElements - signRequests.numberOfElements;
         this.statusFilter = "";
         if(statusFilter != null) {
             this.statusFilter = statusFilter;
@@ -14,7 +15,9 @@ export default class ListSignRequestUi {
         this.page = 1;
         this.initListeners();
         this.massSignButtonHide = true;
-        this.scaleList();
+        if(signRequests.totalElements > 10) {
+            this.scaleList();
+        }
     }
 
     initListeners() {
@@ -33,7 +36,9 @@ export default class ListSignRequestUi {
         $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
-        $(window).resize(e => this.scaleList());
+        if(this.signRequests.totalElements > 10) {
+            $(window).resize(e => this.scaleList());
+        }
     }
 
     scaleList() {

@@ -71,11 +71,12 @@ public class SignRequestParamsService {
         return signRequestParamses;
     }
 
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument);
             for(SignRequestParams signRequestParams : signRequestParamses) {
+                signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
 
