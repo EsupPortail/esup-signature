@@ -260,6 +260,7 @@ public class WorkflowService {
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
                     if (fsFiles.size() > 0) {
+                        int j = 0;
                         for (FsFile fsFile : fsFiles) {
                             logger.info("adding file : " + fsFile.getName());
                             ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
@@ -275,7 +276,8 @@ public class WorkflowService {
                             }
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
-                            signRequestService.addDocsToSignRequest(signRequest, true, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            signRequestService.addDocsToSignRequest(signRequest, true, j, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            j++;
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
                                 User creator = userService.createUserWithEppn(metadatas.get("Creator"));

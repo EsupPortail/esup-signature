@@ -7,7 +7,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import ListSignRequestUi from "/static/js/modules/ui/signrequests/ListSignRequestUi.js";
-    new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${_csrf}]]);
+    new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>

@@ -320,14 +320,16 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	@Transactional
+	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
 					if(multipartFiles[0].getContentType().equals("application/pdf") && scanSignatureFields) {
-						signRequest.getSignRequestParams().addAll(signRequestParamsService.scanSignatureFields(new FileInputStream(file)));
+						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
+						signRequest.getSignRequestParams().addAll(signRequestParams);
 					} else if(multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
@@ -340,7 +342,7 @@ public class SignRequestService {
 				document.setParentId(signRequest.getId());
 				file.delete();
 			} catch (IOException e) {
-				throw new EsupSignatureIOException("", e);
+				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
 			}
 		}
 	}
@@ -1423,11 +1425,8 @@ public class SignRequestService {
 	@Transactional
 	public List<SignRequestParams> getToUseSignRequestParams(long id) {
 		SignRequest signRequest = getById(id);
-		int index = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-//		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
-//			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
-//		}
-		return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+		int signOrderNumbr = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumbr)).collect(Collectors.toList());
 	}
 
 	@Transactional
