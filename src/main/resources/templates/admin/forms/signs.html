@@ -34,7 +34,7 @@
                     <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " href="#" onclick="return false;">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>

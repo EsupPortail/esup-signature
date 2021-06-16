@@ -443,8 +443,11 @@ public class FormService {
 	public void updateSignRequestParams(Long formId) throws EsupSignatureIOException {
 		Form form = getById(formId);
 		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream(), 0);
+
+		form.getSignRequestParams().removeIf(signRequestParams -> findedSignRequestParams.stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos())));
+
 		for(SignRequestParams signRequestParams : findedSignRequestParams) {
-			if(form.getSignRequestParams().stream().noneMatch(s -> s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos()))) {
+			if(form.getSignRequestParams().stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos()))) {
 				form.getSignRequestParams().add(signRequestParams);
 			}
 		}
