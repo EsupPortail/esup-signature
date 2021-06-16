@@ -27,7 +27,7 @@
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                            href="/" class="btn btn-transparent text-left">
+                            href="/user/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger d-none d-md-inline" th:text="${nbToSign}">
                         </span>

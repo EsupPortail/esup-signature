@@ -55,22 +55,18 @@ export class SignPosition extends EventFactory {
     }
 
     changeSignImage(imageNum, signRequestParams) {
-        signRequestParams.signImageNumber = imageNum;
-        if(imageNum != null && imageNum >= 0) {
-            if (this.signImages != null) {
-                console.debug("change sign image to " + imageNum);
-                if (imageNum == null) {
-                    imageNum = 0;
-                }
-                let img = null;
-                if(this.signImages[imageNum] != null) {
-                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-                    signRequestParams.cross.css("background-image", "url('" + img + "')");
-                    let sizes = this.getImageDimensions(img);
-                    sizes.then(result => signRequestParams.changeSignSize(result));
-                }
+        if(imageNum != null && imageNum >= 0 && this.signImages != null && imageNum <= this.signImages.length - 1) {
+            signRequestParams.signImageNumber = imageNum;
+            console.debug("change sign image to " + imageNum);
+            let img = null;
+            if(this.signImages[imageNum] != null) {
+                img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                signRequestParams.cross.css("background-image", "url('" + img + "')");
+                let sizes = this.getImageDimensions(img);
+                sizes.then(result => signRequestParams.changeSignSize(result));
             }
         } else if(imageNum < 0) {
+            signRequestParams.signImageNumber = imageNum;
             let self = this;
             this.convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
                 signRequestParams.cross.css("background-image", "url('" + img + "')");
