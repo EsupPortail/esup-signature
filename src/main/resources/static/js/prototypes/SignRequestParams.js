@@ -329,7 +329,10 @@ export class SignRequestParams  extends EventFactory {
             this.cross.css('height', (this.signHeight * this.currentScale));
             this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
         }
-        this.simulateDrop();
+        if(this.firstLaunch) {
+            this.firstLaunch = false;
+            this.simulateDrop();
+        }
     }
 
     show() {

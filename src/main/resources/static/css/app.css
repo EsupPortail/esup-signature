@@ -515,12 +515,16 @@ input:checked + .slider:before {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    padding: 0;
+    padding: 2px;
     border: 1px solid #acacac;
     background: rgba(255, 255, 255, .5);
     resize: none;
     z-index: 6;
     pointer-events: all;
+}
+
+.sign-textarea:focus {
+    background-color: rgba(0, 54, 255, 0.13)
 }
 
 .div-extra-top {
