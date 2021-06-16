@@ -21,6 +21,7 @@
         }
     }
     let user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]");
+    let creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
