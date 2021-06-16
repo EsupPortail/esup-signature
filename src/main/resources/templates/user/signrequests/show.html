@@ -9,6 +9,11 @@
 <head th:replace="fragments/head"></head>
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
+<script language="JavaScript">
+    /*<![CDATA[*/
+    let userEppn = "[[${user.eppn}]]";
+    /*]]>*/
+</script>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
@@ -16,7 +21,6 @@
 
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
-
     let signable = [[${signable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
     if (signable && currentSignType === 'nexuSign') {
