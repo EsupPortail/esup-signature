@@ -11,7 +11,16 @@
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
 <script language="JavaScript">
     /*<![CDATA[*/
-    let userEppn = "[[${user.eppn}]]";
+    class User {
+        constructor(id, eppn, name, firstname) {
+            this.id = id;
+            this.eppn = eppn;
+            this.login = eppn.split("@")[0];
+            this.name = name;
+            this.firstname = firstname;
+        }
+    }
+    let user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]");
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
