@@ -328,8 +328,11 @@ export class SignRequestParams  extends EventFactory {
             this.cross.css('width', (this.signWidth * this.currentScale));
             this.cross.css('height', (this.signHeight * this.currentScale));
             this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
+        } else {
+            this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
+            this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
         }
-        if(this.firstLaunch) {
+        if(this.firstLaunch && result != null) {
             this.firstLaunch = false;
             this.simulateDrop();
         }
@@ -607,8 +610,8 @@ export class SignRequestParams  extends EventFactory {
     resizeText() {
         let fontSize = this.fontSize * this.currentScale * this.signScale;
         this.textareaPart.css("font-size", Math.round(fontSize));
-        this.signWidth = this.textareaPart.css('width') / this.currentScale;
-        this.signHeight = this.textareaPart.css('height') / this.currentScale;
+        this.signWidth = Math.round(parseInt(this.textareaPart.css("width")) / this.currentScale);
+        this.signHeight = Math.round(parseInt(this.textareaPart.css("height")) / this.currentScale);
         let text = this.textareaPart.val();
         this.textPart = text;
         let lines = text.split(/\r|\r\n|\n/);
