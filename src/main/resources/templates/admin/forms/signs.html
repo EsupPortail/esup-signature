@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="srpMap" type="java.util.Map<java.lang.Long, java.lang.Integer>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormSignsUi} from '/static/js/modules/ui/forms/FormSignsUi.js?version=[[${globalProperties.version}]]';
+    import {default as FormSignsUi} from '/static/js/modules/ui/forms/FormSignsUi.js?version=[[${version}]]';
     new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
 </script>
 <body>

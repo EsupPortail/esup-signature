@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <script th:inline="javascript" type="module">
-    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${globalProperties.version}]]';
+    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
 </script>
 <div th:replace="user/signrequests/cards/recipientscard :: recipientscard"></div>
