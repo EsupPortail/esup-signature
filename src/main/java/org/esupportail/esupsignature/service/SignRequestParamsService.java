@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -42,14 +43,20 @@ public class SignRequestParamsService {
     @Resource
     private ObjectMapper objectMapper;
 
+    public SignRequestParams getById(Long id) {
+        return signRequestParamsRepository.findById(id).get();
+    }
+
     public SignRequestParams createFromPdf(PDSignatureField pdSignatureField, List<Integer> annotationPages, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
-        signRequestParams.setxPos(xPosCentered);
-        signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
+//        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
+        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / 0.75f));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / .75f));
         signRequestParams.setSignPageNumber(annotationPages.get(0));
+        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth()));
+        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
@@ -64,11 +71,12 @@ public class SignRequestParamsService {
         return signRequestParamses;
     }
 
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
-            List<SignRequestParams> signRequestParamses = pdSignatureFieldsToSignRequestParams(pdDocument);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument);
             for(SignRequestParams signRequestParams : signRequestParamses) {
+                signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
 
@@ -78,7 +86,7 @@ public class SignRequestParamsService {
         }
     }
 
-    public List<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
@@ -88,6 +96,8 @@ public class SignRequestParamsService {
                 for (PDField pdField : acroForm.getFields()) {
                     if (pdField instanceof PDSignatureField) {
                         PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        PDSignature pdSignature = pdSignatureField.getSignature();
+                        if(pdSignature != null) { continue; }
                         List<Integer> annotationPages = new ArrayList<>();
                         List<PDAnnotationWidget> kids = pdField.getWidgets();
                         if (kids != null) {
@@ -147,4 +157,5 @@ public class SignRequestParamsService {
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
+
 }

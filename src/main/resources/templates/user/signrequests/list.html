@@ -7,7 +7,7 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import ListSignRequestUi from "/static/js/modules/ui/signrequests/ListSignRequestUi.js";
-    new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${_csrf}]]);
+    new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -108,7 +108,7 @@
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                 <td class="w-20 d-none d-lg-table-cell">
-                                    <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
+                                    <input type="checkbox" autocomplete="off" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                                            th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
                                            th:data-id-signbook="${signRequest.parentSignBook.id}">
                                 </td>

@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.Map<String, java.util.List<String>>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FormUi} from "/static/js/modules/ui/forms/FormUi.js";
+    import {default as FormUi} from "/static/js/modules/ui/forms/FormFieldsUi.js";
     new FormUi("managers", [[${form.id}]], [[${preFillTypes}]]);
 </script>
 <body>
@@ -34,7 +34,7 @@
                     <a class="nav-link" th:href="'/manager/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="return false;">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/manager/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
                 </li>
             </ul>
             <br>
@@ -61,7 +61,7 @@
                     <tbody>
                     <th:block th:each="field : ${form.fields}">
                         <tr>
-                            <form th:name="field-update" th:id="${field.id}" th:action="'/manager/forms/field/' + ${field.id} + '/update'" th:method="'put'">
+                            <form th:name="field-update" th:id="${field.id}" th:action="'/manager/forms/fields/' + ${field.id} + '/update'" th:method="'put'">
                             <td><span th:text="${field.name}"></span></td>
                             <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                             <td>

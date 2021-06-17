@@ -205,7 +205,7 @@ public class SignBookService {
         }
     }
 
-    public void importWorkflow(SignBook signBook, Workflow workflow, List<JsonExternalUserInfo> externalUsersInfos){
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<JsonExternalUserInfo> externalUsersInfos) {
         logger.info("import workflow steps in signBook " + signBook.getName() + " - " +signBook.getId());
         for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
             List<String> recipientEmails = new ArrayList<>();
@@ -485,9 +485,11 @@ public class SignBookService {
 
 
     public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+        int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
+            i++;
         }
     }
 
@@ -503,7 +505,7 @@ public class SignBookService {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, "", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
-        signRequestService.addDocsToSignRequest(signRequest, multipartFiles);
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;
     }
@@ -554,14 +556,23 @@ public class SignBookService {
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             int i = 0;
-            for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                if(!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                    if (signRequest.getSignRequestParams().size() >= i + 1) {
-                        liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                    } else {
-                        break;
+            if(signRequest.getSignRequestParams().size() > 0) {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                        if (signRequest.getSignRequestParams().size() >= i + 1) {
+                            liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
+                        } else {
+                            break;
+                        }
+                        i++;
                     }
-                    i++;
+                }
+            } else {
+                for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    if(liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        liveWorkflowStep.getSignRequestParams().addAll(workflowStep.getSignRequestParams());
+                    }
                 }
             }
         }
@@ -587,6 +598,16 @@ public class SignBookService {
                 }
             }
         }
+    }
+
+    @Transactional
+    public List<SignRequest> getSignRequestByViewer(String userEppn) {
+        Set<SignRequest> signRequests = new HashSet<>();
+        List<SignBook> signBooks = signBookRepository.findByViewersContaining(userService.getUserByEppn(userEppn));
+        for (SignBook signBook : signBooks) {
+            signRequests.addAll(signBook.getSignRequests());
+        }
+        return new ArrayList<>(signRequests);
     }
 
 }

@@ -118,7 +118,7 @@ public class SignRequestController {
                        @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
-        if(statusFilter == null) statusFilter = "pending";
+        if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
         Page<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
@@ -151,8 +151,12 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
+        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
+            return "redirect:/user/";
+        }
         if (signRequest.getLastNotifDate() == null) {
             model.addAttribute("notifTime", 0);
         } else {
@@ -178,7 +182,7 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        model.addAttribute("toUseSignRequestParams", Collections.singletonList(signRequestService.getToUseSignRequestParams(id)));
+        model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
@@ -276,8 +280,10 @@ public class SignRequestController {
     public Object addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         SignRequest signRequest = signRequestService.getById(id);
+        int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
-            signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
+            i++;
         }
         return new String[]{"ok"};
     }
@@ -383,10 +389,10 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
-    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request, RedirectAttributes redirectAttributes) {
+    public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         signRequestService.delete(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:" + request.getHeader("referer");
+        return "redirect:" + httpServletRequest.getHeader("referer");
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")

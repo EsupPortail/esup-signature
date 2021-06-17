@@ -65,12 +65,10 @@ public class DataController {
 							 @RequestParam(value = "firstnames", required = false) List<String> firstnames,
 							 @RequestParam(value = "phones", required = false) List<String> phones,
 							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
-		User user = (User) model.getAttribute("user");
-		User authUser = (User) model.getAttribute("authUser");
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			Data data = dataService.addData(id, user, authUser);
-			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, user, authUser, false);
+			Data data = dataService.addData(id, userEppn, authUserEppn);
+			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, userEppn, authUserEppn, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
@@ -109,7 +107,7 @@ public class DataController {
 							   @RequestParam(required = false) List<String> targetEmails,
 							   RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
 		try {
-			SignBook signBook = dataService.initSendData(id, userEppn, recipientEmails, targetEmails, authUserEppn);
+			SignBook signBook = dataService.initSendData(id, targetEmails, recipientEmails, userEppn, authUserEppn);
 			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();

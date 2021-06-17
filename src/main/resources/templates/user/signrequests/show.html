@@ -9,6 +9,21 @@
 <head th:replace="fragments/head"></head>
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
+<script language="JavaScript">
+    /*<![CDATA[*/
+    class User {
+        constructor(id, eppn, name, firstname) {
+            this.id = id;
+            this.eppn = eppn;
+            this.login = eppn.split("@")[0];
+            this.name = name;
+            this.firstname = firstname;
+        }
+    }
+    let user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]");
+    let creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
+    /*]]>*/
+</script>
 <script th:inline="javascript" type="module">
     import {Nexu} from "/static/js/modules/ui/signrequests/Nexu.js";
     import {SignUi} from "/static/js/modules/ui/signrequests/SignUi.js";
@@ -16,7 +31,6 @@
 
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
-
     let signable = [[${signable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
     if (signable && currentSignType === 'nexuSign') {
@@ -61,6 +75,27 @@
         [[${signRequest.parentSignBook.signRequests.size()}]]
     );
 </script>
+<!--<script>-->
+<!--    var clicked = false, clickY;-->
+<!--    $(document).on({-->
+<!--        'mousemove': function(e) {-->
+<!--            clicked && updateScrollPos(e);-->
+<!--        },-->
+<!--        'mousedown': function(e) {-->
+<!--            clicked = true;-->
+<!--            clickY = e.pageY;-->
+<!--        },-->
+<!--        'mouseup': function() {-->
+<!--            clicked = false;-->
+<!--            $('html').css('cursor', 'auto');-->
+<!--        }-->
+<!--    });-->
+
+<!--    var updateScrollPos = function(e) {-->
+<!--        $('html').css('cursor', 'row-resize');-->
+<!--        $(window).scrollTop($(window).scrollTop() + (clickY - e.pageY));-->
+<!--    }-->
+<!--</script>-->
 <main role="main">
     <div class="wrapper">
         <nav th:insert="/fragments/sides/side-sign"></nav>

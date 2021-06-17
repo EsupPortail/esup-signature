@@ -31,7 +31,7 @@ public class LiveWorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @ManyToMany(cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
     @ManyToOne

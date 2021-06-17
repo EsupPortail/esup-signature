@@ -4,13 +4,16 @@
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
     <div class="ml-1 mt-3">
         <div class="hr sidebar-label">Statut</div>
+        <div class="card card-body bg-light">
 <!--        <div th:if="${signRequest != null}" th:include="user/signrequests/includes/status"></div>-->
-        <th:block th:if="${signRequest != null}">
-        <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
-        </th:block>
-        <th:block th:unless="${signRequest != null}">
-            <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
-        </th:block>
+            <th:block th:if="${signRequest != null}">
+                <p>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></p>
+                <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+            </th:block>
+            <th:block th:unless="${signRequest != null}">
+                <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
+            </th:block>
+        </div>
 <!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
 <!--        <button data-toggle="modal" data-target="#signAllModal"-->
 <!--                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"-->

@@ -27,7 +27,7 @@
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white">
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
-                            href="/" class="btn btn-transparent text-left">
+                            href="/user/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger d-none d-md-inline" th:text="${nbToSign}">
                         </span>
@@ -393,8 +393,11 @@
                 <div class="modal-footer">
                     <button type="submit" id="sendButton" class="btn btn-success d-none"></button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" id="sendDraftButton" class="btn btn-success">
+                        <i class="fas fa-save"></i> Annoter avant envoi
+                    </button>
                     <button type="button" id="sendPendingButton" class="btn btn-success">
-                        <i class="fas fa-paper-plane"></i> Envoyer la demande
+                        <i class="fas fa-paper-plane"></i> Envoyer immédiatement la demande
                     </button>
                 </div>
             </form>
