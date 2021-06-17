@@ -3,8 +3,8 @@
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as UserUi} from '/static/js/modules/ui/users/UserUi.js?version=[[${globalProperties.version}]]';
-    import {UserParamsHelp} from '/static/js/modules/help/UserParamsHelp.js?version=[[${globalProperties.version}]]';
+    import {default as UserUi} from '/static/js/modules/ui/users/UserUi.js?version=[[${version}]]';
+    import {UserParamsHelp} from '/static/js/modules/help/UserParamsHelp.js?version=[[${version}]]';
     new UserUi();
     let help = new UserParamsHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]]);
     help.autoStart();

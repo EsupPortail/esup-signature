@@ -25,9 +25,9 @@
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
-    import {Nexu} from '/static/js/modules/ui/signrequests/Nexu.js?version=[[${globalProperties.version}]]';
-    import {SignUi} from '/static/js/modules/ui/signrequests/SignUi.js?version=[[${globalProperties.version}]]';
-    import {SignRequestHelp} from '/static/js/modules/help/SignRequestHelp.js?version=[[${globalProperties.version}]]';
+    import {Nexu} from '/static/js/modules/ui/signrequests/Nexu.js?version=[[${version}]]';
+    import {SignUi} from '/static/js/modules/ui/signrequests/SignUi.js?version=[[${version}]]';
+    import {SignRequestHelp} from '/static/js/modules/help/SignRequestHelp.js?version=[[${version}]]';
 
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
@@ -209,7 +209,7 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${globalProperties.version}]]';
+                    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
                     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
                     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
                 </script>

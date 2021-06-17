@@ -4,7 +4,7 @@
 <head th:replace="fragments/head"></head>
 <body>
 <script type="module">
-    import {WorkflowUi} from '/static/js/modules/ui/workflows/WorkflowUi.js?version=[[${globalProperties.version}]]';
+    import {WorkflowUi} from '/static/js/modules/ui/workflows/WorkflowUi.js?version=[[${version}]]';
     new WorkflowUi();
 </script>
 <header th:replace="fragments/nav"></header>
