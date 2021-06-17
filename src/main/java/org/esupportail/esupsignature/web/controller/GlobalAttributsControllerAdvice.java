@@ -110,6 +110,7 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
+        model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
         try {
             model.addAttribute("dssStatus", ojService.checkOjFreshness());

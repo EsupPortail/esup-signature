@@ -16,7 +16,7 @@
         <div class="hr"><i class="fas fa-paper-plane mr-1"></i>Demandes envoyées</div>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=pending">
             En attente
-            <span title="Demandes en attente" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-warning d-none d-md-inline" th:text="${nbSignRequests}">
+            <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge badge-warning d-none d-md-inline" th:text="${nbSignRequests}">
             </span>
         </a>
         <a th:classappend="${statusFilter == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed.name()} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=completed">Signées</a>
@@ -25,7 +25,10 @@
         <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=followByMe">Demandes suivies</a>
         <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=sharedSign">Demandes que j'ai signées lors d'une délégation</a>
         <div class="hr"><i class="fab fa-firstdraft mr-1"></i>Brouillons</div>
-        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=draft">Brouillons</a>
+        <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=draft">Brouillons
+            <span title="Brouillons" th:if="${nbDraft > 0  && userEppn == authUserEppn}" class="badge badge-secondary d-none d-md-inline" th:text="${nbDraft}">
+            </span>
+        </a>
         <div class="hr"><i class="fas fa-trash-alt mr-1"></i>Corbeille</div>
         <a th:classappend="${statusFilter == 'deleted'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left" href="/user/signrequests/?statusFilter=deleted">Demandes supprimées</a>
     </div>
