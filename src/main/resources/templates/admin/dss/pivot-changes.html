@@ -56,8 +56,8 @@
                             <div th:each="certificate,iterCert : ${potentialSigners}"
                                  th:with="certId=${certificate.getDSSIdAsString()}"
                                  th:class="${'card mb-2 bg-' + ((certId == lotlSigningCertId)?'info text-white':'default')}">
-                                <div class="card-header cursor-pointer" th:data-target="${'#' + certId}"
-                                     data-toggle="collapse"
+                                <div class="card-header cursor-pointer" th:data-bs-target="${'#' + certId}"
+                                     data-bs-toggle="collapse"
                                      th:title="${(certId == lotlSigningCertId)?'Signing certificate':'Original keystore certificate'}">
                                     <span class="certificate-header" th:text="${'Certificate Id = ' + certId}"></span>
                                 </div>
@@ -92,7 +92,7 @@
                                    th:text="'(' + ${lotlLocation} + ')'" target="_blank"></a>
                                 <span class="lotl-change-warning" th:if="${lotl.url != lotlLocation}">
 								<i class="fa fa-exclamation-circle text-warning" title="Updated LOTL location"></i>
-								<span class="badge badge-warning"
+								<span class="badge bg-warning"
                                       th:text="#{label.summary.pivot.found.new.lotl}"></span>
 							</span>
                             </div>
@@ -103,7 +103,7 @@
                                 <div th:class="${'card mb-2 bg-' +
 									((certId == lotlSigningCertId)?'info text-white':((certStatus == 'ADDED')?'success text-white':((certStatus == 'REMOVED')?'danger text-white':'default')))}">
                                     <div class="card-header cursor-pointer"
-                                         th:data-target="${'#' + pivotId + '-' + certId}" data-toggle="collapse"
+                                         th:data-bs-target="${'#' + pivotId + '-' + certId}" data-bs-toggle="collapse"
                                          th:title="${((certId == lotlSigningCertId)?'Signing certificate':((certStatus == 'ADDED')?'Added certificate':
 										((certStatus == 'REMOVED')?'Removed certificate':'Certificate')))}">
                                         <span class="certificate-header"

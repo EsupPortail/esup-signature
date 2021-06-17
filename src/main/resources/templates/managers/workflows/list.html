@@ -14,7 +14,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-btn-simple" >
-                <a title="Créer un nouveau circuit" data-toggle="modal" data-target="#newSignBook" type="button"
+                <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newSignBook" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -24,7 +24,7 @@
                     <div class="input-group mb-3">
                     </div>
                     <table class="table table-sm table-borderless table-hover table-striped">
-                        <thead class="thead-dark">
+                        <thead class="table-dark">
                         <tr>
                             <th>Nom</th>
                             <th>Créé par</th>
@@ -65,7 +65,7 @@
                                 <td class="text-center">
                                     <div class="position-relative">
                                         <button type="button" th:id="'menu-toggle-' + ${workflow.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${workflow.title}"
-                                                th:data-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-toggle="collapse">
+                                                th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${workflow.id}">
@@ -82,7 +82,7 @@
                                                     <i class="fas fa-binoculars pr-2"></i> Scanner la source
                                                 </a>
                                                 <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
-                                                   data-toggle="modal" th:data-target="'#modal-warning-' + ${workflow.id}">
+                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>
@@ -94,7 +94,7 @@
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/manager/workflows/' + ${workflow.id}" th:method="delete">
                                                     <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal"
+                                                        <button type="button" class="close" data-bs-dismiss="modal"
                                                                 aria-label="Close">
                                                             <i class="fas fa-times"></i>
                                                         </button>
@@ -106,7 +106,7 @@
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-outline pull-left"
-                                                                data-dismiss="modal">Non
+                                                                data-bs-dismiss="modal">Non
                                                         </button>
                                                         <button type="submit"
                                                                 class="btn btn-outline pull-left btn-danger">
@@ -134,7 +134,7 @@
             <form th:action="'/manager/workflows'" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -149,7 +149,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-success">Creer</button>
                 </div>
             </form>

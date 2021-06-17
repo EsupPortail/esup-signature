@@ -70,25 +70,25 @@
                                     </label>
                                 </div>
 
-                                <button type="submit" class="btn btn-success float-right ml-2 mb-2">
+                                <button type="submit" class="btn btn-success float-end ml-2 mb-2">
                                     <i class="fas fa-save"></i></button>
                             </form>
                             <form th:id="'del_' + ${iterator.index}"
                                   th:action="${fromAdmin == true ? '/admin/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
                                   th:method="delete">
                                 <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
-                                        class="btn btn-danger float-right del-step-btn">
+                                        class="btn btn-danger float-end del-step-btn">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
                             <table class="table table-sm table-bordered">
-                                <thead class="thead-dark">
+                                <thead class="table-dark">
                                 <tr>
                                     <th>Participants</th>
                                     <th>
                                         <button type="button" title="Ajouter un destinataire"
-                                                class="btn btn-sm btn-primary" data-toggle="modal"
-                                                th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                                class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                th:data-bs-target="'#reSendModal' + ${workflowStep.id}">
                                             <i class="fas fa-plus" aria-hidden="true"></i>
                                         </button>
                                     </th>
@@ -140,10 +140,10 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary float-right"
-                                            data-dismiss="modal">Annuler
+                                    <button type="button" class="btn btn-secondary float-end"
+                                            data-bs-dismiss="modal">Annuler
                                     </button>
-                                    <button type="submit" class="btn btn-success float-right">
+                                    <button type="submit" class="btn btn-success float-end">
                                         Ajouter
                                     </button>
                                 </div>

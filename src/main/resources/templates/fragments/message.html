@@ -17,7 +17,7 @@
 		<div th:id="'toast-message-' + ${messageNew.id}" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
 			<div class="toast-header pt-3">
 				<h4 class="mr-auto">Information !</h4>
-				<button type="button" class="close" data-dismiss="toast" aria-label="Close">
+				<button type="button" class="close" data-bs-dismiss="toast" aria-label="Close">
 					<i class="fas fa-times"></i>
 				</button>
 			</div>
@@ -25,7 +25,7 @@
 				<div th:utext="${messageNew.text}"></div>
 			</div>
 			<div class="toast-footer">
-				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
+				<button th:id="'markAsReadButton_' + ${messageNew.id}" class="btn btn-success mr-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fa fa-eye-slash"></i>
 					Marquer comme lu
 				</button>
@@ -35,7 +35,7 @@
 	</th:block>
 	<div id="toast-error" class="toast toast-sm bg-danger" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000" >
 		<div class="toast-body">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times text-white"></i>
 			</button>
 			<h4 class="mr-auto text-white">Erreur</h4>
@@ -45,7 +45,7 @@
 	</div>
 	<div id="toast-warn" class="toast toast-sm bg-warning" role="alert" aria-live="assertive" aria-atomic="true" data-delay="10000">
 		<div class="toast-body">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
 			<h4 class="mr-auto">Attention</h4>
@@ -55,7 +55,7 @@
 	</div>
 	<div id="toast-success" class="toast toast-sm bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
 		<div class="toast-body text-white">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
 			<h5 id="message-success"></h5>
@@ -64,7 +64,7 @@
 	</div>
 	<div id="toast-info" class="toast toast-sm bg-info" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
 		<div class="toast-body">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
 			<h5 id="message-info" class="text-white"></h5>
@@ -73,7 +73,7 @@
 	</div>
 	<div id="toast-custom" class="toast toast-md bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="30000">
 		<div class="toast-body">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
 			<h4 class="mr-auto text-dark">Message</h4>
@@ -83,14 +83,14 @@
 	</div>
 	<div id="toast-help" class="toast toast-xl bg-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="999999999">
 		<div class="toast-body toast-body-news">
-			<button type="button" class="close float-right" data-dismiss="toast" aria-label="Close">
+			<button type="button" class="close float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fas fa-times"></i>
 			</button>
 			<h4 class="mr-auto text-dark">Aide</h4>
 			<h5 id="message-help"></h5>
 		</div>
 		<div class="toast-footer">
-			<button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success mr-2 mb-2 float-right" data-dismiss="toast" aria-label="Close">
+			<button th:if="${form}" th:id="'markHelpAsReadButton_' + ${form.id}" class="btn btn-success mr-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
 				<i class="fa fa-eye-slash"></i>
 				Marquer comme lu
 			</button>

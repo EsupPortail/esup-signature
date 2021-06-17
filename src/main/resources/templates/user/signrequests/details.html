@@ -43,7 +43,7 @@
 <!--                    <i class="fas fa-ellipsis-v"></i>-->
 <!--                </a>-->
 <!--                <ul id="collapseExample" class="list-unstyled">-->
-<!--                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-toggle="modal" data-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>-->
+<!--                    <li><a title="Modifier les paramètres de signature" type="button" class="btn-floating bg-success waves-effect" data-bs-toggle="modal" data-bs-target="#signRequestParams"><i class="fas fa-signature"></i></a></li>-->
 <!--                </ul>-->
 <!--            </div>-->
 <!--            </th:block>-->
@@ -90,7 +90,7 @@
                     <textarea id="comment" class="form-control" name="comment"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-paper-plane" aria-hidden="true"></i> Envoyer
                     </button>
@@ -106,7 +106,7 @@
             <form th:action="'/user/signrequests/refuse/' + ${id}" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -115,7 +115,7 @@
                     <textarea id="refuseComment" class="form-control" name="comment" required></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="submit" class="btn btn-danger">Refuser</button>
                 </div>
             </form>

@@ -14,13 +14,13 @@
         </nav>
         <div id="content" class="content">
             <div id="addButton" class="fixed-action-btn-simple" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <a title="Ajouter un certificat" data-toggle="modal" data-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
+                <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary waves-effect"><i class="fas fa-plus"></i></a>
             </div>
             <div class="card mb-1 col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Certificats</b></h5>
                     <table class="table table-sm table-hover">
-                        <thead class="thead-dark">
+                        <thead class="table-dark">
                         <tr>
                             <th>Nom</th>
                             <th>Date d'expiration</th>
@@ -49,7 +49,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ajouter un certificat</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -58,7 +58,7 @@
                         <div class="form-group">
                             <label class="col-form-label">Keystore au format PKCS12</label>
                             <div class="custom-file">
-                                <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                                <input aria-describedby="inputGroupFileAddon01" class="form-control"
                                        data-buttonText="Choisir fichier" id="keystore" name="keystore"
                                        type="file" required/>
                                 <label class="custom-file-label" for="keystore" id="inputGroupLabel01">
@@ -80,7 +80,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <input type="submit" class="btn btn-success" value="Valider">
                     </div>
                 </form>

@@ -36,7 +36,7 @@
                     </form>
                     <div class="">
                         <table class="table table-sm table-striped table-hover table-borderless">
-                            <thead class="thead-dark">
+                            <thead class="table-dark">
                             <tr>
                                 <th class="w-20">Circuit</th>
                                 <th class="w-20">Titre</th>
@@ -82,7 +82,7 @@
                                     </td>
                                     <td>
                                         <div class="position-relative">
-                                            <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                            <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
                                             <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
@@ -90,7 +90,7 @@
                                                     <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
                                                         <i class="fas fa-eye pr-2"></i> Consulter
                                                     </a>
-                                                    <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" data-target="#modal-warning" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                                    <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                         <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                     </a>
                                                 </div>
@@ -103,7 +103,7 @@
                                                     <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/admin/signrequests/' + ${signRequest.id}" th:method="delete">
                                                         <div class="modal-header">
                                                             <h2>Attention</h2>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                                 <i class="fas fa-times"></i>
                                                             </button>
                                                         </div>
@@ -111,7 +111,7 @@
                                                             <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                                                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
                                                             <button type="submit" class="btn btn-danger">Oui</button>
                                                         </div>
                                                     </form>

@@ -50,12 +50,12 @@
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
-                    <xsl:with-param name="AdditionalClass" select="' float-right ml-2'" />
+                    <xsl:with-param name="AdditionalClass" select="' float-end ml-2'" />
                 </xsl:call-template>
 
                 <xsl:if test="@CounterSignature = 'true'">
                     <span>
-                        <xsl:attribute name="class">badge badge-info float-right</xsl:attribute>
+                        <xsl:attribute name="class">badge badge-info float-end</xsl:attribute>
                         Counter-signature
                     </span>
                 </xsl:if>
@@ -95,7 +95,7 @@
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:ValidationProcessTimestamp/dss:Conclusion" />
-                    <xsl:with-param name="AdditionalClass" select="' float-right ml-2'" />
+                    <xsl:with-param name="AdditionalClass" select="' float-end ml-2'" />
                 </xsl:call-template>
 
                 <span>Timestamp <xsl:value-of select="@Id"/></span>
@@ -178,7 +178,7 @@
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
-                    <xsl:with-param name="AdditionalClass" select="' float-right'" />
+                    <xsl:with-param name="AdditionalClass" select="' float-end'" />
                 </xsl:call-template>
 
                 <xsl:value-of select="concat(@Title, ' ')"/>
@@ -214,7 +214,7 @@
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
-                    <xsl:with-param name="AdditionalClass" select="' float-right'" />
+                    <xsl:with-param name="AdditionalClass" select="' float-end'" />
                 </xsl:call-template>
 
                 <xsl:value-of select="@Title"/>
@@ -254,7 +254,7 @@
 
                 <xsl:call-template name="badge-conclusion">
                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
-                    <xsl:with-param name="AdditionalClass" select="' float-right'" />
+                    <xsl:with-param name="AdditionalClass" select="' float-end'" />
                 </xsl:call-template>
 
                 <span><xsl:value-of select="@Title"/></span>
@@ -289,7 +289,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-right</xsl:attribute>
+                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@SignatureQualification"/>
                 </span>
 
@@ -312,7 +312,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-right</xsl:attribute>
+                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@TimestampQualification"/>
                 </span>
 
@@ -335,7 +335,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-right</xsl:attribute>
+                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@CertificateQualification"/>
                 </span>
 
@@ -461,7 +461,7 @@
                     </xsl:choose>
 
                     <div>
-                        <xsl:attribute name="class">constraint-tooltip float-right p-0 p-sm-2</xsl:attribute>
+                        <xsl:attribute name="class">constraint-tooltip float-end p-0 p-sm-2</xsl:attribute>
                         <xsl:choose>
                             <xsl:when test="@TrustAnchor = 'true'">
                                 <i>
@@ -474,7 +474,7 @@
                             <xsl:otherwise>
                                 <xsl:call-template name="badge-conclusion">
                                     <xsl:with-param name="Conclusion" select="dss:Conclusion" />
-                                    <xsl:with-param name="AdditionalClass" select="' float-right ml-2'" />
+                                    <xsl:with-param name="AdditionalClass" select="' float-end ml-2'" />
                                 </xsl:call-template>
                             </xsl:otherwise>
                         </xsl:choose>

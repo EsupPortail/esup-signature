@@ -41,7 +41,7 @@
                         </a>
                     </li>
                     <li>
-                        <a data-toggle="modal" data-target="#newFomModal" type="button"
+                        <a data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
                         </a>
@@ -52,11 +52,11 @@
                 <div id="myDocs" class="card-body">
                     <div id="listSignRequestTable" class="table-fix-head">
                         <table class="table table-borderless table-hover">
-                        <thead class="thead-dark">
+                        <thead class="table-dark">
                         <tr>
                             <th class="w-20 d-none d-lg-table-cell">
                                 <div class="position-relative">
-                                    <button type="button" id="menu-toggle-multiple" class="btn text-light toggle-mini-menu" title="Menu global" data-target="#menu-multiple" aria-controls="menu-multiple" data-toggle="collapse">
+                                    <button type="button" id="menu-toggle-multiple" class="btn text-light toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
@@ -150,7 +150,7 @@
                                 </td>
                                 <td>
                                     <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-toggle="collapse">
+                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
@@ -164,7 +164,7 @@
                                                 <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                                                     <i class="fas fa-download pr-2"></i> Télécharger
                                                 </a>
-                                                <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-toggle="modal" th:data-target="'#modal-warning-' + ${signRequest.id}">
+                                                <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>
@@ -177,7 +177,7 @@
                                                 <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     </div>
@@ -185,7 +185,7 @@
                                                         <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
                                                     </div>
                                                     <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Non</button>
+                                                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
                                                         <button type="submit" class="btn btn-danger">Oui</button>
                                                     </div>
                                                 </form>
@@ -218,7 +218,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -232,7 +232,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <button id="massSignButton"
                         class="btn btn-success" title="Signer" autofocus>
                     Lancer la signature en masse <i class="fas fa-arrow-alt-circle-right"></i>
@@ -246,7 +246,7 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -254,7 +254,7 @@
                 <div th:replace="fragments/new"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
@@ -275,7 +275,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-dismiss="modal" onclick="location.reload();">
+                <button id="closeModal" type="button" class="btn btn-secondary align-self-center" data-bs-dismiss="modal" onclick="location.reload();">
                     Fermer
                 </button>
                 <button id="validModal" onclick="location.href = '/user/reports';" class="btn btn-secondary">Voir le rapport complet</button>

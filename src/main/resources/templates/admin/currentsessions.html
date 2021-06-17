@@ -23,14 +23,14 @@
                 <div class="card mb-1 col-10 mx-auto">
                     <div class="card-body">
                         <h5>
-                            <a data-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
+                            <a data-bs-toggle="collapse" th:href="'#sess-' + ${currentSession.hashCode()}" role="button"
                                aria-expanded="false"
                                th:aria-controls="'sess-' + ${currentSession.hashCode()}">
                                 <span th:text="${currentSession.key} + ' : ' + ${currentSession.value.size()} + ' session(s)'"></span></a>
                         </h5>
                         <div class="collapse" th:id="'sess-' + ${currentSession.hashCode()}">
                             <table class="table table-hover table-responsive">
-                                <tr class="thead-dark">
+                                <tr class="table-dark">
                                     <th>Session ID</th>
                                     <th>Creation time</th>
                                     <th>Last access time</th>
@@ -53,7 +53,7 @@
                                             <ul>
                                                 <th:block th:each="attributeName : ${userSession.attributeNames}">
                                                     <li>
-                                                        <a data-toggle="collapse"
+                                                        <a data-bs-toggle="collapse"
                                                            th:href="'#attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"
                                                            role="button" aria-expanded="false"
                                                            th:aria-controls="'attr-' + ${currentSession.hashCode()} + '-' + ${#strings.replace(attributeName, '.','')}"><span
