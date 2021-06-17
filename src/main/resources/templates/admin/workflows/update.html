@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="targetTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.DocumentIOType>"*/-->
 <head th:replace="fragments/head"></head>
 <script type="module">
-    import {WorkflowUi} from "/static/js/modules/ui/workflows/WorkflowUi.js";
+    import {WorkflowUi} from '/static/js/modules/ui/workflows/WorkflowUi.js?version=[[${version}]]';
     new WorkflowUi();
 </script>
 <body>
@@ -61,7 +61,7 @@
                             <label for="visibility">Diffusion du workflow pour les rôles</label>
                         </div>
                         <div class="form-group">
-                            <label for="name">
+                            <label for="roles">
                                 Rôle
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
                                     ce formulaire</small></div>

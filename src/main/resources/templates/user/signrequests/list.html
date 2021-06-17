@@ -6,7 +6,7 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import ListSignRequestUi from "/static/js/modules/ui/signrequests/ListSignRequestUi.js";
+    import ListSignRequestUi from '/static/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${version}]]';
     new ListSignRequestUi([[${signRequests}]], [[${statusFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>

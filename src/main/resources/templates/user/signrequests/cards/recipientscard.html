@@ -80,8 +80,7 @@
     </div>
 </div>
 <script type="module">
-    import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
-
+    import {default as SelectUser} from '/static/js/modules/utils/SelectUser.js?version=[[${version}]]';
     new SelectUser("recipientsEmail", null, null, [[${_csrf}]]);
 </script>
 </html>
