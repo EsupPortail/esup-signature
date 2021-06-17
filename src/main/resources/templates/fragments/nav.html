@@ -342,7 +342,7 @@
                         <label for="inputGroupFile02">Choix des fichier à signer</label>
                         <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
-                            import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
+                            import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${globalProperties.version}]]';
                             new FilesInput($("#inputGroupFile02"));
                         </script>
                     </div>
