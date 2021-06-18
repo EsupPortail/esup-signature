@@ -456,7 +456,7 @@ public class WorkflowService {
    }
 
     public void delete(Workflow workflow) throws EsupSignatureException {
-        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow);
+        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow.getId());
         if(signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
             List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
             for(LiveWorkflow liveWorkflow : liveWorkflows) {
