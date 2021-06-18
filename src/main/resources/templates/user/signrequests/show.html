@@ -10,25 +10,29 @@
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
 <script language="JavaScript">
+    // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
-        constructor(id, eppn, name, firstname) {
+        constructor(id, eppn, name, firstname, email) {
             this.id = id;
             this.eppn = eppn;
             this.login = eppn.split("@")[0];
             this.name = name;
             this.firstname = firstname;
+            this.email = email;
         }
     }
-    let user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]");
-    let creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
+    const user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
+    const creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
+    const currentStepNumber = "[[${currentStepNumber}]]";
+    const supervisors = "[[${supervisors}]]";
+    const isLastStep = "[[${isLastStep}]]";
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
     import {Nexu} from '/static/js/modules/ui/signrequests/Nexu.js?version=[[${version}]]';
     import {SignUi} from '/static/js/modules/ui/signrequests/SignUi.js?version=[[${version}]]';
     import {SignRequestHelp} from '/static/js/modules/help/SignRequestHelp.js?version=[[${version}]]';
-
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
     let signable = [[${signable}]];

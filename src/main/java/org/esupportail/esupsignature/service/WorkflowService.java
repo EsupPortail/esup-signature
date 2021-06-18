@@ -270,6 +270,7 @@ public class WorkflowService {
                                 documentName = metadatas.get("Title");
                             }
                             SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
+                            signBook.getLiveWorkflow().setWorkflow(workflow);
                             SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
