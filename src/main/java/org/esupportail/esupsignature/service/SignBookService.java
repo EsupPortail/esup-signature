@@ -89,8 +89,16 @@ public class SignBookService {
         return list;
     }
 
-    public List<SignBook> getSignBooksByWorkflow(Workflow workflow) {
+    @Transactional
+    public List<SignBook> getSignBooksByWorkflow(Long workflowId) {
+        Workflow workflow = workflowService.getById(workflowId);
         return signBookRepository.findByLiveWorkflowWorkflow(workflow);
+    }
+
+    @Transactional
+    public int countSignBooksByWorkflow(Long workflowId) {
+        Workflow workflow = workflowService.getById(workflowId);
+        return signBookRepository.countByLiveWorkflowWorkflow(workflow);
     }
 
     public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
