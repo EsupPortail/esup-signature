@@ -63,14 +63,12 @@
     </select>
     <div id="tempUsers-recipientsEmailsWiz"></div>
     <br/>
-    <label>
-        Tous les participants doivent-ils signer ?
-    </label>
-    <label class="switch">
+    <div class="form-check form-switch form-switch-md mb-2">
+        <label class="form-check-label">
+            Tous les participants doivent-ils signer ?
+        </label>
         <input type="checkbox" class="form-check-input" name="allSignToComplete"/>
-        <span class="slider round"></span>
-    </label>
-    <br/>
+    </div>
     <label>Type de signature :</label>
     <select class="form-select" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
@@ -85,7 +83,7 @@
     <i class="fas fa-flag-checkered"></i> Terminer
 </button>
 </form>
-<form id="wiz4Form" th:if="${workflow != null}" th:action="'/delete-workflow/' + ${workflow.id}" method="post">
+<form id="wiz4Form" th:if="${workflow != null}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="delete">
     <input type="hidden" name="name" th:value="${name}">
     <button type="submit" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
         <i class="fas fa-angle-left"></i> Annuler
