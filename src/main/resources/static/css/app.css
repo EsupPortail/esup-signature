@@ -587,7 +587,7 @@ input:checked + .slider:before {
 
 #sidebar {
     top: 50px;
-    padding-right: 10px;
+    padding-right: 5px;
     position: fixed;
     z-index: 1039;
     min-width: 260px;
