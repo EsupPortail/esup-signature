@@ -110,7 +110,7 @@ public class SignRequestService {
 	private CustomMetricsService customMetricsService;
 
 	@Resource
-	public SignBookService signBookService;
+	private SignBookService signBookService;
 
 	@Resource
 	private SignService signService;

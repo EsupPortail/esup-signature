@@ -36,11 +36,11 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <form id="formUpdateModel" th:action="'/manager/forms/update-model/' + ${form.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             Modele actuel : <a th:href="'/manager/forms/get-file/' + ${form.id}" target="_blank">
                             <span th:text="${form.document.fileName}"></span></a>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <div class="custom-file">
                                 <input id="multipartModel" type="file" accept="application/pdf"
                                        class="form-control" name="multipartModel" value="Choose a file"
@@ -52,23 +52,23 @@
                     </form>
                     <form id="formUpdate" th:action="'/manager/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="name">Titre (titre affiché aux utilisateurs)</label>
                             <input id="title" class="form-control" type="text" th:field="*{title}"/>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="name">Nom (nom technique)</label>
                             <input id="name" class="form-control" type="text" th:field="*{name}"/>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="description">Description</label>
                             <input id="description" class="form-control" type="text" th:field="*{description}"/>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="message">Message d'accueil</label>
                             <textarea id="message" class="summer-note"   th:field="*{message}"></textarea>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
@@ -77,7 +77,7 @@
                                 </div>
                             </th:block>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="name">
                                 Rôle
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
@@ -89,7 +89,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group" id="managers">
+                        <div class="form-group mb-3" id="managers">
                             <label for="managersSelect"><strong>Superviseur(s) du formulaire</strong>
                                 <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
                                         type="button">
@@ -107,7 +107,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="workflowType">Type de workflow</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
                                 <th:block th:each="workflowType : ${workflowTypes}">
@@ -116,7 +116,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="workflowType" class="col-form-label">Type de pré-remplissage</label>
                             <select class="slim-select-simple" id="prefillType" th:field="*{preFillType}">
                                 <option value="">Pas de pré-remplissage</option>

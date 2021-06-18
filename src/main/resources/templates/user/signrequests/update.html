@@ -65,8 +65,8 @@
                                                     <form id="command" th:action="'/user/signrequests/force-delete/'+ ${signRequest.id}" th:method="delete">
                                                         <div class="modal-header">
                                                             <h2>Attention</h2>
-                                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                                                <i class="fas fa-times"></i>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                                                             </button>
                                                         </div>
                                                         <div class="modal-body">
@@ -106,13 +106,13 @@
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h3 class="modal-title" id="fastSignRequestLabel">Ajouter un document</h3>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="col-lg-12">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <div class="custom-file">
                                 <input required class="form-control" data-buttontext="Choisir fichier" id="inputGroupFile02" name="multipartFiles" type="file">
                                 <label class="custom-file-label" for="inputGroupFile02" id="inputGroupLabel02">
@@ -139,14 +139,14 @@
             <form th:action="'/user/signbooks/add-live-step/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter une étape</h3>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group" id="_signType_div_id">
+                    <div class="form-group mb-3" id="_signType_div_id">
                         <label for="stepNumber">Ajouter cette étape :</label>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
                                 <option th:value="0" th:text="${'Au début'}"></option>
                                 <!--/*@thymesVar id="allSteps" type="List<WorkflowStep>"*/-->
@@ -155,11 +155,11 @@
                             </select>
                         </div>
                         <label for="recipientsEmails2">Choisir les participants</label>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <select name="recipientsEmails" id="recipientsEmails2" size="5" multiple="multiple" required="required"></select>
                         </div>
                         <br><br>
-                        <div class="form-group" id="allSignToComplete-update">
+                        <div class="form-group mb-3" id="allSignToComplete-update">
                             <label for="allSignToComplete">
                                 Tous les participants doivent-ils signer ?
                             </label>
@@ -194,8 +194,8 @@
             <form th:action="'/user/signbooks/pending/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title">Démarrer le circuit</h3>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">

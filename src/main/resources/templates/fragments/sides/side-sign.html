@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
-    <div class="ml-1 mt-3">
+    <div class="ms-1 mt-3">
         <div class="hr sidebar-label">Statut</div>
         <div class="card card-body bg-light">
 <!--        <div th:if="${signRequest != null}" th:include="user/signrequests/includes/status"></div>-->
@@ -24,7 +24,7 @@
 <!--            <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>-->
 <!--        </button>-->
 <!--        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">-->
-<!--            <i class="ml-1 fas fa-comment"></i><i class="mr-2"></i> <span class="sidebar-label">Annoter</span>-->
+<!--            <i class="ms-1 fas fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
 

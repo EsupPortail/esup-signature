@@ -7,8 +7,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="attachmentLabel">Pièces Jointes</h3>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <form th:action="'/user/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -40,7 +40,7 @@
                     </table>
                     <div th:unless="${attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
                     <hr/>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">
                             <input aria-describedby="inputGroupLabel03" class="form-control"

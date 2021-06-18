@@ -60,7 +60,7 @@
 <form id="wiz-step-form">
 <h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape&nbsp;<span th:text="${signBook.liveWorkflow.liveWorkflowSteps.size() + 1}"></span></h4>
 <div class="col-12">
-    <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group">
+    <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group mb-3">
         <label for="userSignFirstWiz">
             Je dois signer ce document avant l'envoi ?
         </label>

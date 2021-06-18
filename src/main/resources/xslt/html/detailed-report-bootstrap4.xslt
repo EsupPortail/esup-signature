@@ -55,7 +55,7 @@
 
                 <xsl:if test="@CounterSignature = 'true'">
                     <span>
-                        <xsl:attribute name="class">badge badge-info float-end</xsl:attribute>
+                        <xsl:attribute name="class">badge bg-info float-end</xsl:attribute>
                         Counter-signature
                     </span>
                 </xsl:if>
@@ -289,7 +289,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
+                    <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@SignatureQualification"/>
                 </span>
 
@@ -312,7 +312,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
+                    <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@TimestampQualification"/>
                 </span>
 
@@ -335,7 +335,7 @@
                 <xsl:attribute name="data-toggle">collapse</xsl:attribute>
 
                 <span>
-                    <xsl:attribute name="class">badge badge-secondary float-end</xsl:attribute>
+                    <xsl:attribute name="class">badge bg-secondary float-end</xsl:attribute>
                     <xsl:value-of select="@CertificateQualification"/>
                 </span>
 
@@ -376,12 +376,12 @@
         <xsl:variable name="indicationText" select="$Conclusion/dss:Indication"/>
         <xsl:variable name="indicationCssClass">
             <xsl:choose>
-                <xsl:when test="$indicationText='TOTAL_PASSED'">badge-success</xsl:when>
-                <xsl:when test="$indicationText='PASSED'">badge-success</xsl:when>
-                <xsl:when test="$indicationText='INDETERMINATE'">badge-warning</xsl:when>
-                <xsl:when test="$indicationText='FAILED'">badge-danger</xsl:when>
-                <xsl:when test="$indicationText='TOTAL_FAILED'">badge-danger</xsl:when>
-                <xsl:otherwise>badge-secondary</xsl:otherwise>
+                <xsl:when test="$indicationText='TOTAL_PASSED'">bg-success</xsl:when>
+                <xsl:when test="$indicationText='PASSED'">bg-success</xsl:when>
+                <xsl:when test="$indicationText='INDETERMINATE'">bg-warning</xsl:when>
+                <xsl:when test="$indicationText='FAILED'">bg-danger</xsl:when>
+                <xsl:when test="$indicationText='TOTAL_FAILED'">bg-danger</xsl:when>
+                <xsl:otherwise>bg-secondary</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
 

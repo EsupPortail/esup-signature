@@ -75,7 +75,7 @@
                                 </td>
                                 <td class="d-inline-flex">
                                     <a type="button" title="Supprimer" th:href="'/user/users/shares/update/' + ${userShare.id}"
-                                            class="btn btn-warning mr-2">
+                                            class="btn btn-warning me-2">
                                         <i class="fas fa-pencil-alt text-white"></i>
                                     </a>
                                     <button type="button" title="Supprimer"
@@ -92,7 +92,7 @@
                                                       th:action="'/user/users/shares/del/' + ${userShare.id}"
                                                       th:method="delete">
                                                     <div class="modal-header">
-                                                        <button type="button" class="close" data-bs-dismiss="modal"
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Close">
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
@@ -129,7 +129,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ajouter une délégation</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal"
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -137,7 +137,7 @@
                 <form id="shareForm" th:action="'/user/users/shares/add'" method="post">
                     <div class="modal-body">
 
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="selectTarget">Type d'élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
                             <select class="slim-select-simple" id="selectTarget" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
@@ -167,7 +167,7 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label>Type de délégation</label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
@@ -186,16 +186,16 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="selectUsers">Choix des utilisateurs</label>
                             <select id="selectUsers" class="select-users" name="userIds" multiple="multiple"
                                     required="required"></select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="selectUsers">Date de début</label>
                             <input type="datetime-local" name="beginDate" class="form-control">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="selectUsers">Date de fin</label>
                             <input type="datetime-local" name="endDate" class="form-control">
                         </div>

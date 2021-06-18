@@ -15,7 +15,7 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <form action="/admin/signrequests" method="get">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Statut</span>
@@ -103,8 +103,8 @@
                                                     <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/admin/signrequests/' + ${signRequest.id}" th:method="delete">
                                                         <div class="modal-header">
                                                             <h2>Attention</h2>
-                                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                                                <i class="fas fa-times"></i>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                                                             </button>
                                                         </div>
                                                         <div class="modal-body">

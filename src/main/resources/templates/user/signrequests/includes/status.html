@@ -8,7 +8,7 @@
 			<i class="fab fa-firstdraft" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
-		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge badge-status bg-warning" th:title="#{'signbook.status.' + ${signBook.status}}">
+		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge badge-status bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-clock"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>

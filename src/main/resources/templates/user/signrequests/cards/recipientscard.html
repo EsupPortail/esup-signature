@@ -36,13 +36,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Paramètres de signature</h3>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <form th:action="'/user/signrequests/add-step/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
-                        <div class="form-group" id="_signType_div_id">
+                        <div class="form-group mb-3" id="_signType_div_id">
                             <label for="recipientsEmails">Choisir les participants</label>
                             <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
                                     required="required">

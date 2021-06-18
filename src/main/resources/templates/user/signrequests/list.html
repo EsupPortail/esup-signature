@@ -108,7 +108,7 @@
                         <th:block th:each="signRequest : ${signRequests}">
                             <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                 <td class="w-20 d-none d-lg-table-cell">
-                                    <input type="checkbox" autocomplete="off" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
+                                    <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                                            th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
                                            th:data-id-signbook="${signRequest.parentSignBook.id}">
                                 </td>
@@ -177,8 +177,8 @@
                                                 <form th:id="'signBookDel' + ${signRequest.parentSignBook.id}" th:action="'/user/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <h2>Attention</h2>
-                                                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                                                            <i class="fas fa-times"></i>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
@@ -218,8 +218,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="checkCertSignModalLabel">Signature électronique détectée</h3>
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <div class="modal-body">
@@ -246,8 +246,8 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <div class="modal-body">

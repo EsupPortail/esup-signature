@@ -88,7 +88,7 @@ export class SignRequestHelp {
                 $(this).addClass('disabled');
             }
             $(this).removeClass('introjs-button');
-            $(this).addClass('btn btn-sm btn-light ml-1 btn-outline-dark');
+            $(this).addClass('btn btn-sm btn-light ms-1 btn-outline-dark');
 
         });
     }
