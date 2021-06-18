@@ -6,17 +6,17 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm navbar-dark" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
+    <nav id="navbar" class="nav nav-pills navbar navbar-expand-sm" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''}
                           ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
         <button aria-label="Masquer la barre de gauche" type="button" id="sidebarCollapse"
-                class="btn btn-lg text-white float-left position-fixed">
+                class="btn btn-lg text-white float-start position-fixed">
             <i class="fas fa-bars"></i>
         </button>
         <button aria-label="Retour" type="button" id="returnButton"
-                class="btn btn-lg text-white float-left position-fixed d-none">
+                class="btn btn-lg text-white float-start position-fixed d-none">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar_toggle"
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar_toggle"
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -29,7 +29,7 @@
                     <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary'" title="Accueil" type="button"
                             href="/user/" class="btn btn-transparent text-left">
                         <i class="fas fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge badge-danger d-none d-md-inline" th:text="${nbToSign}">
+                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-md-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
@@ -50,7 +50,7 @@
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle" href="#" id="navbarDropdown"
-                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
@@ -60,20 +60,20 @@
                             <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
                         <div th:if="${managedForms.size() > 0}" class="dropdown-divider"></div>
-                        <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-toggle="modal"
-                           data-target="#wizModal"
+                        <a id="startWizardButton" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
+                           data-bs-target="#wizModal"
                            title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fas fa-magic"></i> Assistant de création de circuit
                         </a>
 <!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
-<!--                           data-toggle="modal"-->
-<!--                           data-target="#fastSignRequestModal"-->
+<!--                           data-bs-toggle="modal"-->
+<!--                           data-bs-target="#fastSignRequestModal"-->
 <!--                           title="Vous devez signer un document présent sur votre poste">-->
 <!--                            <i class="fas fa-signature"></i><span class="nav-item-label d-none d-xl-inline"> Auto signature</span>-->
 <!--                        </a>-->
 <!--                        <a role="button" href class="btn text-white btn-transparent text-left m-1" style="width: 250px;"-->
-<!--                           data-toggle="modal"-->
-<!--                           data-target="#sendSignRequestModal"-->
+<!--                           data-bs-toggle="modal"-->
+<!--                           data-bs-target="#sendSignRequestModal"-->
 <!--                           title="Demander la signature d'un document présent sur votre poste">-->
 <!--                            <i class="fas fa-paper-plane"></i><span class="nav-item-label d-none d-xl-inline"> Demander une signature</span>-->
 <!--                        </a>-->
@@ -93,7 +93,7 @@
                     <a class="btn btn-transparent text-left text-white dropdown-toggle"
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
-                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                       role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-lg-inline">Délégation</span>
                     </a>
                     <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarShareDropdown" >
@@ -123,7 +123,7 @@
                     <a href="/admin/signrequests" th:class="'btn text-white btn-transparent ' + ${adminMenu}"
                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary'">
                         <i class="fas fa-crown"></i><span class="nav-item-label d-none d-xxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge badge-danger d-none d-md-inline">
+                        <span title="Statut DSS" th:if="${dssStatus == null || dssStatus == true}" class="badge bg-danger d-none d-md-inline">
                         </span>
                     </a>
                 </li>
@@ -142,15 +142,15 @@
 <!--                </a>-->
 <!--                </li>-->
                 <li class="nav-item text-white">
-                    <a id="user-toggle" th:classappend="${paramMenu}" href="#user-infos"
-                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle mr-2"
-                       aria-controls="user-infos" data-toggle="collapse">
+                    <a id="user-toggle" th:classappend="${paramMenu}" type="button" href="#user-infos"
+                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle me-1"
+                       aria-controls="user-infos" data-bs-toggle="collapse">
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
-                    <a rel="noreferrer" data-toggle="modal"
-                       data-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-right mt-1 mr-1 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
+                    <a rel="noreferrer" data-bs-toggle="modal"
+                       data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-end m-1 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>
@@ -272,22 +272,17 @@
                   method="post" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h3 class="modal-title" id="fastSignRequestLabel">Signer un document présent sur votre poste de travail</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="col-lg-12">
-                        <div class="form-group">
-                            <div class="custom-file">
-                                <input required aria-describedby="inputGroupLabel01" class="custom-file-input"
-                                       data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles"
-                                       type="file">
-                                <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01"
-                                       aria-label="Choisir un document">
-                                    Choisir un document
-                                </label>
-                            </div>
+                        <div class="form-group mb-3">
+                            <input required aria-describedby="inputGroupLabel01" class="form-control"
+                                   data-buttontext="Choisir fichier" id="inputGroupFile01" name="multipartFiles"
+                                   type="file">
+                            <label class="custom-file-label" for="inputGroupFile01" id="inputGroupLabel01"
+                                   aria-label="Choisir un document">
+                            </label>
                         </div>
                         <br>
                         <label for="signType">Choisir un type de signature</label>
@@ -300,8 +295,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
-                    <button type="submit" id="fast-form-submit" class="btn btn-success float-right">Valider</button>
+                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" id="fast-form-submit" class="btn btn-success float-end">Valider</button>
                 </div>
             </form>
         </div>
@@ -314,8 +309,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Assistant de création de circuit</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <div class="modal-body">
@@ -333,12 +328,10 @@
                 <input type="hidden" id="pending" name="pending" value="false" />
                 <div class="modal-header">
                     <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="inputGroupFile02">Choix des fichier à signer</label>
                         <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
@@ -346,53 +339,49 @@
                             new FilesInput($("#inputGroupFile02"));
                         </script>
                     </div>
-                    <div class="form-group">
-                        <label for="signType2">Choisir un type de signature</label>
+                    <div class="form-group mb-3">
+                        <label class="form-label" for="signType2">Choisir un type de signature</label>
                         <select class="slim-select-simple" name="signType" id="signType2">
                             <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
-                        <br>
-                        <label for="recipientsEmails">Choisir les participants</label>
-                        <div class="form-group">
-                            <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
-                            </select>
-                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label"for="recipientsEmails">Choisir les participants</label>
+                        <select class="select-users" data-check="true" name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple" required="required">
+                        </select>
                         <div id="tempUsers-recipientsEmails"></div>
-                        <div class="form-group" id="allSignToComplete-simple">
-                            <label for="allSignToComplete">
-                                Tous les participants doivent-ils signer ?
-                            </label>
-                            <label class="switch">
-                                <input type="checkbox" name="allSignToComplete" id="allSignToComplete"/>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                        <div class="form-group">
-                            <label for="userSignFirst">
-                                Je dois signer ce document avant l'envoi ?
-                            </label>
-                            <label class="switch">
-                                <input type="checkbox" name="userSignFirst" id="userSignFirst"/>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
+                    </div>
+                    <div class="form-group mb-3" id="allSignToComplete-simple">
+                        <label for="allSignToComplete">
+                            Tous les participants doivent-ils signer ?
+                        </label>
+                        <label class="switch">
+                            <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="form-group mb-3">
+                    <div class="form-check form-switch form-switch-md">
+                        <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi ?</label>
+                        <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
+                    </div>
+                    </div>
+                    <div class="form-group mb-3">
                         <label for="recipientsCCEmails">Choisir les observateurs en copie</label>
-                        <div class="form-group">
-                            <select class="select-users" data-check="true" name="recipientsCCEmails" id="recipientsCCEmails" size="5" multiple="multiple">
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="comment" >Commentaire</label>
+                        <select class="select-users" data-check="true" name="recipientsCCEmails" id="recipientsCCEmails" size="5" multiple="multiple">
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="comment" >Commentaire</label>
                         <textarea id="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
-                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" id="sendButton" class="btn btn-success d-none"></button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <button type="button" id="sendDraftButton" class="btn btn-success">
                         <i class="fas fa-save"></i> Annoter avant envoi
                     </button>
@@ -409,8 +398,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="exampleModalLabel">Envoyer immédiatement</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <div class="modal-body">
@@ -428,8 +417,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Aide</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <div class="modal-body">

@@ -234,18 +234,22 @@ public class SignRequestService {
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
+				case "completed":
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.completed));
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.exported));
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.archived));
+					break;
 				default:
 					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
 					break;
 			}
 		} else {
+			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
 			signRequests.addAll(getToSignRequests(userEppn));
 			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 			signRequests.addAll(getSharedSignedSignRequests(userEppn));
-			signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
-			signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.draft));
 		}
 		return new ArrayList<>(signRequests);
 	}

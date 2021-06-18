@@ -736,7 +736,7 @@ export class SignPosition extends EventFactory {
             let fontSize = this.fontSize * this.currentScale * this.getCurrentSignParams().signScale;
             let textExtra = $("<textarea id='textExtra_" + this.currentSign + "' class='sign-textarea align-top visa-text' style='font-size:" + fontSize + "px;user-select: none;\n" +
                 "                        -moz-user-select: none;\n" +
-                "                        -khtml-user-select: none;\n" +
+                "                        -khtms-user-select: none;\n" +
                 "                        -webkit-user-select: none;\n" +
                 "                        -o-user-select: none;'>" +
                 defaultText +

@@ -29,7 +29,6 @@ export class WizUi {
 
     checkOnModalClose() {
         let workflowId = $("#wizWorkflowId").val();
-        this.div.html("");
         if(this.signBookId || workflowId) {
             let self = this;
             bootbox.confirm("Attention si vous fermez cette fenêtre, les modifications seront perdues", function(result) {
@@ -49,6 +48,7 @@ export class WizUi {
                     }
                     self.modal.modal('hide');
                     self.modal.unbind();
+                    self.div.html("");
                 } else {
                     self.modal.modal('show');
                 }

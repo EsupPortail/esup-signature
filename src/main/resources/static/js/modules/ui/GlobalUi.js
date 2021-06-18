@@ -104,7 +104,9 @@ export class GlobalUi {
             let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
             wizUi.startByRecipients();
         });
-
+        $("#user-toggle").on("click", function (e){
+            e.stopPropagation();
+        });
         this.bindKeyboardKeys();
     }
 
@@ -211,7 +213,7 @@ export class GlobalUi {
         var container = document.getElementsByClassName('user-infos')[0];
         var _opened = $("#user-infos").hasClass("collapse show");
         if (_opened === true && container !== event.target && !container.contains(event.target)) {
-            $("#user-toggle").click();
+            $("#user-infos").collapse('hide');
         }
     }
 
