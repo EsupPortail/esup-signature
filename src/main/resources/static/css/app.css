@@ -1031,6 +1031,10 @@ input[type="checkbox"]:not(:checked).required-field {
     margin-left: 0.03rem;
 }
 
+.annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
+    border: 1px solid transparent !important;
+}
+
 input[type="radio"] {
     cursor: pointer !important;
 }
