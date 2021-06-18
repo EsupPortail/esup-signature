@@ -10,6 +10,7 @@
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
 <script language="JavaScript">
+    // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
         constructor(id, eppn, name, firstname, email) {
@@ -21,11 +22,11 @@
             this.email = email;
         }
     }
-    let user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
-    let creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
-    let currentStepNumber = "[[${currentStepNumber}]]";
-    let supervisors = "[[${supervisors}]]";
-    let isLastStep = "[[${isLastStep}]]";
+    const user = new User([[${user.id}]], "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
+    const creator = new User([[${signRequest.createBy.id}]], "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
+    const currentStepNumber = "[[${currentStepNumber}]]";
+    const supervisors = "[[${supervisors}]]";
+    const isLastStep = "[[${isLastStep}]]";
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
