@@ -57,7 +57,7 @@ body {
 main {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
-    -khtml-user-select: none;
+    -khtms-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
@@ -67,7 +67,7 @@ pre {
     white-space: pre-wrap;
     -webkit-touch-callout: default;
     -webkit-user-select: text;
-    -khtml-user-select: text;
+    -khtms-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
@@ -82,16 +82,27 @@ header {
     z-index: 1029 !important;
 }
 
-label {
-    padding-top: .5rem;
-}
-
 input:invalid {
     box-shadow:none;
 }
 
 textarea:invalid {
     box-shadow:none;
+}
+
+.form-switch.form-switch-md {
+    padding-left: 4.5em;
+    height: 2.5em;
+}
+
+.form-switch.form-switch-md .form-check-input {
+    margin-left: -4.5em;
+    height: 2em;
+    width: 4em;
+}
+
+.form-switch.form-switch-md .form-check-label {
+    padding-top: 0.5em;
 }
 
 #actionDiv {
@@ -266,7 +277,7 @@ code {
     top: -45px;
     z-index: 3; opacity: .9;user-select: none;
     -moz-user-select: none;
-    -khtml-user-select: none;
+    -khtms-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;"
 }
@@ -1676,23 +1687,23 @@ input:focus, textarea:focus, select:focus {
     }
 }
 
-@media (min-width: 1440px) {
-    .d-xxl-inline {
-        display: inline !important;
-    }
-    .d-xxl-table-cell {
-        display: table-cell !important;
-    }
-    .d-xxl-block {
-        display: block !important;
-    }
-    .col-xxl-8 {
-        position: relative;
-        width: 66.666667%;
-        padding-right: 15px;
-        padding-left: 15px;
-    }
-}
+/*@media (min-width: 1440px) {*/
+/*    .d-xxl-inline {*/
+/*        display: inline !important;*/
+/*    }*/
+/*    .d-xxl-table-cell {*/
+/*        display: table-cell !important;*/
+/*    }*/
+/*    .d-xxl-block {*/
+/*        display: block !important;*/
+/*    }*/
+/*    .col-xxl-8 {*/
+/*        position: relative;*/
+/*        width: 66.666667%;*/
+/*        padding-right: 15px;*/
+/*        padding-left: 15px;*/
+/*    }*/
+/*}*/
 
 @media (min-width: 1600px) {
     .d-xxxl-table-cell {

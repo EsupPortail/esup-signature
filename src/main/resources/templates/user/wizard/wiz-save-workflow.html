@@ -1,22 +1,22 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div class="bs-stepper-header" role="tablist">
-    <div class="step" data-target="#test-l-2">
+    <div class="step" data-bs-target="#test-l-2">
         <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
         <span class="bs-stepper-label">Copie des fichiers</span>
     </div>
     <div class="bs-stepper-line"></div>
-    <div class="step" data-target="#test-l-3">
+    <div class="step" data-bs-target="#test-l-3">
         <span class="bs-stepper-circle bg-success"><i class="fas fa-project-diagram"></i></span>
         <span class="bs-stepper-label">Création du circuit</span>
     </div>
     <div class="bs-stepper-line"></div>
-    <div class="step active" data-target="#test-l-3">
+    <div class="step active" data-bs-target="#test-l-3">
         <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
         <span class="bs-stepper-label">Sauvegarde</span>
     </div>
     <div class="bs-stepper-line"></div>
-    <div class="step" data-target="#test-l-3">
+    <div class="step" data-bs-target="#test-l-3">
         <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
         <span class="bs-stepper-label">Fin</span>
     </div>
@@ -30,7 +30,7 @@
             <label for="workflowName"><strong>Choisir un nom pour sauvegarder le circuit en tant que modèle</strong></label>
             <input type="text" id="workflowName" name="name" class="form-control required" required>
             <br>
-            <button id="saveWorkflow" type="button" class="btn btn-success float-right">
+            <button id="saveWorkflow" type="button" class="btn btn-success float-end">
                 <i class="fas fa-save"></i> Enregistrer le circuit
             </button>
         </div>

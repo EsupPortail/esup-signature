@@ -14,11 +14,11 @@
                                               th:text="${iterator.index + 1}"></span></h5>
 
                             <form th:action="${fromAdmin == true ? '/admin/workflows/update-step/' + workflow.id + '/'  + iterator.index : '/user/workflows/update-step/' + workflow.id + '/'  + iterator.index}" method="post">
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label>Description de l’étape:</label>
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
                                     <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}">
@@ -29,7 +29,7 @@
                                         </th:block>
                                     </select>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label>
                                         Le createur peut modifier les participants
                                     </label>
@@ -39,7 +39,7 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label>
                                         L'utilisateur peut ajouter une étape avant la suivante
                                     </label>
@@ -49,7 +49,7 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label>
                                         L'utilisateur peut apposer plusieurs signatures
                                     </label>
@@ -59,7 +59,7 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group mb-3">
                                     <label>
                                         Tous les participants doivent-ils signer ?
                                     </label>
@@ -70,25 +70,25 @@
                                     </label>
                                 </div>
 
-                                <button type="submit" class="btn btn-success float-right ml-2 mb-2">
+                                <button type="submit" class="btn btn-success float-end ms-2 mb-2">
                                     <i class="fas fa-save"></i></button>
                             </form>
                             <form th:id="'del_' + ${iterator.index}"
                                   th:action="${fromAdmin == true ? '/admin/workflows/remove-step/' + workflow.id + '/' + iterator.index : '/user/workflows/remove-step/' + workflow.id + '/' + iterator.index}"
                                   th:method="delete">
                                 <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
-                                        class="btn btn-danger float-right del-step-btn">
+                                        class="btn btn-danger float-end del-step-btn">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
                             <table class="table table-sm table-bordered">
-                                <thead class="thead-dark">
+                                <thead class="table-secondary">
                                 <tr>
                                     <th>Participants</th>
                                     <th>
                                         <button type="button" title="Ajouter un destinataire"
-                                                class="btn btn-sm btn-primary" data-toggle="modal"
-                                                th:data-target="'#reSendModal' + ${workflowStep.id}">
+                                                class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                th:data-bs-target="'#reSendModal' + ${workflowStep.id}">
                                             <i class="fas fa-plus" aria-hidden="true"></i>
                                         </button>
                                     </th>
@@ -120,30 +120,30 @@
                      aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
-                            <form class="form-group"
+                            <form class="form-group mb-3"
                                   th:action="${fromAdmin == true ? '/admin/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id : '/user/workflows/add-step-recipents/' + workflow.id + '/' + workflowStep.id}"
                                   method="post">
                                 <div class="modal-header">
                                     <h3 class="modal-title">Ajout de destinataire(s)</h3>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="form-group">
+                                    <div class="form-group mb-3">
                                         <select class="select-users" name="recipientsEmails"
                                                 th:id="'recipientsEmails' + ${workflowStep.id}"
                                                 size="5" multiple="multiple"
                                                 required="required">
                                         </select>
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group mb-3">
                                         <textarea class="form-control" name="comment"
                                                   placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary float-right"
-                                            data-dismiss="modal">Annuler
+                                    <button type="button" class="btn btn-secondary float-end"
+                                            data-bs-dismiss="modal">Annuler
                                     </button>
-                                    <button type="submit" class="btn btn-success float-right">
+                                    <button type="submit" class="btn btn-success float-end">
                                         Ajouter
                                     </button>
                                 </div>

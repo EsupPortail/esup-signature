@@ -5,13 +5,13 @@
 <div th:fragment="new" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="card border-0 mb-2 w-100">
         <div class="card-body bg-light">
-            <button id="toggleNewGrid" class="btn btn-transparent text-dark float-right"><i class="fas fa-th"></i> Affichage</button>
+            <button id="toggleNewGrid" class="btn btn-transparent text-dark float-end"><i class="fas fa-th"></i> Affichage</button>
             <h5 class="text-center"><b>Nouveau</b></h5>
             <div id="newScroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Outils de signature</h5>
-                    <a id="newfastSign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
-                       data-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
+                    <a id="newfastSign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
+                       data-bs-target="#fastSignRequestModal" style="width: 150px; height: 200px;"
                        title="Vous devez signer un document présent sur votre poste de travail">
                         <div class="crop">
                             <i class="fas fa-signature fa-4x"></i>
@@ -19,8 +19,8 @@
                         <h6>Auto signature</h6>
                     </a>
 
-                    <a id="newSignDemand" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-dismiss="modal" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
-                       data-target="#sendSignRequestModal" style="width: 150px; height: 200px;"
+                    <a id="newSignDemand" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
+                       data-bs-target="#sendSignRequestModal" style="width: 150px; height: 200px;"
                        title="Demander la signature d'un document présent sur votre poste de travail">
                         <div class="crop">
                             <i class="fas fa-paper-plane fa-4x"></i>
@@ -30,21 +30,21 @@
 
                     <a id="startWizardCustomButton" th:if="${!isUserOnSu}"
                        th:unless="${globalProperties.hideWizard}"
-                       role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0" data-toggle="modal"
-                       data-target="#wizModalCustom" style="width: 150px; height: 200px;"
+                       role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
+                       data-bs-target="#wizModalCustom" style="width: 150px; height: 200px;"
                        title="Créer une nouvelle demande à l'aide de l'assistant">
                         <div class="crop">
                             <span class="fa-stack fa-3x">
-                                <i class="fas fa-paper-plane fa-stack-1x mr-4"></i>
-                                <i class="fas fa-cog fa-stack-1x ml-4 mt-4 text-black-50"></i>
+                                <i class="fas fa-paper-plane fa-stack-1x me-4"></i>
+                                <i class="fas fa-cog fa-stack-1x ms-4 mt-4 text-black-50"></i>
                             </span>
                         </div>
                         <h6>Créer une demande personnalisée</h6>
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
-<!--                    <a th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-toggle="modal"-->
-<!--                        data-target="#wizModal" style="width: 150px; height: 200px;"-->
+<!--                    <a th:unless="${globalProperties.hideWizard}" role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden align-bottom p-0 workflowButton" data-bs-toggle="modal"-->
+<!--                        data-bs-target="#wizModal" style="width: 150px; height: 200px;"-->
 <!--                        title="Ajoutez des documents et créez un nouveau circuit à l'aide de l'assitant"-->
 <!--                        onclick="$('#wizIframe').attr('src', '/user/wizard/wiz1');">-->
 <!--                        <div class="crop">-->
@@ -54,9 +54,9 @@
 <!--                    </a>-->
                     <div class="d-inline-block" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
-                            <a role="button" class="startWizardWorkflowButton btn btn-material btn-light text-center mr-2 mb-2 overflow-hidden p-0 workflowButton"
-                                style="width: 150px; height: 200px;" data-toggle="modal"
-                                data-target="#wizModalWorkflow"
+                            <a role="button" class="startWizardWorkflowButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0 workflowButton"
+                                style="width: 150px; height: 200px;" data-bs-toggle="modal"
+                                data-bs-target="#wizModalWorkflow"
                                 th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
                                 th:title="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
@@ -75,7 +75,7 @@
                         </th:block>
                     </div>
                     <th:block th:if="${workflows != null && workflows.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 noWorkflow d-none"
+                        <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 noWorkflow d-none"
                            style="width: 150px; height: 200px;">
                             <div class="crop">
                             </div>
@@ -89,8 +89,8 @@
 
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
-                            <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 formButton"
-                               style="width: 150px; height: 200px;" data-toggle="modal" th:data-target="'#sendModal_' + ${form.id}"
+                            <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 formButton"
+                               style="width: 150px; height: 200px;" data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}"
                                th:title="'Formulaire : ' + ${form.title}">
                                 <div class="crop">
                                     <i class="fas fa-file-alt fa-4x"></i>
@@ -101,7 +101,7 @@
                         </th:block>
                     </div>
                     <th:block th:if="${forms != null && forms.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center mr-2 overflow-hidden p-0 noForm d-none"
+                        <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 noForm d-none"
                            style="width: 150px; height: 200px;">
                             <div class="crop">
                             </div>
@@ -121,9 +121,9 @@
 <!--                <div class="modal-header">-->
 <!--                    <h5 class="modal-title" id="exampleModalLabel">Choix du-->
 <!--                        document</h5>-->
-<!--                    <button type="button" class="close" data-dismiss="modal"-->
+<!--                    <button type="button" class="btn-close" data-bs-dismiss="modal"-->
 <!--                            aria-label="Close">-->
-<!--                        <i class="fas fa-times"></i>-->
+<!--                        -->
 <!--                    </button>-->
 <!--                </div>-->
 <!--                <div class="modal-body">-->
@@ -134,7 +134,7 @@
 <!--                            <td class="show text-center">-->
 <!--                                <form action="/user/signrequest" method="post"-->
 <!--                                      enctype="multipart/form-data">-->
-<!--                                    <div class="form-group">-->
+<!--                                    <div class="form-group mb-3">-->
 <!--                                        <input type="file" name="multipartFile" class="form-control-file">-->
 <!--                                        <input type="submit" class="btn btn-success" value="Valider">-->
 <!--                                    </div>-->
@@ -156,7 +156,7 @@
 <!--                    </table>-->
 <!--                </div>-->
 <!--                <div class="modal-footer">-->
-<!--                    <button type="button" class="btn btn-danger" data-dismiss="modal">Annuler</button>-->
+<!--                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>-->
 <!--                </div>-->
 <!--            </div>-->
 <!--        </div>-->
@@ -168,8 +168,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Création d'une nouvelle demande</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">
@@ -187,8 +187,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Assistant de création de demande</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">
@@ -204,9 +204,9 @@
                 <div class="modal-content modal-lg">
                     <div class="modal-header">
                         <h3 class="modal-title" th:text="${form.title}"></h3>
-                        <button type="button" class="close" data-dismiss="modal"
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close">
-                            <i class="fas fa-times"></i>
+
                         </button>
                     </div>
                     <form th:action="'/user/datas/sendForm/' + ${form.id}" method="post">
@@ -220,7 +220,7 @@
                                 <ul>
                                 <th:block th:each="step,iterator : ${form.workflow.workflowSteps}">
                                     <li>
-                                    <!--                            <div class="form-group">-->
+                                    <!--                            <div class="form-group mb-3">-->
                                     <!--                                <span th:text="'Etape ' + ${iterator.index + 1} + ' : ' + ${step.description}"></span>-->
                                     <!--                            </div>-->
                                     <div class="form-group d-inline">
@@ -239,7 +239,7 @@
                                 </ul>
                                 <hr>
                                 <th:block th:each="step, iterator : ${form.workflow.workflowSteps}">
-                                    <div th:if="${step.changeable == true}" class="form-group">
+                                    <div th:if="${step.changeable == true}" class="form-group mb-3">
                                         <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                         <select class="select-users" th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                                 multiple="multiple" name="recipientEmails" required="required">
@@ -256,7 +256,7 @@
                                     <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
                                 </th:block>
                                 <th:block th:each="target : ${form.workflow.targets}">
-                                    <div th:if="${target.targetType.name() == 'mail'}" class="form-group">
+                                    <div th:if="${target.targetType.name() == 'mail'}" class="form-group mb-3">
                                         <label>Etape finale : Envoi par mail à </label>
                                         <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
                                             <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri}" th:text="${target.targetUri}" selected></option>
@@ -266,7 +266,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary float-left" data-dismiss="modal">Annuler</button>
+                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
                             <button type="submit" class="btn btn-success">Valider</button>
                         </div>
                     </form>

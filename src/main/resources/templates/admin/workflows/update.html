@@ -41,11 +41,11 @@
                     <h2>Nombre de demandes pour ce circuit : <span th:text="${nbSignRequests}"></span></h2>
                     <form th:object="${workflow}" th:action="'/admin/workflows/update'" method="post" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label><strong>Titre</strong></label>
                             <input class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label><strong>Description</strong></label>
                             <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
@@ -61,7 +61,7 @@
                             <input id="visibility" class="form-check-input" type="checkbox" th:field="*{visibility}"/>
                             <label for="visibility">Diffusion du workflow pour les rôles</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="roles">
                                 Rôle
                                 <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
@@ -73,9 +73,9 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group" id="managers">
+                        <div class="form-group mb-3" id="managers">
                             <label for="managersSelect"><strong>Superviseur(s) du circuit</strong>
-                                <button class="btn btn-sm btn-transparent" data-target="#collapseHelp1" data-toggle="collapse"
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
                                         type="button">
                                     <span class="fas fa-info-circle text-info"></span>
                                 </button>
@@ -91,7 +91,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
@@ -100,7 +100,7 @@
                                 </div>
                             </th:block>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="sourceTypeSelect">
                                 <strong> Protocole pour la source des documents </strong>
                             </label>
@@ -111,7 +111,7 @@
                                 </th:block>
                             </select>
                         </div>
-                        <div class="form-group" id="documentsSourceUriDiv">
+                        <div class="form-group mb-3" id="documentsSourceUriDiv">
                             <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
                             <input id="documentsSourceUri" th:field="*{documentsSourceUri}"
                                    placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
@@ -122,17 +122,17 @@
                             <input id="scanPdfMetadatas" class="form-check-input" type="checkbox" th:field="*{scanPdfMetadatas}"/>
                             <label for="scanPdfMetadatas">Scanner les métadonnées des pdf ?</label>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group mb-3">
                             <label for="documentsSourceUri"> <strong>Destination des documents</strong></label>
                             <table class="table table-borderless table-striped">
-                                <thead class="thead-dark">
+                                <thead class="table-secondary">
                                 <tr>
                                     <th class="text-left">Type</th>
                                     <th class="text-left">URI</th>
                                     <th>Supprimer
                                     </th>
                                     <th>
-                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addTarget">
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTarget">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                     </th>
@@ -166,12 +166,12 @@
 <div class="modal fade" id="addTarget" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form class="form-group" th:action="'/admin/workflows/add-target/' + ${workflow.id}" method="post">
+            <form class="form-group mb-3" th:action="'/admin/workflows/add-target/' + ${workflow.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title">Ajout d'une destination</h3>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="targetType">
                             <strong> Protocole pour la destination des documents </strong>
                         </label>
@@ -181,17 +181,17 @@
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group" id="documentsTargetUriDiv">
+                    <div class="form-group mb-3" id="documentsTargetUriDiv">
                         <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
                         <input id="documentsTargetUri" name="documentsTargetUri" class="form-control" type="text" autocomplete="on">
                         <p class="alert alert-info"><small>Séparez les mails par des ; dans la cas d'une destination mail</small></p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary float-right"
-                            data-dismiss="modal">Annuler
+                    <button type="button" class="btn btn-secondary float-end"
+                            data-bs-dismiss="modal">Annuler
                     </button>
-                    <button type="submit" class="btn btn-success float-right">
+                    <button type="submit" class="btn btn-success float-end">
                         Ajouter
                     </button>
                 </div>

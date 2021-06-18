@@ -9,7 +9,7 @@
                 <div id="stepper" class="bs-stepper">
                     <div class="bs-stepper-header container" role="tablist">
                         <th:block th:each="liveWorkflowStep,iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
-                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-target="'#step_' + ${iterator.index}">
+                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-bs-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="border: 1px solid #555555;">
                                     <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fas fa-hourglass-half"></i></span>
                                     <span title="Etape à venir" th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle"><i class="fas fa-pause"></i></span>
@@ -31,7 +31,7 @@
                                     <div class="bs-stepper-bottom">
                                         <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1}"
                                                 th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                            <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-right">
+                                            <button onclick="confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </form>
@@ -43,7 +43,7 @@
                         <th:block th:if="${signBook.liveWorkflow.workflow != null}">
                             <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
                                 <div class="bs-stepper-line"></div>
-                                <div class="step" name="target" data-target="#target">
+                                <div class="step" name="target" data-bs-target="#target">
                                     <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
                                         <span th:classappend="${target.targetOk} ? 'bg-success' : 'bg_secondary'" class="bs-stepper-circle"><i class="fas fa-file-export"></i></span>
                                         <span class="bs-stepper-label"><p>Export : <span th:text="${target.targetUri}"></span></p></span>
@@ -54,7 +54,7 @@
                     </div>
                 </div>
             </th:block>
-            <a title="Ajouter une étape au circuit" role="button" data-toggle="modal" data-target="#addStep" class="btn-floating bg-primary waves-effect float-right m-2"><i class="fas fa-shoe-prints"></i></a>
+            <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating bg-primary waves-effect float-end m-2"><i class="fas fa-shoe-prints"></i></a>
         </div>
     </div>
 </div>
