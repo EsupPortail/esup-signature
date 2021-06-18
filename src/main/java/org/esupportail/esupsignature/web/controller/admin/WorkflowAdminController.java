@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -43,6 +44,9 @@ public class WorkflowAdminController {
 
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignBookService signBookService;
 
 	@Resource
 	private WorkflowService workflowService;
@@ -88,6 +92,7 @@ public class WorkflowAdminController {
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
+		model.addAttribute("nbSignRequests", signBookService.countSignBooksByWorkflow(id));
 		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
