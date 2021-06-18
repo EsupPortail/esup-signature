@@ -49,11 +49,11 @@
                             <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-check">
-                            <input id="sendAlertToAllRecipients" class="form-check-input" type="checkbox" th:field="*{sendAlertToAllRecipients}"/>
+                            <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
                             <label for="sendAlertToAllRecipients">Avertir tous les participants à la fin du circuit ?</label>
                         </div>
                         <div class="form-check">
-                            <input id="hidden" class="form-check-input" type="checkbox" th:field="*{visibility}"/>
+                            <input id="hidden" type="checkbox" class="form-check-input" th:field="*{visibility}"/>
                             <label for="hidden">Diffusion du workflow pour les rôles</label>
                         </div>
                         <div class="form-group mb-3">
@@ -90,7 +90,7 @@
                             <label><strong>Types de délégation autorisés</strong></label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left">
-                                    <input th:checked="${workflow.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" name="types" th:value="${shareType.name()}"/>
+                                    <input th:checked="${workflow.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types" th:value="${shareType.name()}"/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                 </div>
                             </th:block>
@@ -114,7 +114,7 @@
                                    autocomplete="on">
                         </div>
                         <div class="form-check">
-                            <input id="scanPdfMetadatas" class="form-check-input" type="checkbox" th:field="*{scanPdfMetadatas}"/>
+                            <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
                             <label for="scanPdfMetadatas">Scanner les métadonnées des pdf ?</label>
                         </div>
                         <div class="form-group mb-3">

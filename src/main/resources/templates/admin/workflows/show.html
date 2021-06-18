@@ -54,29 +54,19 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label>Description de l’étape:</label>
+                                    <label><strong>Description de l’étape:</strong></label>
                                     <input name="description" type="text" class="form-control" />
+                                </div>
+                                <div class="form-check form-switch form-switch-md">
+                                    <label class="form-check-label" title="Le créateur pourra changer les noms des participants au moment de valider sa demande de signature">
+                                        <strong>Le créateur peut modifier les participants</strong>
+                                    </label>
+                                    <input type="checkbox" class="form-check-input" name="changeable"/>
                                 </div>
                                 <div class="form-group mb-3">
                                     <label>
-                                        <strong>Le créateur peut modifier les participants</strong>
-                                        <button data-bs-target="#collapseHelpChangeable" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fas fa-info-circle text-info"></span>
-                                        </button>
-                                        <div class="collapse" id="collapseChangeable">
-                                            <div class="alert alert-info">
-                                                <small>
-                                                    Le créateur pourra changer les noms des participants au moment de valider sa demande de signature
-                                                </small>
-                                            </div>
-                                        </div>
+                                        <strong>Choix des participants</strong>
                                     </label>
-                                    <label class="switch">
-                                        <input type="checkbox" name="changeable"/>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-                                <div class="form-group mb-3">
                                     <select class="select-users" name="recipientsEmails" id="stepRecipientsEmails" size="5" multiple="multiple"></select>
                                 </div>
                                 <div class="form-group mb-3" id="allSignToComplete-div">
@@ -101,7 +91,7 @@
                                         </div>
                                     </label>
                                     <label class="switch">
-                                        <input type="checkbox" name="allSignToComplete" id="allSignToComplete"/>
+                                        <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
                                         <span class="slider round"></span>
                                     </label>
                                 </div>

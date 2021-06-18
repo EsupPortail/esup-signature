@@ -34,7 +34,7 @@
                                         Le createur peut modifier les participants
                                     </label>
                                     <label class="switch">
-                                        <input type="checkbox" name="changeable"
+                                        <input type="checkbox" class="form-check-input" name="changeable"
                                                th:checked="${workflowStep.changeable}"/>
                                         <span class="slider round"></span>
                                     </label>
@@ -44,7 +44,7 @@
                                         L'utilisateur peut ajouter une étape avant la suivante
                                     </label>
                                     <label class="switch">
-                                        <input type="checkbox" name="repeatable"
+                                        <input type="checkbox" class="form-check-input" name="repeatable"
                                                th:checked="${workflowStep.repeatable}"/>
                                         <span class="slider round"></span>
                                     </label>
@@ -54,7 +54,7 @@
                                         L'utilisateur peut apposer plusieurs signatures
                                     </label>
                                     <label class="switch">
-                                        <input type="checkbox" name="multiSign"
+                                        <input type="checkbox" class="form-check-input" name="multiSign"
                                                th:checked="${workflowStep.multiSign}"/>
                                         <span class="slider round"></span>
                                     </label>
@@ -64,7 +64,7 @@
                                         Tous les participants doivent-ils signer ?
                                     </label>
                                     <label class="switch">
-                                        <input type="checkbox" name="allSignToComplete"
+                                        <input type="checkbox" class="form-check-input" name="allSignToComplete"
                                                th:checked="${workflowStep.allSignToComplete}"/>
                                         <span class="slider round"></span>
                                     </label>

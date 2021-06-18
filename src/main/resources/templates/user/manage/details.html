@@ -78,7 +78,7 @@
                             <th:block th:each="signRequest : ${listManagedSignRequests}">
                                 <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
 <!--                                    <td class="w-20 d-none d-lg-table-cell">-->
-<!--                                        <input type="checkbox" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"-->
+<!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"-->
 <!--                                               th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"-->
 <!--                                               th:data-id-signbook="${signRequest.parentSignBook.id}">-->
 <!--                                    </td>-->

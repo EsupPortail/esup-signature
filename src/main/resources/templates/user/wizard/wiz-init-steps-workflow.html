@@ -67,12 +67,12 @@
         Tous les participants doivent-ils signer ?
     </label>
     <label class="switch">
-        <input type="checkbox" name="allSignToComplete"/>
+        <input type="checkbox" class="form-check-input" name="allSignToComplete"/>
         <span class="slider round"></span>
     </label>
     <br/>
     <label>Type de signature :</label>
-    <select class="form-control" id="signTypeWiz" name="signType">
+    <select class="form-select" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
