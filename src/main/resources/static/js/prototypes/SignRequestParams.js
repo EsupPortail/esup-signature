@@ -487,7 +487,7 @@ export class SignRequestParams  extends EventFactory {
     toggleType() {
         if(!this.extraName && !this.extraDate && !this.isExtraText && this.extraType) return;
         $("#extraTypeDiv_" + this.id).toggle();
-        $("#extraType_" + this.id).toggleClass("disabled");
+        $("#extraType_" + this.id).toggleClass("btn-outline-light");
         this.extraType = !this.extraType;
         // this.updateSize();
         this.refreshExtraDiv();
@@ -496,7 +496,7 @@ export class SignRequestParams  extends EventFactory {
     toggleName() {
         if(!this.extraType && !this.extraDate && !this.isExtraText && this.extraName) return;
         $("#extraNameDiv_" + this.id).toggle();
-        $("#extraName_" + this.id).toggleClass("disabled");
+        $("#extraName_" + this.id).toggleClass("btn-outline-light");
         this.extraName = !this.extraName;
         this.updateSize();
         this.refreshExtraDiv();
@@ -505,7 +505,7 @@ export class SignRequestParams  extends EventFactory {
     toggleDate() {
         if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
         $("#extraDateDiv_" + this.id).toggle();
-        $("#extraDate_" + this.id).toggleClass("disabled");
+        $("#extraDate_" + this.id).toggleClass("btn-outline-light");
         this.extraDate = !this.extraDate;
         this.updateSize();
         this.refreshExtraDiv();
@@ -515,7 +515,7 @@ export class SignRequestParams  extends EventFactory {
         if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
         $("#textExtra_" + this.id).toggle();
         this.textareaExtra.toggleClass("disabled");
-        $("#extraText_" + this.id).toggleClass("disabled");
+        $("#extraText_" + this.id).toggleClass("btn-outline-light");
         if(this.extraText === "") {
             this.extraText = this.textareaExtra.val();
         } else {
@@ -620,7 +620,7 @@ export class SignRequestParams  extends EventFactory {
         if(lines[0].length > 0) {
             this.textareaPart.css('width', '');
         }
-        let width = 30;
+        let width = 28;
         for(let i = 0; i < lines.length; i++) {
             if(lines[i].length >= width) {
                 width = lines[i].length;
