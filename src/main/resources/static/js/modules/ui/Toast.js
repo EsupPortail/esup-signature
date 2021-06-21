@@ -56,7 +56,7 @@ export default class Toast {
         new Notification(message.text);
         let start = new Date();
         let end = new Date();
-        end.setSeconds(start.getSeconds() + (toast.attr('data-delay') / 1000));
+        end.setSeconds(start.getSeconds() + (toast.attr('data-bs-delay') / 1000));
         this.setUpProgressBar("#progress-" + message.type, start.getTime(), end.getTime(), 50)
     }
 
