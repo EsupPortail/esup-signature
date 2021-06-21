@@ -247,6 +247,9 @@ public class UserService {
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
             authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
+            if(authUser.getSignImages().size() == 0) {
+                authUser.setDefaultSignImageNumber(0);
+            }
         }
         authUser.setEmailAlertFrequency(emailAlertFrequency);
         authUser.setEmailAlertHour(emailAlertHour);
