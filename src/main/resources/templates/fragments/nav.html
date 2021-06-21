@@ -143,14 +143,14 @@
 <!--                </li>-->
                 <li class="nav-item text-white">
                     <a id="user-toggle" th:classappend="${paramMenu}" type="button" href="#user-infos"
-                       aria-label="Paramètres utilisateur" class="text-decoration-none user-toggle me-1"
+                       aria-label="Paramètres utilisateur" class="btn bg-dark text-white user-toggle"
                        aria-controls="user-infos" data-bs-toggle="collapse">
                         <b class="nav-item-label d-none d-lg-inline nav-link text-light"
                            th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <div class="btn-floating btn-small btn-secondary user-toggle"><i class="fas fa-user"></i></div>
                     </a>
                     <a rel="noreferrer" data-bs-toggle="modal"
-                       data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-end m-1 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
+                       data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn btn-sm text-white float-end mt-2 d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fas fa-question"></i></a>
                 </li>
             </ul>
         </div>

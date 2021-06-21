@@ -78,6 +78,12 @@ pre {
     color: black !important;
 }
 
+@-moz-document url-prefix() {
+    textarea {
+        overflow-x: hidden;
+    }
+}
+
 header {
     z-index: 1029 !important;
 }
@@ -1102,9 +1108,9 @@ textarea:placeholder-shown.required-field {
     line-height: inherit !important;
 }
 
-.btn {
-    border-radius: .125rem;
-}
+/*.btn {*/
+/*    border-radius: .125rem;*/
+/*}*/
 
 .btn-material {
     background-color: white;
@@ -1171,8 +1177,8 @@ textarea:placeholder-shown.required-field {
 }
 
 .btn-floating.btn-small {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
 }
 
 .btn-floating.btn-small i {
@@ -1194,11 +1200,9 @@ textarea:placeholder-shown.required-field {
     line-height: 2.8rem;
 }
 
-.btn-sm, .btn-group-sm > .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    border-radius: 0.2rem;
+.btn {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .fixed-action-simple-btn {

@@ -42,7 +42,7 @@
                           th:class="${'lotl-flag small_flag mt-2 flag_' + lotl.parsingCacheInfo.territory}"
                           th:title="${lotl.parsingCacheInfo.territory}"></span>
                         <span th:text="#{label.summary.lotl}"></span>&nbsp;
-                        <a class="lotl-url h5 font-weight-bold" th:href="${lotl.url}"
+                        <a class="lotl-url h5 fw-bold" th:href="${lotl.url}"
                            th:text="${lotl.url}" target="_blank"></a>
                     </h2>
                 </div>
@@ -88,7 +88,7 @@
                             <!-- LOTL location -->
                             <div class="lotl-location mb-2" th:if="${lotlLocation != null}">
                                 <span class="bold" th:text="#{label.summary.pivot.found.lotl.location}"></span>
-                                <a class="lotl-url h6 font-weight-bold" th:href="${lotlLocation}"
+                                <a class="lotl-url h6 fw-bold" th:href="${lotlLocation}"
                                    th:text="'(' + ${lotlLocation} + ')'" target="_blank"></a>
                                 <span class="lotl-change-warning" th:if="${lotl.url != lotlLocation}">
 								<i class="fa fa-exclamation-circle text-warning" title="Updated LOTL location"></i>
