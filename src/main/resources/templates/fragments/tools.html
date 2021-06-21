@@ -45,7 +45,7 @@
 					 class="badge bg-primary"></div>
 			</button>
 			<div th:if="${notifTime >= hoursBeforeRefreshNotif}" class="border ms-3 me-3"></div>
-			<form th:if="${notifTime >= hoursBeforeRefreshNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+			<form th:if="${notifTime >= hoursBeforeRefreshNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
 				<button type="submit" class="btn btn-light btn-outline-dark ms-1">
 					<i class="fas fa-bullhorn"></i> <span class="d-none d-xl-inline">Relancer</span>
 				</button>

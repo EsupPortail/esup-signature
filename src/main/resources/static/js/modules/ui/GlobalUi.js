@@ -86,7 +86,7 @@ export class GlobalUi {
 
         $("#sendPendingButton").on('click', e => this.checkUserCertificate(true));
         $("#sendDraftButton").on('click', e => this.checkUserCertificate(false));
-
+        $("#sendSignRequestForm").submit(e => this.disableSendButton(e));
         let csrf = this.csrf;
         $("#startWizardCustomButton").on('click', function(e) {
             let wizUi = new WizUi("", $("#wizFrameCustom"), "Demande personnalisée", csrf);
@@ -131,6 +131,10 @@ export class GlobalUi {
             alert("Votre navigateur n'est pas compatible");
             window.location.href="https://www.google.com/intl/fr_fr/chrome/";
         }
+    }
+
+    disableSendButton(e) {
+        $("#sendPendingButton").unbind();
     }
 
     checkUserCertificate(send) {
