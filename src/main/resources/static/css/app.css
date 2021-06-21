@@ -57,7 +57,7 @@ body {
 main {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
-    -khtml-user-select: none;
+    -khtms-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
@@ -67,7 +67,7 @@ pre {
     white-space: pre-wrap;
     -webkit-touch-callout: default;
     -webkit-user-select: text;
-    -khtml-user-select: text;
+    -khtms-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
@@ -78,12 +78,14 @@ pre {
     color: black !important;
 }
 
-header {
-    z-index: 1029 !important;
+@-moz-document url-prefix() {
+    textarea {
+        overflow-x: hidden;
+    }
 }
 
-label {
-    padding-top: .5rem;
+header {
+    z-index: 1029 !important;
 }
 
 input:invalid {
@@ -92,6 +94,21 @@ input:invalid {
 
 textarea:invalid {
     box-shadow:none;
+}
+
+.form-switch.form-switch-md {
+    padding-left: 4.5em;
+    height: 2.5em;
+}
+
+.form-switch.form-switch-md .form-check-input {
+    margin-left: -4.5em;
+    height: 2em;
+    width: 4em;
+}
+
+.form-switch.form-switch-md .form-check-label {
+    padding-top: 0.5em;
 }
 
 #actionDiv {
@@ -266,7 +283,7 @@ code {
     top: -45px;
     z-index: 3; opacity: .9;user-select: none;
     -moz-user-select: none;
-    -khtml-user-select: none;
+    -khtms-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;"
 }
@@ -454,6 +471,10 @@ input:checked + .slider:before {
     padding-right: 5px;
 }
 
+.navbar-brand {
+    width: 250px;
+}
+
 .navbar-nav {
     margin-right: 5px;
 }
@@ -534,7 +555,7 @@ input:checked + .slider:before {
 }
 .div-extra {
     border: 1px solid transparent;
-    /*width: 100%;*/
+    width: 100% !important;
 }
 
 .div-extra:hover {
@@ -576,7 +597,7 @@ input:checked + .slider:before {
 
 #sidebar {
     top: 50px;
-    padding-right: 10px;
+    padding-right: 5px;
     position: fixed;
     z-index: 1039;
     min-width: 260px;
@@ -1031,6 +1052,10 @@ input[type="checkbox"]:not(:checked).required-field {
     margin-left: 0.03rem;
 }
 
+.annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
+    border: 1px solid transparent !important;
+}
+
 input[type="radio"] {
     cursor: pointer !important;
 }
@@ -1087,9 +1112,9 @@ textarea:placeholder-shown.required-field {
     line-height: inherit !important;
 }
 
-.btn {
-    border-radius: .125rem;
-}
+/*.btn {*/
+/*    border-radius: .125rem;*/
+/*}*/
 
 .btn-material {
     background-color: white;
@@ -1156,8 +1181,8 @@ textarea:placeholder-shown.required-field {
 }
 
 .btn-floating.btn-small {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
 }
 
 .btn-floating.btn-small i {
@@ -1179,11 +1204,9 @@ textarea:placeholder-shown.required-field {
     line-height: 2.8rem;
 }
 
-.btn-sm, .btn-group-sm > .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    border-radius: 0.2rem;
+.btn {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .fixed-action-simple-btn {
@@ -1672,23 +1695,23 @@ input:focus, textarea:focus, select:focus {
     }
 }
 
-@media (min-width: 1440px) {
-    .d-xxl-inline {
-        display: inline !important;
-    }
-    .d-xxl-table-cell {
-        display: table-cell !important;
-    }
-    .d-xxl-block {
-        display: block !important;
-    }
-    .col-xxl-8 {
-        position: relative;
-        width: 66.666667%;
-        padding-right: 15px;
-        padding-left: 15px;
-    }
-}
+/*@media (min-width: 1440px) {*/
+/*    .d-xxl-inline {*/
+/*        display: inline !important;*/
+/*    }*/
+/*    .d-xxl-table-cell {*/
+/*        display: table-cell !important;*/
+/*    }*/
+/*    .d-xxl-block {*/
+/*        display: block !important;*/
+/*    }*/
+/*    .col-xxl-8 {*/
+/*        position: relative;*/
+/*        width: 66.666667%;*/
+/*        padding-right: 15px;*/
+/*        padding-left: 15px;*/
+/*    }*/
+/*}*/
 
 @media (min-width: 1600px) {
     .d-xxxl-table-cell {

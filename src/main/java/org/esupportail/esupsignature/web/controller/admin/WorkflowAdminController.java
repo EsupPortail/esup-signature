@@ -31,7 +31,7 @@ import java.util.List;
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
-	
+
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
 		return "active";
@@ -100,7 +100,7 @@ public class WorkflowAdminController {
 		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         return "admin/workflows/update";
     }
-	
+
     @PostMapping(value = "/update")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
 						 @Valid Workflow workflow,

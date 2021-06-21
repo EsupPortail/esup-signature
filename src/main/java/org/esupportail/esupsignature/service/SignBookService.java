@@ -183,6 +183,9 @@ public class SignBookService {
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId, userEppn);
         }
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            liveWorkflowStep.getSignRequestParams().clear();
+        }
         signBook.setStatus(SignRequestStatus.deleted);
     }
 

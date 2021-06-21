@@ -684,10 +684,6 @@ export class WorkspacePdf {
         this.showAllPostits();
     }
 
-    isFloat(n) {
-        return Number(n) === n && n % 1 !== 0;
-    }
-
     toggleCommentMode() {
         if (this.mode === 'comment') {
             this.enableReadMode();

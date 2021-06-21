@@ -67,7 +67,7 @@ public class SignBookController {
     @DeleteMapping(value = "silent-delete/{id}", produces = "text/html")
     @ResponseBody
     public void silentDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-        signBookService.delete(id, authUserEppn);
+        signBookService.deleteDefinitive(id);
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

@@ -13,7 +13,7 @@
         </nav>
         <div id="content" class="content">
             <div class="fixed-action-simple-btn" >
-                <a data-toggle="modal" data-target="#newMessage" type="button"
+                <a data-bs-toggle="modal" data-bs-target="#newMessage" type="button"
                    class="btn-floating btn-lg bg-primary wave-effect">
                     <i class="fas fa-plus"></i>
                 </a>
@@ -21,7 +21,7 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                 <table class="table table-borderless table-hover">
-                    <thead class="thead-dark">
+                    <thead class="table-secondary">
                     <tr>
                         <th>Message</th>
                         <th>Date de fin</th>
@@ -34,7 +34,7 @@
                         <td th:utext="${message.text}"></td>
                         <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
                         <td>
-                            <button type="button" data-toggle="modal" data-target="#modal-warning" th:attr="data-target='#modal-warning'+${message.id }" class="btn btn-danger">
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning'+${message.id }" class="btn btn-danger">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                             <div class="modal modal-warning fade in" th:id="modal-warning+${message.id}">
@@ -42,9 +42,9 @@
                                     <div class="modal-content">
                                         <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">
                                             <div class="modal-header">
-                                                <button type="button" class="close" data-dismiss="modal"
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close">
-                                                    <i class="fas fa-times"></i>
+
                                                 </button>
                                             </div>
                                             <div class="modal-body">
@@ -54,7 +54,7 @@
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-outline pull-left"
-                                                        data-dismiss="modal">Non
+                                                        data-bs-dismiss="modal">Non
                                                 </button>
                                                 <button type="submit"
                                                         class="btn btn-outline pull-left btn-danger">
@@ -82,17 +82,17 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Création d'une nouvelle demande</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <div class="modal-body">
                     <form th:action="'/admin/messages/add'" method="post">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="text">Text du message</label>
                         <textarea class="summer-note" type="text" name="text" id="text" required="required"></textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="endDate">Date de fin de diffusion</label>
                         <input class="form-control" type="date" name="endDate" id="endDate" required="required" />
                     </div>

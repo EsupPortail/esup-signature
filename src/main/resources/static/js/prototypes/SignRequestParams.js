@@ -378,12 +378,12 @@ export class SignRequestParams  extends EventFactory {
 
     toggleWatermark() {
         if(this.addWatermark) {
-            $("#watermark_" + this.id).addClass("disabled");
+            $("#watermark_" + this.id).removeClass("btn-outline-light");
             this.cross.removeClass("watermark-width");
             this.cross.removeClass("watermark-height");
             this.addWatermark = false;
         } else {
-            $("#watermark_" + this.id).removeClass("disabled");
+            $("#watermark_" + this.id).addClass("btn-outline-light");
             if(this.extraOnTop) {
                 this.cross.addClass("watermark-width");
             } else {
@@ -399,7 +399,7 @@ export class SignRequestParams  extends EventFactory {
     toggleExtra() {
         this.addExtra = !this.addExtra;
         if(this.addExtra) {
-            $("#signExtra_" + this.id).removeClass("disabled");
+            $("#signExtra_" + this.id).addClass("btn-outline-light");
             $("#signExtraOnTop_" + this.id).removeAttr("disabled");
             if(this.divExtra == null) {
                 this.typeSign = "Signature calligraphique";
@@ -433,7 +433,8 @@ export class SignRequestParams  extends EventFactory {
             if(!this.extraOnTop) {
                 this.toggleExtraOnTop();
             }
-            $("#signExtra_" + this.id).addClass("disabled");
+            $("#signExtra_" + this.id).removeClass("btn-outline-light");
+            // $("#signExtra_" + this.id).addClass("disabled");
             $("#signExtraOnTop_" + this.id).attr("disabled", true);
             this.divExtra.addClass("d-none");
             this.signHeight -= this.extraHeight;
@@ -447,7 +448,6 @@ export class SignRequestParams  extends EventFactory {
             this.cross.toggleClass("watermark-width watermark-height")
         }
         if(!this.extraOnTop) {
-            $("#signExtraOnTop_" + this.id).addClass("disabled");
             this.divExtra.addClass("d-none");
             this.signWidth -= this.extraWidth;
             this.extraWidth = 0;
@@ -487,7 +487,7 @@ export class SignRequestParams  extends EventFactory {
     toggleType() {
         if(!this.extraName && !this.extraDate && !this.isExtraText && this.extraType) return;
         $("#extraTypeDiv_" + this.id).toggle();
-        $("#extraType_" + this.id).toggleClass("disabled");
+        $("#extraType_" + this.id).toggleClass("btn-outline-light");
         this.extraType = !this.extraType;
         // this.updateSize();
         this.refreshExtraDiv();
@@ -496,7 +496,7 @@ export class SignRequestParams  extends EventFactory {
     toggleName() {
         if(!this.extraType && !this.extraDate && !this.isExtraText && this.extraName) return;
         $("#extraNameDiv_" + this.id).toggle();
-        $("#extraName_" + this.id).toggleClass("disabled");
+        $("#extraName_" + this.id).toggleClass("btn-outline-light");
         this.extraName = !this.extraName;
         this.updateSize();
         this.refreshExtraDiv();
@@ -505,7 +505,7 @@ export class SignRequestParams  extends EventFactory {
     toggleDate() {
         if(!this.extraType && !this.extraName && !this.isExtraText && this.extraDate) return;
         $("#extraDateDiv_" + this.id).toggle();
-        $("#extraDate_" + this.id).toggleClass("disabled");
+        $("#extraDate_" + this.id).toggleClass("btn-outline-light");
         this.extraDate = !this.extraDate;
         this.updateSize();
         this.refreshExtraDiv();
@@ -515,7 +515,7 @@ export class SignRequestParams  extends EventFactory {
         if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
         $("#textExtra_" + this.id).toggle();
         this.textareaExtra.toggleClass("disabled");
-        $("#extraText_" + this.id).toggleClass("disabled");
+        $("#extraText_" + this.id).toggleClass("btn-outline-light");
         if(this.extraText === "") {
             this.extraText = this.textareaExtra.val();
         } else {
@@ -542,10 +542,12 @@ export class SignRequestParams  extends EventFactory {
     }
 
     addTextArea() {
-        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' rows='1' cols='30' ></textarea>";
+        let divExtraHtml = "<textarea id='textExtra_" + this.id + "' class='sign-textarea align-top' rows='1' cols='30'></textarea>";
         this.divExtra.append(divExtraHtml);
         this.textareaExtra = $("#textExtra_" + this.id);
         this.textareaExtra.css('width', '100%');
+        this.textareaExtra.attr('cols', '30');
+        this.textareaExtra.attr('rows', '1');
         this.textareaExtra.on("input", e => this.refreshExtraDiv());
     }
 
@@ -618,7 +620,7 @@ export class SignRequestParams  extends EventFactory {
         if(lines[0].length > 0) {
             this.textareaPart.css('width', '');
         }
-        let width = 30;
+        let width = 28;
         for(let i = 0; i < lines.length; i++) {
             if(lines[i].length >= width) {
                 width = lines[i].length;

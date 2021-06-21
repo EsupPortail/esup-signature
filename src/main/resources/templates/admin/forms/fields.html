@@ -45,7 +45,7 @@
                 <div class="card-body">
                     <div id="listSignRequestTable" class="table-fix-head">
                         <table class="table table-borderless table-hover">
-                    <thead class="thead-dark">
+                    <thead class="table-secondary">
                         <tr>
                             <th class="align-middle th-fixed">Nom</th>
                             <th class="align-middle th-fixed">Description</th>
@@ -74,11 +74,11 @@
                                     </th:block>
                                 </select>
                             </td>
-                            <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
-                            <td><input type="checkbox" name="required" th:value="true" th:checked="${field.required}"/></td>
-                            <td><input type="checkbox" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
-                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
-                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
+                            <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" class="form-check-input" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
+                            <td><input type="checkbox" class="form-check-input" name="required" th:value="true" th:checked="${field.required}"/></td>
+                            <td><input type="checkbox" class="form-check-input" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
+                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" class="form-check-input" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
+                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" class="form-check-input" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
                             <td>
                                 <select class="slim-select-simple" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
                                     <option value=""></option>
