@@ -530,7 +530,7 @@
                         <xsl:choose>
                             <xsl:when test="@TrustAnchor = 'true'">
                                 <div>
-                                    <xsl:attribute name="class">constraint-text font-weight-bolder mb-1 d-none</xsl:attribute>
+                                    <xsl:attribute name="class">constraint-text fw-bolder mb-1 d-none</xsl:attribute>
                                     Trust Anchor
                                 </div>
                             </xsl:when>
@@ -538,21 +538,21 @@
 
                         <xsl:if test="@SelfSigned = 'true'">
                             <div>
-                                <xsl:attribute name="class">constraint-text font-weight-bolder mb-1 d-none</xsl:attribute>
+                                <xsl:attribute name="class">constraint-text fw-bolder mb-1 d-none</xsl:attribute>
                                 Self-signed
                             </div>
                         </xsl:if>
 
                         <xsl:if test="dss:CrossCertificate">
                             <div>
-                                <xsl:attribute name="class">constraint-text font-weight-bolder mb-1 d-none</xsl:attribute>
+                                <xsl:attribute name="class">constraint-text fw-bolder mb-1 d-none</xsl:attribute>
                                 Cross-Certification: <xsl:value-of select="dss:CrossCertificate"/>
                             </div>
                         </xsl:if>
 
                         <xsl:if test="dss:EquivalentCertificate">
                             <div>
-                                <xsl:attribute name="class">constraint-text font-weight-bolder mb-1 d-none</xsl:attribute>
+                                <xsl:attribute name="class">constraint-text fw-bolder mb-1 d-none</xsl:attribute>
                                 Equivalent certification: <xsl:value-of select="dss:EquivalentCertificate"/>
                             </div>
                         </xsl:if>

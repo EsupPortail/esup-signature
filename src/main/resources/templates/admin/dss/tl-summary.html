@@ -46,7 +46,7 @@
                                   th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
                             </a>
                             <span th:text="#{label.summary.lotl.number(${iterLOTL.count})}"></span>&nbsp;
-                            <a class="h5 font-weight-bold" th:href="${lotl.url}" th:text="${lotl.url}" target="_blank"></a>
+                            <a class="h5 fw-bold" th:href="${lotl.url}" th:text="${lotl.url}" target="_blank"></a>
                         </h2>
 
                         <!-- LOTL Info -->
@@ -56,7 +56,7 @@
                         <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
                             <h4>
                                 <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
-                                <a class="h6 font-weight-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getIdentifier().asXmlId()}"
+                                <a class="h6 fw-bold" th:href="@{/admin/dss/pivot-changes/} + ${lotl.getIdentifier().asXmlId()}"
                                    th:text="#{label.summary.pivot.check.text}"></a>
                             </h4>
                             <table class="pivot-summary summary-table table">

@@ -111,10 +111,6 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    isFloat(n){
-        return Number(n) === n && n % 1 !== 0;
-    }
-
     adjustZoom() {
         let newScale = 1;
         if(localStorage.getItem('scale')) {
