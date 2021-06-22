@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Collections;
 
 @Service
 @ConditionalOnProperty({"spring.ldap.base", "ldap.list-search-base", "ldap.list-search-filter"})
