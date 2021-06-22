@@ -1,14 +1,15 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
-import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
@@ -18,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,7 +51,7 @@ public class SignBookService {
     private WorkflowStepService workflowStepService;
 
     @Resource
-    private EventService eventService;
+    private GlobalProperties globalProperties;
 
     @Resource
     private LiveWorkflowService liveWorkflowService;
@@ -83,6 +86,9 @@ public class SignBookService {
     @Resource
     private OtpService otpService;
 
+    @Resource
+    private FileService fileService;
+
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
         signBookRepository.findAll().forEach(list::add);
@@ -101,17 +107,28 @@ public class SignBookService {
         return signBookRepository.countByLiveWorkflowWorkflow(workflow);
     }
 
-    public SignBook createSignBook(String prefix,  String suffix, User user, boolean external) {
-        String name = generateName("", suffix);
+    public SignBook createSignBook(String title, Workflow workflow, String prefix, String namingTemplate, User user, boolean external) {
         SignBook signBook = new SignBook();
+        if(namingTemplate == null || namingTemplate.isEmpty()) {
+            namingTemplate = globalProperties.getNamingTemplate();
+            if(workflow != null && workflow.getNamingTemplate() != null && !workflow.getNamingTemplate().isEmpty()) {
+                namingTemplate = workflow.getNamingTemplate();
+            }
+        }
+        String workflowName = prefix;
+        int order = 0;
+        if(workflow != null) {
+            workflowName = workflow.getName();
+            order = signBookRepository.countByLiveWorkflowWorkflow(workflow);
+        }
         signBook.setStatus(SignRequestStatus.draft);
-        signBook.setName(name);
-        signBook.setTitle(prefix);
+        signBook.setTitle(workflowName);
         signBook.setCreateBy(user);
         signBook.setCreateDate(new Date());
         signBook.setExternal(external);
         signBook.setLiveWorkflow(liveWorkflowService.create());
         signBookRepository.save(signBook);
+        signBook.setName(generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate));
         return signBook;
     }
 
@@ -119,7 +136,7 @@ public class SignBookService {
     public SignBook addFastSignRequestInNewSignBook(MultipartFile[] multipartFiles, SignType signType, User user, String authUserEppn) throws EsupSignatureException {
         if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
             try {
-                SignBook signBook = addDocsInNewSignBookSeparated("", "Signature simple", multipartFiles, user);
+                SignBook signBook = addDocsInNewSignBookSeparated(fileService.getNameOnly(multipartFiles[0].getOriginalFilename()), "Auto signature", multipartFiles, user);
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, true, false, signType, Collections.singletonList(user.getEmail()), null));
                 signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
                 dispatchSignRequestParams(signBook);
@@ -332,11 +349,12 @@ public class SignBookService {
         if (isMoreWorkStep) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber()));
         }
-        return isMoreWorkStep;
+        return isMoreWorkStep && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
     }
 
     public boolean isMoreWorkflowStep(SignBook signBook) {
-        return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1;
+        int test = signBook.getLiveWorkflow().getCurrentStepNumber();
+        return signBook.getLiveWorkflow().getLiveWorkflowSteps().size() >= signBook.getLiveWorkflow().getCurrentStepNumber() + 1 && test > -1;
     }
 
     public boolean isNextWorkFlowStep(SignBook signBook) {
@@ -449,20 +467,64 @@ public class SignBookService {
         }
     }
 
-    public String generateName(String prefix, String suffix) {
-        String signBookName = "";
-
-        if(!prefix.isEmpty()) {
-            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-").replace(" ", "-");
+    public String generateName2(long id, String title, String worflowName, int order, User user, String template) {
+        if(template.contains("[id]")) {
+            template = template.replace("[id]", id + "");
         }
-        if(!suffix.isEmpty()) {
-            if(!prefix.isEmpty()) {
-                signBookName += "-";
-            }
-            signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
+        if(template.contains("[title]")) {
+            template = template.replace("[title]", title.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
         }
-        return signBookName;
+        if(template.contains("[worflowName]")) {
+            template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
+        }
+        if(template.contains("[user.eppn]")) {
+            template = template.replace("[user.eppn]", user.getEppn());
+        }
+        if(template.contains("[user.name]")) {
+            template = template.replace("[user.name]", user.getFirstname() + " " + user.getName());
+        }
+        if(template.contains("[user.initials]")) {
+            template = template.replace("[user.initials]", user.getName().substring(0,1).toUpperCase() + user.getFirstname().substring(0,1).toUpperCase());
+        }
+        if(template.contains("[UUID]")) {
+            template = template.replace("[UUID]", UUID.randomUUID().toString());
+        }
+        if(template.contains("[order]")) {
+            template = template.replace("[order]", order + "");
+        }
+        if(template.contains("[timestamp]")) {
+            Date date = Calendar.getInstance().getTime();
+            template = template.replace("[timestamp]", date.getTime() + "");
+        }
+        if(template.contains("[date-fr]")) {
+            Date date = Calendar.getInstance().getTime();
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm");
+            String strDate = dateFormat.format(date);
+            template = template.replace("[date-fr]", strDate);
+        }
+        if(template.contains("[date-en]")) {
+            Date date = Calendar.getInstance().getTime();
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+            String strDate = dateFormat.format(date);
+            template = template.replace("[date-en]", strDate);
+        }
+        return template;
     }
+
+//    public String generateName(String prefix, String suffix) {
+//        String signBookName = "";
+//
+//        if(!prefix.isEmpty()) {
+//            signBookName += prefix.replaceAll("[\\\\/:*?\"<>|]", "-").replace(" ", "-");
+//        }
+//        if(!suffix.isEmpty()) {
+//            if(!prefix.isEmpty()) {
+//                signBookName += "-";
+//            }
+//            signBookName += suffix.replaceAll("[\\\\/:*?\"<>|]", "-");
+//        }
+//        return signBookName;
+//    }
 
     public Map<SignBook, String> sendSignBook(SignBook signBook, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException {
         String message = null;
@@ -495,27 +557,27 @@ public class SignBookService {
     }
 
 
-    public void addDocumentsToSignBook(SignBook signBook, String prefix, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+    public void addDocumentsToSignBook(SignBook signBook, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
             i++;
         }
     }
 
     @Transactional
-    public SignBook addDocsInNewSignBookSeparated(String name, String workflowName, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
-        SignBook signBook = createSignBook(workflowName, name, authUser, true);
-        addDocumentsToSignBook(signBook, workflowName, multipartFiles, authUser.getEppn());
+    public SignBook addDocsInNewSignBookSeparated(String name, String prefix, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
+        SignBook signBook = createSignBook(name, null, prefix, "", authUser, true);
+        addDocumentsToSignBook(signBook, multipartFiles, authUser.getEppn());
         return signBook;
     }
 
     @Transactional
     public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
-        SignBook signBook = createSignBook(name, "", authUser, false);
-        SignRequest signRequest = signRequestService.createSignRequest(name, signBook, authUserEppn, authUserEppn);
+        SignBook signBook = createSignBook(name, null, "","", authUser, false);
+        SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;

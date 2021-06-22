@@ -217,7 +217,7 @@ public class FormService {
 
 	@Transactional
 	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
-		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, true);
+		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, true, true);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
@@ -395,7 +395,7 @@ public class FormService {
 	}
 
 	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
-		return formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, activeVersion);
+		return formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, activeVersion, true);
 	}
 
 	public List<Form> getFormByName(String name) {

@@ -7,6 +7,7 @@
         <div class="card card-body bg-light">
 <!--        <div th:if="${signRequest != null}" th:include="user/signrequests/includes/status"></div>-->
             <th:block th:if="${signRequest != null}">
+                <p th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.title}"></p>
                 <p>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></p>
                 <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
             </th:block>

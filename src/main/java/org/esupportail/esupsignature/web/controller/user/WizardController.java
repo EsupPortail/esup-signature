@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
 import org.slf4j.Logger;
@@ -35,9 +34,6 @@ public class WizardController {
 
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
-
-    @Resource
-    private EventService eventService;
 
     @Resource
     private UserService userService;

@@ -39,6 +39,7 @@ public class Data {
 
     @OrderColumn
     @ElementCollection
+	@Column(columnDefinition = "TEXT")
 	private Map<String, String> datas = new LinkedHashMap<>();
 
     @Enumerated(EnumType.STRING)

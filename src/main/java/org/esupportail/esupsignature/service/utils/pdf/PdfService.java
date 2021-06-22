@@ -276,7 +276,6 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdDocument.setVersion(1.7f);
-
             COSDictionary trailer = pdDocument.getDocument().getTrailer();
             COSDictionary rootDictionary = trailer.getCOSDictionary(COSName.ROOT);
             rootDictionary.setItem(COSName.TYPE, COSName.CATALOG);
@@ -285,7 +284,7 @@ public class PdfService {
             String producer = "esup-signature v." + globalProperties.getVersion();
 
             PDDocumentInformation info = pdDocument.getDocumentInformation();
-            info.setTitle(fileName);
+            info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
             info.setSubject(fileName);
             info.setCreator(signRequest.getCreateBy().getEppn());
             info.setProducer(producer);
