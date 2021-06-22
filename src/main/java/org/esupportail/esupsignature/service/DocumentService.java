@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
@@ -54,18 +53,6 @@ public class DocumentService {
 		document.setSize(size);
 		documentRepository.save(document);
 		return document;
-	}
-
-	public String getFormatedName(String originalName, int order) {
-		String name = "";
-		name += String.format("%02d", order);
-		name += "_";
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-		name += format.format(new Date());
-		name += "_";
-		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
-		name += "." + fileService.getExtension(originalName);
-		return name;
 	}
 
 	public String getSignedName(String originalName) {

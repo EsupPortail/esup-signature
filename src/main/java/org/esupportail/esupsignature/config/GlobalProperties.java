@@ -33,6 +33,7 @@ public class GlobalProperties implements Cloneable {
     private int hoursBeforeRefreshNotif = 24;
     private Boolean infiniteScrolling = true;
     private Boolean returnToHomeAfterSign = true;
+    private String namingTemplate = "[title]";
     /**
      * Choisir le fonctionnement des délégations :
      *  <ul>
@@ -210,5 +211,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setReturnToHomeAfterSign(Boolean returnToHomeAfterSign) {
         this.returnToHomeAfterSign = returnToHomeAfterSign;
+    }
+
+    public String getNamingTemplate() {
+        return namingTemplate;
+    }
+
+    public void setNamingTemplate(String namingTemplate) {
+        this.namingTemplate = namingTemplate;
     }
 }

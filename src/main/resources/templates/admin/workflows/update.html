@@ -49,6 +49,10 @@
                             <label><strong>Description</strong></label>
                             <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
+                        <div class="form-group mb-3">
+                            <label><strong>Modele de nomage</strong></label>
+                            <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
+                        </div>
                         <div class="form-check mb-2">
                             <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                             <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>

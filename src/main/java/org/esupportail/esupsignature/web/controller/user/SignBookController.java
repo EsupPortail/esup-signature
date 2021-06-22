@@ -153,7 +153,7 @@ public class SignBookController {
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
         SignBook signBook = signBookService.getById(id);
-        signBookService.addDocumentsToSignBook(signBook, signBook.getName(), multipartFiles, authUserEppn);
+        signBookService.addDocumentsToSignBook(signBook, multipartFiles, authUserEppn);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
     }
 

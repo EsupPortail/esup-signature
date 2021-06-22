@@ -135,21 +135,23 @@ public class MailService {
                     }
                 }
             }
-            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
-            if(viewersArray.size() > 0) {
-                String[] to = new String[viewersArray.size()];
-                int i = 0;
-                for(User userTo : viewersArray) {
-                    to[i] = userTo.getEmail();
-                    i++;
+            if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+                viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
+                if (viewersArray.size() > 0) {
+                    String[] to = new String[viewersArray.size()];
+                    int i = 0;
+                    for (User userTo : viewersArray) {
+                        to[i] = userTo.getEmail();
+                        i++;
+                    }
+                    mimeMessage.setTo(to);
+                    logger.info("send email completes for " + user.getEppn());
+                    if (mailSender != null) {
+                        mailSender.send(mimeMessage.getMimeMessage());
+                    }
+                } else {
+                    logger.debug("no viewers to send mail");
                 }
-                mimeMessage.setTo(to);
-                logger.info("send email completes for " + user.getEppn());
-                if (mailSender != null) {
-                    mailSender.send(mimeMessage.getMimeMessage());
-                }
-            } else {
-                logger.debug("no viewers to send mail");
             }
         } catch (MailSendException | MessagingException | IOException e) {
             logger.error("unable to send email", e);
