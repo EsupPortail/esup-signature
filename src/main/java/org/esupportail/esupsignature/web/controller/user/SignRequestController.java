@@ -265,8 +265,8 @@ public class SignRequestController {
             signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            logger.info(e.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
     }
 
