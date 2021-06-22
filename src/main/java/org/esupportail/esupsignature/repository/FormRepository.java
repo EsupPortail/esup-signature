@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface FormRepository extends CrudRepository<Form, Long> {
 	List<Form> findFormByDeletedIsNullOrDeletedIsFalse();
-	List<Form> findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(String name, Boolean activeVersion);
+	List<Form> findFormByNameAndActiveVersionAndDeletedNot(String name, Boolean activeVersion, Boolean deleted);
 	@Query("select distinct f from Form f join f.managers m where m = :email and (f.deleted is null or f.deleted = false)")
 	List<Form> findFormByManagersContainsAndDeletedIsNullOrDeletedIsFalse(@Param("email") String email);
 	List<Form> findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();

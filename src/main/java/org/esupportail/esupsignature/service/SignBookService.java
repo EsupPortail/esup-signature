@@ -111,7 +111,7 @@ public class SignBookService {
         SignBook signBook = new SignBook();
         if(namingTemplate == null || namingTemplate.isEmpty()) {
             namingTemplate = globalProperties.getNamingTemplate();
-            if(workflow != null && !workflow.getNamingTemplate().isEmpty()) {
+            if(workflow != null && workflow.getNamingTemplate() != null && !workflow.getNamingTemplate().isEmpty()) {
                 namingTemplate = workflow.getNamingTemplate();
             }
         }
