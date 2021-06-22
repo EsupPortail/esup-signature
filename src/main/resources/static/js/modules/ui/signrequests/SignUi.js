@@ -163,26 +163,26 @@ export class SignUi {
             type: 'POST',
             data: signRequestUrlParams,
             success: function(data, textStatus, xhr) {
-                if(self.gotoNext) {
-                    document.location.href = $("#nextSignRequestButton").attr('href');
+                if(data === "initNexu") {
+                    document.location.href="/user/nexu-sign/" + self.signRequestId;
                 } else {
-                    if(self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                        document.location.href = "/user/signrequests/" + self.signRequestId;
+                    if (self.gotoNext) {
+                        document.location.href = $("#nextSignRequestButton").attr('href');
                     } else {
-                        document.location.href = "/user/";
+                        if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
+                            document.location.href = "/user/signrequests/" + self.signRequestId;
+                        } else {
+                            document.location.href = "/user/";
+                        }
                     }
                 }
             },
             error: function(data, textStatus, xhr) {
-                if(data.responseText === "initNexu") {
-                    document.location.href="/user/nexu-sign/" + self.signRequestId;
-                } else {
-                    $("#signSpinner").hide();
-                    console.error("sign error : " + data.responseText);
-                    document.getElementById("signError").style.display = "block";
-                    document.getElementById("signError").innerHTML = " Erreur du système de signature : <br>" + data.responseText;
-                    document.getElementById("closeModal").style.display = "block";
-                }
+                $("#signSpinner").hide();
+                console.error("sign error : " + data.responseText);
+                document.getElementById("signError").style.display = "block";
+                document.getElementById("signError").innerHTML = " Erreur du système de signature : <br>" + data.responseText;
+                document.getElementById("closeModal").style.display = "block";
             }
         });
     }

@@ -324,8 +324,7 @@ export class WorkspacePdf {
                     if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
                         bootbox.alert("Merci de placer la signature", null);
                     } else {
-                        if(self.signPosition.signRequestParamses.size === 0 &&
-                        self.signType === "certSign" || self.signType === "nexuSign") {
+                        if(self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
                             bootbox.confirm({
                                 message: "Attention vous allez signez ce document sans visuel",
                                 buttons: {
