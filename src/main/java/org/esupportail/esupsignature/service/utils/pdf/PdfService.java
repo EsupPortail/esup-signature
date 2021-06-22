@@ -284,7 +284,7 @@ public class PdfService {
             String producer = "esup-signature v." + globalProperties.getVersion();
 
             PDDocumentInformation info = pdDocument.getDocumentInformation();
-            info.setTitle(signRequest.getTitle() + "_signé.pdf");
+            info.setTitle(signRequest.getTitle() + globalProperties.getSignedSuffix());
             info.setSubject(fileName);
             info.setCreator(signRequest.getCreateBy().getEppn());
             info.setProducer(producer);

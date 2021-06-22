@@ -474,7 +474,9 @@ public class SignBookService {
         if(template.contains("[title]")) {
             template = template.replace("[title]", title.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
         }
-        template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
+        if(template.contains("[worflowName]")) {
+            template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
+        }
         if(template.contains("[user.eppn]")) {
             template = template.replace("[user.eppn]", user.getEppn());
         }

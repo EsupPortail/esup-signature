@@ -29,6 +29,9 @@ public class DocumentService {
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
 	@Resource
+	private GlobalProperties globalProperties;
+
+	@Resource
 	private DocumentRepository documentRepository;
 
 	@Resource
@@ -56,7 +59,7 @@ public class DocumentService {
 	}
 
 	public String getSignedName(String originalName) {
-		String suffix = "_signé";
+		String suffix = globalProperties.getSignedSuffix();
 		String name = "";
 		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
 		if(name.endsWith(suffix)) {
