@@ -21,6 +21,8 @@ public class LdapAliasService {
 
     public List<AliasLdap> searchAlias(String searchString) {
         String formattedFilter = MessageFormat.format(ldapProperties.getListSearchFilter(), new String[] { searchString });
-        return ldapTemplate.search(ldapProperties.getListSearchBase(), formattedFilter, new AliasLdapAttributesMapper());
+        List<AliasLdap> aliasLdaps = ldapTemplate.search(ldapProperties.getListSearchBase(), formattedFilter, new AliasLdapAttributesMapper());
+        aliasLdaps.removeAll(Collections.singleton(null));
+        return  aliasLdaps;
     }
 }
