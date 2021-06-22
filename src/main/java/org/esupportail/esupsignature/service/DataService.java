@@ -106,8 +106,8 @@ public class DataService {
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
-        SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, ""), signBook, user.getEppn(), authUser.getEppn());
+        SignBook signBook = signBookService.createSignBook(form.getTitle(), modelWorkflow, "",null, user, false);
+        SignRequest signRequest = signRequestService.createSignRequest(signBook, user.getEppn(), authUser.getEppn());
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {

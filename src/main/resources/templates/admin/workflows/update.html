@@ -49,6 +49,36 @@
                             <label><strong>Description</strong></label>
                             <input class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
+                        <div class="form-group mb-3">
+                            <label>
+                                <strong>Modèle de nommage</strong>
+                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template" data-bs-toggle="collapse"
+                                        type="button">
+                                    <span class="fas fa-info-circle text-info"></span>
+                                </button>
+                            </label>
+                            <div class="collapse" id="help-naming-template">
+                                <div class="alert alert-info mb-1">
+                                    Le modèle est construit à l'aide d'attributs entre crochets.
+                                    Si vide, se réfere à l'attribut namingTemplate de la configuration générale
+                                    Les attributs disponibles sont :
+                                    <ul>
+                                        <li>[title] : titre du document original</li>
+                                        <li>[id] : identifiant du parapheur</li>
+                                        <li>[worflowName] : nom du circuit</li>
+                                        <li>[user.name] : nom prénom de l'utilisateur courant</li>
+                                        <li>[user.eppn] : eppn de l'utilisateur courant</li>
+                                        <li>[user.initials] : initiales de l'utilisateur courant</li>
+                                        <li>[UUID] : un identifiant unique</li>
+                                        <li>[order] : le numéro d'ordre de création pour un même circuit</li>
+                                        <li>[timestamp] : timestamp sous forme de long</li>
+                                        <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
+                                        <li>[date-en] : date yyyy-MM-dd hh:mm</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
+                        </div>
                         <div class="form-check mb-2">
                             <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
                             <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
@@ -60,9 +90,10 @@
                         <div class="form-group mb-3">
                             <label for="roles">
                                 Rôle
-                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
-                                    ce formulaire</small></div>
                             </label>
+                            <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à
+                                ce formulaire</small></div>
+
                             <select id="roles" class="slim-select-simple" type="text" th:field="*{roles}" multiple th:classappend="${!workflow.visibility} ? 'd-none' : ''">
                                 <th:block th:each="newRole : ${roles}">
                                     <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
@@ -75,12 +106,12 @@
                                         type="button">
                                     <span class="fas fa-info-circle text-info"></span>
                                 </button>
-                                <div class="collapse" id="collapseHelp1">
-                                    <div class="alert alert-info">
-                                        Les superviseurs peuvent consulter les demandes de ce circuit
-                                    </div>
-                                </div>
                             </label>
+                            <div class="collapse" id="collapseHelp1">
+                                <div class="alert alert-info mb-1">
+                                    Les superviseurs peuvent consulter les demandes de ce circuit
+                                </div>
+                            </div>
                             <select id="managersSelect" class="select-users" multiple="multiple" name="managers">
                                 <th:block th:each="manager : ${workflow.managers}">
                                     <option selected="selected" th:value="${manager}" th:text="${manager}"></option>

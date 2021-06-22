@@ -17,9 +17,7 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.entity.Message;
 import org.esupportail.esupsignature.service.MessageService;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -45,9 +43,6 @@ public class MessageAdminController {
 	}
 
 	@Resource
-	private EventService eventService;
-
-	@Resource
 	private MessageService messageService;
 
 	@GetMapping
@@ -58,8 +53,7 @@ public class MessageAdminController {
 
 	@PostMapping("/add")
 	public String addMessage(@RequestParam String text, @RequestParam String endDate) throws ParseException, InterruptedException {
-		Message message = messageService.createMessage(endDate, text);
-//		eventService.publishEvent(new JsonMessage("custom", message.getText()), "global", null);
+		messageService.createMessage(endDate, text);
 		return "redirect:/admin/messages";
 	}
 

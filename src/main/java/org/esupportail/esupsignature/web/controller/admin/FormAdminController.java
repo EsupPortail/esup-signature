@@ -157,7 +157,7 @@ public class FormAdminController {
 			RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
-			return "redirect:/admin/forms/" + form.getId();
+			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
