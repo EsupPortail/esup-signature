@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -327,7 +328,7 @@ public class SignRequestController {
                 return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
             } catch (EsupSignatureException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-                return "redirect:" + request.getHeader("Referer");
+                return "redirect:" + request.getHeader(HttpHeaders.REFERER);
             }
         } else {
             logger.warn("no file to import");
@@ -393,7 +394,7 @@ public class SignRequestController {
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         signRequestService.delete(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:" + httpServletRequest.getHeader("referer");
+        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
