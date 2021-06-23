@@ -62,7 +62,8 @@ public class HomeController {
     @Resource
     private MessageService messageService;
 
-    @Resource UserService userService;
+    @Resource
+    private UserService userService;
 
     @GetMapping
     public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {

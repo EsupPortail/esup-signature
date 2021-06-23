@@ -46,13 +46,13 @@
                                             </tr>
                                             <div th:if="${recipient.user.userType.name() == 'external'}" class="card position-absolute collapse mini-menu" th:id="'menu-' + ${recipient.id}" style="    width: 200px">
                                                 <div class="card-header" style="height: 40px;">
-                                                    <button type="button" class="close" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"><i class="fas fa-times"></i></button>
+                                                    <button type="button" class="btn-close" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"></button>
                                                 </div>
                                                 <div class=" card-body">
                                                     Envoyer un nouveau lien d'accès
                                                     <br>
-                                                    <a type="button" class="btn btn-success float-right mb-2" title="Envoyer un nouveau lien d'accès" th:href="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}"><i class="fas fa-key"></i></a>
-                                                    <button class="btn btn-secondary float-left" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"><i class="fas fa-times"></i></button>
+                                                    <a type="button" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès" th:href="'/user/signrequests/send-otp/' + ${signRequest.id} + '/' + ${recipient.user.id}"><i class="fas fa-key"></i></a>
+                                                    <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'"></button>
                                                 </div>
                                             </div>
                                         </th:block>

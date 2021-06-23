@@ -32,6 +32,7 @@ export class PdfViewer extends EventFactory {
         }
         this.dataFields = jsFields;
         this.savedFields = new Map();
+        this.pdfFields = [];
         this.signable = signable;
         this.events = {};
         this.rotation = 0;
@@ -110,12 +111,7 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    isFloat(n){
-        return Number(n) === n && n % 1 !== 0;
-    }
-
     adjustZoom() {
-        console.info("adjust zoom to screen wide " + window.innerWidth);
         let newScale = 1;
         if(localStorage.getItem('scale')) {
             newScale = parseFloat(localStorage.getItem('scale'));
@@ -133,6 +129,7 @@ export class PdfViewer extends EventFactory {
             newScale = 0.5;
         }
         if (newScale !== this.scale) {
+            console.info("adjust zoom to screen wide " + window.innerWidth);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.renderPage(this.pageNum);
@@ -240,10 +237,6 @@ export class PdfViewer extends EventFactory {
                 }
             }
         }
-    }
-
-    initSavedValues() {
-
     }
 
     promizeSaveValues() {
@@ -364,8 +357,9 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfFormWithFields(items) {
+        this.pdfFields = items;
         let datePickerIndex = 40;
-        console.debug("rending pdfForm items with fields" + items);
+        console.debug("rending pdfForm items");
         let signFieldNumber = 0;
         let self = this;
         for (let i = 0; i < items.length; i++) {
@@ -374,8 +368,8 @@ export class PdfViewer extends EventFactory {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
                     let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                    signField.addClass("sign-field")
-                    signField.append('Champ signature ' + signFieldNumber + '<br>');
+                    // signField.addClass("sign-field")
+                    // signField.append('Champ signature ' + signFieldNumber + '<br>');
                     // signField.addClass("d-none");
                     // signField.parent().remove();
 
@@ -392,6 +386,7 @@ export class PdfViewer extends EventFactory {
 
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
+                inputField.addClass("field-type-text");
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
                 inputField.attr('title', dataField.description);
@@ -458,6 +453,7 @@ export class PdfViewer extends EventFactory {
                     }
                 }
                 if (dataField.type === 'checkbox') {
+                    inputField.addClass("field-type-checkbox");
                     inputField.val('on');
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
@@ -529,6 +525,7 @@ export class PdfViewer extends EventFactory {
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
             if(inputField.length && dataField) {
+                inputField.addClass("field-type-textarea");
                 let sendField = inputField;
                 if(dataField.favorisable) {
                     $.ajax({
@@ -603,37 +600,42 @@ export class PdfViewer extends EventFactory {
 
     isFieldEnable(dataField) {
         let isIncludeCurrentStep = false;
-        for(let i = 0; i < dataField.workflowSteps.length; i++) {
-            if(dataField.workflowSteps[i].id === this.currentStepId) {
+        for (let i = 0; i < dataField.workflowSteps.length; i++) {
+            if (dataField.workflowSteps[i].id === this.currentStepId) {
                 isIncludeCurrentStep = true;
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));// && this.signable
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
     }
 
     renderPdfForm(items) {
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
+            let item = items[i];
             console.debug(">>Start compute item");
-            if(items[i].fieldType === undefined) {
-                console.log(items[i]);
-                if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
+            if(item.fieldType === undefined) {
+                console.log(item);
+                if(item.title && item.title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
-                    let section = $('section[data-annotation-id=' + items[i].id +']');
-                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                    signField.addClass("sign-field");
+                    let section = $('section[data-annotation-id=' + item.id +']');
+                    let signField = $('section[data-annotation-id=' + item.id + '] > div');
+                    signField.css("font-size", 8);
+                    // signField.addClass("sign-field");
                     signField.unbind();
                     section.unbind();
                     section.attr("id", signFieldNumber);
                     section.on('click', function () {
-                        $("#reportModal").modal("show");
-                        $("div[id^='report_']").each(function() {
-                            $(this).hide();
-                        });
-                        $("#report_" + $(this).attr("id")).show();
+                        let report = $("#report_" + $(this).attr("id"));
+                        if(report.length) {
+                            $("#reportModal").modal("show");
+                            $("div[id^='report_']").each(function () {
+                                $(this).hide();
+                            });
+                            report.show();
+                        }
                     })
                     // signField.attr("data-toggle", "modal");
                     // signField.attr("data-target", "#sign_" + self.signRequestId);
@@ -642,7 +644,7 @@ export class PdfViewer extends EventFactory {
                 }
                 continue;
             }
-            let inputName = items[i].fieldName.split(/\$|#|!/)[0];
+            let inputName = item.fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             console.debug(inputField);
             if (inputField.length) {
@@ -650,15 +652,15 @@ export class PdfViewer extends EventFactory {
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if (inputField.is(':radio')) {
-                    inputField.val(items[i].buttonValue);
+                    inputField.val(item.buttonValue);
                 }
             } else {
-                inputField = $('section[data-annotation-id=' + items[i].id + '] > textarea');
+                inputField = $('section[data-annotation-id=' + item.id + '] > textarea');
                 if (inputField.length > 0) {
                     inputField.attr('name', inputName);
                     inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
-                    inputField.val(items[i].fieldValue);
+                    inputField.val(item.fieldValue);
                 }
             }
         }
@@ -756,13 +758,13 @@ export class PdfViewer extends EventFactory {
             let self = this;
             let resolveOk = "ok";
             let warningFields = [];
-            $(self.dataFields).each(function() {
-                let savedField = self.savedFields.get($(this)[0].name)
-                formData[$(this)[0].name] = savedField;
-                if ($(this)[0].required && !savedField && (!$("#" + $(this)[0].name).val() || $(this)[0].type === "radio") && self.isFieldEnable($(this)[0])) {
-                    if(!self.checkObjectInArray(warningFields, $(this)[0].name)) {
+            $(self.dataFields).each(function(e, item) {
+                let savedField = self.savedFields.get(item.name)
+                formData[item.name] = savedField;
+                if (item.required && !savedField && (!$("#" + item.name).val() || item.type === "radio") && self.isFieldEnable(item)) {
+                    // if(!self.checkObjectInArray(warningFields, item.name)) {
                         warningFields.push($(this)[0]);
-                    }
+                    // }
                 }
             });
             if(warningFields.length > 0) {

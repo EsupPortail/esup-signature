@@ -2,22 +2,22 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
-        <div class="step active" data-target="#test-l-2">
+        <div class="step active" data-bs-target="#test-l-2">
             <span class="bs-stepper-circle"><i class="fas fa-copy"></i></span>
             <span class="bs-stepper-label">Copie des fichiers</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
             <span class="bs-stepper-label">Création du circuit</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
             <span class="bs-stepper-label">Fin</span>
         </div>
@@ -25,15 +25,15 @@
 </div>
 <h4 class="d-flex justify-content-center mt-4">Dépôt des fichiers</h4>
 <div class="col-lg-12">
-    <div class="form-group">
+    <div class="form-group mb-3">
         <div class="file-loading">
             <input th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple"/>
         </div>
     </div>
-    <div class="form-group">
+    <div class="form-group mb-3">
     <div id="unique" class="form-check d-none">
         <label class="switch">
-            <input type="checkbox" name="unique">
+            <input type="checkbox" class="form-check-input" name="unique">
             <span class="slider round"></span>
         </label>
         <label>Activer pour encapsuler les documents au format asic (signature électronique non visuelle)</label>
@@ -44,7 +44,7 @@
     </div>
     <div>
         <label for="recipientsCCEmailsWiz">Choisir les observateurs en copie</label>
-        <div class="form-group">
+        <div class="form-group mb-3">
             <select class="select-users" data-check="true" name="recipientsCCEmailsWiz" id="recipientsCCEmailsWiz" size="5" multiple="multiple">
             </select>
         </div>
@@ -52,7 +52,7 @@
     </div>
 </div>
 <div class="inline-flex">
-    <button type="button" id="fileUpload" class="btn btn-success float-right m-1">
+    <button type="button" id="fileUpload" class="btn btn-success float-end m-1">
         Suivant <i class="fas fa-angle-right"></i>
     </button>
 </div>

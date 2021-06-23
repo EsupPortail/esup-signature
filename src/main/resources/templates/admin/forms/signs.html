@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<!--/*@thymesVar id="srpMap" type="java.util.Map<java.lang.Long, java.lang.Integer>"*/-->
+<head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {default as FormSignsUi} from '/static/js/modules/ui/forms/FormSignsUi.js?version=[[${version}]]';
+    new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
+</script>
+<body>
+<header th:replace="fragments/nav"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="/fragments/sides/side-admin"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item active" th:text="'Liste des champs du formulaire : ' + ${form.name}"></li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btns active" >
+                <ul class="list-unstyled">
+                    <li>
+                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
+                            <i class="fas fa-save"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                </li>
+            </ul>
+            <br>
+            <div class="card col-lg-11">
+                <div class="card-body">
+                    <div id="listSignRequestTable" class="table-fix-head">
+                        <table class="table table-borderless table-hover">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th class="align-middle th-fixed">Champ signature</th>
+                            <th class="align-middle th-fixed">Etapes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="signRequestParams : ${form.signRequestParams}">
+                        <form id="form">
+                        <tr>
+                            <td><span th:text="${signRequestParams.pdSignatureFieldName + ' : page ' + signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
+                            <td>
+                                <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="slim-select-simple" size="3" data-placeholder="Choisir des étapes">
+                                    <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
+                                        <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(signRequestParams.id) == iterator.index + 1}"></option>
+                                    </th:block>
+                                </select>
+                            </td>
+                        </tr>
+                        </form>
+                    </th:block>
+                    </tbody>
+                </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="fragments/footer"></footer>
+</body>
+</html>

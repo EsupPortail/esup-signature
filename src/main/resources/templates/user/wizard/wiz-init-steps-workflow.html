@@ -2,17 +2,17 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
-        <div class="step active" data-target="#test-l-3">
+        <div class="step active" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
             <span class="bs-stepper-label">Création du circuit</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
             <span class="bs-stepper-label">Fin</span>
         </div>
@@ -27,8 +27,8 @@
             <span title="Étape à venir" class="bs-stepper-circle">
                 <i class="fas fa-clock"></i>
             </span>
-                    <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-right"><i class="fas fa-users"></i></span>
-                    <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-right"><i class="fas fa-user"></i></span>
+                    <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>
+                    <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end"><i class="fas fa-user"></i></span>
                     <div class="bs-stepper-label">
                         <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
                             <span th:text="${workflowStep.description}"></span>
@@ -63,16 +63,14 @@
     </select>
     <div id="tempUsers-recipientsEmailsWiz"></div>
     <br/>
-    <label>
-        Tous les participants doivent-ils signer ?
-    </label>
-    <label class="switch">
-        <input type="checkbox" name="allSignToComplete"/>
-        <span class="slider round"></span>
-    </label>
-    <br/>
+    <div class="form-check form-switch form-switch-md mb-2">
+        <label class="form-check-label">
+            Tous les participants doivent-ils signer ?
+        </label>
+        <input type="checkbox" class="form-check-input" name="allSignToComplete"/>
+    </div>
     <label>Type de signature :</label>
-    <select class="form-control" id="signTypeWiz" name="signType">
+    <select class="form-select" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
@@ -85,7 +83,7 @@
     <i class="fas fa-flag-checkered"></i> Terminer
 </button>
 </form>
-<form id="wiz4Form" th:if="${workflow != null}" th:action="'/delete-workflow/' + ${workflow.id}" method="post">
+<form id="wiz4Form" th:if="${workflow != null}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="delete">
     <input type="hidden" name="name" th:value="${name}">
     <button type="submit" class="btn btn-success" style="position: absolute;left: 10px;bottom: 10px;">
         <i class="fas fa-angle-left"></i> Annuler

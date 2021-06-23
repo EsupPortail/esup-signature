@@ -199,15 +199,16 @@ public class SignService {
 		return parameters;
 	}
 
-	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user) throws IOException {
+	public PAdESSignatureParameters fillVisibleParameters(SignatureDocumentForm form, SignRequestParams signRequestParams, InputStream toSignFile, Color color, User user, Date date) throws IOException {
+		float fixFactor = .75f;
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
 		if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
-			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign);
+			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color);
+				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
 				signImage = new FileInputStream(fileWithWatermark);
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
@@ -223,19 +224,19 @@ public class SignService {
 			if(signRequestParams.getAddExtra()) {
 				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
 			}
-			int widthAdjusted = Math.round((float) (bufferedSignImage.getWidth() / 3 * 0.75));
-			int heightAdjusted = Math.round((float) (bufferedSignImage.getHeight() / 3 * 0.75));
+			int widthAdjusted = Math.round((bufferedSignImage.getWidth() / 3 * fixFactor));
+			int heightAdjusted = Math.round((bufferedSignImage.getHeight() / 3 * fixFactor));
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);
 				signatureFieldParameters.setHeight(heightAdjusted);
-				signatureFieldParameters.setOriginX(signRequestParams.getxPos());
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() * fixFactor));
 			} else {
 				signatureFieldParameters.setWidth(heightAdjusted);
 				signatureFieldParameters.setHeight(widthAdjusted);
-				signatureFieldParameters.setOriginX(signRequestParams.getxPos() - 50);
+				signatureFieldParameters.setOriginX(Math.round(signRequestParams.getxPos() - 50 * fixFactor));
 			}
-			int yPos = Math.round(signRequestParams.getyPos() - ((heightAdjusted - signRequestParams.getSignHeight())) / 0.75f);
+			int yPos = Math.round(signRequestParams.getyPos() * fixFactor);
 			signatureFieldParameters.setOriginY(yPos);
 			imageParameters.setFieldParameters(signatureFieldParameters);
 			imageParameters.setDpi(300);
@@ -541,7 +542,7 @@ public class SignService {
 		} else {
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				SignatureDocumentForm documentForm = (SignatureDocumentForm) abstractSignatureForm;
-				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()),new Color(61, 170, 231), user);
+				parameters = fillVisibleParameters((SignatureDocumentForm) abstractSignatureForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(documentForm.getDocumentToSign()),new Color(61, 170, 231), user, abstractSignatureForm.getSigningDate());
 			} else {
 				parameters = getParameters((SignatureDocumentForm) abstractSignatureForm);
 			}

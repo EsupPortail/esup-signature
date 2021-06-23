@@ -15,17 +15,19 @@ public class SignRequestParams {
 
 	private String pdSignatureFieldName;
 
-	private int signImageNumber = 0;
+	private Integer signImageNumber = 0;
 
-	private int signPageNumber = 1;
+	private Integer signPageNumber = 1;
 
-    private int signWidth = 150;
+    private Integer signDocumentNumber = 0;
 
-    private int signHeight = 75;
+    private Integer signWidth = 150;
 
-	private int xPos = 0;
+    private Integer signHeight = 75;
 
-	private int yPos = 0;
+	private Integer xPos = 0;
+
+	private Integer yPos = 0;
 
 	private String extraText = "";
 
@@ -35,11 +37,19 @@ public class SignRequestParams {
 
     private Boolean addExtra = false;
 
+    private Boolean extraType = false;
+
+    private Boolean extraName = false;
+
+    private Boolean extraDate = false;
+
     private Boolean extraOnTop = true;
 
-	private Boolean addDate = false;
+    private Integer extraWidth = 0;
 
-	private Boolean addName = false;
+    private Integer extraHeight = 0;
+
+    private String textPart = "";
 
 	private Float signScale = 1F;
 
@@ -50,7 +60,7 @@ public class SignRequestParams {
     private Integer blue = 0;
 
     public Long getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(Long id) {
@@ -58,66 +68,74 @@ public class SignRequestParams {
     }
 
     public Integer getVersion() {
-        return this.version;
+        return version;
     }
 
     public void setVersion(Integer version) {
         this.version = version;
     }
 
-    public int getSignImageNumber() {
+    public String getPdSignatureFieldName() {
+        return pdSignatureFieldName;
+    }
+
+    public void setPdSignatureFieldName(String pdSignatureFieldName) {
+        this.pdSignatureFieldName = pdSignatureFieldName;
+    }
+
+    public Integer getSignImageNumber() {
         return signImageNumber;
     }
 
-    public void setSignImageNumber(int signImageNumber) {
+    public void setSignImageNumber(Integer signImageNumber) {
         this.signImageNumber = signImageNumber;
     }
 
-    public int getSignPageNumber() {
-        return this.signPageNumber;
+    public Integer getSignPageNumber() {
+        return signPageNumber;
     }
 
-	public void setSignPageNumber(int signPageNumber) {
+    public void setSignPageNumber(Integer signPageNumber) {
         this.signPageNumber = signPageNumber;
     }
 
-    public int getSignWidth() {
+    public Integer getSignDocumentNumber() {
+        return signDocumentNumber;
+    }
+
+    public void setSignDocumentNumber(Integer signDocumentNumber) {
+        this.signDocumentNumber = signDocumentNumber;
+    }
+
+    public Integer getSignWidth() {
         return signWidth;
     }
 
-    public void setSignWidth(int signWidth) {
+    public void setSignWidth(Integer signWidth) {
         this.signWidth = signWidth;
     }
 
-    public int getSignHeight() {
+    public Integer getSignHeight() {
         return signHeight;
     }
 
-    public void setSignHeight(int signHeight) {
+    public void setSignHeight(Integer signHeight) {
         this.signHeight = signHeight;
     }
 
-    public String getPdSignatureFieldName() {
-		return pdSignatureFieldName;
-	}
-
-	public void setPdSignatureFieldName(String pdSignatureFieldName) {
-		this.pdSignatureFieldName = pdSignatureFieldName;
-	}
-
-    public int getxPos() {
-        return this.xPos;
+    public Integer getxPos() {
+        return xPos;
     }
 
-	public void setxPos(int xPos) {
+    public void setxPos(Integer xPos) {
         this.xPos = xPos;
     }
 
-	public int getyPos() {
-        return this.yPos;
+    public Integer getyPos() {
+        return yPos;
     }
 
-	public void setyPos(int yPos) {
+    public void setyPos(Integer yPos) {
         this.yPos = yPos;
     }
 
@@ -153,6 +171,30 @@ public class SignRequestParams {
         this.addExtra = addExtra;
     }
 
+    public Boolean getExtraType() {
+        return extraType;
+    }
+
+    public void setExtraType(Boolean extraType) {
+        this.extraType = extraType;
+    }
+
+    public Boolean getExtraName() {
+        return extraName;
+    }
+
+    public void setExtraName(Boolean extraName) {
+        this.extraName = extraName;
+    }
+
+    public Boolean getExtraDate() {
+        return extraDate;
+    }
+
+    public void setExtraDate(Boolean extraDate) {
+        this.extraDate = extraDate;
+    }
+
     public Boolean getExtraOnTop() {
         return extraOnTop;
     }
@@ -161,20 +203,28 @@ public class SignRequestParams {
         this.extraOnTop = extraOnTop;
     }
 
-    public Boolean isAddDate() {
-        return addDate;
+    public Integer getExtraWidth() {
+        return extraWidth;
     }
 
-    public void setAddDate(boolean addDate) {
-        this.addDate = addDate;
+    public void setExtraWidth(Integer extraWidth) {
+        this.extraWidth = extraWidth;
     }
 
-    public Boolean isAddName() {
-        return addName;
+    public Integer getExtraHeight() {
+        return extraHeight;
     }
 
-    public void setAddName(boolean addName) {
-        this.addName = addName;
+    public void setExtraHeight(Integer extraHeight) {
+        this.extraHeight = extraHeight;
+    }
+
+    public String getTextPart() {
+        return textPart;
+    }
+
+    public void setTextPart(String textPart) {
+        this.textPart = textPart;
     }
 
     public Float getSignScale() {
@@ -185,27 +235,27 @@ public class SignRequestParams {
         this.signScale = signScale;
     }
 
-    public int getRed() {
+    public Integer getRed() {
         return red;
     }
 
-    public void setRed(int red) {
+    public void setRed(Integer red) {
         this.red = red;
     }
 
-    public int getGreen() {
+    public Integer getGreen() {
         return green;
     }
 
-    public void setGreen(int green) {
+    public void setGreen(Integer green) {
         this.green = green;
     }
 
-    public int getBlue() {
+    public Integer getBlue() {
         return blue;
     }
 
-    public void setBlue(int blue) {
+    public void setBlue(Integer blue) {
         this.blue = blue;
     }
 }

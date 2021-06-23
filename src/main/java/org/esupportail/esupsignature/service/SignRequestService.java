@@ -22,14 +22,13 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.event.EventService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
+import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
@@ -57,6 +56,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.*;
@@ -110,7 +110,7 @@ public class SignRequestService {
 	private CustomMetricsService customMetricsService;
 
 	@Resource
-	public SignBookService signBookService;
+	private SignBookService signBookService;
 
 	@Resource
 	private SignService signService;
@@ -135,9 +135,6 @@ public class SignRequestService {
 
 	@Resource
 	private DataService dataService;
-
-	@Resource
-	private EventService eventService;
 
 	@Resource
 	private OtpService otpService;
@@ -229,13 +226,15 @@ public class SignRequestService {
 					signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 					break;
 				case "followByMe":
-					signRequests.addAll(signRequestRepository.findByRecipient(userEppn));
+					signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 					break;
 				case "sharedSign":
 					signRequests.addAll(getSharedSignedSignRequests(userEppn));
 					break;
-				case "deleted":
-					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+				case "completed":
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.completed));
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.exported));
+					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.archived));
 					break;
 				default:
 					signRequests.addAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.valueOf(statusFilter)));
@@ -244,7 +243,10 @@ public class SignRequestService {
 		} else {
 			signRequests.addAll(signRequestRepository.findByCreateByEppn(userEppn));
 			signRequests.addAll(getToSignRequests(userEppn));
-			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+			signRequests.addAll(getSignRequestsSignedByUser(userEppn));
+			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
+			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
+			signRequests.addAll(getSharedSignedSignRequests(userEppn));
 		}
 		return new ArrayList<>(signRequests);
 	}
@@ -305,10 +307,14 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
-	public SignRequest createSignRequest(String title, SignBook signBook, String userEppn, String authUserEppn) {
+	public SignRequest createSignRequest(SignBook signBook, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = new SignRequest();
-		signRequest.setTitle(title);
+		if(signBook.getSignRequests().size() == 0) {
+			signRequest.setTitle(signBook.getName());
+		} else {
+			signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+		}
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);
 		signRequest.setCreateDate(new Date());
@@ -316,31 +322,32 @@ public class SignRequestService {
 		signRequest.setStatus(SignRequestStatus.draft);
 		signRequestRepository.save(signRequest);
 		signBook.getSignRequests().add(signRequest);
-		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande " + title, "SUCCESS", userEppn, authUserEppn);
+		updateStatus(signRequest, SignRequestStatus.draft, "Création de la demande " + signBook.getTitle(), "SUCCESS", userEppn, authUserEppn);
 		return signRequest;
 	}
 
-	public void addDocsToSignRequest(SignRequest signRequest, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	@Transactional
+	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
-					if(multipartFiles[0].getContentType().equals("application/pdf")) {
-						signRequest.getSignRequestParams().addAll(signRequestParamsService.scanSignatureFields(new FileInputStream(file)));
+					if(multipartFiles[0].getContentType().equals("application/pdf") && scanSignatureFields) {
+						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
+						signRequest.getSignRequestParams().addAll(signRequestParams);
 					} else if(multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
 						contentType = "application/pdf";
 					}
 				}
-				String docName = documentService.getFormatedName(multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
-				Document document = documentService.createDocument(new FileInputStream(file), docName, contentType);
+				Document document = documentService.createDocument(new FileInputStream(file), multipartFile.getOriginalFilename(), contentType);
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 				file.delete();
 			} catch (IOException e) {
-				throw new EsupSignatureIOException("", e);
+				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
 			}
 		}
 	}
@@ -349,8 +356,7 @@ public class SignRequestService {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
-				String docName = documentService.getFormatedName("attachement_" + multipartFile.getOriginalFilename(), signRequest.getOriginalDocuments().size());
-				Document document = documentService.createDocument(new FileInputStream(file), docName, multipartFile.getContentType());
+				Document document = documentService.createDocument(new FileInputStream(file), "attachement_" + signRequest.getAttachments().size() + "_" + multipartFile.getOriginalFilename(), multipartFile.getContentType());
 				signRequest.getAttachments().add(document);
 				document.setParentId(signRequest.getId());
 				file.delete();
@@ -614,7 +620,7 @@ public class SignRequestService {
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
 			} else {
-				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user);
+				parameters = signService.fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
 			}
 			parameters.setSigningCertificate(certificateToken);
 			parameters.setCertificateChain(certificateTokenChain);
@@ -647,7 +653,7 @@ public class SignRequestService {
 			}
 		} else {
 			if(comment != null && !comment.isEmpty()) {
-				commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, null, userEppn);
+				commentService.create(signRequest.getId(), comment, 0, 0, 0, null,true, null, userEppn);
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 			} else {
 				updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
@@ -962,7 +968,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Page<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+	public List<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
 		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
 		if (recipientsFilter != null) {
 			List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
@@ -992,7 +998,7 @@ public class SignRequestService {
 				signRequest.setEndDate(getEndDate(signRequest));
 			}
 		}
-		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
+		return signRequestsGrouped;
 	}
 
 	private Date getEndDate(SignRequest signRequest) {
@@ -1089,7 +1095,7 @@ public class SignRequestService {
 		if(data != null) {
 			if(data.getForm() != null) {
 				List<Field> fields = data.getForm().getFields();
-				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
+				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
 						if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
@@ -1175,7 +1181,7 @@ public class SignRequestService {
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
 		}
-		SignBook signBook = signBookService.addDocsInNewSignBookSeparated("", "Demande simple", multipartFiles, user);
+		SignBook signBook = signBookService.addDocsInNewSignBookSeparated(fileService.getNameOnly(multipartFiles[0].getOriginalFilename()), "Demande simple", multipartFiles, user);
 		try {
 			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
 		} catch (EsupSignatureMailException e) {
@@ -1286,6 +1292,10 @@ public class SignRequestService {
 
 	public Long getNbPendingSignRequests(String userEppn) {
 		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
+	}
+
+	public Long getNbDraftSignRequests(String userEppn) {
+		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.draft);
 	}
 
 	@Transactional
@@ -1421,13 +1431,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public SignRequestParams getToUseSignRequestParams(long id) {
+	public List<SignRequestParams> getToUseSignRequestParams(long id) {
 		SignRequest signRequest = getById(id);
-		int index = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > index) {
-			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(index);
+		int signOrderNumbr = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumbr)).collect(Collectors.toList());
 		}
-		return null;
+		return new ArrayList<>();
 	}
 
 	@Transactional

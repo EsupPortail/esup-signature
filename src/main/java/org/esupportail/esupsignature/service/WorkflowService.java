@@ -260,6 +260,7 @@ public class WorkflowService {
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
                     if (fsFiles.size() > 0) {
+                        int j = 0;
                         for (FsFile fsFile : fsFiles) {
                             logger.info("adding file : " + fsFile.getName());
                             ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
@@ -268,14 +269,16 @@ public class WorkflowService {
                             if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
                                 documentName = metadatas.get("Title");
                             }
-                            SignBook signBook = signBookService.createSignBook(workflow.getTitle(), documentName + "_" + nbImportedFiles, user, false);
-                            SignRequest signRequest = signRequestService.createSignRequest(documentName, signBook, user.getEppn(), authUser.getEppn());
+                            SignBook signBook = signBookService.createSignBook(fileService.getNameOnly(documentName), workflow, "",null, user, false);
+                            signBook.getLiveWorkflow().setWorkflow(workflow);
+                            SignRequest signRequest = signRequestService.createSignRequest(signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
                             }
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
-                            signRequestService.addDocsToSignRequest(signRequest, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            signRequestService.addDocsToSignRequest(signRequest, true, j, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            j++;
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
                                 User creator = userService.createUserWithEppn(metadatas.get("Creator"));
@@ -320,7 +323,7 @@ public class WorkflowService {
                         logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
                     }
                 } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getDocumentsSourceUri());
+                    logger.error("error on import from " + workflow.getDocumentsSourceUri(), e);
                 }
                 fsAccessService.close();
             } else {
@@ -454,7 +457,7 @@ public class WorkflowService {
    }
 
     public void delete(Workflow workflow) throws EsupSignatureException {
-        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow);
+        List<SignBook> signBooks = signBookService.getSignBooksByWorkflow(workflow.getId());
         if(signBooks.stream().allMatch(signBook -> signBook.getStatus() == SignRequestStatus.draft || signBook.getStatus() == SignRequestStatus.deleted)) {
             List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
             for(LiveWorkflow liveWorkflow : liveWorkflows) {
@@ -517,7 +520,9 @@ public class WorkflowService {
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setTitle(workflow.getTitle());
+        workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
+        workflowToUpdate.setVisibility(workflow.getVisibility());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.getRoles().clear();
