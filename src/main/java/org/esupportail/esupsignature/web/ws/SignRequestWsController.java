@@ -43,10 +43,10 @@ public class SignRequestWsController {
     private static final Logger logger = LoggerFactory.getLogger(SignRequestWsController.class);
 
     @Resource
-    SignRequestService signRequestService;
+    private SignRequestService signRequestService;
 
     @Resource
-    UserService userService;
+    private UserService userService;
 
     @CrossOrigin
     @PostMapping("/new")

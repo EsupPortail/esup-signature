@@ -1,8 +1,6 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
@@ -324,13 +322,6 @@ public class SignRequestService {
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);
 		if(request != null) {
-			ObjectMapper objectMapper = new ObjectMapper();
-			objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-			try {
-				logger.warn(objectMapper.writeValueAsString(request));
-			} catch (JsonProcessingException e) {
-				e.printStackTrace();
-			}
 			signRequest.setCreateReferer(request.getHeader(HttpHeaders.REFERER));
 		}
 		signRequest.setCreateDate(new Date());
