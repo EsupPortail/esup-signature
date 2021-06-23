@@ -45,7 +45,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -163,9 +162,6 @@ public class SignRequestService {
 
 	@Resource
 	private FOPService fopService;
-
-	@Autowired(required = false)
-	private HttpServletRequest request;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -321,9 +317,6 @@ public class SignRequestService {
 		}
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);
-		if(request != null) {
-			signRequest.setCreateReferer(request.getHeader(HttpHeaders.REFERER));
-		}
 		signRequest.setCreateDate(new Date());
 		signRequest.setParentSignBook(signBook);
 		signRequest.setStatus(SignRequestStatus.draft);

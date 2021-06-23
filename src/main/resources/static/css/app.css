@@ -552,21 +552,23 @@ input:checked + .slider:before {
     font-family: "LiberationSans-Regular", serif !important;
     color: black !important;
     vertical-align: top!important;
-}
-.div-extra {
-    border: 1px solid transparent;
     width: 100% !important;
-}
-
-.div-extra:hover {
-    cursor: pointer;
-    border: 1px solid green;
 }
 
 .div-extra-right {
     font-family: "LiberationSans-Regular", serif !important;
     color: black !important;
     float: right;
+    width: 50%;
+}
+
+.div-extra {
+    border: 1px solid transparent;
+}
+
+.div-extra:hover {
+    cursor: pointer;
+    border: 1px solid green;
 }
 
 .sign-textarea-lock {

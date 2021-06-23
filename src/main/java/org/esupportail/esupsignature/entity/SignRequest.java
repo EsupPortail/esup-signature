@@ -33,8 +33,6 @@ public class SignRequest {
     @ManyToOne
     private User createBy;
 
-    private String createReferer;
-
     private String exportedDocumentURI;
 
     @JsonIgnore
@@ -132,14 +130,6 @@ public class SignRequest {
 
     public void setCreateBy(User createBy) {
         this.createBy = createBy;
-    }
-
-    public String getCreateReferer() {
-        return createReferer;
-    }
-
-    public void setCreateReferer(String createReferer) {
-        this.createReferer = createReferer;
     }
 
     public String getExportedDocumentURI() {
