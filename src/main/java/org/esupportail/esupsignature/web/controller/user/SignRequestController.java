@@ -130,7 +130,7 @@ public class SignRequestController {
         model.addAttribute("recipientsFilter", recipientsFilter);
         model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequestPage(signRequests));
         model.addAttribute("docTitleFilter", docTitleFilter);
-        model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
+        model.addAttribute("docTitles", new HashSet<>(signRequests.getContent().stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("signRequestWorkflow", new HashSet<>(signRequests.stream().map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList())));
         return "user/signrequests/list";

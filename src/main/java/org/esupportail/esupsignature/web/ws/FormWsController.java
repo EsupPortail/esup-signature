@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
-import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,21 +19,24 @@ import java.util.List;
 public class FormWsController {
 
     @Resource
-    DataService dataService;
+    private DataService dataService;
 
     @Resource
-    DataExportService dataExportService;
-
-    @Resource
-    SignRequestService signRequestService;
+    private DataExportService dataExportService;
 
     @CrossOrigin
     @PostMapping(value = "/{id}/new")
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
-    public Long start(@PathVariable Long id, @RequestParam String eppn, @RequestParam(required = false) @Parameter(description = "pattern : stepNumber*email") List<String> recipientEmails, @RequestParam(required = false) List<String> targetEmails) {
+    public Long start(@PathVariable Long id,
+                      @RequestParam String eppn,
+                      @RequestParam(required = false) @Parameter(description = "pattern : stepNumber*email") List<String> recipientEmails,
+                      @RequestParam(required = false) List<String> targetEmails,
+                      @RequestParam(required = false) String referer
+    ) {
         Data data = dataService.addData(id, eppn, eppn);
         try {
-            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, null, targetEmails, eppn, eppn, true);
+            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, null, targetEmails, eppn, eppn, true, referer);
+
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;
