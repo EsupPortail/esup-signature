@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -322,6 +323,12 @@ public class SignRequestService {
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);
 		if(request != null) {
+			ObjectMapper objectMapper = new ObjectMapper();
+			try {
+				logger.warn(objectMapper.writeValueAsString(request));
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
 			signRequest.setCreateReferer(request.getHeader(HttpHeaders.REFERER));
 		}
 		signRequest.setCreateDate(new Date());
