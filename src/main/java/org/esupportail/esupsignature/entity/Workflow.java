@@ -69,6 +69,8 @@ public class Workflow {
 
     private Boolean visibility = false;
 
+    private String namingTemplate;
+
     public Long getId() {
         return id;
     }
@@ -254,5 +256,13 @@ public class Workflow {
 
     public void setVisibility(Boolean hidden) {
         this.visibility = hidden;
+    }
+
+    public String getNamingTemplate() {
+        return namingTemplate;
+    }
+
+    public void setNamingTemplate(String namingTemplate) {
+        this.namingTemplate = namingTemplate;
     }
 }

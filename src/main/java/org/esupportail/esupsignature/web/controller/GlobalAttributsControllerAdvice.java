@@ -90,6 +90,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
         model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
         model.addAttribute("validationToolsEnabled", validationService != null);
+        if(this.myGlobalProperties.getVersion().isEmpty()) this.myGlobalProperties.setVersion("dev");
         model.addAttribute("globalProperties", this.myGlobalProperties);
         ObjectMapper objectMapper = new ObjectMapper();
         model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(this.myGlobalProperties));
@@ -110,6 +111,7 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
+        model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
         try {
             model.addAttribute("dssStatus", ojService.checkOjFreshness());

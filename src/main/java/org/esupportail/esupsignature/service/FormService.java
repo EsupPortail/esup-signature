@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -40,7 +41,7 @@ public class FormService {
 
 	@Resource
 	private FormRepository formRepository;
-	
+
 	@Resource
 	private PdfService pdfService;
 
@@ -49,7 +50,7 @@ public class FormService {
 
 	@Resource
 	private FieldService fieldService;
-	
+
 	@Resource
 	private WorkflowService workflowService;
 
@@ -67,6 +68,9 @@ public class FormService {
 
 	@Resource
 	private FileService fileService;
+
+	@Resource
+	private SignRequestParamsService signRequestParamsService;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -213,7 +217,7 @@ public class FormService {
 
 	@Transactional
 	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
-		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, true);
+		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, true, true);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
@@ -391,7 +395,7 @@ public class FormService {
 	}
 
 	public List<Form> getFormByNameAndActiveVersion(String name, boolean activeVersion) {
-		return formRepository.findFormByNameAndActiveVersionAndDeletedIsNullOrDeletedIsFalse(name, activeVersion);
+		return formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, activeVersion, true);
 	}
 
 	public List<Form> getFormByName(String name) {
@@ -433,5 +437,31 @@ public class FormService {
 
 	public List<Form> getByRoles(String role) {
 		return formRepository.findByRolesInAndDeletedIsNullOrDeletedIsFalse(Collections.singletonList(role));
+	}
+
+	@Transactional
+	public void updateSignRequestParams(Long formId) throws EsupSignatureIOException {
+		Form form = getById(formId);
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream(), 0);
+
+		form.getSignRequestParams().removeIf(signRequestParams -> findedSignRequestParams.stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos())));
+
+		for(SignRequestParams signRequestParams : findedSignRequestParams) {
+			if(form.getSignRequestParams().stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos()))) {
+				form.getSignRequestParams().add(signRequestParams);
+			}
+		}
+	}
+
+	@Transactional
+	public void setSignRequestParamsSteps(Long formId, Map<Long, Integer> signRequestParamsSteps) {
+		Form form = getById(formId);
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			workflowStep.getSignRequestParams().clear();
+		}
+		for (Map.Entry<Long, Integer> entry : signRequestParamsSteps.entrySet()) {
+			SignRequestParams signRequestParams = signRequestParamsService.getById(entry.getKey());
+			form.getWorkflow().getWorkflowSteps().get(entry.getValue() - 1).getSignRequestParams().add(signRequestParams);
+		}
 	}
 }

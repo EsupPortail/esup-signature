@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {default as FilesInput} from "/static/js/modules/utils/FilesInput.js";
+    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
     new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
     new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]], [[${signRequest.id}]]);
 </script>
@@ -74,7 +74,7 @@
                     <div class="card-body">
                         <h5>Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
                         <table class="table table-sm table-striped table-hover table-borderless">
-                            <thead class="thead-dark">
+                            <thead class="table-secondary">
                             <tr>
                                 <th>Date</th>
                                 <th>Eppn</th>

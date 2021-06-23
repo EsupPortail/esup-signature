@@ -21,14 +21,14 @@
                 </a>
                 <ul id="collapseExample" class="list-unstyled">
                     <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-primary waves-effect" onclick="location.href='/admin/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
-                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-toggle="modal" data-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
+                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
                 </ul>
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <div class="">
                         <table class="table table-sm table-striped table-hover table-borderless">
-                            <thead class="thead-dark">
+                            <thead class="table-secondary">
                             <tr>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
@@ -52,7 +52,7 @@
                                 <td class="text-center">
                                     <div class="position-relative">
                                         <button type="button" th:id="'menu-toggle-' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
-                                                th:data-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-toggle="collapse">
+                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
@@ -62,15 +62,19 @@
                                                     <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/forms/' + ${form.id}">
+                                                   th:href="'/admin/forms/' + ${form.id} + '/fields'">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/forms/' + ${form.id} + '/signs'">
+                                                    <i class="fas fa-signature pr-2"></i> Configurer les champs signatures
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                                                    th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
-                                                   data-toggle="modal" th:data-target="'#modal-warning-' + ${form.id}">
+                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>
@@ -82,9 +86,9 @@
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
                                                     <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal"
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                                 aria-label="Close">
-                                                            <i class="fas fa-times"></i>
+
                                                         </button>
                                                     </div>
                                                     <div class="modal-body">
@@ -94,7 +98,7 @@
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-outline pull-left"
-                                                                data-dismiss="modal">Non
+                                                                data-bs-dismiss="modal">Non
                                                         </button>
                                                         <button type="submit"
                                                                 class="btn btn-outline pull-left btn-danger">
@@ -124,36 +128,33 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                 </button>
             </div>
             <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="name" class="col-form-label">Nom</label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="name" class="col-form-label">Titre</label>
                         <input type="text" id="title" name="title" class="form-control" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label class="col-form-label">Modèle PDF Form</label>
                         <div class="custom-file">
-                            <input aria-describedby="inputGroupFileAddon01" class="custom-file-input"
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control"
                                    data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
                                    type="file" required/>
-                            <label class="custom-file-label" for="modelFile" id="inputGroupLabel01">
-                                Choisir un fichier
-                            </label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="publicUsage" class="col-form-label">Visibilité publique (diffusion immédiate)</label>
-                        <input type="checkbox" id="publicUsage" name="publicUsage">
+                    <div class="form-check mb-3">
+                        <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
+                        <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
                         <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
@@ -161,7 +162,7 @@
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="workflowId" class="col-form-label">Type de workflow</label>
                         <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
@@ -169,7 +170,7 @@
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-3">
                         <label for="prefillType" class="col-form-label">Type de pré-remplissage</label>
                         <select class="slim-select-simple" id="prefillType" name="prefillType">
                             <th:block th:each="preFillType : ${preFillTypes}">
@@ -180,7 +181,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <input type="submit" class="btn btn-success" value="Valider">
                 </div>
             </form>

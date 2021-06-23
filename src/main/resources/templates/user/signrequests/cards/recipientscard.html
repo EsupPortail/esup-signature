@@ -36,13 +36,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Paramètres de signature</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
                     </button>
                 </div>
                 <form th:action="'/user/signrequests/add-step/' + ${signRequest.id}" method="post">
                     <div class="modal-body">
-                        <div class="form-group" id="_signType_div_id">
+                        <div class="form-group mb-3" id="_signType_div_id">
                             <label for="recipientsEmails">Choisir les participants</label>
                             <select name="recipientsEmails" id="recipientsEmails" size="5" multiple="multiple"
                                     required="required">
@@ -56,7 +56,7 @@
                                 Tous les participants doivent-ils signer ?
                             </label>
                             <label class="switch">
-                                <input type="checkbox" name="allSignToComplete"
+                                <input type="checkbox" class="form-check-input" name="allSignToComplete"
                                        th:checked="${signRequest.parentSignBook.liveWorkflow.currentStep.allSignToComplete}"/>
                                 <span class="slider round"></span>
                             </label>
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-success">Valider</button>
                     </div>
                 </form>
@@ -80,8 +80,7 @@
     </div>
 </div>
 <script type="module">
-    import {default as SelectUser} from "/static/js/modules/utils/SelectUser.js";
-
+    import {default as SelectUser} from '/static/js/modules/utils/SelectUser.js?version=[[${version}]]';
     new SelectUser("recipientsEmail", null, null, [[${_csrf}]]);
 </script>
 </html>

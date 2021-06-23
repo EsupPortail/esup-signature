@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Service
@@ -28,6 +27,9 @@ import java.util.Date;
 public class DocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private DocumentRepository documentRepository;
@@ -56,20 +58,8 @@ public class DocumentService {
 		return document;
 	}
 
-	public String getFormatedName(String originalName, int order) {
-		String name = "";
-		name += String.format("%02d", order);
-		name += "_";
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-		name += format.format(new Date());
-		name += "_";
-		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
-		name += "." + fileService.getExtension(originalName);
-		return name;
-	}
-
 	public String getSignedName(String originalName) {
-		String suffix = "_signé";
+		String suffix = globalProperties.getSignedSuffix();
 		String name = "";
 		name += fileService.getNameOnly(originalName).replaceAll(" ", "-");
 		if(name.endsWith(suffix)) {

@@ -5,8 +5,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "form")
@@ -16,7 +15,6 @@ public class Form {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-	@Column(unique=true)
 	private String title;
 
 	private String name;
@@ -58,6 +56,10 @@ public class Form {
 	@ManyToMany(cascade = CascadeType.REMOVE)
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
+
+	@OneToMany(cascade = CascadeType.DETACH)
+	@OrderColumn
+	private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")
 	private String action;
@@ -196,6 +198,14 @@ public class Form {
 
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
+	}
+
+	public List<SignRequestParams> getSignRequestParams() {
+		return signRequestParams;
+	}
+
+	public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+		this.signRequestParams = signRequestParams;
 	}
 
 	public String getAction() {

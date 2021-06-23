@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -95,7 +96,9 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+        User user = userService.getUserByEppn(userEppn);
+        User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
         if (recipientsEmails == null) {
             recipientsEmails = new ArrayList<>();
@@ -104,8 +107,8 @@ public class DataService {
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
-        SignBook signBook = signBookService.createSignBook(form.getTitle(), "", user, false);
-        SignRequest signRequest = signRequestService.createSignRequest(signBookService.generateName(name, ""), signBook, user.getEppn(), authUser.getEppn());
+        SignBook signBook = signBookService.createSignBook(form.getTitle(), modelWorkflow, "",null, user, false);
+        SignRequest signRequest = signRequestService.createSignRequest(signBook, user.getEppn(), authUser.getEppn());
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
@@ -115,11 +118,14 @@ public class DataService {
             }
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
-        signRequestService.addDocsToSignRequest(signRequest, multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, false, 0, multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signBookService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
+        if(targetUrl != null && !targetUrl.isEmpty()) {
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.rest, targetUrl));
+        }
         data.setSignBook(signBook);
         dataRepository.save(data);
         signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
@@ -242,13 +248,11 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook initSendData(Long dataId, String userEppn, List<String> recipientEmails, List<String> targetEmails, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
-        User user = userService.getUserByEppn(userEppn);
-        User authUser = userService.getUserByEppn(authUserEppn);
+    public SignBook initSendData(Long dataId, List<String> targetEmails, List<String> recipientEmails, String userEppn, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, user, authUser, false);
+                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, null, userEppn, authUserEppn, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {
@@ -287,7 +291,9 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, User user, User authUser) {
+    public Data addData(Long id, String userEppn, String authUserEppn) {
+        User user = userService.getUserByEppn(userEppn);
+        User authUser = userService.getUserByEppn(authUserEppn);
         Form form = formService.getById(id);
         Data data = new Data();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");

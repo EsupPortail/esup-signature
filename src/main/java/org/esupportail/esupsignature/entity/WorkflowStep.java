@@ -39,6 +39,9 @@ public class WorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
+    @ManyToMany(cascade = CascadeType.DETACH)
+    private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
     public Long getId() {
         return id;
     }
@@ -125,5 +128,13 @@ public class WorkflowStep {
 
     public void setMaxRecipients(Integer maxRecipients) {
         this.maxRecipients = maxRecipients;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return signRequestParams;
+    }
+
+    public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
+        this.signRequestParams = signRequestParams;
     }
 }

@@ -1,12 +1,20 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.service.FieldService;
+import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -76,8 +84,8 @@ public class FormAdminController {
 		return "admin/forms/list";
 	}
 
-	@GetMapping("{id}")
-	public String show(@PathVariable("id") Long id, Model model) {
+	@GetMapping("{id}/fields")
+	public String fields(@PathVariable("id") Long id, Model model) {
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("workflow", form.getWorkflow());
@@ -88,7 +96,38 @@ public class FormAdminController {
 			model.addAttribute("preFillTypes", new HashMap<>());
 		}
 		model.addAttribute("document", form.getDocument());
-		return "admin/forms/show";
+		return "admin/forms/fields";
+	}
+
+	@GetMapping("{id}/signs")
+	public String signs(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
+		Form form = formService.getById(id);
+		formService.updateSignRequestParams(id);
+		Map<Long, Integer> srpMap = new HashMap<>();
+		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+			for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+				srpMap.put(signRequestParams.getId(), form.getWorkflow().getWorkflowSteps().indexOf(workflowStep) + 1);
+			}
+		}
+		model.addAttribute("form", form);
+		model.addAttribute("srpMap", srpMap);
+		model.addAttribute("workflow", form.getWorkflow());
+		model.addAttribute("document", form.getDocument());
+		return "admin/forms/signs";
+	}
+
+	@PostMapping("/update-signs-order/{id}")
+	public String updateSignsOrder(@PathVariable("id") Long id,
+								   @RequestParam Map<String, String> values,
+								   RedirectAttributes redirectAttributes) throws JsonProcessingException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		String[] stringStringMap = objectMapper.readValue(values.get("srpMap"), String[].class);
+		Map<Long, Integer> signRequestParamsSteps = new HashMap<>();
+		for (int i = 0; i < stringStringMap.length; i = i + 2) {
+			signRequestParamsSteps.put(Long.valueOf(stringStringMap[i]), Integer.valueOf(stringStringMap[i + 1]));
+		}
+		formService.setSignRequestParamsSteps(id, signRequestParamsSteps);
+		return "redirect:/admin/forms/" + id + "/signs";
 	}
 
 	@PostMapping()
@@ -118,7 +157,7 @@ public class FormAdminController {
 			RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
-			return "redirect:/admin/forms/" + form.getId();
+			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -202,7 +241,7 @@ public class FormAdminController {
 	}
 
 	@ResponseBody
-	@PostMapping("/field/{id}/update")
+	@PostMapping("/fields/{id}/update")
 	public ResponseEntity<String> updateField(@PathVariable("id") Long id,
 											  @RequestParam(value = "description", required = false) String description,
 											  @RequestParam(value = "fieldType", required = false, defaultValue = "text") FieldType fieldType,

@@ -2,17 +2,21 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite">
-    <div class="ml-1 mt-3">
+    <div class="ms-1 mt-3">
         <div class="hr sidebar-label">Statut</div>
+        <div class="card card-body bg-light">
 <!--        <div th:if="${signRequest != null}" th:include="user/signrequests/includes/status"></div>-->
-        <th:block th:if="${signRequest != null}">
-        <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
-        </th:block>
-        <th:block th:unless="${signRequest != null}">
-            <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
-        </th:block>
+            <th:block th:if="${signRequest != null}">
+                <p th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.title}"></p>
+                <p>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></p>
+                <div th:include="user/signrequests/includes/status :: status(signBook=${signRequest.parentSignBook})"></div>
+            </th:block>
+            <th:block th:unless="${signRequest != null}">
+                <div th:include="user/signrequests/includes/status :: status(signBook=${signBook})"></div>
+            </th:block>
+        </div>
 <!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
-<!--        <button data-toggle="modal" data-target="#signAllModal"-->
+<!--        <button data-bs-toggle="modal" data-bs-target="#signAllModal"-->
 <!--                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"-->
 <!--                th:classappend="${signable != 'ok' || nbSignRequestInSignBookParent < 2} ? 'd-none' ">-->
 <!--            <i class="fas fa-bolt"></i> <span class="sidebar-label">Tout signer</span>-->
@@ -21,8 +25,8 @@
 <!--            <i style="font-size: 0.6rem;" class="fas fa-signature"></i><i class="fas fa-pen"></i> <span class="sidebar-label">Remplir et signer</span>-->
 <!--        </button>-->
 <!--        <button th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" id="commentModeButton" class="btn btn-light col-12 mb-1 text-left">-->
-<!--            <i class="ml-1 fas fa-comment"></i><i class="mr-2"></i> <span class="sidebar-label">Annoter</span>-->
-<!--            <span th:if="${signRequest.comments.size() > 0}" class="float-right badge badge-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
+<!--            <i class="ms-1 fas fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
+<!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
 
         <!--    <div th:replace="user/signrequests/includes/statusdetails :: statusdetails"></div>-->

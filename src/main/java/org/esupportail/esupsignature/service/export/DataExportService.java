@@ -6,6 +6,8 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,12 @@ public class DataExportService {
 
     @Resource
     private DataRepository dataRepository;
+
+    @Resource
+    private DataService dataService;
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @Resource
     private FileService fileService;
@@ -44,40 +52,53 @@ public class DataExportService {
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
             if(signBook != null && signBook.getSignRequests().size() > 0) {
-                LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
-                toExportDatas.put("form_name", form.getName());
-                toExportDatas.put("form_create_date", data.getCreateDate().toString());
-                toExportDatas.put("form_create_by", data.getCreateBy().getEppn());
-                toExportDatas.put("form_current_status", signBook.getStatus().name());
-                Map<Recipient, Action> recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
-                if(recipientHasSigned != null && recipientHasSigned.size() > 0 && signBook.getStatus().equals(SignRequestStatus.completed) ||signBook.getStatus().equals(SignRequestStatus.exported) ||signBook.getStatus().equals(SignRequestStatus.archived)) {
-                    Action lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst().get();
-                    toExportDatas.put("form_completed_date", lastActionHero.getDate().toString());
-                    toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastActionHero.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
-                } else {
-                    toExportDatas.put("form_completed_date", "");
-                    toExportDatas.put("form_completed_by", "");
-                }
-                for(Field field : form.getFields()) {
-                    toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
-                }
-                int step = 1;
-                for (Map.Entry<Recipient, Action> actions : recipientHasSigned.entrySet()) {
-                    if (!actions.getValue().getActionType().equals(ActionType.none)) {
-                        toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
-                        toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
-                        toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
-                    } else {
-                        toExportDatas.put("sign_step_" + step + "_user_eppn", "");
-                        toExportDatas.put("sign_step_" + step + "_type", "");
-                        toExportDatas.put("sign_step_" + step + "_date", "");
-                    }
-                    step++;
-                }
+                LinkedHashMap<String, String> toExportDatas = getToExportDatas(data, signBook);
                 dataDatas.add(toExportDatas);
             }
         }
         return dataDatas;
+    }
+
+    public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
+        SignRequest signRequest = signRequestService.getById(id);
+        Data data = dataService.getBySignRequest(signRequest);
+        return getToExportDatas(data, signRequest.getParentSignBook());
+    }
+
+    private LinkedHashMap<String, String> getToExportDatas(Data data, SignBook signBook) {
+        LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
+        toExportDatas.put("sign_request_id", signBook.getSignRequests().get(0).getId().toString());
+        toExportDatas.put("form_name", data.getForm().getName());
+        toExportDatas.put("form_desc", data.getForm().getDescription());
+        toExportDatas.put("form_create_date", data.getCreateDate().toString());
+        toExportDatas.put("form_create_by", data.getCreateBy().getEppn());
+        toExportDatas.put("form_current_status", signBook.getStatus().name());
+        Map<Recipient, Action> recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
+        if(recipientHasSigned != null && recipientHasSigned.size() > 0 && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived)) {
+            Action lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst().get();
+            toExportDatas.put("form_completed_date", lastActionHero.getDate().toString());
+            toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastActionHero.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
+        } else {
+            toExportDatas.put("form_completed_date", "");
+            toExportDatas.put("form_completed_by", "");
+        }
+        for(Field field : data.getForm().getFields()) {
+            toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
+        }
+        int step = 1;
+        for (Map.Entry<Recipient, Action> actions : recipientHasSigned.entrySet()) {
+            if (!actions.getValue().getActionType().equals(ActionType.none)) {
+                toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
+                toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
+                toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
+            } else {
+                toExportDatas.put("sign_step_" + step + "_user_eppn", "");
+                toExportDatas.put("sign_step_" + step + "_type", "");
+                toExportDatas.put("sign_step_" + step + "_date", "");
+            }
+            step++;
+        }
+        return toExportDatas;
     }
 
     public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException, SQLException {

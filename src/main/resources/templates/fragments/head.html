@@ -7,19 +7,16 @@
 
 		<script src="/webjars/jquery/3.6.0/jquery.min.js"></script>
 		<script src="/webjars/jquery-ui/1.12.1/jquery-ui.js"></script>
-		<script src="/webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
-		<script src="/webjars/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+		<script th:src="@{/js/customs/jquery.ui.touch-punch.js}"></script>
 		<script src="/webjars/popper.js/2.5.4/umd/popper.js"></script>
+		<script src="/webjars/bootstrap/5.0.1/js/bootstrap.min.js"></script>
 		<script src="/webjars/bootbox/5.5.2/bootbox.js"></script>
 		<script src="/webjars/bootbox/5.5.2/bootbox.locales.js"></script>
 		<script src="/webjars/croppie/2.6.5/croppie.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/js/plugins/piexif.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/js/plugins/sortable.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/js/plugins/purify.min.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/js/fileinput.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/themes/explorer-fas/theme.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/themes/fas/theme.js"></script>
-		<script src="/webjars/bootstrap-fileinput/5.1.0/js/locales/fr.js"></script>
+		<script src="/webjars/bootstrap-fileinput/5.2.1/js/fileinput.js"></script>
+		<script src="/webjars/bootstrap-fileinput/5.2.1/themes/fas/theme.js"></script>
+		<script src="/webjars/bootstrap-fileinput/5.2.1/themes/explorer-fas/theme.js"></script>
+		<script src="/webjars/bootstrap-fileinput/5.2.1/js/locales/fr.js"></script>
 		<script src="/webjars/momentjs/2.29.1/moment.js"></script>
 		<script src="/webjars/momentjs/2.29.1/locale/fr.js"></script>
 		<script src="/webjars/summernote/0.8.18/dist/summernote-lite.js"></script>
@@ -29,39 +26,40 @@
 		<script src="/webjars/ace-builds/src-noconflict/worker-javascript.js"></script>
 		<script src="/webjars/ace-builds/src-noconflict/ext-keybinding_menu.js"></script>
 		<script src="/webjars/Eonasdan-bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.js"></script>
-		<script src="/webjars/pdfjs-dist/2.6.347/build/pdf.js"></script>
-		<script src="/webjars/pdfjs-dist/2.6.347/web/pdf_viewer.js"></script>
-		<script th:src="@{/js/customs/pdf.worker.2.6.347.js}"></script>
+		<script src="/webjars/pdfjs-dist/2.8.335/build/pdf.js"></script>
+		<script src="/webjars/pdfjs-dist/2.8.335/web/pdf_viewer.js"></script>
+		<script th:src="@{/js/customs/pdf.worker.js}"></script>
 		<script src="/webjars/slim-select/1.24.0/dist/slimselect.js"></script>
 		<script th:src="@{/js/customs/fileinput-custom.js}"></script>
+		<script th:src="@{/js/customs/jquery.simulate.js}"></script>
 		<script src="/webjars/intro.js/3.0.1/intro.js"></script>
 		<script src="/webjars/spectrum-seballot/2.0.5/spectrum.min.js"></script>
 		<script src="/webjars/signature_pad/2.3.2/dist/signature_pad.js"></script>
 		<script src="/webjars/bs-stepper/1.7.0/dist/js/bs-stepper.js"></script>
 		<script src="/webjars/google-code-prettify/1.0.5/bin/prettify.min.js"></script>
 
+		<link rel="stylesheet" href="/webjars/pdfjs-dist/2.8.335/web/pdf_viewer.css" />
 		<link rel="stylesheet" href="/webjars/jquery-ui/1.12.1/jquery-ui.css" />
-		<link rel="stylesheet" href="/webjars/bootstrap/4.6.0/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/webjars/bootstrap/5.0.1/css/bootstrap.min.css" />
 		<link rel="stylesheet" href="/webjars/font-awesome/5.15.2/css/all.min.css" />
 		<link rel="stylesheet" href="/webjars/croppie/2.6.5/croppie.css" />
-		<link rel="stylesheet" href="/webjars/bootstrap-fileinput/5.1.0/css/fileinput.css" />
+		<link rel="stylesheet" href="/webjars/bootstrap-fileinput/5.2.1/css/fileinput.css" />
 		<link rel="stylesheet" href="/webjars/summernote/0.8.18/dist/summernote-lite.css" />
-		<link rel="stylesheet" href="/webjars/pdfjs-dist/2.6.347/web/pdf_viewer.css" />
 		<link rel="stylesheet" href="/webjars/Eonasdan-bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css" />
 		<link rel="stylesheet" href="/webjars/slim-select/1.24.0/dist/slimselect.min.css" />
 		<link rel="stylesheet" href="/webjars/intro.js/3.0.1/introjs.css" />
 		<link rel="stylesheet" href="/webjars/spectrum-seballot/2.0.5/spectrum.min.css" />
 		<link rel="stylesheet" href="/webjars/bs-stepper/1.7.0/dist/css/bs-stepper.css" />
 		<link rel="stylesheet" href="/webjars/google-code-prettify/1.0.5/bin/prettify.min.css" />
-		<link rel="stylesheet" th:href="@{/css/app.css}" />
+		<link rel="stylesheet" th:href="'/css/app.css?version=' + ${version}" />
 
 		<link rel="icon" type="image/png" th:href="@{/images/favicon.ico}" />
 
 		<title th:text="#{application.title}"></title>
 	</head>
-	<script th:inline="javascript" type="module">
+	<script th:inline="javascript" type="module" th:if="${version != null}">
 		sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
-		import {GlobalUi} from "/static/js/modules/ui/GlobalUi.js";
+		import {GlobalUi} from '/static/js/modules/ui/GlobalUi.js?version=[[${version}]]';
 		new GlobalUi([[${authUserEppn}]], [[${_csrf}]]);
 	</script>
 </html>

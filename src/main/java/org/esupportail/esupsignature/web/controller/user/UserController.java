@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ldap.NamingException;
@@ -83,7 +84,7 @@ public class UserController {
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
-			model.addAttribute("referer", request.getHeader("referer"));
+			model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
 		}
 		model.addAttribute("activeMenu", "settings");
 		return "user/users/update";
@@ -205,7 +206,7 @@ public class UserController {
 	public String markIntroAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletRequest httpServletRequest) {
 		logger.info("user " + authUserEppn + " mark intro " + name + " as read");
 		userService.disableIntro(authUserEppn, name);
-		String referer = httpServletRequest.getHeader("Referer");
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
 	}
 
@@ -213,7 +214,7 @@ public class UserController {
 	public String markAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
     	logger.info("user " + authUserEppn + " mark " + id + " as read");
 		messageService.disableMessageForUser(authUserEppn, id);
-		String referer = httpServletRequest.getHeader("Referer");
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
 	}
 
@@ -221,7 +222,7 @@ public class UserController {
 	public String markHelpAsRead(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, HttpServletRequest httpServletRequest) {
 		logger.info("user " + authUserEppn + " mark help" + id + " as read");
 		userService.setFormMessage(authUserEppn, id);
-		String referer = httpServletRequest.getHeader("Referer");
+		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:"+ referer;
 	}
 
