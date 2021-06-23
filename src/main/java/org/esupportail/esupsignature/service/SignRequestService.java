@@ -975,7 +975,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Page<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+	public List<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
 		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
 		if (recipientsFilter != null) {
 			List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
@@ -1005,7 +1005,7 @@ public class SignRequestService {
 				signRequest.setEndDate(getEndDate(signRequest));
 			}
 		}
-		return new PageImpl<>(signRequestsGrouped.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequestsGrouped.size());
+		return signRequestsGrouped;
 	}
 
 	private Date getEndDate(SignRequest signRequest) {
