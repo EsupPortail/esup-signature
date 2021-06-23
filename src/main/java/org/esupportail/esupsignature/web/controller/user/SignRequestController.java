@@ -446,7 +446,7 @@ public class SignRequestController {
                                  RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         logger.info("start add attachment");
         signRequestService.addAttachement(multipartFiles, link, id);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La pieces jointe à bien été ajoutée"));
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "La piece jointe à bien été ajoutée"));
         return "redirect:/user/signrequests/" + id;
     }
 

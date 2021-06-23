@@ -31,11 +31,11 @@ public class FormWsController {
                       @RequestParam String eppn,
                       @RequestParam(required = false) @Parameter(description = "pattern : stepNumber*email") List<String> recipientEmails,
                       @RequestParam(required = false) List<String> targetEmails,
-                      @RequestParam(required = false) String referer
+                      @RequestParam(required = false) String targetUrl
     ) {
         Data data = dataService.addData(id, eppn, eppn);
         try {
-            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, null, targetEmails, eppn, eppn, true, referer);
+            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, null, targetEmails, targetUrl, eppn, eppn, true);
 
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
