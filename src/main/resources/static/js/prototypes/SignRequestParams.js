@@ -27,7 +27,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.xPos = 0;
-        this.yPos = window.scrollY / 2;
+        this.yPos = Math.round(window.scrollY / 2 / .75);
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
