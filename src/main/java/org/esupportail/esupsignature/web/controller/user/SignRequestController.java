@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -121,16 +122,17 @@ public class SignRequestController {
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
-        Page<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
         model.addAttribute("statusFilter", statusFilter);
-        model.addAttribute("signRequests", signRequests);
+        model.addAttribute("signRequests", signRequestPage);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("recipientsFilter", recipientsFilter);
-        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequestPage(signRequests));
+        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequestPage(signRequestPage));
         model.addAttribute("docTitleFilter", docTitleFilter);
-        model.addAttribute("docTitles", new HashSet<>(signRequests.getContent().stream().map(SignRequest::getTitle).collect(Collectors.toList())));
+        model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("signRequestWorkflow", new HashSet<>(signRequests.stream().map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList())));
         return "user/signrequests/list";
@@ -141,7 +143,8 @@ public class SignRequestController {
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
                                     @RequestParam(value = "statusFilter", required = false) String statusFilter,
                                     @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        Page<SignRequest> signRequestPage = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, null, null, null, pageable);
+        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, null, null, null, pageable);
+        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         model.addAttribute("signRequests", signRequestPage);
