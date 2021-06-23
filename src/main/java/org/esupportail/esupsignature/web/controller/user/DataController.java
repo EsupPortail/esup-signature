@@ -64,11 +64,11 @@ public class DataController {
 							 @RequestParam(value = "names", required = false) List<String> names,
 							 @RequestParam(value = "firstnames", required = false) List<String> firstnames,
 							 @RequestParam(value = "phones", required = false) List<String> phones,
-							 @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
+							 @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn, authUserEppn);
-			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, userEppn, authUserEppn, false);
+			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, userEppn, authUserEppn, false, null);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
