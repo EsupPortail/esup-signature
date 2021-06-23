@@ -323,7 +323,7 @@ public class WorkflowService {
                         logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
                     }
                 } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getDocumentsSourceUri());
+                    logger.error("error on import from " + workflow.getDocumentsSourceUri(), e);
                 }
                 fsAccessService.close();
             } else {
