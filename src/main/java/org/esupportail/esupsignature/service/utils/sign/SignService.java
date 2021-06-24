@@ -344,12 +344,8 @@ public class SignService {
 				}
 				byte[] bytes = inputStream.readAllBytes();
 				if(signRequestService.isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
-					int i = 0;
 					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
-						if(i > 0) {
-							bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, user).readAllBytes();
-						}
-						i++;
+						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, user).readAllBytes();
 					}
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				} else {

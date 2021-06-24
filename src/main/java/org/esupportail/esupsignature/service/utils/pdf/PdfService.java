@@ -92,12 +92,16 @@ public class PdfService {
             pdfParameters = getPdfParameters(pdDocument);
             
             if(signRequestParams.getAllPages()) {
+                int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
-                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage);
+                    if(i != signRequestParams.getSignPageNumber()) {
+                        stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, i);
+                    }
+                    i++;
                 }
             } else {
                 PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage);
+                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
             }
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -111,7 +115,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage) throws IOException {
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber) throws IOException {
         Date newDate = new Date();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
@@ -164,14 +168,14 @@ public class PdfService {
             contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
         }
         if (signImage != null) {
-            logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted));
+            logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
 //            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
-            if (signRequestParams.getSignImageNumber() >= 0) {
+            if (signRequestParams.getSignImageNumber() >= 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
             }
         } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
