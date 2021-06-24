@@ -402,8 +402,6 @@ public class SignRequestService {
 					for (String toRemoveKey : toRemoveKeys) {
 						formDataMap.remove(toRemoveKey);
 					}
-				} else {
-//					formDataMap.clear();
 				}
 			} catch (IOException e) {
 				logger.error("form datas error", e);
