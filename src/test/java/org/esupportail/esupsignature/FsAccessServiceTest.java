@@ -6,13 +6,10 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.junit.Test;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.annotation.Order;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -23,7 +20,6 @@ import static org.junit.Assume.assumeTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
 public class FsAccessServiceTest {
 
@@ -36,7 +32,6 @@ public class FsAccessServiceTest {
     private GlobalProperties globalProperties;
 
     @Test(timeout = 10000)
-    @Order(1)
     public void testSmbAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
         assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -55,7 +50,6 @@ public class FsAccessServiceTest {
     }
 
     @Test(timeout = 10000)
-    @Order(2)
     public void testCmisAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.cmis);
         assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -73,7 +67,6 @@ public class FsAccessServiceTest {
     }
 
     @Test(timeout = 10000)
-    @Order(3)
     public void testVfsAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.vfs);
         assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -91,7 +84,6 @@ public class FsAccessServiceTest {
     }
 
     @Test(timeout = 10000)
-    @Order(4)
     public void testArchiveUri() throws EsupSignatureFsException {
         assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()));

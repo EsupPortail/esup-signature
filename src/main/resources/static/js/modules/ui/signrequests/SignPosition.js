@@ -36,6 +36,9 @@ export class SignPosition extends EventFactory {
 
     removeSign(id) {
         this.signRequestParamses.delete(id);
+        if(this.signRequestParamses.size === 0) {
+            $("#addSignButton").removeAttr("disabled");
+        }
     }
 
     convertImgToBase64URL(url, callback, outputFormat){
