@@ -11,7 +11,7 @@
         <span th:unless="${signatureIds.size() > 1}">Ce document contient une signature éléctronique
         <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
         </span>
-        <button class="btn btn-sm btn-transparent text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+        <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
@@ -119,6 +119,12 @@
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fas fa-ad"></i>
+            </button>
+            <button th:if="${isNotSigned}" type="button" id="allPages_x"
+                    title="Répéter sur toutes les pages"
+                    class="btn btn-sm btn-transparent text-white"watermark_0
+                    style="z-index: 3;">
+                <i class="fas fa-reply-all"></i>
             </button>
             <input id="signColorPicker_x" value='#000000'/>
             <button type="button" id="displayMoreTools_x"

@@ -329,7 +329,7 @@ public class MailService {
         mimeMessage.setText(htmlContent, true);
         mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
         mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-        mimeMessage.setSubject("Nouveau document signer à télécharger : " + title);
+        mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
         mimeMessage.setFrom(mailConfig.getMailFrom());
         mimeMessage.setTo(targetUri.split(";"));
         mailSender.send(mimeMessage.getMimeMessage());

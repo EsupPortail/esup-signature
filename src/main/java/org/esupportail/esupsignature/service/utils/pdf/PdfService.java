@@ -90,84 +90,20 @@ public class PdfService {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument);
-            PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-            Date newDate = new Date();
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
-            InputStream signImage = null;
-            if(signRequestParams.getSignImageNumber() < 0) {
-                signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
-            } else {
-                if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
-                    File fileSignImage = fileService.getEmptyImage();
-                    signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
-                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
-                    signImage = new FileInputStream(fileWithWatermark);
-                } else if (signRequestParams.getAddExtra()) {
-                    signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
-                    if (signRequestParams.getAddWatermark()) {
-                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                        signImage = new FileInputStream(fileWithWatermark);
+            
+            if(signRequestParams.getAllPages()) {
+                int i = 1;
+                for(PDPage pdPage : pdDocument.getPages()) {
+                    if(i != signRequestParams.getSignPageNumber()) {
+                        stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, i);
                     }
-                } else if(signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
-                    signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
-                    if (signRequestParams.getAddWatermark()) {
-                        File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-                        fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
-                        signImage = new FileInputStream(fileWithWatermark);
-                    }
+                    i++;
                 }
-            }
-
-            float tx = 0;
-            float ty = 0;
-            float xAdjusted = (float) (signRequestParams.getxPos() * fixFactor);
-            float yAdjusted;
-
-            if(pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-                yAdjusted = (float) (pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
             } else {
-                yAdjusted = (float) (pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
+                PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
+                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
             }
-
-            if (pdfParameters.isLandScape()) {
-                tx = pdfParameters.getWidth();
-            } else {
-                ty = pdfParameters.getHeight();
-            }
-
-            PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
-
-            if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360 ) {
-                contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
-            }
-            if(signImage != null) {
-                logger.info("stamp image to " + Math.round(xAdjusted) +", " + Math.round(yAdjusted));
-                BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
-                ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
-                ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
-                PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-                contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
-                if(signRequestParams.getSignImageNumber() >= 0) {
-                    addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
-                }
-            } else if(signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
-                int fontSize = (int) (12 * signRequestParams.getSignScale() * .75);
-                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
-                contentStream.beginText();
-                contentStream.setFont(pdFont, fontSize);
-                contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
-                String[] lines = signRequestParams.getTextPart().split("\n");
-                for(String line : lines) {
-                    contentStream.showText(line);
-                    contentStream.newLineAtOffset(0, -fontSize / .75f);
-                }
-                contentStream.endText();
-            }
-
-            contentStream.close();
+            
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -177,6 +113,85 @@ public class PdfService {
             logger.error("error to add image", e);
         }
         return null;
+    }
+
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber) throws IOException {
+        Date newDate = new Date();
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
+        InputStream signImage = null;
+        if (signRequestParams.getSignImageNumber() < 0) {
+            signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
+        } else {
+            if (signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) {
+                File fileSignImage = fileService.getEmptyImage();
+                signImage = fileService.addTextToImage(new FileInputStream(fileSignImage), signRequestParams, signType, user, newDate, fixFactor);
+                File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(137, 137, 137), signRequestParams.getExtraOnTop());
+                signImage = new FileInputStream(fileWithWatermark);
+            } else if (signRequestParams.getAddExtra()) {
+                signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, fixFactor);
+                if (signRequestParams.getAddWatermark()) {
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
+                    signImage = new FileInputStream(fileWithWatermark);
+                }
+            } else if (signRequestParams.getTextPart() == null || signRequestParams.getTextPart().isEmpty()) {
+                signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+                if (signRequestParams.getAddWatermark()) {
+                    File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
+                    fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, new Color(141, 198, 64), signRequestParams.getExtraOnTop());
+                    signImage = new FileInputStream(fileWithWatermark);
+                }
+            }
+        }
+
+        float tx = 0;
+        float ty = 0;
+        float xAdjusted = (float) (signRequestParams.getxPos() * fixFactor);
+        float yAdjusted;
+
+        if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
+            yAdjusted = (float) (pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
+        } else {
+            yAdjusted = (float) (pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY());
+        }
+
+        if (pdfParameters.isLandScape()) {
+            tx = pdfParameters.getWidth();
+        } else {
+            ty = pdfParameters.getHeight();
+        }
+
+        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
+
+        if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360) {
+            contentStream.transform(Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty));
+        }
+        if (signImage != null) {
+            logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
+            BufferedImage bufferedSignImage = ImageIO.read(signImage);
+//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+            ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
+            PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
+            if (signRequestParams.getSignImageNumber() >= 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
+                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+            }
+        } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
+            int fontSize = (int) (12 * signRequestParams.getSignScale() * .75);
+            PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+            contentStream.beginText();
+            contentStream.setFont(pdFont, fontSize);
+            contentStream.newLineAtOffset(xAdjusted, (float) (yAdjusted + signRequestParams.getSignHeight() * .75 - fontSize));
+            String[] lines = signRequestParams.getTextPart().split("\n");
+            for (String line : lines) {
+                contentStream.showText(line);
+                contentStream.newLineAtOffset(0, -fontSize / .75f);
+            }
+            contentStream.endText();
+        }
+        contentStream.close();
     }
 
     private void addLink(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted) throws IOException {

@@ -35,6 +35,8 @@ public class SignRequestParams {
 
     private Boolean addWatermark = false;
 
+    private Boolean allPages = false;
+
     private Boolean addExtra = false;
 
     private Boolean extraType = false;
@@ -161,6 +163,14 @@ public class SignRequestParams {
 
     public void setAddWatermark(Boolean addWatermark) {
         this.addWatermark = addWatermark;
+    }
+
+    public Boolean getAllPages() {
+        return allPages;
+    }
+
+    public void setAllPages(Boolean allPages) {
+        this.allPages = allPages;
     }
 
     public Boolean getAddExtra() {
