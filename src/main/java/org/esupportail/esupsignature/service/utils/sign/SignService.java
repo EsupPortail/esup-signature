@@ -319,7 +319,7 @@ public class SignService {
 
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual, User user) throws IOException, EsupSignatureException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -343,7 +343,10 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				byte[] bytes = inputStream.readAllBytes();
-				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+				if(signRequestService.isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
+					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
+						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, user).readAllBytes();
+					}
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				} else {
 					inputStream = new ByteArrayInputStream(bytes);
@@ -379,7 +382,7 @@ public class SignService {
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start certSignDocument with database keystore");
@@ -527,10 +530,11 @@ public class SignService {
 	}
 
 	@Transactional
-	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureException {
+		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = signRequestService.getById(signRequestId);
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual());
+		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user);
 	}
 
 	@Transactional
