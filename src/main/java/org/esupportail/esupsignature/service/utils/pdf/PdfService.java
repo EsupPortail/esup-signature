@@ -91,7 +91,7 @@ public class PdfService {
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument);
             
-            if(signRequestParams.getAllPages()) {
+            if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
