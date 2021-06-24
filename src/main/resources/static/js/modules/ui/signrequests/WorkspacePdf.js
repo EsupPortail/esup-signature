@@ -61,6 +61,8 @@ export class WorkspacePdf {
                 $("#workspace").css("margin-top", "170px");
             }
         }
+        let root = document.querySelector(':root');
+        root.setAttribute("style", "scroll-behavior: auto;");
     }
 
     initListeners() {
