@@ -82,7 +82,7 @@ public class PdfService {
     @Resource
     private LogService logService;
 
-    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
@@ -94,14 +94,16 @@ public class PdfService {
             if(signRequestParams.getAllPages()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
-                    if(i != signRequestParams.getSignPageNumber()) {
+                    if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
                         stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, i);
                     }
                     i++;
                 }
             } else {
-                PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                if(j > 0) {
+                    PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
+                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                }
             }
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
