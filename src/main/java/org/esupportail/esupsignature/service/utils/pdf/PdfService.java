@@ -82,7 +82,7 @@ public class PdfService {
     @Resource
     private LogService logService;
 
-    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
@@ -100,8 +100,10 @@ public class PdfService {
                     i++;
                 }
             } else {
-                PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                if(j > 0) {
+                    PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
+                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                }
             }
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -175,7 +177,9 @@ public class PdfService {
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
-            addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+            if (signRequestParams.getSignImageNumber() >= 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
+                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+            }
         } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
             int fontSize = (int) (12 * signRequestParams.getSignScale() * .75);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);

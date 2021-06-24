@@ -221,11 +221,14 @@ public class SignService {
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
-			if(signRequestParams.getAddExtra()) {
-				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
-			}
+//			if(signRequestParams.getAddExtra()) {
+//				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
+//			}
 			int widthAdjusted = Math.round((bufferedSignImage.getWidth() / 3 * fixFactor));
 			int heightAdjusted = Math.round((bufferedSignImage.getHeight() / 3 * fixFactor));
+
+			widthAdjusted = Math.round(signRequestParams.getSignWidth() * fixFactor);
+			heightAdjusted = Math.round(signRequestParams.getSignHeight() * fixFactor);
 
 			if(pdfParameters.getRotation() == 0) {
 				signatureFieldParameters.setWidth(widthAdjusted);
@@ -344,8 +347,10 @@ public class SignService {
 				}
 				byte[] bytes = inputStream.readAllBytes();
 				if(signRequestService.isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
+					int i = 0;
 					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
-						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, user).readAllBytes();
+						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, i, user).readAllBytes();
+						i++;
 					}
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				} else {
