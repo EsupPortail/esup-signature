@@ -343,7 +343,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				byte[] bytes = inputStream.readAllBytes();
-				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+				if(signRequestService.isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
 					int i = 0;
 					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
 						if(i > 0) {
@@ -386,7 +386,7 @@ public class SignService {
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start certSignDocument with database keystore");

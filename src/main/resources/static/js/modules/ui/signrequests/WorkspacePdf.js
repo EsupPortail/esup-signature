@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.changeModeSelector = null;
@@ -14,6 +14,7 @@ export class WorkspacePdf {
         this.formId = formId;
         this.currentSignType = currentSignType;
         this.postits = postits;
+        this.notSigned = notSigned;
         this.signable = signable;
         this.signRequestId = id;
         this.signType = signType;
@@ -185,7 +186,7 @@ export class WorkspacePdf {
             this.firstInsertSign = false;
         }
         this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
-        if(this.signType === "nexuSign" || this.signType === "certSign") {
+        if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
     }

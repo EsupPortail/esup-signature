@@ -97,11 +97,11 @@ export default class ListSignRequestUi {
         });
 
         if(ids.length > 0) {
-            let csrf = this.csrf;
+            let self = this;
             bootbox.confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?", function(result) {
                 if(result) {
                     $.ajax({
-                        url: "/user/signrequests/delete-multiple?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                         type: 'POST',
                         dataType: 'json',
                         contentType: "application/json",
@@ -206,6 +206,7 @@ export default class ListSignRequestUi {
             };
         }
         this.reset();
+        let self = this;
         $.ajax({
             url: "/user/signrequests/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',

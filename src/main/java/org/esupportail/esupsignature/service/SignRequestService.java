@@ -426,7 +426,8 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
+	public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
+		String error = null;
 		List<String> idsString = objectMapper.readValue(ids, List.class);
 		List<Long> idsLong = new ArrayList<>();
 		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
@@ -438,7 +439,6 @@ public class SignRequestService {
 		}
 		for (Long id : idsLong) {
 			SignRequest signRequest = getById(id);
-			String error = "";
 			if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.badStatus);
 			} else if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign)) {
@@ -457,10 +457,8 @@ public class SignRequestService {
 			else {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.error);
 			}
-			if(error != null) {
-			} else {
-			}
 		}
+		return error;
 	}
 
 	public void sign(SignRequest signRequest, String password, String certType, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
@@ -580,6 +578,12 @@ public class SignRequestService {
 //		}
 //
 //	}
+
+	@Transactional
+	public boolean isNotSigned(SignRequest signRequest) throws IOException {
+		byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
+		return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+	}
 
 	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
 		SignatureForm signatureForm;

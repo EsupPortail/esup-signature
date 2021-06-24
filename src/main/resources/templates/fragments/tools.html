@@ -78,11 +78,11 @@
 						id="visualButton" title="Afficher/Masquer le visuel"
 						class="btn btn-light btn-outline-primary ms-1 d-none">Afficher/Masquer le visuel
 				</button>
-				<button id="addCheck" title="Ajouter une coche" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-check"></i></button>
-				<button id="addTimes" title="Ajouter une coche" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-times"></i></button>
-				<button id="addCircle" title="Ajouter un cercle" class="btn btn-light btn-outline-primary ms-1"><i class="far fa-circle"></i></button>
-				<button id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary ms-1 d-none"><i class="fas fa-minus"></i></button>
-				<button id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-i-cursor"></i><i class="fas fa-font"></i></button>
+				<button th:if="${isNotSigned}" id="addCheck" title="Ajouter une coche" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-check"></i></button>
+				<button th:if="${isNotSigned}" id="addTimes" title="Ajouter une coche" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-times"></i></button>
+				<button th:if="${isNotSigned}" id="addCircle" title="Ajouter un cercle" class="btn btn-light btn-outline-primary ms-1"><i class="far fa-circle"></i></button>
+				<button th:if="${isNotSigned}" id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary ms-1 d-none"><i class="fas fa-minus"></i></button>
+				<button th:if="${isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-i-cursor"></i><i class="fas fa-font"></i></button>
 			</div>
 			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
 				<button id="addCommentButton" title="Ajouter une annotation"
