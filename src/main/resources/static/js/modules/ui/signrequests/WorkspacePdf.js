@@ -185,6 +185,9 @@ export class WorkspacePdf {
             this.firstInsertSign = false;
         }
         this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
+        if(this.signType === "nexuSign" || this.signType === "certSign") {
+            $("#addSignButton").attr("disabled", true);
+        }
     }
 
     initWorkspace() {

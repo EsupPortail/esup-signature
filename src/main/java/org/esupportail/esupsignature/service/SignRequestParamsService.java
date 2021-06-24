@@ -125,6 +125,10 @@ public class SignRequestParamsService {
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
             if (liveWfSignRequestParams.size() < i + 1) {
                 SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
+                signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
+                signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+                signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
+                signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
                 signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
                 signRequestParams.setVisual(signRequestParamses.get(i).getVisual());

@@ -56,7 +56,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.*;
@@ -599,7 +598,7 @@ public class SignRequestService {
 			}
 			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
-			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual);
+			AbstractSignatureForm signatureDocumentForm = signService.getSignatureDocumentForm(toSignDocuments, signRequest, visual, user);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
 			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));

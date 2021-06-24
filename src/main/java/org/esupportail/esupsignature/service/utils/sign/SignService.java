@@ -319,7 +319,7 @@ public class SignService {
 
 	}
 
-	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual, User user) throws IOException, EsupSignatureException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
 		if(documents.size() > 1) {
@@ -344,6 +344,13 @@ public class SignService {
 				}
 				byte[] bytes = inputStream.readAllBytes();
 				if(signRequest.getSignedDocuments().size() == 0 && !pdfService.isPdfAComplient(toSignFile.getInputStream()) && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+					int i = 0;
+					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
+						if(i > 0) {
+							bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, user).readAllBytes();
+						}
+						i++;
+					}
 					inputStream = pdfService.convertGS(pdfService.writeMetadatas(new ByteArrayInputStream(bytes), toSignFile.getFileName(), signRequest, new ArrayList<>()), signRequest.getToken());
 				} else {
 					inputStream = new ByteArrayInputStream(bytes);
@@ -527,10 +534,11 @@ public class SignService {
 	}
 
 	@Transactional
-	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId) throws IOException, EsupSignatureException {
+	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureException {
+		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = signRequestService.getById(signRequestId);
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual());
+		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user);
 	}
 
 	@Transactional
