@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.changeModeSelector = null;
@@ -14,6 +14,7 @@ export class WorkspacePdf {
         this.formId = formId;
         this.currentSignType = currentSignType;
         this.postits = postits;
+        this.notSigned = notSigned;
         this.signable = signable;
         this.signRequestId = id;
         this.signType = signType;
@@ -60,6 +61,8 @@ export class WorkspacePdf {
                 $("#workspace").css("margin-top", "170px");
             }
         }
+        let root = document.querySelector(':root');
+        root.setAttribute("style", "scroll-behavior: auto;");
     }
 
     initListeners() {
@@ -185,6 +188,9 @@ export class WorkspacePdf {
             this.firstInsertSign = false;
         }
         this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
+        if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
+            $("#addSignButton").attr("disabled", true);
+        }
     }
 
     initWorkspace() {
@@ -625,7 +631,7 @@ export class WorkspacePdf {
         let signId = $(e).attr("id").split("_")[1];
         console.log("toggle sign_ " + signId);
         let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-        if (signRequestParams.signPageNumber === this.pdfViewer.pageNum && this.mode === 'sign') {
+        if ((signRequestParams.signPageNumber === this.pdfViewer.pageNum || signRequestParams.allPages) && this.mode === 'sign') {
             signRequestParams.show();
         } else {
             signRequestParams.hide();

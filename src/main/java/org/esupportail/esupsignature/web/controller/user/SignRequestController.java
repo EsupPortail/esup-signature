@@ -203,6 +203,7 @@ public class SignRequestController {
         model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
+        model.addAttribute("isNotSigned", signRequestService.isNotSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
@@ -274,7 +275,7 @@ public class SignRequestController {
             signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            logger.warn("message", e);
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
     }
@@ -651,8 +652,12 @@ public class SignRequestController {
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "certType", required = false) String certType,
                                            HttpSession httpSession) throws InterruptedException, EsupSignatureMailException, EsupSignatureException, IOException {
-        signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
-        return new ResponseEntity<>(HttpStatus.OK);
+        String error = signRequestService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, certType);
+        if(error == null) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")

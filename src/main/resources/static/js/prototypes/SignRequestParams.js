@@ -17,6 +17,7 @@ export class SignRequestParams  extends EventFactory {
         this.textPart = "";
         this.signColorPicker;
         this.pdSignatureFieldName;
+        this.allPages = false;
         this.signImageNumber = 0;
         this.signPageNumber = 1;
         if(page != null) this.signPageNumber = page;
@@ -27,7 +28,7 @@ export class SignRequestParams  extends EventFactory {
         this.extraWidth = 0;
         this.extraHeight = 0;
         this.xPos = 0;
-        this.yPos = window.scrollY / 2;
+        this.yPos = Math.round(window.scrollY / 2 / .75);
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
@@ -195,6 +196,7 @@ export class SignRequestParams  extends EventFactory {
         $("#displayMoreTools_" + this.id).on("click", e => this.displayMoreTools());
         $("#hideMoreTools_" + this.id).on("click", e => this.hideMoreTools());
         $("#watermark_" + this.id).on("click", e => this.toggleWatermark());
+        $("#allPages_" + this.id).on("click", e => this.toggleAllPages());
         $("#signExtra_" + this.id).on("click", e => this.toggleExtra());
         $("#signExtraOnTop_" + this.id).on("click", e => this.toggleExtraOnTop());
 
@@ -374,6 +376,16 @@ export class SignRequestParams  extends EventFactory {
             preferredFormat: "hex",
             change: color => this.fireEvent("changeColor", [color])
         });
+    }
+
+    toggleAllPages() {
+        if(this.allPages) {
+            $("#allPages_" + this.id).removeClass("btn-outline-light");
+            this.allPages = false;
+        } else {
+            $("#allPages_" + this.id).addClass("btn-outline-light");
+            this.allPages = true;
+        }
     }
 
     toggleWatermark() {
