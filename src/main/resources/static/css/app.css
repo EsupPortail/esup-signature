@@ -1041,7 +1041,7 @@ height: 100%;
 }
 
 input:placeholder-shown.required-field {
-    background-color: #F8D7DA !important;
+    background-color: rgba(255, 0, 21, 0.13) !important;
 }
 
 input[type="checkbox"] {
@@ -1049,13 +1049,13 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:not(:checked).required-field {
-    background-color: #F8D7DA !important;
+    background-color: rgba(255, 0, 21, 0.13) !important;
     border: 1px solid black;
     margin-left: 0.03rem;
 }
 
 .annotationLayer .textWidgetAnnotation input[disabled], .annotationLayer .textWidgetAnnotation textarea[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled], .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
-    border: 1px solid transparent !important;
+    border: 1px solid black !important;
 }
 
 input[type="radio"] {
@@ -1063,13 +1063,13 @@ input[type="radio"] {
 }
 
 input[type="radio"]:not(:checked).required-field {
-    background-color: #F8D7DA !important;
-    border: 1px solid black;
-    margin-left: 0.03rem;
+    background-color: rgba(255, 0, 21, 0.13) !important;
+    /*border: 1px solid black;*/
+    /*margin-left: 0.03rem;*/
 }
 
 textarea:placeholder-shown.required-field {
-    background-color: #F8D7DA !important;
+    background-color: rgba(255, 0, 21, 0.13) !important;
 }
 
 .radioButton.required-field {
@@ -1082,26 +1082,15 @@ textarea:placeholder-shown.required-field {
 }
 
 .field-type-radio {
-    /*margin-left: 0.03rem !important;*/
-    /*border: 1px solid black !important;*/
-}
-
-.field-type-radio:hover {
-    /*border-color: transparent !important;*/
-    /*margin-left: 0.03rem !important;*/
-    border: 1px solid black !important;
-}
-
-.field-type-checkbox:hover {
     border-color: transparent !important;
-    /*margin-left: 0.03rem !important;*/
-    /*border: 1px solid black !important;*/
 }
 
-.field-type-textarea:hover {
+.field-type-checkbox {
     border-color: transparent !important;
-    /*margin-left: 0.03rem !important;*/
-    /*border: 1px solid black !important;*/
+}
+
+.field-type-textarea {
+    border-color: transparent !important;
 }
 
 .crop {
@@ -1438,11 +1427,15 @@ textarea:placeholder-shown.required-field {
 }
 
 .textWidgetAnnotation input {
-    border: 1px solid transparent !important;
+    border: 1px solid black !important;
 }
 
 .textWidgetAnnotation input:focus {
     background-color: #e0e0e0 !important;
+}
+
+.textWidgetAnnotation textarea {
+    border: 1px solid black !important;
 }
 
 .textWidgetAnnotation textarea:focus {
@@ -1450,23 +1443,19 @@ textarea:placeholder-shown.required-field {
 }
 
 .choiceWidgetAnnotation {
-    border: 1px solid transparent !important;
+    border: 1px solid black !important;
 
 }
 
 .choiceWidgetAnnotation select {
     margin-top: -1px !important;
     font-size: 9px !important;
-    border: 1px solid transparent !important;
+    border: 1px solid black !important;
     height: 140% !important;
 }
 
 .choiceWidgetAnnotation select:focus {
     background-color: #e0e0e0 !important;
-}
-
-.choiceWidgetAnnotation select:hover {
-    border-color: transparent !important;
 }
 
 .choiceWidgetAnnotation select option {
