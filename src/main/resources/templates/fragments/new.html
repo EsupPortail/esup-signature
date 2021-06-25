@@ -255,8 +255,8 @@
                                         <div th:id="'tempUsers-recipientEmailsSelect_' + ${iterator.index + 1}"></div>
                                         <div class="form-group mb-3" id="allSignToComplete-simple">
                                             <div class="form-check form-switch form-switch-md">
-                                                <label  class="form-check-label" for="allSignToComplete">Tous les participants doivent-ils signer ?</label>
-                                                <input type="checkbox" class="form-check-input" name="allSignToCompletes" th:id="'allSignToComplete_' + ${iterator.index + 1}"/>
+                                                <label  class="form-check-label" th:for="'allSignToComplete_' + ${iterator.index + 1}">Tous les participants doivent-ils signer ?</label>
+                                                <input type="checkbox" class="form-check-input" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'allSignToComplete_' + ${iterator.index + 1}"/>
                                             </div>
                                         </div>
                                     </div>

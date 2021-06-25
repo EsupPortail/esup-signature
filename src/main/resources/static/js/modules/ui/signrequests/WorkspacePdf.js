@@ -184,7 +184,6 @@ export class WorkspacePdf {
                 this.pdfViewer.renderPage(signPageNumber);
             }
             targetPageNumber = signPageNumber;
-            window.scrollTo(0, this.currentSignRequestParamses[signNum].yPos);
             this.firstInsertSign = false;
         }
         this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
@@ -447,7 +446,6 @@ export class WorkspacePdf {
             $('#commentPosY').val(yPos);
             $('#commentPageNumber').val(this.pdfViewer.pageNum);
             console.debug("mouse pos : " + xPos + ", " + yPos);
-
     }
 
     saveComment() {
