@@ -8,9 +8,21 @@ export class PdfViewer extends EventFactory {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
-        this.pdfPageView = null;
+        this.signable = signable;
         this.currentStepNumber = currentStepNumber;
         this.currentStepId = currentStepId;
+        this.pageNum = 1;
+        if(forcePageNum != null) {
+            this.pageNum = forcePageNum;
+        }
+        let jsFields = [];
+        if(fields) {
+            fields.forEach(function (e){
+                jsFields.push(new DataField(e));
+            });
+        }
+        this.disableAllFields = disableAllFields;
+        this.pdfPageView = null;
         this.scale = 1;
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
@@ -18,25 +30,13 @@ export class PdfViewer extends EventFactory {
         this.zoomStep = 0.1;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
-        this.pageNum = 1;
-        if(forcePageNum != null) {
-            this.pageNum = forcePageNum;
-        }
         this.numPages = 1;
         this.page = null;
-        let jsFields = [];
-        if(fields) {
-            fields.forEach(function (e){
-                jsFields.push(new DataField(e));
-            });
-        }
         this.dataFields = jsFields;
         this.savedFields = new Map();
         this.pdfFields = [];
-        this.signable = signable;
         this.events = {};
         this.rotation = 0;
-        this.disableAllFields = disableAllFields;
         this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
@@ -361,18 +361,11 @@ export class PdfViewer extends EventFactory {
         let datePickerIndex = 40;
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
-        let self = this;
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldType === undefined) {
                 if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
-                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                    // signField.addClass("sign-field")
-                    // signField.append('Champ signature ' + signFieldNumber + '<br>');
-                    // signField.addClass("d-none");
-                    // signField.parent().remove();
-
                 }
                 continue;
             }
@@ -606,7 +599,7 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable;
     }
 
     renderPdfForm(items) {
@@ -761,11 +754,17 @@ export class PdfViewer extends EventFactory {
             $(self.dataFields).each(function (e, item) {
                 let savedField = self.savedFields.get(item.name)
                 formData[item.name] = savedField;
-                let itemValue = $("#" + item.name).val()
                 if (item.required && self.isFieldEnable(item) &&
-                    (!savedField || (!itemValue && item.type === "radio") || (savedField === "off" && item.type === "checkbox"))) {
-                    // for
-                    warningFields.push($(this)[0]);
+                    (!savedField || (savedField === "off" && item.type === "checkbox"))) {
+                    let addWarning = true;
+                    for(let i = 0; i < warningFields.length; i++) {
+                        if(warningFields[i].name === item.name) {
+                            addWarning = false;
+                        }
+                    }
+                    if(addWarning) {
+                        warningFields.push($(this)[0]);
+                    }
                 }
             });
             if (warningFields.length > 0) {
