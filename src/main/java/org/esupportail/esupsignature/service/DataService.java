@@ -96,7 +96,7 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
@@ -106,7 +106,7 @@ public class DataService {
         Form form = data.getForm();
         String name = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
         Workflow modelWorkflow = data.getForm().getWorkflow();
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), modelWorkflow, "",null, user, false);
         SignRequest signRequest = signRequestService.createSignRequest(signBook, user.getEppn(), authUser.getEppn());
         InputStream inputStream = generateFile(data);
@@ -248,11 +248,11 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook initSendData(Long dataId, List<String> targetEmails, List<String> recipientEmails, String userEppn, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
+    public SignBook initSendData(Long dataId, List<String> targetEmails, List<String> recipientEmails, List<String> allSignToCompletes, String userEppn, String authUserEppn) throws EsupSignatureIOException, EsupSignatureException {
         Data data = getById(dataId);
         if(data.getStatus().equals(SignRequestStatus.draft)) {
             try {
-                SignBook signBook = sendForSign(dataId, recipientEmails, null, targetEmails, null, userEppn, authUserEppn, false);
+                SignBook signBook = sendForSign(dataId, recipientEmails, allSignToCompletes, null, targetEmails, null, userEppn, authUserEppn, false);
                 if(signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signBook.setComment("La procédure est démarrée");
                 } else {

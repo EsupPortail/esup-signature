@@ -57,18 +57,19 @@ public class DataController {
 	private UserService userService;
 
 	@PostMapping("sendForm/{id}")
-	public String updateData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-							 @RequestParam(required = false) List<String> recipientEmails,
-							 @RequestParam(required = false) List<String> targetEmails,
-							 @RequestParam(value = "emails", required = false) List<String> emails,
-							 @RequestParam(value = "names", required = false) List<String> names,
-							 @RequestParam(value = "firstnames", required = false) List<String> firstnames,
-							 @RequestParam(value = "phones", required = false) List<String> phones,
-							 @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
+	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+						   @RequestParam(required = false) List<String> recipientEmails,
+						   @RequestParam(required = false) List<String> allSignToCompletes,
+						   @RequestParam(required = false) List<String> targetEmails,
+						   @RequestParam(value = "emails", required = false) List<String> emails,
+						   @RequestParam(value = "names", required = false) List<String> names,
+						   @RequestParam(value = "firstnames", required = false) List<String> firstnames,
+						   @RequestParam(value = "phones", required = false) List<String> phones,
+						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn, authUserEppn);
-			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
+			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Formulaire non autorisé"));
@@ -104,10 +105,11 @@ public class DataController {
 	public String sendDataById(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 							   @PathVariable("id") Long id,
                                @RequestParam(required = false) List<String> recipientEmails,
+							   @RequestParam(required = false) List<String> allSignToCompletes,
 							   @RequestParam(required = false) List<String> targetEmails,
 							   RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
 		try {
-			SignBook signBook = dataService.initSendData(id, targetEmails, recipientEmails, userEppn, authUserEppn);
+			SignBook signBook = dataService.initSendData(id, targetEmails, recipientEmails, allSignToCompletes, userEppn, authUserEppn);
 			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
 				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
 				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
