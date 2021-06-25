@@ -582,6 +582,7 @@ export class WorkspacePdf {
         let self = this;
         signSpaceDiv.droppable({
             tolerance: 'touch',
+            accept: ".drop-sign",
             drop: function (event, ui) {
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");

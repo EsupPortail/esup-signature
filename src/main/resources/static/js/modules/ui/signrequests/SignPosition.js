@@ -153,6 +153,9 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
+        if(signImageNumber >= 0) {
+            this.signRequestParamses.get(id).cross.addClass("drop-sign");
+        }
         this.id++;
         return this.signRequestParamses.get(id);
     }
