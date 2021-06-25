@@ -475,7 +475,6 @@ public class PdfService {
             parser.close();
         } catch (Exception e) {
             logger.error("check error", e);
-            throw new EsupSignatureException("check pdf error", e);
         }
         return result;
     }
