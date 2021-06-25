@@ -654,8 +654,19 @@ export class PdfViewer extends EventFactory {
                     inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
                     inputField.val(item.fieldValue);
+                    inputField.attr('wrap', "hard");
+                    let limit = Math.round(parseInt(inputField.css("height")) / this.scale / 11) + 1;
+                    inputField.on("keypress", e => this.limitLines(e, limit));
                 }
             }
+        }
+    }
+
+    limitLines(e, keynum) {
+        let text = $(e.currentTarget).val();
+        let lines = text.split(/\r|\r\n|\n/);
+        if(lines.length > keynum) {
+            e.preventDefault();
         }
     }
 
