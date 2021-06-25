@@ -1436,6 +1436,8 @@ textarea:placeholder-shown.required-field {
 
 .textWidgetAnnotation textarea {
     border: 1px solid black !important;
+    overflow: hidden;
+    resize: none;
 }
 
 .textWidgetAnnotation textarea:focus {
