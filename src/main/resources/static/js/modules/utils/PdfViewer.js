@@ -8,9 +8,21 @@ export class PdfViewer extends EventFactory {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
-        this.pdfPageView = null;
+        this.signable = signable;
         this.currentStepNumber = currentStepNumber;
         this.currentStepId = currentStepId;
+        this.pageNum = 1;
+        if(forcePageNum != null) {
+            this.pageNum = forcePageNum;
+        }
+        let jsFields = [];
+        if(fields) {
+            fields.forEach(function (e){
+                jsFields.push(new DataField(e));
+            });
+        }
+        this.disableAllFields = disableAllFields;
+        this.pdfPageView = null;
         this.scale = 1;
         if(localStorage.getItem('scale')) {
             this.scale = parseFloat(localStorage.getItem('scale'));
@@ -18,25 +30,13 @@ export class PdfViewer extends EventFactory {
         this.zoomStep = 0.1;
         this.canvas = document.getElementById('pdf');
         this.pdfDoc = null;
-        this.pageNum = 1;
-        if(forcePageNum != null) {
-            this.pageNum = forcePageNum;
-        }
         this.numPages = 1;
         this.page = null;
-        let jsFields = [];
-        if(fields) {
-            fields.forEach(function (e){
-                jsFields.push(new DataField(e));
-            });
-        }
         this.dataFields = jsFields;
         this.savedFields = new Map();
         this.pdfFields = [];
-        this.signable = signable;
         this.events = {};
         this.rotation = 0;
-        this.disableAllFields = disableAllFields;
         this.pdfJs = pdfjsLib.getDocument(this.url).promise.then(pdf => this.startRender(pdf));
         this.initListeners();
     }
@@ -361,18 +361,11 @@ export class PdfViewer extends EventFactory {
         let datePickerIndex = 40;
         console.debug("rending pdfForm items");
         let signFieldNumber = 0;
-        let self = this;
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldType === undefined) {
                 if(items[i].title && items[i].title.toLowerCase().includes('sign')) {
                     signFieldNumber = signFieldNumber + 1;
                     $('.popupWrapper').remove();
-                    let signField = $('section[data-annotation-id=' + items[i].id + '] > div');
-                    // signField.addClass("sign-field")
-                    // signField.append('Champ signature ' + signFieldNumber + '<br>');
-                    // signField.addClass("d-none");
-                    // signField.parent().remove();
-
                 }
                 continue;
             }
@@ -606,7 +599,7 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero));
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable;
     }
 
     renderPdfForm(items) {
@@ -661,8 +654,19 @@ export class PdfViewer extends EventFactory {
                     inputField.removeAttr("maxlength");
                     inputField.attr('id', inputName);
                     inputField.val(item.fieldValue);
+                    inputField.attr('wrap', "hard");
+                    let limit = Math.round(parseInt(inputField.css("height")) / this.scale / 11) + 1;
+                    inputField.on("keypress", e => this.limitLines(e, limit));
                 }
             }
+        }
+    }
+
+    limitLines(e, keynum) {
+        let text = $(e.currentTarget).val();
+        let lines = text.split(/\r|\r\n|\n/);
+        if(lines.length > keynum) {
+            e.preventDefault();
         }
     }
 
@@ -752,33 +756,40 @@ export class PdfViewer extends EventFactory {
     }
 
     checkForm() {
-        let p = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             let formData = new Map();
             console.info("check data name");
             let self = this;
             let resolveOk = "ok";
             let warningFields = [];
-            $(self.dataFields).each(function(e, item) {
+            $(self.dataFields).each(function (e, item) {
                 let savedField = self.savedFields.get(item.name)
                 formData[item.name] = savedField;
-                if (item.required && !savedField && (!$("#" + item.name).val() || item.type === "radio") && self.isFieldEnable(item)) {
-                    // if(!self.checkObjectInArray(warningFields, item.name)) {
+                if (item.required && self.isFieldEnable(item) &&
+                    (!savedField || (savedField === "off" && item.type === "checkbox"))) {
+                    let addWarning = true;
+                    for(let i = 0; i < warningFields.length; i++) {
+                        if(warningFields[i].name === item.name) {
+                            addWarning = false;
+                        }
+                    }
+                    if(addWarning) {
                         warningFields.push($(this)[0]);
-                    // }
+                    }
                 }
             });
-            if(warningFields.length > 0) {
+            if (warningFields.length > 0) {
                 warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
-                if(warningFields.length < 2 && warningFields[0].name != null) {
-                    if(warningFields[0].description != null && warningFields[0].description !== "") {
+                if (warningFields.length < 2 && warningFields[0].name != null) {
+                    if (warningFields[0].description != null && warningFields[0].description !== "") {
                         text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
                     } else {
                         text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
                     }
                 } else {
                     warningFields.forEach(function (field) {
-                        if(field.description != null && field.description !== "") {
+                        if (field.description != null && field.description !== "") {
                             text += "<li>" + field.description + " (en page " + field.page + ")</li>";
                         } else {
                             text += "<li>" + field.name + " (en page " + field.page + ")</li>";
@@ -791,23 +802,23 @@ export class PdfViewer extends EventFactory {
                     if (page !== self.pageNum) {
                         self.renderPage(page);
                         self.addEventListener("renderFinished", function () {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 field = $('#' + warningFields[0].name);
                                 self.focusField(field)
                             }, 100);
 
                         });
                     } else {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             self.focusField(field)
-                        }, 100);                    }
+                        }, 100);
+                    }
                 });
                 resolveOk = $(this)[0].name;
                 $('#sendModal').modal('hide');
             }
             resolve(resolveOk);
         });
-        return p;
     }
 
     focusField(field) {
@@ -816,10 +827,12 @@ export class PdfViewer extends EventFactory {
         }
         field.focus();
         let offset = field.offset();
-        $('html, body').animate({
-            scrollTop: offset.top - 170,
-            scrollLeft: offset.left
-        });
+        if(offset != null) {
+            $('html, body').animate({
+                scrollTop: offset.top - 170,
+                scrollLeft: offset.left
+            });
+        }
     }
 
     highlightRadio(field) {

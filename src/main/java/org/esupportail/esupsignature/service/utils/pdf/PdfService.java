@@ -46,6 +46,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.verapdf.core.EncryptedPdfException;
+import org.verapdf.core.ModelParsingException;
+import org.verapdf.core.ValidationException;
 import org.verapdf.pdfa.Foundries;
 import org.verapdf.pdfa.PDFAParser;
 import org.verapdf.pdfa.PDFAValidator;
@@ -82,7 +85,7 @@ public class PdfService {
     @Resource
     private LogService logService;
 
-    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, User user) {
+    public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
@@ -91,7 +94,7 @@ public class PdfService {
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument);
             
-            if(signRequestParams.getAllPages()) {
+            if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
@@ -100,8 +103,10 @@ public class PdfService {
                     i++;
                 }
             } else {
-                PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                if(j > 0) {
+                    PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
+                    stampImageToPage(signRequest, signRequestParams, user, fixFactor, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber());
+                }
             }
             
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -175,7 +180,9 @@ public class PdfService {
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, (float) (signRequestParams.getSignWidth() * fixFactor), (float) (signRequestParams.getSignHeight() * fixFactor));
-            addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+            if (signRequestParams.getSignImageNumber() >= 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
+                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted);
+            }
         } else if (signRequestParams.getTextPart() != null && !signRequestParams.getTextPart().isEmpty()) {
             int fontSize = (int) (12 * signRequestParams.getSignScale() * .75);
             PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
@@ -435,7 +442,8 @@ public class PdfService {
     }
 
     public boolean isPdfAComplient(InputStream pdfFile) throws EsupSignatureException {
-        if ("success".equals(checkPDFA(pdfFile, false).get(0))) {
+        List<String> result = checkPDFA(pdfFile, false);
+        if (result.size() > 0 && "success".equals(result.get(0))) {
             return true;
         }
         return false;
@@ -469,9 +477,9 @@ public class PdfService {
             }
             validator.close();
             parser.close();
-        } catch (Exception e) {
+        } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
             logger.error("check error", e);
-            throw new EsupSignatureException("check pdf error", e);
+//            throw new EsupSignatureException("check pdf error", e);
         }
         return result;
     }

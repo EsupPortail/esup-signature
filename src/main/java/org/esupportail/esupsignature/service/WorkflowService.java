@@ -400,7 +400,7 @@ public class WorkflowService {
         return workflow;
     }
 
-    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
+    public Workflow computeWorkflow(Long workflowId, List<String> recipientEmails, List<String> allSignToCompletes, String userEppn, boolean computeForDisplay) throws EsupSignatureException {
         try {
             Workflow modelWorkflow = getById(workflowId);
             if (modelWorkflow.getFromCode() != null && modelWorkflow.getFromCode()) {
@@ -418,6 +418,9 @@ public class WorkflowService {
                         for (User oneUser : recipients) {
                             workflowStep.getUsers().add(oneUser);
                         }
+                    }
+                    if(allSignToCompletes != null && allSignToCompletes.contains(step + "")) {
+                        workflowStep.setAllSignToComplete(true);
                     }
                 }
                 step++;
@@ -536,7 +539,7 @@ public class WorkflowService {
     public List<WorkflowStep> getWorkflowStepsFromSignRequest(SignRequest signRequest, String userEppn) throws EsupSignatureException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, userEppn, true);
+            Workflow workflow = computeWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId(), null, null, userEppn, true);
             workflowSteps.addAll(workflow.getWorkflowSteps());
         }
         return workflowSteps;

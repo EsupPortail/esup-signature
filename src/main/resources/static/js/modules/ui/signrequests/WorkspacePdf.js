@@ -61,6 +61,8 @@ export class WorkspacePdf {
                 $("#workspace").css("margin-top", "170px");
             }
         }
+        let root = document.querySelector(':root');
+        root.setAttribute("style", "scroll-behavior: auto;");
     }
 
     initListeners() {
@@ -182,7 +184,6 @@ export class WorkspacePdf {
                 this.pdfViewer.renderPage(signPageNumber);
             }
             targetPageNumber = signPageNumber;
-            window.scrollTo(0, this.currentSignRequestParamses[signNum].yPos);
             this.firstInsertSign = false;
         }
         this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
@@ -445,7 +446,6 @@ export class WorkspacePdf {
             $('#commentPosY').val(yPos);
             $('#commentPageNumber').val(this.pdfViewer.pageNum);
             console.debug("mouse pos : " + xPos + ", " + yPos);
-
     }
 
     saveComment() {
@@ -582,6 +582,7 @@ export class WorkspacePdf {
         let self = this;
         signSpaceDiv.droppable({
             tolerance: 'touch',
+            accept: ".drop-sign",
             drop: function (event, ui) {
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");
@@ -627,7 +628,7 @@ export class WorkspacePdf {
 
     toggleSign(e) {
         let signId = $(e).attr("id").split("_")[1];
-        console.log("toggle sign_ " + signId);
+        console.log("toggle sign_" + signId);
         let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
         if ((signRequestParams.signPageNumber === this.pdfViewer.pageNum || signRequestParams.allPages) && this.mode === 'sign') {
             signRequestParams.show();
