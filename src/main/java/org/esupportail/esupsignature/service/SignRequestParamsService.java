@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -42,14 +43,20 @@ public class SignRequestParamsService {
     @Resource
     private ObjectMapper objectMapper;
 
+    public SignRequestParams getById(Long id) {
+        return signRequestParamsRepository.findById(id).get();
+    }
+
     public SignRequestParams createFromPdf(PDSignatureField pdSignatureField, List<Integer> annotationPages, PDPage pdPage) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(pdSignatureField.getPartialName());
-        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
-        signRequestParams.setxPos(xPosCentered);
-        signRequestParams.setyPos((int) pdPage.getBBox().getHeight() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - (int) pdSignatureField.getWidgets().get(0).getRectangle().getHeight());
+//        int xPosCentered = (int) ((int) pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() + ((int) pdSignatureField.getWidgets().get(0).getRectangle().getWidth() / 2) - (100 * 0.75));
+        signRequestParams.setxPos(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftX() / 0.75f));
+        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdSignatureField.getWidgets().get(0).getRectangle().getLowerLeftY() - pdSignatureField.getWidgets().get(0).getRectangle().getHeight()) / .75f));
         signRequestParams.setSignPageNumber(annotationPages.get(0));
+        signRequestParams.setSignWidth(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getWidth()));
+        signRequestParams.setSignHeight(Math.round(pdSignatureField.getWidgets().get(0).getRectangle().getHeight()));
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
@@ -64,11 +71,12 @@ public class SignRequestParamsService {
         return signRequestParamses;
     }
 
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
-            List<SignRequestParams> signRequestParamses = pdSignatureFieldsToSignRequestParams(pdDocument);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument);
             for(SignRequestParams signRequestParams : signRequestParamses) {
+                signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
 
@@ -78,7 +86,7 @@ public class SignRequestParamsService {
         }
     }
 
-    public List<SignRequestParams> pdSignatureFieldsToSignRequestParams(PDDocument pdDocument) {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
@@ -88,6 +96,8 @@ public class SignRequestParamsService {
                 for (PDField pdField : acroForm.getFields()) {
                     if (pdField instanceof PDSignatureField) {
                         PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        PDSignature pdSignature = pdSignatureField.getSignature();
+                        if(pdSignature != null) { continue; }
                         List<Integer> annotationPages = new ArrayList<>();
                         List<PDAnnotationWidget> kids = pdField.getWidgets();
                         if (kids != null) {
@@ -115,13 +125,23 @@ public class SignRequestParamsService {
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
             if (liveWfSignRequestParams.size() < i + 1) {
                 SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
+                signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
+                signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+                signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
+                signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
                 signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
+                signRequestParams.setExtraWidth(signRequestParamses.get(i).getExtraWidth());
+                signRequestParams.setExtraHeight(signRequestParamses.get(i).getExtraHeight());
+                signRequestParams.setExtraType(signRequestParamses.get(i).getExtraType());
+                signRequestParams.setExtraName(signRequestParamses.get(i).getExtraName());
+                signRequestParams.setExtraDate(signRequestParamses.get(i).getExtraDate());
+                signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
                 signRequestParams.setVisual(signRequestParamses.get(i).getVisual());
                 signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
                 signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
+                signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
                 signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
-                signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
                 liveWfSignRequestParams.add(signRequestParams);
             } else {
                 liveWfSignRequestParams.get(i).setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
@@ -130,11 +150,17 @@ public class SignRequestParamsService {
                 liveWfSignRequestParams.get(i).setyPos(signRequestParamses.get(i).getyPos());
                 liveWfSignRequestParams.get(i).setSignWidth(signRequestParamses.get(i).getSignWidth());
                 liveWfSignRequestParams.get(i).setSignHeight(signRequestParamses.get(i).getSignHeight());
-                liveWfSignRequestParams.get(i).setVisual(signRequestParamses.get(i).getVisual());
-                liveWfSignRequestParams.get(i).setAddWatermark(signRequestParamses.get(i).getAddWatermark());
-                liveWfSignRequestParams.get(i).setAddExtra(signRequestParamses.get(i).getAddExtra());
-                liveWfSignRequestParams.get(i).setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
+                liveWfSignRequestParams.get(i).setExtraWidth(signRequestParamses.get(i).getExtraWidth());
+                liveWfSignRequestParams.get(i).setExtraHeight(signRequestParamses.get(i).getExtraHeight());
+                liveWfSignRequestParams.get(i).setExtraType(signRequestParamses.get(i).getExtraType());
+                liveWfSignRequestParams.get(i).setExtraName(signRequestParamses.get(i).getExtraName());
+                liveWfSignRequestParams.get(i).setExtraDate(signRequestParamses.get(i).getExtraDate());
                 liveWfSignRequestParams.get(i).setExtraText(signRequestParamses.get(i).getExtraText());
+                liveWfSignRequestParams.get(i).setVisual(signRequestParamses.get(i).getVisual());
+                liveWfSignRequestParams.get(i).setAddExtra(signRequestParamses.get(i).getAddExtra());
+                liveWfSignRequestParams.get(i).setAddWatermark(signRequestParamses.get(i).getAddWatermark());
+                liveWfSignRequestParams.get(i).setAllPages(signRequestParamses.get(i).getAllPages());
+                liveWfSignRequestParams.get(i).setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
             }
         }
     }
@@ -147,4 +173,5 @@ public class SignRequestParamsService {
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }
+
 }

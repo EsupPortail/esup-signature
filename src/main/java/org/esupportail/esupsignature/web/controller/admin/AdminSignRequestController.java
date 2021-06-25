@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -126,7 +127,7 @@ public class AdminSignRequestController {
 	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest request) {
 		SignRequest signRequest = signRequestRepository.findById(id).get();
 		signBookService.delete(signRequest.getParentSignBook().getId(), authUserEppn);
-		return "redirect:" + request.getHeader("Referer");
+		return "redirect:" + request.getHeader(HttpHeaders.REFERER);
 	}
 
 	@GetMapping(value = "/get-last-file/{id}")

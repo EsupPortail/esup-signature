@@ -18,10 +18,10 @@ import java.util.List;
 public class WorkflowWsController {
 
     @Resource
-    WorkflowService workflowService;
+    private WorkflowService workflowService;
 
     @Resource
-    UserService userService;
+    private UserService userService;
 
     @CrossOrigin
     @PostMapping(value = "/new")

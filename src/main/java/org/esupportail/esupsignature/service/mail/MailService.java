@@ -135,21 +135,23 @@ public class MailService {
                     }
                 }
             }
-            viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
-            if(viewersArray.size() > 0) {
-                String[] to = new String[viewersArray.size()];
-                int i = 0;
-                for(User userTo : viewersArray) {
-                    to[i] = userTo.getEmail();
-                    i++;
+            if(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() > 0) {
+                viewersArray.remove(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getLiveWorkflowSteps().size() - 1).getRecipients().stream().filter(Recipient::getSigned).map(Recipient::getUser).findAny().get());
+                if (viewersArray.size() > 0) {
+                    String[] to = new String[viewersArray.size()];
+                    int i = 0;
+                    for (User userTo : viewersArray) {
+                        to[i] = userTo.getEmail();
+                        i++;
+                    }
+                    mimeMessage.setTo(to);
+                    logger.info("send email completes for " + user.getEppn());
+                    if (mailSender != null) {
+                        mailSender.send(mimeMessage.getMimeMessage());
+                    }
+                } else {
+                    logger.debug("no viewers to send mail");
                 }
-                mimeMessage.setTo(to);
-                logger.info("send email completes for " + user.getEppn());
-                if (mailSender != null) {
-                    mailSender.send(mimeMessage.getMimeMessage());
-                }
-            } else {
-                logger.debug("no viewers to send mail");
             }
         } catch (MailSendException | MessagingException | IOException e) {
             logger.error("unable to send email", e);
@@ -327,7 +329,7 @@ public class MailService {
         mimeMessage.setText(htmlContent, true);
         mimeMessage.addInline("logo", new ClassPathResource("/static/images/logo.png", MailService.class).getFile());
         mimeMessage.addInline("logo-univ", new ClassPathResource("/static/images/logo-univ.png", MailService.class).getFile());
-        mimeMessage.setSubject("Nouveau document signer à télécharger : " + title);
+        mimeMessage.setSubject("Nouveau document signé à télécharger : " + title);
         mimeMessage.setFrom(mailConfig.getMailFrom());
         mimeMessage.setTo(targetUri.split(";"));
         mailSender.send(mimeMessage.getMimeMessage());

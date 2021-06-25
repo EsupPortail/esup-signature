@@ -117,7 +117,7 @@
                         <xsl:attribute name="class">col-sm-7 text-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
 
                         <div>
-                            <xsl:attribute name="class">badge mr-2 badge-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
+                            <xsl:attribute name="class">badge mr-2 bg-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
 
                             <xsl:variable name="dssIndication" select="dss:Indication" />
                             <xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$dssIndication)]"/>
@@ -286,7 +286,7 @@
             <dd>
                 <xsl:attribute name="class">col-sm-7</xsl:attribute>
                 <div>
-                    <xsl:attribute name="class">badge badge-<xsl:value-of select="$indicationClass" /></xsl:attribute>
+                    <xsl:attribute name="class">badge bg-<xsl:value-of select="$indicationClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
                         <xsl:attribute name="data-toggle">tooltip</xsl:attribute>

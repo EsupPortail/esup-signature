@@ -17,6 +17,10 @@ global:
     application-email: esup.signature@univ-ville.fr
     hours-before-refresh-notif: 24
     share-mode: 3
+    infinite-scrolling: true
+    return-to-home-after-sign: false
+    signed-suffix: "_signé"
+
 #tomcat:
 #    ajp:
 #        port: 6009

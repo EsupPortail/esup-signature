@@ -7,102 +7,25 @@
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : 'alert-success')">
     <div class="alert alert-primary" th:if="${signatureIds.size() > 0}" style="left: 0; top: 0;position: absolute; z-index: 5; width: 100%">
         <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures éléctroniques
-        <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-toggle="modal" data-target="#reportModal">Voir les signatures</button></span>
+        <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button></span>
         <span th:unless="${signatureIds.size() > 1}">Ce document contient une signature éléctronique
-        <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-toggle="modal" data-target="#reportModal">Voir la signature</button>
+        <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
         </span>
-        <button class="btn btn-sm btn-transparent text-dark float-right" onclick="$(this).parent('div').remove();"><i class="fas fa-times"></i></button>
+        <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="drop-shadows mx-auto">
-            <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">
-                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"
-                     onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"
-                     style="display: none;z-index:1027;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">
-                    <div id="crossTools_0" class="badge badge-primary btn-small position-absolute d-none" style="left: 0px; top: -45px;
-                        z-index: 3; opacity: .9;user-select: none;
-                        -moz-user-select: none;
-                        -khtml-user-select: none;
-                        -webkit-user-select: none;
-                        -o-user-select: none;">
-                        <div id="defaultTools_0">
-                            <button type="button" id="signUndo_0"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-sync"></i>
-                            </button>
-                            <button type="button" id="signZoomOut_0"
-                                    title="Réduire la taille de la signature"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <span style="font-size:1em; line-height: 1em;" class="">A</span>
-                            </button>
-                            <button type="button" id="signZoomIn_0"
-                                    title="Agrandir la taille de la signature"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <span style="font-size:1.6666em; line-height: 1em;">A</span>
-                            </button>
-                            <button type="button" id="signPrevImage_0"
-                                    title="Signature précédente"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-chevron-up"></i>
-                            </button>
-                            <button type="button" id="signNextImage_0"
-                                    title="Signature suivante"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                            <button type="button" id="signDrop_0"
-                                    title="Supprimer la signature"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="far fa-trash-alt"></i>
-                            </button>
-                            <button type="button" id="displayMoreTools_0"
-                                    title="Plus d'outils"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                        <div id="moreTools_0" class="d-none">
-                            <button type="button" id="hideMoreTools_0"
-                                    title="Moins d'outils"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
-                            </button>
-                            <button type="button" id="watermark_0"
-                                    title="Filigrane"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-ad"></i>
-                            </button>
-                            <button type="button" id="signExtra_0"
-                                    title="Ajouter un texte à la signature"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    style="z-index: 3;">
-                                <i class="fas fa-receipt"></i>
-                            </button>
-                            <button type="button" id="signExtraOnTop_0"
-                                    title="Texte au dessus/texte sur la droite"
-                                    class="btn btn-sm btn-transparent text-white"
-                                    disabled
-                                    style="z-index: 3;">
-                                <i class="fas fa-retweet"></i>
-                            </button>
-                            <input id="signColorPicker_0" value='#000000'/>
-                        </div>
-                    </div>
-                    <div id="borders_0" class="static-border"
-                         th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>
-                </div>
-            </th:block>
+<!--            <th:block th:if="${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}">-->
+<!--                <div id="cross_0" ontouchstart="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
+<!--                     onmouseover="this.style.backgroundColor= 'rgba(0, 255, 0, .5)';"-->
+<!--                     onmouseout="this.style.backgroundColor= 'rgba(0, 0, 0, .0)';"-->
+<!--                     style="display: none;z-index:1027;pointer-events: auto;cursor: move;background-repeat: no-repeat; background-position: left bottom;">-->
+
+<!--                    <div id="borders_0" class="static-border"-->
+<!--                         th:style="'text-align:left;line-height:normal;width: ' + ${signWidth} + 'px; height: ' + ${signHeight} + 'px;'"></div>-->
+<!--                </div>-->
+<!--            </th:block>-->
             <th:block th:each="comment : ${comments}">
                 <div class="circle" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
@@ -110,12 +33,13 @@
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>
-            <th:block th:each="spot : ${spots}">
+            <th:block th:each="spot, iterator : ${spots}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}"
                      th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'"
                      th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').toggleClass(\'bg-white bg-success\');'">
                     <i class="fas fa-map-marker-alt fa-3x"></i>
                 </div>
+<!--                <div th:id="'signSpace_' + ${iterator.index}" th:title="'Emplacement de signature ' + ${iterator.index + 1}" class="sign-space sign-field"></div>-->
             </th:block>
             <div id="postit" class="postit alert alert-warning d-none">
                 <form>
@@ -124,27 +48,119 @@
                 <input id="commentPosY" name="commentPosY" type="hidden"/>
                 <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
                 <input id="addSignParams" name="addSignParams" type="hidden"/>
-                <div id="divSpotStepNumber" class="form-group" style="display: none">
+                <div id="divSpotStepNumber" class="form-group mb-3" style="display: none">
                     <label for="spotStepNumber">Choisir l'étape concernée</label>
                     <br/>
                     <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                         <option></option>
                         <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <option th:if="${step.signRequestParams.size() == 0}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                            <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                         </th:block>
                     </select>
                 </div>
-                <textarea id="postitComment" name="comment" class="postitarea float-left" placeholder="Saisir un commentaire" required></textarea>
-                <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-left">
-                    <i class="fas fa-times"></i>
+                <textarea id="postitComment" name="comment" class="postitarea float-start" placeholder="Saisir un commentaire" required></textarea>
+                <button id="hideCommentButton" type="button" class="btn btn-sm btn-dark float-start">
+
                 </button>
-                <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-right">
+                <button id="saveCommentButton" type="button" class="btn btn-sm btn-dark float-end">
                     <i class="fas fa-save"></i>
                 </button>
                 </form>
             </div>
         </div>
     </form>
+
+    <div id="crossTools_x" class="badge bg-primary btn-small position-absolute cross-tools d-none">
+        <div id="defaultTools_x">
+            <button type="button" id="signDrop_x"
+                    title="Supprimer la signature"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="far fa-trash-alt"></i>
+            </button>
+            <button type="button" id="signUndo_x"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i class="fas fa-sync"></i>
+            </button>
+            <button type="button" id="signPrevImage_x"
+                    title="Signature précédente"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+            <button type="button" id="signNextImage_x"
+                    title="Signature suivante"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <button type="button" id="hideMoreTools_x"
+                    title="Moins d'outils"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
+            </button>
+            <button type="button" id="signExtra_x"
+                    title="Ajouter un texte à la signature"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-receipt"></i>
+            </button>
+            <button type="button" id="signExtraOnTop_x"
+                    title="Texte au dessus/texte sur la droite"
+                    class="btn btn-sm btn-transparent text-white"
+                    disabled
+                    style="z-index: 3;">
+                <i class="fas fa-retweet"></i>
+            </button>
+            <button type="button" id="watermark_x"
+                    title="Filigrane"
+                    class="btn btn-sm btn-transparent text-white"
+                    style="z-index: 3;">
+                <i class="fas fa-ad"></i>
+            </button>
+            <button th:if="${isNotSigned}" type="button" id="allPages_x"
+                    title="Répéter sur toutes les pages"
+                    class="btn btn-sm btn-transparent text-white"watermark_0
+                    style="z-index: 3;">
+                <i class="fas fa-reply-all"></i>
+            </button>
+            <input id="signColorPicker_x" value='#000000'/>
+            <button type="button" id="displayMoreTools_x"
+                    title="Plus d'outils"
+                    class="btn btn-sm btn-transparent text-white d-none"
+                    style="z-index: 3;">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+        <div id="extraTools_x" class="d-none">
+            <button type="button" id="extraType_x"
+                    title="Ajouter le nom"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Type
+            </button>
+            <button type="button" id="extraName_x"
+                    title="Ajouter le nom"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Nom
+            </button>
+            <button type="button" id="extraDate_x"
+                    title="Ajouter la date"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Date
+            </button>
+            <button type="button" id="extraText_x"
+                    title="Ajouter un texte libre"
+                    class="btn btn-sm btn-transparent text-white btn-outline-light"
+                    style="z-index: 3;">
+                Texte
+            </button>
+        </div>
+    </div>
 
     <div id="commentsBar" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 250px; left: 285px;">
         <div th:unless="${signRequest.comments.size() > 0}" class="alert alert-light border-dark text-dark">
@@ -154,7 +170,7 @@
             <h5>Commentaires</h5>
             <ul class="list-group">
                 <th:block th:each="comment : ${comments}">
-                    <li th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtml-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
+                    <li th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <b th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}"></b>
                         <p th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></p>
                         <p class="postitarea" th:text="${comment.text}"></p>

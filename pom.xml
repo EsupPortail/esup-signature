@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.4</version>
+		<version>2.5.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.13.2</version>
+	<version>1.14.3-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -24,7 +24,7 @@
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
 		<nexu.version>1.23</nexu.version>
 		<pdfbox.version>2.0.24</pdfbox.version>
-		<pdfjs.version>2.6.347</pdfjs.version>
+		<pdfjs.version>2.8.335</pdfjs.version>
 		<swagger.version>3.0.0</swagger.version>
 	</properties>
 	<repositories>
@@ -200,14 +200,9 @@
 			<version>1.12.1</version>
 		</dependency>
 		<dependency>
-		   <groupId>org.webjars</groupId>
-		   <artifactId>popper.js</artifactId>
-		   <version>2.5.4</version>
-		</dependency>
-		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>2.6.347</version>
+			<version>${pdfjs.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
@@ -222,7 +217,7 @@
 		<dependency>
 		   <groupId>org.webjars</groupId>
 		   <artifactId>bootstrap</artifactId>
-		   <version>4.6.0</version>
+		   <version>5.0.1</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.webjars</groupId>
@@ -237,7 +232,7 @@
 		<dependency>
 		    <groupId>org.webjars.bower</groupId>
 		    <artifactId>bootstrap-fileinput</artifactId>
-		    <version>5.1.0</version>
+		    <version>5.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
@@ -556,8 +551,8 @@
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 <!--				<exclusion>-->
-<!--					<groupId>xml-apis</groupId>-->
-<!--					<artifactId>xml-apis</artifactId>-->
+<!--					<groupId>xms-apis</groupId>-->
+<!--					<artifactId>xms-apis</artifactId>-->
 <!--				</exclusion>-->
 			</exclusions>
 		</dependency>
@@ -626,7 +621,7 @@
 		<dependency>
 		  <groupId>org.verapdf</groupId>
 		  <artifactId>validation-model</artifactId>
-		  <version>1.16.1</version>
+		  <version>1.18.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
@@ -712,8 +707,8 @@
 					<artifactId>xalan</artifactId>
 				</exclusion>
 <!--				<exclusion>-->
-<!--					<groupId>xml-apis</groupId>-->
-<!--					<artifactId>xml-apis</artifactId>-->
+<!--					<groupId>xms-apis</groupId>-->
+<!--					<artifactId>xms-apis</artifactId>-->
 <!--				</exclusion>-->
 			</exclusions>
 		</dependency>

@@ -1,7 +1,7 @@
 import {Message} from "../../../prototypes/Message.js";
 import Toast from "../Toast.js";
 
-export default class FormUi {
+export default class FormFieldsUi {
 
     constructor(domain, formId, prefillTypes) {
         console.info("Starting Form UI for " + formId);
@@ -106,7 +106,7 @@ export default class FormUi {
             console.log(fd.get("_csrf"));
             $.ajax({
                 type: "POST",
-                url: "/" + self.domain + "/forms/field/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
+                url: "/" + self.domain + "/forms/fields/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
                 data: fd,
                 processData: false,
                 contentType: false,

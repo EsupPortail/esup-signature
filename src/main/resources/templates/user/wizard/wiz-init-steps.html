@@ -2,22 +2,22 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div id="stepper1" class="bs-stepper linear">
     <div class="bs-stepper-header" role="tablist">
-        <div class="step" data-target="#test-l-2">
+        <div class="step" data-bs-target="#test-l-2">
             <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
             <span class="bs-stepper-label">Copie des fichiers</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step active" data-target="#test-l-3">
+        <div class="step active" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-project-diagram"></i></span>
             <span class="bs-stepper-label">Création du circuit</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-save"></i></span>
             <span class="bs-stepper-label">Sauvegarde</span>
         </div>
         <div class="bs-stepper-line"></div>
-        <div class="step" data-target="#test-l-3">
+        <div class="step" data-bs-target="#test-l-3">
             <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
             <span class="bs-stepper-label">Fin</span>
         </div>
@@ -31,8 +31,8 @@
             <span title="Étape à venir" class="bs-stepper-circle">
                 <i class="fas fa-clock"></i>
             </span>
-                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-right"><i class="fas fa-users"></i></span>
-                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-right"><i class="fas fa-user"></i></span>
+                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>
+                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fas fa-user"></i></span>
                 <div class="bs-stepper-label">
                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
@@ -60,13 +60,10 @@
 <form id="wiz-step-form">
 <h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape&nbsp;<span th:text="${signBook.liveWorkflow.liveWorkflowSteps.size() + 1}"></span></h4>
 <div class="col-12">
-    <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group">
-        <label for="userSignFirstWiz">
+    <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group form-switch form-switch-md mb-3">
+        <input type="checkbox" class="form-check-input" name="userSignFirstWiz" id="userSignFirstWiz"/>
+        <label for="userSignFirstWiz" class="form-check-label">
             Je dois signer ce document avant l'envoi ?
-        </label>
-        <label class="switch">
-            <input type="checkbox" name="userSignFirstWiz" id="userSignFirstWiz"/>
-            <span class="slider round"></span>
         </label>
     </div>
     <label for="recipientsEmailsWiz">Choisir les participants</label>
@@ -74,26 +71,24 @@
     </select>
     <div id="tempUsers-recipientsEmailsWiz"></div>
     <br/>
-    <label>
-        Tous les participants doivent-ils signer ?
-    </label>
-    <label class="switch">
-        <input type="checkbox" id="allSignToCompleteWiz" name="allSignToComplete"/>
-        <span class="slider round"></span>
-    </label>
-    <br/>
+    <div class="form-check form-switch form-switch-md mb-2">
+        <label class="form-check-label">
+            Tous les participants doivent-ils signer ?
+        </label>
+        <input type="checkbox" class="form-check-input" id="allSignToCompleteWiz" name="allSignToComplete"/>
+    </div>
     <label>Type de signature :</label>
-    <select class="form-control" id="signTypeWiz" name="signType">
+    <select class="form-select" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
     </select>
 </div>
 <div class="inline-flex">
-    <button type="submit" id="addNew" value="true" class="btn btn-primary float-right m-1">
+    <button type="submit" id="addNew" value="true" class="btn btn-primary float-end m-1">
         <i class="fas fa-save"></i> Enregistrer l'étape
     </button>
-    <button formnovalidate id="endStart" name="endStart" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-right m-1">
+    <button formnovalidate id="endStart" name="endStart" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="submit" class="btn btn-success float-end m-1">
         <i class="fas fa-paper-plane"></i> Envoyer la demande immédiatement
     </button>
 </div>

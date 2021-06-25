@@ -63,7 +63,7 @@
 
                 <xsl:if test="@CounterSignature = 'true'">
                     <span>
-                        <xsl:attribute name="class">badge badge-info pull-right</xsl:attribute>
+                        <xsl:attribute name="class">badge bg-info pull-right</xsl:attribute>
                         Counter-signature
                     </span>
                 </xsl:if>
@@ -168,7 +168,7 @@
                         <xsl:attribute name="class">col-sm-9 text-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
 
                         <div>
-                            <xsl:attribute name="class">badge mr-2 badge-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
+                            <xsl:attribute name="class">badge mr-2 bg-<xsl:value-of select="$indicationCssClass" /></xsl:attribute>
 
                             <xsl:variable name="dssIndication" select="dss:Indication" />
                             <xsl:variable name="semanticText" select="//dss:Semantic[contains(@Key,$dssIndication)]"/>
@@ -357,7 +357,7 @@
                             <xsl:attribute name="data-toggle">collapse</xsl:attribute>
                             <xsl:attribute name="aria-expanded">false</xsl:attribute>
 
-                            Timestamps <span class="badge badge-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
+                            Timestamps <span class="badge bg-light"><xsl:value-of select="count(dss:Timestamps/dss:Timestamp)" /></span>
                         </div>
                         <div>
                             <xsl:attribute name="class">card-body collapse pb-1</xsl:attribute>
@@ -435,7 +435,7 @@
             <dd>
                 <xsl:attribute name="class">col-sm-9</xsl:attribute>
                 <div>
-                    <xsl:attribute name="class">badge badge-<xsl:value-of select="$indicationClass" /></xsl:attribute>
+                    <xsl:attribute name="class">badge bg-<xsl:value-of select="$indicationClass" /></xsl:attribute>
 
                     <xsl:if test="string-length($semanticText) &gt; 0">
                         <xsl:attribute name="data-toggle">tooltip</xsl:attribute>

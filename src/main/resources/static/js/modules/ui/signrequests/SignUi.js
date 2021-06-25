@@ -4,7 +4,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, action, nbSignRequests) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
@@ -15,7 +15,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParams, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -128,6 +128,16 @@ export class SignUi {
             });
         }
         if(this.workspace != null) {
+            let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
+            for(let i = 0 ; i < signRequestParamses.length; i++) {
+                signRequestParamses[i].cross = null;
+                signRequestParamses[i].border = null;
+                signRequestParamses[i].tools = null;
+                signRequestParamses[i].textareaExtra = null;
+                signRequestParamses[i].defaultTools = null;
+                signRequestParamses[i].divExtra = null;
+                signRequestParamses[i].signColorPicker = null;
+            }
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : $("#certType").val(),

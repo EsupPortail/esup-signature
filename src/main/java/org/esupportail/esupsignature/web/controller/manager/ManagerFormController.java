@@ -219,7 +219,7 @@ public class ManagerFormController {
     }
 
     @ResponseBody
-    @PostMapping("/field/{id}/update")
+    @PostMapping("/fields/{id}/update")
     @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public ResponseEntity<String> updateField(@PathVariable("id") Long id,
                                               @RequestParam(value = "description", required = false) String description,
