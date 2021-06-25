@@ -26,12 +26,6 @@ export class SignPosition extends EventFactory {
         if (this.signType === "visa") {
             $("#visualButton").remove();
         }
-        // if(this.signType === "nexuSign" || this.signType === "certSign") {
-        //     $("#visualButton").removeClass("d-none");
-        // }
-        // if(signable) {
-        //     this.addSign(1, true, 0);
-        // }
     }
 
     removeSign(id) {

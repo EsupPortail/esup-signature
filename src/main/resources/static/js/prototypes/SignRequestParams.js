@@ -5,9 +5,10 @@ export class SignRequestParams  extends EventFactory {
     constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa) {
         super();
         this.signRequestParams = signRequestParams;
-        this.id = id;
         Object.assign(this, signRequestParams);
+        this.id = id;
         this.currentScale = parseFloat(scale);
+        this.signPageNumber = 1;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.restore = restore;
@@ -25,16 +26,17 @@ export class SignRequestParams  extends EventFactory {
         this.pdSignatureFieldName;
         this.allPages = false;
         this.signImageNumber = 0;
-        this.signPageNumber = 1;
         this.originalWidth = 150;
         this.originalHeight = 75;
         this.signWidth = 150;
         this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
-        let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
-        this.yPos = Math.round(mid / scale ) - (this.signHeight * scale / 2);
+        if(signRequestParams == null) {
+            this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
+            let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
+            this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2);
+        }
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
@@ -67,14 +69,15 @@ export class SignRequestParams  extends EventFactory {
             containment: "#pdf",
             scroll: false,
             drag: function() {
+                let thisPos = $(this).position();
                 if(!self.firstLaunch) {
-                    let thisPos = $(this).position();
                     let x = Math.round(thisPos.left / self.currentScale);
                     let y = Math.round(thisPos.top / self.currentScale);
                     self.xPos = x;
                     self.yPos = y;
                 } else {
                     self.firstLaunch = false;
+                    window.scrollTo(0, self.yPos);
                 }
             }
         });

@@ -628,7 +628,7 @@ export class WorkspacePdf {
 
     toggleSign(e) {
         let signId = $(e).attr("id").split("_")[1];
-        console.log("toggle sign_ " + signId);
+        console.log("toggle sign_" + signId);
         let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
         if ((signRequestParams.signPageNumber === this.pdfViewer.pageNum || signRequestParams.allPages) && this.mode === 'sign') {
             signRequestParams.show();
