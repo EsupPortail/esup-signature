@@ -402,8 +402,6 @@ public class SignRequestService {
 					for (String toRemoveKey : toRemoveKeys) {
 						formDataMap.remove(toRemoveKey);
 					}
-				} else {
-//					formDataMap.clear();
 				}
 			} catch (IOException e) {
 				logger.error("form datas error", e);
@@ -500,7 +498,7 @@ public class SignRequestService {
 			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				for(SignRequestParams signRequestParams : signRequestParamses) {
-					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, signerUser);
+					signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser);
 					lastSignLogs.add(updateStatus(signRequest, signRequest.getStatus(), "Apposition de la signature",  "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), user.getEppn(), authUser.getEppn()));
 				}
 			}
