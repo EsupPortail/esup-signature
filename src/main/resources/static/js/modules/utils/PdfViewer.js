@@ -752,33 +752,34 @@ export class PdfViewer extends EventFactory {
     }
 
     checkForm() {
-        let p = new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             let formData = new Map();
             console.info("check data name");
             let self = this;
             let resolveOk = "ok";
             let warningFields = [];
-            $(self.dataFields).each(function(e, item) {
+            $(self.dataFields).each(function (e, item) {
                 let savedField = self.savedFields.get(item.name)
                 formData[item.name] = savedField;
-                if (item.required && !savedField && (!$("#" + item.name).val() || item.type === "radio") && self.isFieldEnable(item)) {
-                    // if(!self.checkObjectInArray(warningFields, item.name)) {
-                        warningFields.push($(this)[0]);
-                    // }
+                let itemValue = $("#" + item.name).val()
+                if (item.required && self.isFieldEnable(item) &&
+                    (!savedField || (!itemValue && item.type === "radio") || (savedField === "off" && item.type === "checkbox"))) {
+                    // for
+                    warningFields.push($(this)[0]);
                 }
             });
-            if(warningFields.length > 0) {
+            if (warningFields.length > 0) {
                 warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
-                if(warningFields.length < 2 && warningFields[0].name != null) {
-                    if(warningFields[0].description != null && warningFields[0].description !== "") {
+                if (warningFields.length < 2 && warningFields[0].name != null) {
+                    if (warningFields[0].description != null && warningFields[0].description !== "") {
                         text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
                     } else {
                         text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
                     }
                 } else {
                     warningFields.forEach(function (field) {
-                        if(field.description != null && field.description !== "") {
+                        if (field.description != null && field.description !== "") {
                             text += "<li>" + field.description + " (en page " + field.page + ")</li>";
                         } else {
                             text += "<li>" + field.name + " (en page " + field.page + ")</li>";
@@ -791,23 +792,23 @@ export class PdfViewer extends EventFactory {
                     if (page !== self.pageNum) {
                         self.renderPage(page);
                         self.addEventListener("renderFinished", function () {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 field = $('#' + warningFields[0].name);
                                 self.focusField(field)
                             }, 100);
 
                         });
                     } else {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             self.focusField(field)
-                        }, 100);                    }
+                        }, 100);
+                    }
                 });
                 resolveOk = $(this)[0].name;
                 $('#sendModal').modal('hide');
             }
             resolve(resolveOk);
         });
-        return p;
     }
 
     focusField(field) {
@@ -816,10 +817,12 @@ export class PdfViewer extends EventFactory {
         }
         field.focus();
         let offset = field.offset();
-        $('html, body').animate({
-            scrollTop: offset.top - 170,
-            scrollLeft: offset.left
-        });
+        if(offset != null) {
+            $('html, body').animate({
+                scrollTop: offset.top - 170,
+                scrollLeft: offset.left
+            });
+        }
     }
 
     highlightRadio(field) {

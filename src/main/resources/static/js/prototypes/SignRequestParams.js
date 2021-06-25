@@ -4,11 +4,17 @@ export class SignRequestParams  extends EventFactory {
 
     constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa) {
         super();
-        this.firstLaunch = true;
+        this.signRequestParams = signRequestParams;
+        this.id = id;
+        Object.assign(this, signRequestParams);
+        this.currentScale = parseFloat(scale);
+        if(page != null) this.signPageNumber = page;
         this.userName = userName;
-        this.cross;
+        this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
+        this.firstLaunch = true;
+        this.cross;
         this.border;
         this.tools;
         this.divExtra;
@@ -20,34 +26,29 @@ export class SignRequestParams  extends EventFactory {
         this.allPages = false;
         this.signImageNumber = 0;
         this.signPageNumber = 1;
-        if(page != null) this.signPageNumber = page;
         this.originalWidth = 150;
         this.originalHeight = 75;
         this.signWidth = 150;
         this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.xPos = 0;
-        this.yPos = Math.round(window.scrollY / 2 / .75);
+        this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
+        let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
+        this.yPos = Math.round(mid / scale ) - (this.signHeight * scale / 2);
         this.visual = true;
         this.addWatermark = false;
         this.addExtra = false;
         this.extraText = "";
         this.signScale = 1;
-        this.currentScale = parseFloat(scale);
         this.red = 0;
         this.green = 0;
         this.blue = 0;
         this.fontSize = 12;
-        this.restore = restore;
-        this.signRequestParams = signRequestParams;
-        Object.assign(this, signRequestParams);
         this.extraOnTop = true;
         this.extraType = true;
         this.extraName = true;
         this.extraDate = true;
         this.isExtraText = true;
-        this.id = id;
         this.init();
         this.initEventListeners();
     }
@@ -66,11 +67,15 @@ export class SignRequestParams  extends EventFactory {
             containment: "#pdf",
             scroll: false,
             drag: function() {
-                let thisPos = $(this).position();
-                let x = Math.round(thisPos.left / self.currentScale);
-                let y = Math.round(thisPos.top / self.currentScale);
-                self.xPos = x;
-                self.yPos = y;
+                if(!self.firstLaunch) {
+                    let thisPos = $(this).position();
+                    let x = Math.round(thisPos.left / self.currentScale);
+                    let y = Math.round(thisPos.top / self.currentScale);
+                    self.xPos = x;
+                    self.yPos = y;
+                } else {
+                    self.firstLaunch = false;
+                }
             }
         });
         this.cross.resizable({
@@ -167,7 +172,6 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
             this.changeSignSize()
-            // this.simulateDrop();
         }
     }
 
@@ -335,7 +339,6 @@ export class SignRequestParams  extends EventFactory {
             this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
         }
         if(this.firstLaunch && result != null) {
-            this.firstLaunch = false;
             this.simulateDrop();
         }
     }
@@ -352,6 +355,8 @@ export class SignRequestParams  extends EventFactory {
         let x = this.xPos * this.currentScale;
         let y = this.yPos * this.currentScale;
         this.cross.simulate("drag", {
+            handle: "corner",
+            moves: 1,
             dx: x,
             dy: y
         });
@@ -598,6 +603,7 @@ export class SignRequestParams  extends EventFactory {
         $("#signExtra_" + this.id).hide();
         $("#signExtraOnTop_" + this.id).hide();
         $("#watermark_" + this.id).hide();
+        $("#allPages_" + this.id).hide();
         $("#signColorPicker_" + this.id).hide();
         this.addWatermark = true;
         this.toggleWatermark();
