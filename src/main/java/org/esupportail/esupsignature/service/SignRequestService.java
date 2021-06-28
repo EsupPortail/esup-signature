@@ -1418,7 +1418,7 @@ public class SignRequestService {
 		return signRequestRepository.findSignRequestByCommentsContains(comment);
 	}
 
-	public List<Recipient> getRecipientsNameFromSignRequestPage(Page<SignRequest> signRequests) {
+	public List<Recipient> getRecipientsNameFromSignRequests(List<SignRequest> signRequests) {
 		List<Recipient> recipientNames = new ArrayList<>();
 		for (SignRequest signRequest : signRequests) {
 			recipientNames.addAll(signRequest.getRecipientHasSigned().keySet());

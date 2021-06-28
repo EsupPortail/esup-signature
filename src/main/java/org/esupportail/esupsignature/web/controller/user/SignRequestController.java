@@ -130,7 +130,7 @@ public class SignRequestController {
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("recipientsFilter", recipientsFilter);
-        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequestPage(signRequestPage));
+        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequests(signRequests));
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
