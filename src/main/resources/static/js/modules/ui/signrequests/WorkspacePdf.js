@@ -701,6 +701,7 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'comment');
         this.disableAllModes();
         $("#postit").removeClass("d-none");
+        $("#commentHelp").removeClass("d-none");
         this.mode = 'comment';
         this.signPosition.pointItEnable = true;
         $('#workspace').toggleClass('alert-warning alert-secondary');
@@ -785,6 +786,7 @@ export class WorkspacePdf {
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
+        $("#commentHelp").addClass("d-none");
         // this.signPosition.crossTools.addClass('d-none');
         $('#commentsTools').hide();
         $('#commentsBar').hide();
@@ -943,7 +945,7 @@ export class WorkspacePdf {
                     },
                 ]
             });
-            if(!this.signable) {
+            if(this.status !== "draft" && this.status !== "pending") {
                 this.changeModeSelector.disable();
             }
         }
