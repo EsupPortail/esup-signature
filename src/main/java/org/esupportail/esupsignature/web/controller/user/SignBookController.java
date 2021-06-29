@@ -75,7 +75,7 @@ public class SignBookController {
     @GetMapping(value = "/{id}", params = "form")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
-        if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending)) {
+        if((signBook.getLiveWorkflow().getWorkflow() == null || signBook.getCreateBy().equals(signBook.getLiveWorkflow().getWorkflow().getCreateBy())) && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
             SignRequest signRequest = signBook.getSignRequests().get(0);
             model.addAttribute("signRequest", signRequest);
