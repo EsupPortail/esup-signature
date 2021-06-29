@@ -211,7 +211,7 @@ export class GlobalUi {
             var _opened = $(this).hasClass("collapse show");
             if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
                 let id = $(this).attr('id').split('-')[1];
-                $("#menu-toggle-" + id).click();
+                $("#menu-toggle_" + id).click();
             }
         });
         var container = document.getElementsByClassName('user-infos')[0];

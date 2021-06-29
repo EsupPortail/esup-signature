@@ -306,13 +306,17 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
-	public SignRequest createSignRequest(SignBook signBook, String userEppn, String authUserEppn) {
+	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = new SignRequest();
-		if(signBook.getSignRequests().size() == 0) {
-			signRequest.setTitle(signBook.getName());
+		if(name == null || name.isEmpty()) {
+			if (signBook.getSignRequests().size() == 0) {
+				signRequest.setTitle(signBook.getName());
+			} else {
+				signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+			}
 		} else {
-			signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+			signRequest.setTitle(name);
 		}
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);

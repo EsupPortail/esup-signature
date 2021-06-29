@@ -56,7 +56,7 @@
                         <tr>
                             <th class="w-20 d-none d-lg-table-cell">
                                 <div class="position-relative">
-                                    <button type="button" id="menu-toggle-multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
+                                    <button type="button" id="menu-toggle_multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
                                         <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div class="card position-absolute collapse mini-menu-thead" id="menu-multiple">
@@ -150,7 +150,7 @@
                                 </td>
                                 <td>
                                     <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
+                                        <button type="button" th:id="'menu-toggle_' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
@@ -164,7 +164,7 @@
                                                 <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                                                     <i class="fas fa-download pr-2"></i> Télécharger
                                                 </a>
-                                                <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                                                <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>

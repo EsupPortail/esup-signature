@@ -128,7 +128,8 @@ public class SignBookService {
         signBook.setExternal(external);
         signBook.setLiveWorkflow(liveWorkflowService.create());
         signBookRepository.save(signBook);
-        signBook.setName(generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate));
+        String name = generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate);
+        signBook.setName(name);
         return signBook;
     }
 
@@ -560,7 +561,7 @@ public class SignBookService {
     public void addDocumentsToSignBook(SignBook signBook, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
             i++;
         }
@@ -577,7 +578,7 @@ public class SignBookService {
     public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, null, "","", authUser, false);
-        SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
+        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;

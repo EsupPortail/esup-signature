@@ -271,7 +271,7 @@ public class WorkflowService {
                             }
                             SignBook signBook = signBookService.createSignBook(fileService.getNameOnly(documentName), workflow, "",null, user, false);
                             signBook.getLiveWorkflow().setWorkflow(workflow);
-                            SignRequest signRequest = signRequestService.createSignRequest(signBook, user.getEppn(), authUser.getEppn());
+                            SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
                             if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                                 user = userService.getByEppn(fsFile.getCreateBy());
                             }

@@ -186,8 +186,7 @@ public class SignBookController {
         User authUser = (User) model.getAttribute("authUser");
         logger.info("start add documents in " + name);
         SignBook signBook = signBookService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
-        String[] ok = {"" + signBook.getId()};
-        return ok;
+        return new String[]{"" + signBook.getId()};
     }
 
 
