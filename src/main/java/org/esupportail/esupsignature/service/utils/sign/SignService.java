@@ -390,14 +390,12 @@ public class SignService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
-		logger.info("Start certSignDocument with database keystore");
 		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		fillCommonsParameters(parameters, signatureDocumentForm);
 		DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign()));
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocument, parameters, signatureValue);
-		logger.info("End certSignDocument with database keystore");
 		return signedDocument;
 	}
 

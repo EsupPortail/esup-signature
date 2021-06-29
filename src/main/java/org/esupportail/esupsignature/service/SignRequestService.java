@@ -593,6 +593,7 @@ public class SignRequestService {
 	}
 
 	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
+		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest.getId())) {
@@ -644,6 +645,7 @@ public class SignRequestService {
 			}
 			pkcs12SignatureToken.close();
 			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
+			logger.info("certSign ok for signRequest : " + signRequest.getId());
 		} catch (EsupSignatureKeystoreException e) {
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);

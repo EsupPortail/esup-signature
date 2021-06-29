@@ -26,7 +26,7 @@ public class GlobalProperties implements Cloneable {
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
-    private Integer trashKeepDelay = 15;
+    private Integer trashKeepDelay = -1;
     private Boolean enableSu = false;
     private Boolean enableSplash = false;
     private String version = "";

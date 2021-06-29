@@ -94,7 +94,7 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
-		logger.trace("scan all signRequest to clean");
+		logger.debug("scan all signRequest to clean");
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {

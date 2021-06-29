@@ -20,7 +20,6 @@ global:
     infinite-scrolling: true
     return-to-home-after-sign: false
     signed-suffix: "_signé"
-    trash-keep-delay: 0
 
 #tomcat:
 #    ajp:

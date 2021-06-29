@@ -194,6 +194,11 @@
             <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="user/signrequests/includes/workspace"></div>
             </th:block>
+            <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                <div class="alert alert-success">
+                    Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
+                </div>
+            </th:block>
             <div th:if="${(toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
                 <div class="card col-lg-10 mx-auto mb-1">

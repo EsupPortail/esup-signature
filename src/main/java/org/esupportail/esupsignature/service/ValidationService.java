@@ -61,7 +61,7 @@ public class ValidationService {
             } else {
                 documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(docInputStream));
             }
-            logger.info("validate with : " + documentValidator.getClass());
+            logger.debug("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
             documentValidator.setLocale(Locale.FRENCH);
