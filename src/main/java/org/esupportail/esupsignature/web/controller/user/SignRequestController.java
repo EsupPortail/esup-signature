@@ -157,10 +157,10 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
-        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
-            return "redirect:/user/";
-        }
+//        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+//            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
+//            return "redirect:/user/";
+//        }
         if (signRequest.getLastNotifDate() == null) {
             model.addAttribute("notifTime", 0);
         } else {
@@ -200,7 +200,9 @@ public class SignRequestController {
             }
         }
         Reports reports = validationService.validate(id);
-        model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        if(reports != null) {
+            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("isNotSigned", signRequestService.isNotSigned(signRequest));

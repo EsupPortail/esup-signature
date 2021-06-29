@@ -205,6 +205,9 @@ public class SignBookService {
             liveWorkflowStep.getSignRequestParams().clear();
         }
         signBook.setStatus(SignRequestStatus.deleted);
+        signBook.setUpdateDate(new Date());
+        signBook.setUpdateBy(userEppn);
+        logger.info("delete signbook : " + signBookId);
     }
 
     @Transactional
@@ -220,6 +223,7 @@ public class SignBookService {
         }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
+        logger.info("definitive delete signbook : " + signBookId);
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {

@@ -583,8 +583,13 @@ public class SignRequestService {
 
 	@Transactional
 	public boolean isNotSigned(SignRequest signRequest) throws IOException {
-		byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-		return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+		List<Document> documents = getToSignDocuments(signRequest.getId());
+		if(documents.size() > 0) {
+			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
+			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+		} else {
+			return true;
+		}
 	}
 
 	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
