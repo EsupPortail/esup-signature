@@ -47,5 +47,4 @@ export class WheelDetector extends EventFactory {
         return direction;
     }
 
-
 }

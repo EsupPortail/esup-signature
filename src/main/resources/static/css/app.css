@@ -520,7 +520,8 @@ input:checked + .slider:before {
 }
 
 #pdf {
-    position: relative;
+    position: center;
+
 }
 
 .cross {

@@ -69,6 +69,9 @@ export class SignUi {
                     });
                 })
                 $("#reportModalBtn").removeClass("d-none");
+                $("#reportModalBtn").on('click', function (){
+                    $("#alertSign").remove();
+                });
             }
         });
     }

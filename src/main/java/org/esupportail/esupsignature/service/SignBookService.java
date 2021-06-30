@@ -272,18 +272,18 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(Long signBookId, String authUser) throws EsupSignatureException {
+    public void completeSignBook(Long signBookId, String userEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
-                mailService.sendCompletedMail(signBook, authUser);
+                mailService.sendCompletedMail(signBook, userEppn);
                 mailService.sendCompletedCCMail(signBook);
             } catch (EsupSignatureMailException e) {
                 throw new EsupSignatureException(e.getMessage());
             }
         }
-        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
-        signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
+        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
+        signRequestService.completeSignRequests(signBook.getSignRequests(), userEppn);
     }
 
     public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException {
@@ -453,7 +453,7 @@ public class SignBookService {
     }
 
     public void refuse(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
-        mailService.sendRefusedMail(signBook, comment);
+        mailService.sendRefusedMail(signBook, comment, userEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
         }

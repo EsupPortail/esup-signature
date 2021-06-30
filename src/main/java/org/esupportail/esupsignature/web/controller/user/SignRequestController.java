@@ -205,6 +205,7 @@ public class SignRequestController {
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
+        model.addAttribute("editable", signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.pending)));
         model.addAttribute("isNotSigned", signRequestService.isNotSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -592,7 +593,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
