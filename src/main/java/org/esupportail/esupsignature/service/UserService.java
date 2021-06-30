@@ -489,9 +489,9 @@ public class UserService {
     }
 
     @Transactional
-    public void setDefaultSignImage(String authUserEppn, int signImaeNumber) {
+    public void setDefaultSignImage(String authUserEppn, int signImageNumber) {
         User user = getUserByEppn(authUserEppn);
-        user.setDefaultSignImageNumber(signImaeNumber);
+        user.setDefaultSignImageNumber(signImageNumber);
     }
 
     public List<JsonExternalUserInfo> getJsonExternalUserInfos(List<String> emails, List<String> names, List<String> firstnames, List<String> phones) {

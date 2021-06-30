@@ -12,6 +12,7 @@ export class WorkspacePdf {
         this.action = action;
         this.dataId = dataId;
         this.formId = formId;
+        this.signImageNumber = signImageNumber;
         this.currentSignType = currentSignType;
         this.postits = postits;
         this.notSigned = notSigned;
@@ -53,10 +54,16 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initListeners();
         this.initDataFields(fields);
+        this.wsTabs = $("#ws-tabs");
         if ((formId == null && workflow == null) || (currentStepMultiSign !== null && currentStepMultiSign) || currentSignRequestParamses.length === 0) {
             $("#second-tools").toggleClass("d-none d-flex");
-            if($("#ws-tabs").length) {
-                $("#workspace").css("margin-top", "212px");
+            if(this.wsTabs.length) {
+                this.autocollapse();
+                let self = this;
+                $(window).on('resize', function () {
+                    self.autocollapse();
+                });
+                $("#workspace").css("margin-top", "214px");
             } else {
                 $("#workspace").css("margin-top", "170px");
             }
@@ -187,7 +194,7 @@ export class WorkspacePdf {
             targetPageNumber = signPageNumber;
             this.firstInsertSign = false;
         }
-        this.signPosition.addSign(targetPageNumber, false, 0, forceSignNumber);
+        this.signPosition.addSign(targetPageNumber, false, this.signImageNumber, forceSignNumber);
         if((this.signType === "nexuSign" || this.signType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
         }
@@ -974,9 +981,41 @@ export class WorkspacePdf {
         }
     }
 
-
     initFormAction() {
         console.debug("eval : " + this.action);
         jQuery.globalEval(this.action);
+    }
+
+    autocollapse() {
+        var menu = "#ws-tabs";
+        var maxHeight = 50;
+        var navHeight = this.wsTabs.innerHeight();
+        if (navHeight >= maxHeight) {
+            $(menu + ' .dropdown').removeClass('d-none');
+            while (navHeight > maxHeight) {
+                //  add child to dropdown
+                var children = this.wsTabs.children(menu + ' li:not(:last-child)');
+                var count = children.length;
+                $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
+                navHeight = this.wsTabs.innerHeight();
+            }
+        }
+        else {
+            var collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
+            if (collapsed.length===0) {
+                $(menu + ' .dropdown').addClass('d-none');
+            }
+            while (navHeight < maxHeight && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > 0) {
+                //  remove child from dropdown
+                collapsed = $(menu + ' .dropdown-menu').children('li');
+                $(collapsed[0]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
+                navHeight = this.wsTabs.innerHeight();
+            }
+
+            if (navHeight > maxHeight) {
+                this.autocollapse();
+            }
+
+        }
     }
 }
