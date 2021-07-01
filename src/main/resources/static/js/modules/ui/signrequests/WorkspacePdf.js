@@ -938,24 +938,27 @@ export class WorkspacePdf {
 
     initChangeModeSelector() {
         let data = [];
-        data.push({
-            innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
-            text: 'Annoter',
-            value: 'comment'
-        });
-        data.push({
-            innerHTML: '<div style="width: 200px;"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>',
-            text: 'Lecture',
-            value: 'read'
-        });
         if(this.signable) {
-            data.unshift({
+            data.push({
                 innerHTML: '<div style="width: 200px;"><i style="font-size: 0.6rem;" class="fas fa-signature text-success"></i><i class="fas fa-pen text-success pr-2"></i></i> <b>Remplir et signer</b></div>',
                 text: 'Remplir et signer',
                 value: 'sign',
                 selected: true
             });
         }
+        if(this.status === "draft" || this.status === "pending" || this.postits.length > 0) {
+            data.push({
+                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
+                text: 'Annoter',
+                value: 'comment'
+            });
+        }
+        data.push({
+            innerHTML: '<div style="width: 200px;"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>',
+            text: 'Lecture',
+            value: 'read'
+        });
+
         if($("#changeMode").length) {
             this.changeModeSelector = new SlimSelect({
                 select: '#changeMode',
