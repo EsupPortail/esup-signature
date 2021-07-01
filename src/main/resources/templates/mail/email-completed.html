@@ -28,7 +28,7 @@
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
             <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
             <th:block th:each="signRequest : ${signBook.signRequests}" >
-                <th:block th:each="action : ${signRequest.recipientHasSigned}" >
+                <th:block th:each="action : ${signRequest.orderedRecipientHasSigned}" >
                     <th:block th:if="${action.value.actionType.name() == 'signed'}" >
                     <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
                         <span th:text="${action.key.user.firstname + ' ' + action.key.user.name} + ' le '" ></span>
