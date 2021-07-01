@@ -48,7 +48,7 @@
                                     <br/>
                                     <table class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                        <tr th:title="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" >
+                                        <tr th:title="${signRequest.recipientHasSigned.get(recipient) != null ? #dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm') : ''}" >
                                             <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td class="text-right">
                                                 <i title="A signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fas fa-check-circle text-success"></i>
