@@ -25,7 +25,10 @@ export class SignUi {
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
         this.initListeners();
-        this.initReportModal();
+        if(status !== "exported") {
+            this.initReportModal();
+        }
+
     }
 
     initListeners() {
@@ -66,6 +69,9 @@ export class SignUi {
                     });
                 })
                 $("#reportModalBtn").removeClass("d-none");
+                $("#reportModalBtn").on('click', function (){
+                    $("#alertSign").remove();
+                });
             }
         });
     }

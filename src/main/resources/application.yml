@@ -15,7 +15,7 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
-    hours-before-refresh-notif: 24
+    hours-before-refresh-notif: 0
     share-mode: 3
     infinite-scrolling: true
     return-to-home-after-sign: false

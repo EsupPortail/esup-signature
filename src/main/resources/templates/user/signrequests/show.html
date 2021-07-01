@@ -106,9 +106,9 @@
         <nav th:insert="/fragments/sides/side-sign"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
+                <li th:if="${editable}" class="breadcrumb-item"><a href="/user/signrequests">Tableau
                     de bord</a></li>
-                <li th:unless="${signRequest.createBy.eppn == userEppn}" class="breadcrumb-item"><a
+                <li th:unless="${editable}" class="breadcrumb-item"><a
                         href="/user/signrequests/?statusFilter=tosign">Documents à signer</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.title}"></span>&nbsp;du&nbsp;<span
@@ -132,7 +132,7 @@
                            th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && signRequest.createBy.eppn == userEppn}">
+                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && editable}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
                     </li>
@@ -177,7 +177,7 @@
                     </li>
                 </ul>
             </div>
-            <footer th:replace="fragments/tools"></footer>
+            <footer th:replace="user/signrequests/includes/tools"></footer>
             <div style="position: absolute;left: 270px;top: 180px;">
                 <th:block th:each="postit, iterate : ${postits}">
                     <div class="postit-global d-none"
@@ -193,6 +193,11 @@
             </div>
             <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="user/signrequests/includes/workspace"></div>
+            </th:block>
+            <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                <div class="alert alert-success">
+                    Le document contenu dans cette demande de signature a été archivé. Vous avez la posibilité de le télécharger à l'aide du bouton en bas à droite.
+                </div>
             </th:block>
             <div th:if="${(toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                  class="workspace alert alert-secondary row">
@@ -620,7 +625,7 @@
     </div>
 </div>
 
-<div th:if="${signRequest.createBy.eppn == userEppn}"
+<div th:if="${editable}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -674,9 +679,7 @@
             <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="detailsModalLabel">Details de la demande</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div th:replace="user/signrequests/includes/details"></div>

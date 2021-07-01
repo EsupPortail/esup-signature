@@ -306,13 +306,17 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
-	public SignRequest createSignRequest(SignBook signBook, String userEppn, String authUserEppn) {
+	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
 		SignRequest signRequest = new SignRequest();
-		if(signBook.getSignRequests().size() == 0) {
-			signRequest.setTitle(signBook.getName());
+		if(name == null || name.isEmpty()) {
+			if (signBook.getSignRequests().size() == 0) {
+				signRequest.setTitle(signBook.getName());
+			} else {
+				signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+			}
 		} else {
-			signRequest.setTitle(signBook.getName() + "_" + signBook.getSignRequests().size());
+			signRequest.setTitle(name);
 		}
 		signRequest.setToken(String.valueOf(generateUniqueId()));
 		signRequest.setCreateBy(user);
@@ -579,11 +583,17 @@ public class SignRequestService {
 
 	@Transactional
 	public boolean isNotSigned(SignRequest signRequest) throws IOException {
-		byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
-		return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+		List<Document> documents = getToSignDocuments(signRequest.getId());
+		if(documents.size() > 0) {
+			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
+			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+		} else {
+			return true;
+		}
 	}
 
 	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
+		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		List<Document> toSignDocuments = new ArrayList<>();
 		for(Document document : getToSignDocuments(signRequest.getId())) {
@@ -635,6 +645,7 @@ public class SignRequestService {
 			}
 			pkcs12SignatureToken.close();
 			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
+			logger.info("certSign ok for signRequest : " + signRequest.getId());
 		} catch (EsupSignatureKeystoreException e) {
 			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
 			throw new EsupSignatureKeystoreException(e.getMessage(), e);
@@ -1241,7 +1252,7 @@ public class SignRequestService {
 	public List<String> getSignImagesForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userEppn, authUserEppn);
 		signRequestRef.setSignable(signRequest.getSignable());
-		List<String> signImages = new ArrayList<>();
+		LinkedList<String> signImages = new LinkedList<>();
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
@@ -1418,7 +1429,7 @@ public class SignRequestService {
 		return signRequestRepository.findSignRequestByCommentsContains(comment);
 	}
 
-	public List<Recipient> getRecipientsNameFromSignRequestPage(Page<SignRequest> signRequests) {
+	public List<Recipient> getRecipientsNameFromSignRequests(List<SignRequest> signRequests) {
 		List<Recipient> recipientNames = new ArrayList<>();
 		for (SignRequest signRequest : signRequests) {
 			recipientNames.addAll(signRequest.getRecipientHasSigned().keySet());

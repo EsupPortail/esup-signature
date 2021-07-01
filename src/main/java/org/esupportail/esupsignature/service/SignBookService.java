@@ -128,7 +128,8 @@ public class SignBookService {
         signBook.setExternal(external);
         signBook.setLiveWorkflow(liveWorkflowService.create());
         signBookRepository.save(signBook);
-        signBook.setName(generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate));
+        String name = generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate);
+        signBook.setName(name);
         return signBook;
     }
 
@@ -204,6 +205,9 @@ public class SignBookService {
             liveWorkflowStep.getSignRequestParams().clear();
         }
         signBook.setStatus(SignRequestStatus.deleted);
+        signBook.setUpdateDate(new Date());
+        signBook.setUpdateBy(userEppn);
+        logger.info("delete signbook : " + signBookId);
     }
 
     @Transactional
@@ -219,6 +223,7 @@ public class SignBookService {
         }
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
+        logger.info("definitive delete signbook : " + signBookId);
     }
 
     public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
@@ -267,18 +272,18 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(Long signBookId, String authUser) throws EsupSignatureException {
+    public void completeSignBook(Long signBookId, String userEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
-                mailService.sendCompletedMail(signBook, authUser);
+                mailService.sendCompletedMail(signBook, userEppn);
                 mailService.sendCompletedCCMail(signBook);
             } catch (EsupSignatureMailException e) {
                 throw new EsupSignatureException(e.getMessage());
             }
         }
-        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", authUser, authUser);
-        signRequestService.completeSignRequests(signBook.getSignRequests(), authUser);
+        updateStatus(signBook, SignRequestStatus.completed, "Tous les documents sont signés", "SUCCESS", "", userEppn, userEppn);
+        signRequestService.completeSignRequests(signBook.getSignRequests(), userEppn);
     }
 
     public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException {
@@ -448,7 +453,7 @@ public class SignBookService {
     }
 
     public void refuse(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
-        mailService.sendRefusedMail(signBook, comment);
+        mailService.sendRefusedMail(signBook, comment, userEppn);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
         }
@@ -560,7 +565,7 @@ public class SignBookService {
     public void addDocumentsToSignBook(SignBook signBook, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
-            SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
+            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
             i++;
         }
@@ -577,7 +582,7 @@ public class SignBookService {
     public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, null, "","", authUser, false);
-        SignRequest signRequest = signRequestService.createSignRequest(signBook, authUserEppn, authUserEppn);
+        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, authUserEppn, authUserEppn);
         signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;
