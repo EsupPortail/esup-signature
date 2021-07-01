@@ -242,7 +242,7 @@
                                     <div th:if="${step.changeable == true}" class="form-group mb-3">
                                         <label><span th:text="'Merci de saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                         <select class="select-users" th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
-                                                multiple="multiple" name="recipientEmails" required="required">
+                                                multiple="multiple" name="recipientEmails" required="required" th:maxlength="${step.maxRecipients}">
                                             <th:block th:each="user : ${step.users}">
                                                 <option th:if="${user.email != null && user.email != 'generic'}" selected="selected"
                                                         th:text="${user.email}"

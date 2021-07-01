@@ -42,9 +42,10 @@ public class WorkflowController {
                           @RequestParam("signType") String signType,
                           @RequestParam(name="description", required = false) String description,
                           @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
+                          @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, userEppn, true);
+        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, userEppn, true);
         return "redirect:/user/workflows/" + id;
     }
 
@@ -55,12 +56,13 @@ public class WorkflowController {
                                      @PathVariable("step") Integer step,
                                      @RequestParam(name="signType") SignType signType,
                                      @RequestParam(name="description") String description,
+                                     @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                                      @RequestParam(name="changeable", required = false) Boolean changeable,
                                      @RequestParam(name="multiSign", required = false) Boolean multiSign,
                                      @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete);
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients);
         return "redirect:/user/workflows/" + id;
     }
 

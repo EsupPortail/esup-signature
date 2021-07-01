@@ -509,7 +509,7 @@ export class SignRequestParams  extends EventFactory {
         $("#extraTypeDiv_" + this.id).toggle();
         $("#extraType_" + this.id).toggleClass("btn-outline-light");
         this.extraType = !this.extraType;
-        // this.updateSize();
+        this.updateSize();
         this.refreshExtraDiv();
     }
 

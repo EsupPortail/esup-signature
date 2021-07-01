@@ -26,6 +26,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 
 @ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
@@ -90,7 +94,7 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
-		logger.trace("scan all signRequest to export");
+		logger.debug("scan all signRequest to clean");
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
@@ -98,6 +102,21 @@ public class ScheduledTaskService {
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");
+		}
+		if(globalProperties.getTrashKeepDelay() > -1) {
+			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
+			for (SignBook signBook : signBooks) {
+				if (signBook.getUpdateDate() != null) {
+					LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
+					LocalDateTime nowDate = LocalDateTime.ofInstant(new Date().toInstant(), ZoneId.systemDefault());
+					long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
+					if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
+						signBookService.deleteDefinitive(signBook.getId());
+					}
+				}
+			}
+		} else {
+			logger.debug("cleaning trashes was skipped because neg value");
 		}
 	}
 

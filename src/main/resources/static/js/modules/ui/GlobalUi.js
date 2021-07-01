@@ -211,7 +211,7 @@ export class GlobalUi {
             var _opened = $(this).hasClass("collapse show");
             if (_opened === true && !clickover.hasClass("toggle-mini-menu")) {
                 let id = $(this).attr('id').split('-')[1];
-                $("#menu-toggle-" + id).click();
+                $("#menu-toggle_" + id).click();
             }
         });
         var container = document.getElementsByClassName('user-infos')[0];
@@ -343,7 +343,11 @@ export class GlobalUi {
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'), csrf);
+            let limit = null;
+            if($(this).attr("maxLength") != null) {
+                limit = parseInt($(this).attr("maxLength"));
+            }
+            new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
         });
     }
 

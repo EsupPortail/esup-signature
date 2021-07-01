@@ -3,14 +3,16 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<body class="bg-light">
-<div class="container">
-	<div class="card rounded-0 m-1">
-		<div class="card-header rounded-0 bg-dark">
+<body>
+<table width="90%" border="0" style="width: 90%;" bgcolor="#ffffff">
+	<tr>
+		<td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
 			<img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
 			<img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
-		</div>
-		<div class="card-body">
+		</td>
+	</tr>
+	<tr>
+		<td style="width:100%; padding:10px;background-color:#f8f9fa;">
 			<p>Bonjour,</p>
 			<p>Voici la liste des demandes de signatures en attente : </p>
 			<table class="table table-borderless">
@@ -36,11 +38,13 @@
 				</th:block>
 				</tbody>
 			</table>
-		</div>
-		<div class="card-footer rounded-0 bg-secondary justify-content-center text-center" style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center" bgcolor="#6c757d" align="center">
+		</td>
+	</tr>
+	<tr>
+		<td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
 			<span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
-		</div>
-	</div>
-</div>
+		</td>
+	</tr>
+</table>
 </body>
 </html>

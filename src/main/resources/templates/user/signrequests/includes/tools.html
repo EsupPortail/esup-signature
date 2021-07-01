@@ -3,17 +3,12 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div id="tools" class="tools" th:if="${toSignDocument != null}">
 	<div class="d-flex mb-1">
-		<!--                    <a th:if="${signRequest.createBy.eppn == userEppn && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
-		<a th:if="${signRequest.createBy.eppn == userEppn}"
-		   class="btn btn-light btn-outline-dark me-1 d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
-			<i class="fas fa-info-circle"></i></a>
-		<a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn && (
-                    signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
-			<i class="fas fa-pencil-alt"></i>
-		</a>
+		<!--                    <a th:if="${editable && (signRequest.parentSignBook.status == ${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" title="Modifier" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'"><i class="fas fa-pencil-alt"></i></a>-->
+		<a class="btn btn-light btn-outline-dark d-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+		<i class="fas fa-info-circle"></i></a>
+		<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
-			<div class="border ms-3 me-3 d-none d-lg-block"></div>
-			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark ms-1"><i
+			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i
 					class="fas fa-search-minus"></i></button>
 			<button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark ms-1"><i
 					class="fas fa-search-plus"></i></button>
@@ -51,6 +46,13 @@
 				</button>
 			</form>
 		</th:block>
+		<th:block th:if="${editable}">
+			<div class="border ms-3 me-3 d-none d-lg-block ms-1"></div>
+			<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.createBy.eppn == signRequest.parentSignBook.liveWorkflow.workflow.createBy.eppn)
+						&& (signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/' + ${signRequest.parentSignBook.id} + '?form'">
+				<i class="fas fa-pencil-alt"></i>
+			</a>
+		</th:block>
 	</div>
 	<div id="second-tools" class="d-none mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
@@ -84,7 +86,7 @@
 				<button th:if="${isNotSigned}" id="addMinus" title="Ajouter un trait" class="btn btn-light btn-outline-primary ms-1 d-none"><i class="fas fa-minus"></i></button>
 				<button th:if="${isNotSigned}" id="addText" title="Ajouter un texte" class="btn btn-light btn-outline-primary ms-1"><i class="fas fa-i-cursor"></i><i class="fas fa-font"></i></button>
 			</div>
-			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none;">
+			<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" style="display: none;">
 				<button id="addCommentButton" title="Ajouter une annotation"
 						class="btn btn-outline-primary ms-1">
 					<i class="fas fa-comment"></i> Ajouter une annotation
@@ -108,6 +110,13 @@
 				</a>
 			</li>
 		</th:block>
+		<li class="nav-item dropdown d-none">
+			<a class="nav-link dropdown-toggle" href="#" id="DropdownMenu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-diplay="static">
+				Suite des documents
+			</a>
+			<ul class="dropdown-menu p-2 dropdown-menu-right" aria-labelledby="DropdownMenu">
+			</ul>
+		</li>
 	</ul>
 </div>
 </html>

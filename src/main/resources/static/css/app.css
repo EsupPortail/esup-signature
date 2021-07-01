@@ -519,10 +519,6 @@ input:checked + .slider:before {
     display: flex;
 }
 
-#pdf {
-    position: relative;
-}
-
 .cross {
     z-index: 3;
     background-position: bottom left;
@@ -648,7 +644,7 @@ input:checked + .slider:before {
     top: 81px;
     padding-top: 5px;
     background-color: white;
-    width: 100%;
+    width: calc(100vw - 275px);
     z-index: 1028;
     position: fixed;
     padding-left: 10px;
@@ -1026,7 +1022,7 @@ height: 100%;
 }
 
 .file-tab {
-    width: 200px;
+    /*width: 200px;*/
     overflow: hidden;
     text-overflow: ellipsis;
 }

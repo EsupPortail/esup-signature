@@ -128,8 +128,9 @@ public class WorkflowAdminController {
 						  @RequestParam(name="description", required = false) String description,
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
+						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, authUserEppn, false);
+		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false);
 		return "redirect:/admin/workflows/" + id;
 	}
 
@@ -139,12 +140,13 @@ public class WorkflowAdminController {
 									 @PathVariable("step") Integer step,
 									 @RequestParam(name="signType") SignType signType,
 									 @RequestParam(name="description") String description,
+									 @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 									 @RequestParam(name="repeatable", required = false) Boolean repeatable,
 									 @RequestParam(name="multiSign", required = false) Boolean multiSign,
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
 									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete);
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients);
 		return "redirect:/admin/workflows/" + id;
 	}
 
