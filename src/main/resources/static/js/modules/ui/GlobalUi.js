@@ -343,7 +343,11 @@ export class GlobalUi {
         $("select[class='select-users']").each(function () {
             let selectId = $(this).attr('id');
             console.info("auto enable select-user for : " + selectId);
-            new SelectUser(selectId, null, $(this).attr('data-signrequest-id'), csrf);
+            let limit = null;
+            if($(this).attr("maxLength") != null) {
+                limit = parseInt($(this).attr("maxLength"));
+            }
+            new SelectUser(selectId, limit, $(this).attr('data-signrequest-id'), csrf);
         });
     }
 

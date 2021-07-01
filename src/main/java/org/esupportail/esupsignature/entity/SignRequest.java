@@ -230,13 +230,20 @@ public class SignRequest {
     }
 
     public Map<Recipient, Action> getRecipientHasSigned() {
-        Set<Map.Entry<Recipient, Action>> entries = recipientHasSigned.entrySet().stream().sorted(Comparator.comparing(o -> o.getValue().getDate(), Comparator.nullsLast(Comparator.reverseOrder()))).collect(Collectors.toCollection(LinkedHashSet::new));
-        Map<Recipient, Action> recipientActionMap = new HashMap<>();
-        for(Map.Entry<Recipient, Action> entry : entries)
-        {
-            recipientActionMap.put(entry.getKey(), entry.getValue());
+        return recipientHasSigned;
+    }
+
+    public Map<Recipient, Action> getOrderedRecipientHasSigned() {
+        if(recipientHasSigned.size() > 0) {
+            Set<Map.Entry<Recipient, Action>> entries = recipientHasSigned.entrySet().stream().sorted((o1, o2) -> o2.getValue().getDate().compareTo(o1.getValue().getDate())).collect(Collectors.toCollection(LinkedHashSet::new));
+            Map<Recipient, Action> recipientActionMap = new LinkedHashMap<>();
+            for (Map.Entry<Recipient, Action> entry : entries) {
+                recipientActionMap.put(entry.getKey(), entry.getValue());
+            }
+            return recipientActionMap;
+        } else {
+            return recipientHasSigned;
         }
-        return recipientActionMap;
     }
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {

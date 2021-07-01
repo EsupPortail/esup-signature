@@ -19,6 +19,10 @@
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
                                 </div>
                                 <div class="form-group mb-3">
+                                    <label>Nombre maximum de participants:</label>
+                                    <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}"/>
+                                </div>
+                                <div class="form-group mb-3">
                                     <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
                                     <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}">
@@ -142,5 +146,4 @@
         </div>
     </div>
 </div>
-
 </html>
