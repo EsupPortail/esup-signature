@@ -223,7 +223,7 @@ public class SignRequestController {
         if(signRequest.getSignable()
             && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
             && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
-            model.addAttribute("message", new JsonMessage("info", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            model.addAttribute("message", new JsonMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {

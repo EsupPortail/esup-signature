@@ -202,7 +202,9 @@ public class SignBookService {
             signRequestService.delete(signRequestId, userEppn);
         }
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            liveWorkflowStep.getSignRequestParams().clear();
+            if(liveWorkflowStep.getSignRequestParams() != null) {
+                liveWorkflowStep.getSignRequestParams().clear();
+            }
         }
         signBook.setStatus(SignRequestStatus.deleted);
         signBook.setUpdateDate(new Date());
