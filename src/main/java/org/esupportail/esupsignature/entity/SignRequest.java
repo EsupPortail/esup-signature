@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
@@ -229,7 +230,13 @@ public class SignRequest {
     }
 
     public Map<Recipient, Action> getRecipientHasSigned() {
-        return recipientHasSigned;
+        Set<Map.Entry<Recipient, Action>> entries = recipientHasSigned.entrySet().stream().sorted(Comparator.comparing(o -> o.getValue().getDate(), Comparator.nullsLast(Comparator.reverseOrder()))).collect(Collectors.toCollection(LinkedHashSet::new));
+        Map<Recipient, Action> recipientActionMap = new HashMap<>();
+        for(Map.Entry<Recipient, Action> entry : entries)
+        {
+            recipientActionMap.put(entry.getKey(), entry.getValue());
+        }
+        return recipientActionMap;
     }
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {

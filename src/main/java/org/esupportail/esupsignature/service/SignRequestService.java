@@ -246,6 +246,7 @@ public class SignRequestService {
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 			signRequests.addAll(getSharedSignedSignRequests(userEppn));
+			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
 		}
 		return new ArrayList<>(signRequests);
 	}
