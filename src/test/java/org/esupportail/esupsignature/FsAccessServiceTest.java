@@ -31,7 +31,7 @@ public class FsAccessServiceTest {
     @Resource
     private GlobalProperties globalProperties;
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testSmbAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
         assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -49,7 +49,7 @@ public class FsAccessServiceTest {
 
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testCmisAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.cmis);
         assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -66,7 +66,7 @@ public class FsAccessServiceTest {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testVfsAccessImpl() {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.vfs);
         assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
@@ -83,7 +83,7 @@ public class FsAccessServiceTest {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test(timeout = 20000)
     public void testArchiveUri() throws EsupSignatureFsException {
         assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()));
