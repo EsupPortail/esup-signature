@@ -22,10 +22,8 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <div class="input-group mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text">Filtrer</span>
-                    </div>
-                    <select name="displayWorkflowType" class="form-control" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
+                    <span class="input-group-text">Filtrer</span>
+                    <select name="displayWorkflowType" class="form-select" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
                         <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
                         <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
                         <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
