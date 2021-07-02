@@ -546,14 +546,14 @@ public class SignBookService {
         dispatchSignRequestParams(signBook);
         if (pending != null && pending) {
             pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn(), forceSendEmail);
-            if (comment != null && !comment.isEmpty()) {
-                for (SignRequest signRequest : signBook.getSignRequests()) {
-                    commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
-                    signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
-                }
-            }
         } else {
-            message = "Après vérification, vous devez confirmer l'envoi pour finaliser la demande";
+            message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
+        }
+        if (comment != null && !comment.isEmpty()) {
+            for (SignRequest signRequest : signBook.getSignRequests()) {
+                commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
+                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
+            }
         }
         Map<SignBook, String> signBookStringMap = new HashMap<>();
         signBookStringMap.put(signBook, message);

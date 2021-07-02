@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 
 <!-- LOTL Info -->
-<div class="lotl-info row mb-4" th:fragment="lotl-info-summary(downloadResult, parsingResult, validationResult)">
+<div class="lotl-info mb-4" th:fragment="lotl-info-summary(downloadResult, parsingResult, validationResult)">
 	<div th:with="status=${(parsingResult.resultExist and validationResult.resultExist and validationResult.isValid())?
 				((downloadResult.isSynchronized() and parsingResult.isSynchronized() and validationResult.isSynchronized())?'success':'warning'):
 				'danger'}" 
