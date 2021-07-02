@@ -690,6 +690,24 @@ export class WorkspacePdf {
         $('#pdf').mousemove(e => this.moveAction(e));
     }
 
+    toggleCommentMode() {
+        if (this.mode === 'comment') {
+            this.enableReadMode();
+            return;
+        }
+        this.enableCommentMode()
+    }
+
+
+    toggleSignMode() {
+        if (this.mode === 'sign') {
+            this.enableReadMode();
+            return;
+        }
+        this.enableSignMode();
+    }
+
+
     enableReadMode() {
         console.info("enable read mode");
         this.disableAllModes();
@@ -703,14 +721,6 @@ export class WorkspacePdf {
         $('#rotateleft').css('opacity', 1);
         $('#rotateright').css('opacity', 1);
         this.showAllPostits();
-    }
-
-    toggleCommentMode() {
-        if (this.mode === 'comment') {
-            this.enableReadMode();
-            return;
-        }
-        this.enableCommentMode()
     }
 
     enableCommentMode() {
@@ -740,14 +750,7 @@ export class WorkspacePdf {
             $(this).css('width', '0px');
         })
         $('#hideCommentButton').on('click', e => this.hideComment(e));
-    }
-
-    toggleSignMode() {
-        if (this.mode === 'sign') {
-            this.enableReadMode();
-            return;
-        }
-        this.enableSignMode();
+        this.showAllPostits();
     }
 
     enableSignMode() {
