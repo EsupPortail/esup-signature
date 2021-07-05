@@ -89,12 +89,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentRequire) {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(Objects.requireNonNullElse(changeable, false));
         workflowStep.setRepeatable(Objects.requireNonNullElse(repeatable, false));
+        workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setMultiSign(Objects.requireNonNullElse(multiSign, false));
         workflowStep.setAllSignToComplete(Objects.requireNonNullElse(allSignToComplete, false));
         if(maxRecipients != null) {
@@ -103,12 +104,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite) {
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire) {
         Workflow workflow = workflowService.getById(workflowId);
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflowStep.setMaxRecipients(maxRecipients);
+        workflowStep.setAttachmentRequire(attachmentRequire);
         workflow.getWorkflowSteps().add(workflowStep);
         if(recipientsEmails != null && saveFavorite) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));

@@ -34,6 +34,8 @@ public class WorkflowStep {
 
     private Boolean allSignToComplete = false;
 
+    private Boolean attachmentRequire = false;
+
     private Boolean multiSign = true;
 
     @Enumerated(EnumType.STRING)
@@ -80,6 +82,14 @@ public class WorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getAttachmentRequire() {
+        return attachmentRequire;
+    }
+
+    public void setAttachmentRequire(Boolean attachmentRequire) {
+        this.attachmentRequire = attachmentRequire;
     }
 
     public Boolean getMultiSign() {
