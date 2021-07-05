@@ -26,6 +26,8 @@
             </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Motif du refus : </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                <br>
                 <span th:text="${comment}" style="box-sizing:border-box;" ></span>
             </p>
             <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >

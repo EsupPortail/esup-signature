@@ -176,6 +176,7 @@ public class MailService {
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         ctx.setVariable("userService", userService);
         ctx.setVariable("comment", comment);
+        ctx.setVariable("user", user);
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         toEmails.add(signBook.getCreateBy().getEmail());
