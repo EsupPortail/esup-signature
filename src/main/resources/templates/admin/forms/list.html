@@ -65,6 +65,10 @@
                                                    th:href="'/admin/forms/' + ${form.id} + '/fields'">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
                                                 </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
+                                                   th:href="'/admin/forms/export/' + ${form.id}">
+                                                    <i class="fas fa-file-export pr-2"></i> Exporter la configuration
+                                                </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/signs'">
                                                     <i class="fas fa-signature pr-2"></i> Configurer les champs signatures
