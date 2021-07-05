@@ -1853,4 +1853,8 @@ progress:before {
     animation-iteration-count: 3 !important;
 }
 
+.workflow-button {
+    z-index: 10;
+}
+
 @keyframes blink { 50% { border-color:#fff !important; }  }

@@ -93,14 +93,31 @@ export class GlobalUi {
             wizUi.startByDocs();
         });
 
-        $(".startWizardWorkflowButton").each(function() {
+        $(".start-wizard-workflow-button").each(function() {
             $(this).on('click', function(e) {
                 let wizUi = new WizUi($(this).attr('data-workflow-id'), $("#wizFrameWorkflow"), $(this).attr('data-workflow-name'), csrf);
                 wizUi.startByDocs();
+                $("#wizModalWorkflow").modal('show');
             });
         });
 
-        $("#startWizardButton").on('click', function(e) {
+        $('.workflow-delete-button').each(function(e) {
+            $(this).on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $('#deleteWorkflow_' + this.getAttribute('data-id')).submit();
+            })
+        });
+
+        $('.workflow-update-button').each(function(e) {
+            $(this).on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                location.href = "/user/workflows/" + this.getAttribute('data-id');
+            })
+        });
+
+        $("#start-wizard-button").on('click', function(e) {
             let wizUi = new WizUi("", $("#wizFrame"), "Circuit personnalisé", csrf);
             wizUi.startByRecipients();
         });
