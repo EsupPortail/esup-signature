@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.changeModeSelector = null;
@@ -22,6 +22,7 @@ export class WorkspacePdf {
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.attachmentRequire = attachmentRequire;
         this.forcePageNum = null;
         this.pointItEnable = true;
         this.firstInsertSign = true;
@@ -334,28 +335,32 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
-                        bootbox.alert("Merci de placer la signature", null);
+                    if (self.attachmentRequire) {
+                        bootbox.alert("Vous devez obligatoirement joindre un document à cette étape", null);
                     } else {
-                        if(self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
-                            bootbox.confirm({
-                                message: "Attention vous allez signez ce document sans visuel",
-                                buttons: {
-                                    cancel: {
-                                        label: '<i class="fa fa-times"></i> Annuler'
-                                    },
-                                    confirm: {
-                                        label: '<i class="fa fa-check"></i> Confirmer'
-                                    }
-                                },
-                                callback: function (result) {
-                                    if(result) {
-                                        self.confirmLaunchSignModal();
-                                    }
-                                }
-                            });
+                        if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
+                            bootbox.alert("Merci de placer la signature", null);
                         } else {
-                            self.confirmLaunchSignModal();
+                            if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
+                                bootbox.confirm({
+                                    message: "Attention vous allez signez ce document sans visuel",
+                                    buttons: {
+                                        cancel: {
+                                            label: '<i class="fa fa-times"></i> Annuler'
+                                        },
+                                        confirm: {
+                                            label: '<i class="fa fa-check"></i> Confirmer'
+                                        }
+                                    },
+                                    callback: function (result) {
+                                        if (result) {
+                                            self.confirmLaunchSignModal();
+                                        }
+                                    }
+                                });
+                            } else {
+                                self.confirmLaunchSignModal();
+                            }
                         }
                     }
                 }

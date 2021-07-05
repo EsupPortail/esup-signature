@@ -22,8 +22,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -577,5 +576,39 @@ public class WorkflowService {
         workflowsManaged.addAll(this.getWorkflowsByUser(manager.getEppn(), manager.getEppn()));
         return workflowsManaged;
     }
+
+    @Transactional
+    public InputStream getJsonWorkflowSetup(Long id) throws IOException {
+        Workflow workflow = getById(id);
+        File jsonFile = fileService.getTempFile("json");
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writer().writeValue(jsonFile, workflow);
+        return new FileInputStream(jsonFile);
+    }
+
+    @Transactional
+    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException {
+        Workflow workflow = getById(id);
+        String savedName = workflow.getName();
+        String savedTitle = workflow.getTitle();
+        ObjectMapper objectMapper = new ObjectMapper();
+        Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
+        for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
+            Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
+            if(optionalWorkflowStep.isPresent()) {
+                WorkflowStep workflowStep = optionalWorkflowStep.get();
+                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentRequire());
+            } else {
+                WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getUsers().stream().map(User::getEmail).collect(Collectors.toList()).toArray(String[]::new));
+                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentRequire());
+                workflow.getWorkflowSteps().add(newWorkflowStep);
+            }
+        }
+        update(workflow, workflowSetup.getCreateBy(), workflowSetup.getManagers().toArray(String[]::new), workflowSetup.getManagers());
+        workflow.setName(savedName);
+        workflow.setTitle(savedTitle);
+        return;
+    }
+
 }
 

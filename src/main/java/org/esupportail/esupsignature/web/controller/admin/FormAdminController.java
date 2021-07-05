@@ -293,4 +293,33 @@ public class FormAdminController {
 		}
 	}
 
+	@GetMapping(value = "/export/{id}", produces="text/json")
+	public ResponseEntity<Void> exportFormSetup(@PathVariable("id") Long id, HttpServletResponse response) {
+		Form form = formService.getById(id);
+		try {
+			response.setContentType("text/json; charset=utf-8");
+			response.setHeader("Content-Disposition", "attachment; filename=" + form.getName() + ".json");
+			InputStream csvInputStream = formService.getJsonFormSetup(id);
+			IOUtils.copy(csvInputStream, response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@PostMapping("/import/{id}")
+	public String importFormSetup(@PathVariable("id") Long id,
+								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
+		try {
+			if(multipartFormSetup.getSize() > 0) {
+				formService.setFormSetupFromJson(id, multipartFormSetup.getInputStream());
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		}
+		return "redirect:/admin/forms/update/" + id;
+	}
+
 }

@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -15,13 +16,19 @@ import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -129,13 +136,14 @@ public class WorkflowAdminController {
 						  @RequestParam(value = "recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
-						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false);
+						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
+		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire);
 		return "redirect:/admin/workflows/" + id;
 	}
 
 	@PostMapping(value = "/update-step/{id}/{step}")
-	public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn,
+	public String updateStep(@ModelAttribute("authUserEppn") String authUserEppn,
 									 @PathVariable("id") Long id,
 									 @PathVariable("step") Integer step,
 									 @RequestParam(name="signType") SignType signType,
@@ -144,9 +152,10 @@ public class WorkflowAdminController {
 									 @RequestParam(name="repeatable", required = false) Boolean repeatable,
 									 @RequestParam(name="multiSign", required = false) Boolean multiSign,
 									 @RequestParam(name="changeable", required = false) Boolean changeable,
-									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete) {
+									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+									 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients);
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentRequire);
 		return "redirect:/admin/workflows/" + id;
 	}
 
@@ -210,6 +219,35 @@ public class WorkflowAdminController {
 		workflowService.deleteTarget(id, targetId);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination supprimée"));
 		return "redirect:/admin/workflows/update/" + id;
+	}
+
+	@GetMapping(value = "/export/{id}", produces="text/json")
+	public ResponseEntity<Void> exportFormSetup(@PathVariable("id") Long id, HttpServletResponse response) {
+		Workflow workflow = workflowService.getById(id);
+		try {
+			response.setContentType("text/json; charset=utf-8");
+			response.setHeader("Content-Disposition", "attachment; filename=" + workflow.getName() + ".json");
+			InputStream csvInputStream = workflowService.getJsonWorkflowSetup(id);
+			IOUtils.copy(csvInputStream, response.getOutputStream());
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("get file error", e);
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@PostMapping("/import/{id}")
+	public String importFormSetup(@PathVariable("id") Long id,
+								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
+		try {
+			if(multipartFormSetup.getSize() > 0) {
+				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
+			}
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
+		}
+		return "redirect:/admin/workflow/update/" + id;
 	}
 
 }
