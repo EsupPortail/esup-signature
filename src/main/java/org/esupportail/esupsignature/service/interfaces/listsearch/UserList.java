@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.list;
+package org.esupportail.esupsignature.service.interfaces.listsearch;
 
 import java.util.List;
 

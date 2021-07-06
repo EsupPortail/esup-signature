@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class CommentService {
@@ -45,14 +46,16 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId).get();
-        SignRequest signRequest = signRequestService.getSignRequestByComment(comment);
-        if(comment.getStepNumber() != null) {
-            signRequest.getSignRequestParams().remove(comment.getStepNumber() - 1);
-            signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.getStepNumber() - 1).setSignRequestParams(null);
+        Optional<Comment> comment = commentRepository.findById(commentId);
+        if(comment.isPresent()) {
+            SignRequest signRequest = signRequestService.getSignRequestByComment(comment.get());
+            if (comment.get().getStepNumber() != null) {
+                signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
+                signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).setSignRequestParams(null);
+            }
+            signRequest.getComments().remove(comment.get());
+            commentRepository.delete(comment.get());
         }
-        signRequest.getComments().remove(comment);
-        commentRepository.delete(comment);
     }
 
 }

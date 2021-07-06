@@ -12,7 +12,7 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
-import org.esupportail.esupsignature.service.list.UserListService;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
