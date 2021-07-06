@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa) {
+    constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa, isElec) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
@@ -14,6 +14,7 @@ export class SignRequestParams  extends EventFactory {
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
+        this.isElec = isElec;
         this.firstLaunch = true;
         this.cross;
         this.border;
@@ -85,13 +86,19 @@ export class SignRequestParams  extends EventFactory {
             aspectRatio: true,
             resize: function(event, ui) {
                 if(self.isVisa) {
-                    self.signScale = self.getNewScale(self, ui);
+                    let newScale = self.getNewScale(self, ui);
+                    self.signWidth = self.signWidth / self.signScale * newScale;
+                    self.signHeight = self.signHeight / self.signScale * newScale;
+                    self.extraWidth = self.extraWidth / self.signScale * newScale;
+                    self.extraHeight = self.extraHeight / self.signScale * newScale;
+                    self.signScale = newScale
                     self.refreshExtraDiv();
+                    self.updateSize();
                 } else if(self.textareaPart != null) {
                     self.signScale = self.getNewScale(self, ui);
                     self.resizeText();
                     self.signWidth = parseInt(self.textareaPart.css("width")) / self.currentScale;
-                    self.signHeight = parseInt(self.textareaPart.css("height")) / self.currentScale;
+                    self.extraWidth = self.extraWidth / self.signScale * newScale;
                 } else {
                     let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale);
                     let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale);
@@ -110,7 +117,6 @@ export class SignRequestParams  extends EventFactory {
                         ui.size.height = minHeight;
                     }
                     let newScale = self.getNewScale(self, ui);
-                        // self.saveScale(ui);
                     self.signWidth = self.signWidth / self.signScale * newScale;
                     self.signHeight = self.signHeight / self.signScale * newScale;
                     self.extraWidth = self.extraWidth / self.signScale * newScale;
@@ -123,7 +129,6 @@ export class SignRequestParams  extends EventFactory {
                     }
                     self.extraHeight = self.extraHeight / self.signScale * newScale;
                     self.signScale = newScale;
-                    // self.divExtra.css('width', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
                     self.cross.css('background-size', Math.round(ui.size.width - self.extraWidth * self.currentScale) + "px");
                     if (self.addExtra) {
                         self.refreshExtraDiv();
@@ -170,11 +175,13 @@ export class SignRequestParams  extends EventFactory {
         }
         if(this.isVisa && this.isSign) {
             this.signHeight = 0;
+            this.cross.css('width', (this.signWidth * this.currentScale));
+            this.cross.css('height', (this.signHeight * this.currentScale));
+            this.toggleMinimalTools();
             this.toggleWatermark();
             this.toggleExtra();
             this.refreshExtraDiv();
             this.updateSize();
-            this.changeSignSize()
         }
     }
 
@@ -223,14 +230,6 @@ export class SignRequestParams  extends EventFactory {
     applyCurrentSignRequestParams() {
         this.cross.css('top', this.yPos * this.currentScale + 'px');
         this.cross.css('left', this.xPos * this.currentScale + 'px');
-    }
-
-    saveScale(ui) {
-        if (this.extraOnTop) {
-            this.signScale = Math.round((ui.size.width / this.currentScale) / (this.originalWidth) * 100) / 100;
-        } else {
-            this.signScale = Math.round((ui.size.height / this.currentScale) / (this.originalHeight) * 100) / 100;
-        }
     }
 
     deleteSign() {
@@ -423,8 +422,8 @@ export class SignRequestParams  extends EventFactory {
             $("#signExtraOnTop_" + this.id).removeAttr("disabled");
             if(this.divExtra == null) {
                 this.typeSign = "Signature calligraphique";
-                if (this.signType === "visa" || this.signType === "hiddenVisa") this.typeSign = "Visa";
-                if (this.signType === "certSign" || this.signType === "nexuSign") this.typeSign = "Signature électronique";
+                if (this.isVisa) this.typeSign = "Visa";
+                if (this.isElec) this.typeSign = "Signature électronique";
                 let divExtraHtml = "<div id='divExtra_" + this.id + "' class='div-extra div-extra-top'></div>";
                 this.cross.prepend(divExtraHtml);
                 this.divExtra = $("#divExtra_" + this.id);
@@ -509,7 +508,7 @@ export class SignRequestParams  extends EventFactory {
         $("#extraTypeDiv_" + this.id).toggle();
         $("#extraType_" + this.id).toggleClass("btn-outline-light");
         this.extraType = !this.extraType;
-        // this.updateSize();
+        this.updateSize();
         this.refreshExtraDiv();
     }
 
@@ -586,7 +585,7 @@ export class SignRequestParams  extends EventFactory {
             lines.pop();
         }
         for(let i = 0; i < lines.length; i++) {
-            text += lines[i].substring(0, 33);
+            text += lines[i].substring(0, 20);
             if(i < lines.length - 1) {
                 text += "\n";
             }
@@ -652,31 +651,31 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
     }
-
-    toggleVisual() {
-        console.log("toggle visual");
-        if(this.visualActive) {
-            this.visualActive = false;
-            this.toggleExtra();
-            this.cross.hide();
-            this.visual = false;
-            this.cross.addClass("d-none");
-        } else {
-            this.visualActive = true;
-            this.visual = true;
-            this.cross.show();
-            this.cross.removeClass("d-none");
-            this.toggleExtra();
-            if(this.signType === "visa" || this.signType === "hiddenVisa") {
-                this.cross.css("width", 300);
-                this.cross.css("height", 150);
-                // this.borders.css("width", 300);
-                // this.borders.css("height", 150);
-                this.signWidth = 150;
-                this.signHeight = 75;
-                this.toggleMinimalTools();
-                $("#signUndo_0").hide();
-            }
-        }
-    }
+    //
+    // toggleVisual() {
+    //     console.log("toggle visual");
+    //     if(this.visualActive) {
+    //         this.visualActive = false;
+    //         this.toggleExtra();
+    //         this.cross.hide();
+    //         this.visual = false;
+    //         this.cross.addClass("d-none");
+    //     } else {
+    //         this.visualActive = true;
+    //         this.visual = true;
+    //         this.cross.show();
+    //         this.cross.removeClass("d-none");
+    //         this.toggleExtra();
+    //         if(this.signType === "visa" || this.signType === "hiddenVisa") {
+    //             this.cross.css("width", 300);
+    //             this.cross.css("height", 150);
+    //             // this.borders.css("width", 300);
+    //             // this.borders.css("height", 150);
+    //             this.signWidth = 150;
+    //             this.signHeight = 75;
+    //             this.toggleMinimalTools();
+    //             $("#signUndo_0").hide();
+    //         }
+    //     }
+    // }
 }

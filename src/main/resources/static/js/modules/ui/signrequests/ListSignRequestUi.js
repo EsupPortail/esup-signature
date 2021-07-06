@@ -83,7 +83,7 @@ export default class ListSignRequestUi {
     }
 
     detectEndDiv(e) {
-        if ($(e.target).scrollTop() + $(e.target).innerHeight() >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
+        if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
             this.addToPage();
         }
     }

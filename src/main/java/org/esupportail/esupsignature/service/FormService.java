@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -29,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -463,5 +467,34 @@ public class FormService {
 			SignRequestParams signRequestParams = signRequestParamsService.getById(entry.getKey());
 			form.getWorkflow().getWorkflowSteps().get(entry.getValue() - 1).getSignRequestParams().add(signRequestParams);
 		}
+	}
+
+	@Transactional
+    public InputStream getJsonFormSetup(Long id) throws IOException {
+		Form form = getById(id);
+		File jsonFile = fileService.getTempFile("json");
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.writer().writeValue(jsonFile, form);
+		return new FileInputStream(jsonFile);
+    }
+
+    @Transactional
+	public void setFormSetupFromJson(Long id, InputStream inputStream) throws IOException {
+		Form form = getById(id);
+		String savedName = form.getName();
+		String savedTitle = form.getTitle();
+		ObjectMapper objectMapper = new ObjectMapper();
+		Form formSetup = objectMapper.readValue(inputStream.readAllBytes(), Form.class);
+		for(Field field : form.getFields()) {
+			Optional<Field> optFieldSetup = formSetup.getFields().stream().filter(field1 -> field1.getName().equals(field.getName())).findFirst();
+			if(optFieldSetup.isPresent()) {
+				Field fieldSetup = optFieldSetup.get();
+				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), fieldSetup.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
+			}
+		}
+		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
+		form.setName(savedName);
+		form.setTitle(savedTitle);
+		return;
 	}
 }

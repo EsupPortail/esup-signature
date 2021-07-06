@@ -51,7 +51,7 @@
 
                                 <td class="text-center">
                                     <div class="position-relative">
-                                        <button type="button" th:id="'menu-toggle-' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
+                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
                                                 th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
@@ -64,6 +64,10 @@
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/fields'">
                                                     <i class="fas fa-align-justify pr-2"></i> Modifier les champs
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
+                                                   th:href="'/admin/forms/export/' + ${form.id}">
+                                                    <i class="fas fa-file-export pr-2"></i> Exporter la configuration
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                    th:href="'/admin/forms/' + ${form.id} + '/signs'">

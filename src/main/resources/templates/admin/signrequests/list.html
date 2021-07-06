@@ -17,9 +17,7 @@
                     <form action="/admin/signrequests" method="get">
                         <div class="form-group mb-3">
                             <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text" id="basic-addon1">Statut</span>
-                            </div>
+                            <span class="input-group-text" id="basic-addon1">Statut</span>
                             <select class="form-select" name="statusFilter" id="statusFilter" onchange="submit();">
                                 <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
@@ -82,7 +80,7 @@
                                     </td>
                                     <td>
                                         <div class="position-relative">
-                                            <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
+                                            <button type="button" th:id="'menu-toggle_' + ${signRequest.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="collapse">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
                                             <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${signRequest.id}">
