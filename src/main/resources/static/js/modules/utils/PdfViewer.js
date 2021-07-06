@@ -395,8 +395,8 @@ export class PdfViewer extends EventFactory {
                     });
                 }
                 if(items[i].readOnly || dataField.readOnly) {
-                    // inputField.addClass('disabled-field disable-selection');
-                    // inputField.prop('disabled', true);
+                    inputField.addClass('disabled-field disable-selection');
+                    inputField.prop('disabled', true);
                 }
                 console.debug(dataField);
                 if(this.isFieldEnable(dataField)) {
