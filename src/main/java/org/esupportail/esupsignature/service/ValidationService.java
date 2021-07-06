@@ -8,6 +8,7 @@ import eu.europa.esig.dss.validation.SignedDocumentValidator;
 import eu.europa.esig.dss.validation.executor.ValidationLevel;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.esupportail.esupsignature.dss.DssUtils;
+import org.esupportail.esupsignature.entity.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,13 @@ public class ValidationService {
 
     @Transactional
     public Reports validate(long signRequestId) throws IOException {
-        byte[] bytes = signRequestService.getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
-        return validate(new ByteArrayInputStream(bytes), null);
+        List<Document> documents = signRequestService.getToSignDocuments(signRequestId);
+        if(documents.size() > 0) {
+            byte[] bytes = signRequestService.getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
+            return validate(new ByteArrayInputStream(bytes), null);
+        } else {
+            return null;
+        }
     }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
@@ -55,7 +61,7 @@ public class ValidationService {
             } else {
                 documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(docInputStream));
             }
-            logger.info("validate with : " + documentValidator.getClass());
+            logger.debug("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
             documentValidator.setTokenExtractionStrategy(TokenExtractionStrategy.NONE);
             documentValidator.setLocale(Locale.FRENCH);

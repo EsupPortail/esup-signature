@@ -26,6 +26,7 @@ public class GlobalProperties implements Cloneable {
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
     private String archiveUri;
     private Integer delayBeforeCleaning = -1;
+    private Integer trashKeepDelay = -1;
     private Boolean enableSu = false;
     private Boolean enableSplash = false;
     private String version = "";
@@ -166,6 +167,14 @@ public class GlobalProperties implements Cloneable {
 
     public void setDelayBeforeCleaning(Integer delayBeforeCleaning) {
         this.delayBeforeCleaning = delayBeforeCleaning;
+    }
+
+    public Integer getTrashKeepDelay() {
+        return trashKeepDelay;
+    }
+
+    public void setTrashKeepDelay(Integer trashKeepDelay) {
+        this.trashKeepDelay = trashKeepDelay;
     }
 
     public Boolean getEnableSu() {

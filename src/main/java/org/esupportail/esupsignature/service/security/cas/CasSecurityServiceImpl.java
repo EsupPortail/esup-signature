@@ -23,8 +23,6 @@ import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
 import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 
 import javax.annotation.Resource;
@@ -149,19 +147,4 @@ public class CasSecurityServiceImpl implements SecurityService {
 		return ldapUserDetailsService;
 	}
 
-
-
-//	public SingleSignOutFilter singleLogoutFilter() {
-//		SingleSignOutFilter singleSignOutFilter = new SingleSignOutFilter();
-//		singleSignOutFilter.setCasServerUrlPrefix(casProperties.getUrl() + "/logout");
-//		return singleSignOutFilter;
-//	}
-
-	public LogoutFilter requestSingleLogoutFilter() {
-		SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
-		LogoutFilter logoutFilter = new LogoutFilter(casProperties.getUrl() + "/logout", securityContextLogoutHandler);
-		logoutFilter.setFilterProcessesUrl("/logout");
-		return logoutFilter;
-	}
-	
 }

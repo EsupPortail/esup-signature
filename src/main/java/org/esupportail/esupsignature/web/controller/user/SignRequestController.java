@@ -130,7 +130,7 @@ public class SignRequestController {
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("recipientsFilter", recipientsFilter);
-        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequestPage(signRequestPage));
+        model.addAttribute("signRequestRecipients", signRequestService.getRecipientsNameFromSignRequests(signRequests));
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
@@ -157,10 +157,10 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(id);
-        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
-            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
-            return "redirect:/user/";
-        }
+//        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+//            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
+//            return "redirect:/user/";
+//        }
         if (signRequest.getLastNotifDate() == null) {
             model.addAttribute("notifTime", 0);
         } else {
@@ -171,6 +171,14 @@ public class SignRequestController {
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
         model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
         model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
+        boolean attachmentRequire = false;
+        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
+                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
+                && signRequest.getAttachments().size() == 0) {
+            attachmentRequire = true;
+        }
+        model.addAttribute("attachmentRequire", attachmentRequire);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
@@ -200,9 +208,12 @@ public class SignRequestController {
             }
         }
         Reports reports = validationService.validate(id);
-        model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        if(reports != null) {
+            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+        }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
+        model.addAttribute("editable", signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.pending)));
         model.addAttribute("isNotSigned", signRequestService.isNotSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -220,7 +231,7 @@ public class SignRequestController {
         if(signRequest.getSignable()
             && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
             && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
-            model.addAttribute("message", new JsonMessage("info", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            model.addAttribute("message", new JsonMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
@@ -590,7 +601,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,

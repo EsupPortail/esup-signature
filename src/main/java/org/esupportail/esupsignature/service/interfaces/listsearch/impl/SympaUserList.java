@@ -1,7 +1,7 @@
-package org.esupportail.esupsignature.service.list.impl;
+package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
 import org.esupportail.esupsignature.service.extdb.ExtDbService;
-import org.esupportail.esupsignature.service.list.UserList;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserList;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;

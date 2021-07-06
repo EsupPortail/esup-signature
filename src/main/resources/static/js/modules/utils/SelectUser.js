@@ -78,7 +78,7 @@ export default class SelectUser {
                             })
                             .then(function (json) {
                                 for (let i = 0; i < json.length; i++) {
-                                    data.push({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
+                                    data.unshift({text: json[i].mailAlias, value: valuePrefix + json[i].mailAlias});
                                     if(data.length > 0) {
                                         callback(data);
                                     }

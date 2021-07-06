@@ -51,7 +51,7 @@ export class HomeUi {
 
     hideAll() {
         $('.globalButton').addClass('d-none');
-        $('.workflowButton').addClass('d-none');
+        $('.workflow-button').addClass('d-none');
         $('.formButton').addClass('d-none');
         this.noFilterButton.removeClass('btn-secondary');
         this.noFilterButton.addClass('btn-light');
@@ -65,7 +65,7 @@ export class HomeUi {
 
     showAll() {
         $('.globalButton').removeClass('d-none');
-        $('.workflowButton').removeClass('d-none');
+        $('.workflow-button').removeClass('d-none');
         $('.formButton').removeClass('d-none');
         this.noFilterButton.addClass('btn-secondary');
         this.noFilterButton.removeClass('btn-light');
@@ -92,7 +92,7 @@ export class HomeUi {
         this.hideAll();
         this.workflowFilterButton.removeClass('btn-light');
         this.workflowFilterButton.addClass('btn-secondary');
-        $('.workflowButton').removeClass('d-none');
+        $('.workflow-button').removeClass('d-none');
         this.workflowFilterStatus = !this.workflowFilterStatus;
         return this.uiParams.set("workflowFilterStatus", this.workflowFilterStatus);
     }

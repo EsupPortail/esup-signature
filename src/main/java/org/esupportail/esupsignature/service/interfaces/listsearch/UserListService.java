@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.list;
+package org.esupportail.esupsignature.service.interfaces.listsearch;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

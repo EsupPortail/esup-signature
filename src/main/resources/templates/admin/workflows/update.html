@@ -188,6 +188,17 @@
                             </table>
                         </div>
                     </form>
+                    <form id="importFormSetup" th:action="'/admin/workflows/import/' + ${workflow.id} + '/?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                        <label class="form-label">Importer une configuration</label>
+                        <div class="form-group mb-3">
+                            <div class="custom-file">
+                                <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier"
+                                       aria-describedby="multipartFormSetup"/>
+                                <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
+                            </div>
+                        </div>
+                        <button id="submitFormSetup" type="submit" class="btn btn-success">Charger la configuration</button>
+                    </form>
                 </div>
             </div>
         </div>

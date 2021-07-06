@@ -33,6 +33,10 @@
         <appender-ref ref="FILE"/>
     </logger>
 
+    <logger name="eu.europa.esig.dss" level="warn" additivity="false">
+        <appender-ref ref="FILE"/>
+    </logger>
+
     <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="warn" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
