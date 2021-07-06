@@ -170,6 +170,14 @@ public class FormAdminController {
 		}
 	}
 
+	@PostMapping("/add-field/{id}")
+	public String addField(@PathVariable("id") long id,
+						   @RequestParam("fieldNames[]") String[] fieldNames,
+						   @RequestParam("fieldTypes[]") String[] fieldTypes) {
+		formService.addField(id, fieldNames, fieldTypes);
+		return "redirect:/admin/forms/" + id + "/fields";
+	}
+
 	@PostMapping("generate")
 	public String generateForm(
 			@RequestParam("multipartFile") MultipartFile multipartFile,
