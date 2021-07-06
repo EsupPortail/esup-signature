@@ -140,7 +140,7 @@ export class SignPosition extends EventFactory {
                 }
             }
         }
-        this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa"));
+        this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign"));
         this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
