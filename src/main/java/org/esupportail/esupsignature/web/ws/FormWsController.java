@@ -29,10 +29,10 @@ public class FormWsController {
     @Operation(description = "Création d'une nouvelle instance d'un formulaire")
     public Long start(@PathVariable Long id,
                       @RequestParam String eppn,
-                      @RequestParam(required = false) @Parameter(description = "pattern : stepNumber*email") List<String> recipientEmails,
-                      @RequestParam(required = false) @Parameter(description = "stepNumber") List<String> allSignToCompletes,
-                      @RequestParam(required = false) List<String> targetEmails,
-                      @RequestParam(required = false) String targetUrl
+                      @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
+                      @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
+                      @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
+                      @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl
     ) {
         Data data = dataService.addData(id, eppn, eppn);
         try {

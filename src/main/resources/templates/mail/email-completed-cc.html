@@ -3,52 +3,55 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<body class="bg-light" style="box-sizing:border-box;margin-top:0;margin-bottom:0;margin-right:0;margin-left:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans',sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol','Noto Color Emoji';font-size:14px;font-weight:400;line-height:1.5;color:#212529;text-align:left;background-color:#f8f9fa!important;" >
-<div class="container" style="box-sizing:border-box;width:90%;padding-right:15px;padding-left:15px;margin-right:auto;margin-left:auto;" >
-    <div class="card rounded-0 m-1" style="box-sizing:border-box;position:relative;display:flex;-ms-flex-direction:column;flex-direction:column;min-width:0;word-wrap:break-word;background-color:#fff;background-clip:border-box;border-width:1px;border-style:solid;border-color:rgba(0,0,0,.125);border-radius:0!important;margin-top:.25rem !important;margin-bottom:.25rem !important;margin-right:.25rem !important;margin-left:.25rem !important;" >
-        <div class="card-header rounded-0 bg-dark" style="box-sizing:border-box;padding-top:.75rem;padding-bottom:.75rem;padding-right:1.25rem;padding-left:1.25rem;margin-bottom:0;border-bottom-width:1px;border-bottom-style:solid;border-bottom-color:rgba(0,0,0,.125);background-color:#343a40!important;border-radius:0!important;" >
-            <img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
-            <img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
-        </div>
-        <div class="card-body" style="box-sizing:border-box;-ms-flex:1 1 auto;flex:1 1 auto;padding-top:1.25rem;padding-bottom:1.25rem;padding-right:1.25rem;padding-left:1.25rem;" >
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Une demande de signature que vous suivez ou dans laquelle vous participez est terminée</p>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.title}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-                Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-                Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
-                <br style="box-sizing:border-box;" >
-            </p>
+<body>
+    <table width="90%" border="0" style="width: 90%;" bgcolor="#ffffff">
+        <tr>
+            <td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
+                <img height="40" class="mx-auto float-start" src="cid:logo" style="border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
+                <img height="40" class="mx-auto float-end" src="cid:logo-univ" style="border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
+            </td>
+        </tr>
+        <tr>
+            <td style="width:100%; padding:10px;background-color:#f8f9fa;">
+                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Bonjour,</p>
+                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Une demande de signature que vous suivez ou dans laquelle vous participez est terminée</p>
+                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                    Nom de la demande : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.title}" style="box-sizing:border-box;" ></span></b>
+                    <br style="box-sizing:border-box;" >
+                    Crée par : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}" style="box-sizing:border-box;" ></span></b>
+                    <br style="box-sizing:border-box;" >
+                    Date de création : <b style="box-sizing:border-box;font-weight:bolder;" ><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}" style="box-sizing:border-box;" ></span></b>
+                    <br style="box-sizing:border-box;" >
+                </p>
 
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
-            <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-            <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}" style="box-sizing:border-box;" >
-                <th:block th:each="recipient : ${liveWorkflowStep.recipients}" style="box-sizing:border-box;" >
-                <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
-                    <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
-                    <span th:text="'(' + #{'signbook.signtype.' + ${liveWorkflowStep.signType}} + ')'" style="box-sizing:border-box;" ></span>
-                </li>
+                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >Liste des signataires : </p>
+                <ul style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}" style="box-sizing:border-box;" >
+                    <th:block th:each="recipient : ${liveWorkflowStep.recipients}" style="box-sizing:border-box;" >
+                    <li if="${recipient.signed == true}" style="box-sizing:border-box;" >
+                        <span th:text="${recipient.user.firstname + ' ' + recipient.user.name}" style="box-sizing:border-box;" ></span>
+                        <span th:text="'(' + #{'signbook.signtype.' + ${liveWorkflowStep.signType}} + ')'" style="box-sizing:border-box;" ></span>
+                    </li>
+                    </th:block>
                 </th:block>
-            </th:block>
-            </ul>
-            <ul>
-                <th:block th:each="signRequest : ${signBook.signRequests}">
-                <li th:if="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                    Le document a été transmit à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
-                </li>
-                </th:block>
-            </ul>
-            <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
-            </p>
-        </div>
-        <div class="card-footer rounded-0 bg-secondary justify-content-center text-center" style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center" bgcolor="#6c757d" align="center">
-            <span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
-        </div>
-    </div>
-</div>
+                </ul>
+                <ul>
+                    <th:block th:each="signRequest : ${signBook.signRequests}">
+                    <li th:if="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                        Le document a été transmit à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
+                    </li>
+                    </th:block>
+                </ul>
+                <p style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
+                    <a th:href="@{|${rootUrl}/user/signbooks/${signBook.id}|}" class="btn btn-dark" style="box-sizing:border-box;text-decoration:none;display:inline-block;font-weight:400;text-align:center;vertical-align:middle;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;border-width:1px;border-style:solid;padding-top:.375rem;padding-bottom:.375rem;padding-right:.75rem;padding-left:.75rem;font-size:14px;line-height:1.5;border-radius:.25rem;transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;color:#fff;background-color:#343a40;border-color:#343a40;" >Accéder à la demande</a>
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width:100%; background-color:#6c757d; border-top:1px solid rgba(0, 0, 0, 0.125); padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
+                <span class="text-white text-center" style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
+            </td>
+        </tr>
+    </table>
 </body>
-</html>
 </html>
