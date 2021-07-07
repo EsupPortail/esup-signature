@@ -23,6 +23,7 @@ export class WorkspacePdf {
         this.status = status;
         this.csrf = csrf;
         this.attachmentRequire = attachmentRequire;
+        this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
         this.firstInsertSign = true;
@@ -56,7 +57,7 @@ export class WorkspacePdf {
         this.initListeners();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
-        if ((formId == null && workflow == null) || (currentStepMultiSign !== null && currentStepMultiSign) || currentSignRequestParamses.length === 0) {
+        if ((formId == null && workflow == null) || currentSignRequestParamses.length === 0) {
             $("#second-tools").toggleClass("d-none d-flex");
             if(this.wsTabs.length) {
                 this.autocollapse();
@@ -182,6 +183,9 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
+        if(this.currentStepMultiSign == null || !this.currentStepMultiSign) {
+           $("#addSignButton").attr("disabled", true);
+        }
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
         if(forceSignNumber != null) {

@@ -247,7 +247,7 @@ public class WorkflowAdminController {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflowssendAlertToAllRecipients/update/" + id;
 	}
 
 }

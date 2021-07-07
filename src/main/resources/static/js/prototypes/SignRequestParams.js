@@ -241,14 +241,6 @@ export class SignRequestParams  extends EventFactory {
         this.cross.remove();
         this.fireEvent("delete", ["ok"]);
     }
-    //
-    // setxPos(x) {
-    //     this.xPos = Math.round(x);
-    // }
-    //
-    // setyPos(y) {
-    //     this.yPos = Math.round(y);
-    // }
 
     getTools() {
         let self = this;
