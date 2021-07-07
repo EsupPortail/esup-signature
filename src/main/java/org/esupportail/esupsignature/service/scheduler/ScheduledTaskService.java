@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -139,11 +140,16 @@ public class ScheduledTaskService {
 		}
 	}
 
+	@Async
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws EsupSignatureException {
+		logger.info("Checking Workflow classes...");
 		workflowService.copyClassWorkflowsIntoDatabase();
+		logger.info("Check done.");
 		if(oJService != null) {
+			logger.info("Updating DSS OJ...");
 			oJService.getCertificats();
+			logger.info("Update done.");
 		}
 	}
 

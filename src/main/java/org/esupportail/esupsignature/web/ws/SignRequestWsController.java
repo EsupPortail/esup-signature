@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -78,29 +79,22 @@ public class SignRequestWsController {
     }
 
     @CrossOrigin
-    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<SignRequest> getAll() {
-        return signRequestService.getAll();
-    }
-
-    @CrossOrigin
     @DeleteMapping("/{id}")
+    @Operation(description = "Supprimer une demande de signature")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         signRequestService.deleteDefinitive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    public String update() {
-        return "toto";
-    }
-
     @GetMapping(value = "/get-last-file/{id}")
+    @ResponseBody
+    @Operation(description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = "application/pdf")))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
             Map<String, Object> fileResponse = signRequestService.getToSignFileResponse(id);
             if (fileResponse != null) {
                 httpServletResponse.setContentType(fileResponse.get("contentType").toString());
-                httpServletResponse.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
+                httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileResponse.get("fileName").toString(), StandardCharsets.UTF_8.toString()));
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
             return new ResponseEntity<>(HttpStatus.OK);
