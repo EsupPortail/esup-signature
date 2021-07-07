@@ -62,11 +62,11 @@ public class FieldService {
 							String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<Long> workflowStepsIds) {
 		Field field = fieldRepository.findById(id).get();
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
-		if(workflowStepsIds != null) {
-			for (Long workflowStepId : workflowStepsIds) {
-				workflowSteps.add(workflowStepService.getById(workflowStepId));
-			}
-		}
+//		if(workflowStepsIds != null) {
+//			for (Long workflowStepId : workflowStepsIds) {
+//				workflowSteps.add(workflowStepService.getById(workflowStepId));
+//			}
+//		}
 		setFieldValues(description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
 	}
 

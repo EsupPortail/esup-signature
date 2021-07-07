@@ -74,7 +74,7 @@ public class WsOtpSignController {
     }
 
     @PostMapping
-    public String auth(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest req) throws EsupSignatureUserException {
+    public String auth(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
         Boolean testOtp = otpService.checkOtp(urlId, password);
         if(testOtp != null) {
             if (testOtp) {
@@ -86,7 +86,7 @@ public class WsOtpSignController {
                 SecurityContext securityContext = SecurityContextHolder.getContext();
                 securityContext.setAuthentication(authentication);
                 userService.updateRoles(user.getEppn(), authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
-                HttpSession httpSession = req.getSession(true);
+                HttpSession httpSession = httpServletRequest.getSession(true);
                 httpSession.setAttribute(SPRING_SECURITY_CONTEXT_KEY, securityContext);
                 model.addAttribute("user", user);
                 model.addAttribute("authUser", user);
