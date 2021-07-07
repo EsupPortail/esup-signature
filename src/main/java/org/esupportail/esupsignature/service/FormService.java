@@ -489,7 +489,7 @@ public class FormService {
 			Optional<Field> optFieldSetup = formSetup.getFields().stream().filter(field1 -> field1.getName().equals(field.getName())).findFirst();
 			if(optFieldSetup.isPresent()) {
 				Field fieldSetup = optFieldSetup.get();
-				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), fieldSetup.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
+				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), null);
 			}
 		}
 		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
