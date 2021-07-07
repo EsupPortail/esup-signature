@@ -237,7 +237,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping("/import/{id}")
-	public String importFormSetup(@PathVariable("id") Long id,
+	public String importWorkflowSetup(@PathVariable("id") Long id,
 								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
 		try {
 			if(multipartFormSetup.getSize() > 0) {
@@ -247,7 +247,7 @@ public class WorkflowAdminController {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
-		return "redirect:/admin/workflowssendAlertToAllRecipients/update/" + id;
+		return "redirect:/admin/workflows/update/" + id;
 	}
 
 }

@@ -337,10 +337,10 @@ public class SignRequestService {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
-					if(multipartFiles[0].getContentType().equals("application/pdf") && scanSignatureFields) {
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
-					} else if(multipartFiles[0].getContentType().contains("image")){
+					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
 						contentType = "application/pdf";
