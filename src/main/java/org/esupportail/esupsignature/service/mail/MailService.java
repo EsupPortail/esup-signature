@@ -83,11 +83,6 @@ public class MailService {
         setTemplate(ctx);
         Set<String> toEmails = new HashSet<>();
         toEmails.add(signBook.getCreateBy().getEmail());
-        for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            for(User toUser : liveWorkflowStep.getUsers()) {
-                toEmails.add(toUser.getEmail());
-            }
-        }
         toEmails.remove(user.getEmail());
         if(toEmails.size() > 0) {
             try {

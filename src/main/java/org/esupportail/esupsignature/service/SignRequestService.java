@@ -337,10 +337,10 @@ public class SignRequestService {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
-					if(multipartFiles[0].getContentType().equals("application/pdf") && scanSignatureFields) {
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
-					} else if(multipartFiles[0].getContentType().contains("image")){
+					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
 						contentType = "application/pdf";
@@ -585,7 +585,7 @@ public class SignRequestService {
 	@Transactional
 	public boolean isNotSigned(SignRequest signRequest) throws IOException {
 		List<Document> documents = getToSignDocuments(signRequest.getId());
-		if(documents.size() > 0) {
+		if(documents.size() > 0 && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign))) {
 			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
 			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
 		} else {
