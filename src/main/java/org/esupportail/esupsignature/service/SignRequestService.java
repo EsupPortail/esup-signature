@@ -585,7 +585,7 @@ public class SignRequestService {
 	@Transactional
 	public boolean isNotSigned(SignRequest signRequest) throws IOException {
 		List<Document> documents = getToSignDocuments(signRequest.getId());
-		if(documents.size() > 0) {
+		if(documents.size() > 0 && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign))) {
 			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
 			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
 		} else {
