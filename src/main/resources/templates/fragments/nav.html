@@ -55,7 +55,7 @@
                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
-                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarDropdown" >
+                    <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarDropdown" >
                         <a th:if="${managedForms.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
                            title="Vue manager" href="/user/manage"
                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
@@ -98,7 +98,7 @@
                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-lg-inline">Délégation</span>
                     </a>
-                    <div class="dropdown-menu bg-dark align-items-center" aria-labelledby="navbarShareDropdown" >
+                    <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarShareDropdown" >
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
                             <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Gérer mes délégations</span>
                         </a>
