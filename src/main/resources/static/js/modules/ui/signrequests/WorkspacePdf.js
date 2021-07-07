@@ -183,7 +183,7 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
-        if(this.currentStepMultiSign == null || !this.currentStepMultiSign) {
+        if(this.currentStepMultiSign != null && !this.currentStepMultiSign) {
            $("#addSignButton").attr("disabled", true);
         }
         let targetPageNumber = this.pdfViewer.pageNum;
