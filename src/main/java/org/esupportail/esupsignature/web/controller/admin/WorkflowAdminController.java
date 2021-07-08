@@ -237,7 +237,7 @@ public class WorkflowAdminController {
 	}
 
 	@PostMapping("/import/{id}")
-	public String importFormSetup(@PathVariable("id") Long id,
+	public String importWorkflowSetup(@PathVariable("id") Long id,
 								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
 		try {
 			if(multipartFormSetup.getSize() > 0) {
