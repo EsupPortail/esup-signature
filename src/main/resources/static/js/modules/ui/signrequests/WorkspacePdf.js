@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.changeModeSelector = null;
@@ -17,6 +17,7 @@ export class WorkspacePdf {
         this.postits = postits;
         this.notSigned = notSigned;
         this.signable = signable;
+        this.editable = editable;
         this.signRequestId = id;
         this.signType = signType;
         this.stepRepeatable = stepRepeatable;
@@ -36,7 +37,7 @@ export class WorkspacePdf {
             }
         }
         if (this.isPdf) {
-            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
+            this.pdfViewer = new PdfViewer('/user/signrequests/get-last-file/' + id, signable, editable, currentStepNumber, currentStepId, this.forcePageNum, fields, false);
         }
         this.signPosition = new SignPosition(
             signType,

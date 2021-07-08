@@ -120,7 +120,9 @@ public class FormService {
 	}
 
 	public List<Form> getAuthorizedToShareForms() {
-		return formRepository.findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();
+		List<Form> forms = formRepository.findDistinctByAuthorizedShareTypesIsNotNullAndDeletedIsNullOrDeletedIsFalse();
+		forms = forms.stream().filter(form -> form.getAuthorizedShareTypes().size() > 0).collect(Collectors.toList());
+		return forms;
 	}
 
 	@Transactional
