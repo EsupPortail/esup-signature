@@ -135,7 +135,7 @@
                            th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                    <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft && editable}">
+                    <li th:if="${signRequest.createBy.eppn == userEppn}">
                         <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
                     </li>
@@ -148,7 +148,7 @@
                     </li>
                 </th:block>
                 <th:block id="openButtons" class="fixed-action-btns active"
-                     th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
+                     th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
                      onmouseover="$('#openButtons').toggleClass('active');"
                      onmouseout="$('#openButtons').toggleClass('active');">
                     <li>
@@ -629,7 +629,7 @@
     </div>
 </div>
 
-<div th:if="${editable}"
+<div th:if="${signRequest.createBy.eppn == userEppn}"
      class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -641,7 +641,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
