@@ -442,7 +442,12 @@ input:checked + .slider:before {
     border: 1px solid #ced4da;
     min-height: 38px;
 }
-	
+
+th .ss-content {
+    width: max-content !important;
+    margin-top: 12px !important;
+}
+
 .ss-value-text {
 	cursor: auto;	
 }
@@ -1840,11 +1845,12 @@ progress:before {
     color: white;
 }
 
-.badge-status > span {
-    width: 100% !important;
-    text-align: center;
-    padding: 0 6px 1px 6px;
-    line-height: 25px;
+.badge-status > p {
+    width: 200px;
+    padding: 1px 6px 1px 6px;
+    line-height: 22px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .highlight {
