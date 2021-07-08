@@ -951,8 +951,8 @@ public class SignRequestService {
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 			deleteDefinitive(signRequestId);
 		} else {
-			signRequest.getOriginalDocuments().clear();
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
 			}
 			signRequest.setStatus(SignRequestStatus.deleted);
@@ -1338,7 +1338,13 @@ public class SignRequestService {
 			if (documents.size() > 1) {
 				return null;
 			} else {
-				return fileService.getFileResponse(documents.get(0).getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), documents.get(0).getFileName(), documents.get(0).getContentType());
+				Document document;
+				if(documents.size() > 0) {
+					document = documents.get(0);
+				} else {
+					document = signRequest.getOriginalDocuments().get(0);
+				}
+				return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 			}
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
