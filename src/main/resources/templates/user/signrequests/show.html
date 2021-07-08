@@ -36,6 +36,7 @@
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
     let signable = [[${signable}]];
+    let editable = [[${editable}]];
     let currentSignType = [[${signRequest.currentSignType}]];
     if (signable && currentSignType === 'nexuSign') {
         new Nexu(null, null);
@@ -58,6 +59,7 @@
         [[${user.defaultSignImageNumber}]],
         currentSignType,
         signable,
+        editable,
         [[${signRequest.comments}]],
         [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
         [[${currentStepNumber}]],
