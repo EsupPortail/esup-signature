@@ -136,7 +136,9 @@ public class FormService {
 		form.getRoles().clear();
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
-		form.setWorkflow(updateForm.getWorkflow());
+		if(updateForm.getWorkflow() != null) {
+			form.setWorkflow(updateForm.getWorkflow());
+		}
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
@@ -156,7 +158,7 @@ public class FormService {
 		for(UserShare userShare : userShares) {
 			userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
 		}
-		formRepository.save(form);
+//		formRepository.save(form);
 	}
 
 	@Transactional
@@ -481,20 +483,19 @@ public class FormService {
     @Transactional
 	public void setFormSetupFromJson(Long id, InputStream inputStream) throws IOException {
 		Form form = getById(id);
-		String savedName = form.getName();
-		String savedTitle = form.getTitle();
 		ObjectMapper objectMapper = new ObjectMapper();
 		Form formSetup = objectMapper.readValue(inputStream.readAllBytes(), Form.class);
 		for(Field field : form.getFields()) {
 			Optional<Field> optFieldSetup = formSetup.getFields().stream().filter(field1 -> field1.getName().equals(field.getName())).findFirst();
 			if(optFieldSetup.isPresent()) {
 				Field fieldSetup = optFieldSetup.get();
-				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), fieldSetup.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
+				fieldService.updateField(field.getId(), fieldSetup.getDescription(), fieldSetup.getType(), fieldSetup.getFavorisable(), fieldSetup.getRequired(), fieldSetup.getReadOnly(), fieldSetup.getExtValueServiceName(), fieldSetup.getExtValueType(), fieldSetup.getExtValueReturn(), fieldSetup.getSearchServiceName(), fieldSetup.getSearchType(), fieldSetup.getSearchReturn(), fieldSetup.getStepZero(), null);
 			}
 		}
+		formSetup.setName(form.getName());
+		formSetup.setTitle(form.getTitle());
+		formSetup.setWorkflow(null);
 		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
-		form.setName(savedName);
-		form.setTitle(savedTitle);
 		return;
 	}
 }
