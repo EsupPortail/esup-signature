@@ -78,6 +78,10 @@ public class SignRequest {
 
     @JsonIgnore
     @Transient
+    transient Boolean editable = false;
+
+    @JsonIgnore
+    @Transient
     transient Data data;
 
     private Date lastNotifDate;
@@ -211,6 +215,14 @@ public class SignRequest {
 
     public void setSignable(Boolean signable) {
         this.signable = signable;
+    }
+
+    public Boolean getEditable() {
+        return editable;
+    }
+
+    public void setEditable(Boolean editable) {
+        this.editable = editable;
     }
 
     public Data getData() {

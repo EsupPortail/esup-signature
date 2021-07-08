@@ -951,8 +951,8 @@ public class SignRequestService {
 		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 			deleteDefinitive(signRequestId);
 		} else {
-			signRequest.getOriginalDocuments().clear();
 			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
 			}
 			signRequest.setStatus(SignRequestStatus.deleted);
@@ -1062,6 +1062,14 @@ public class SignRequestService {
 				&& signRequest.getOriginalDocuments().size() > 0
 				&& needToSign(signRequest, userEppn)) {
 			signRequest.setSignable(true);
+		}
+		User user = userService.getUserByEppn(userEppn);
+		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
+				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
+				&& signRequest.getOriginalDocuments().size() > 0
+				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)
+		) {
+			signRequest.setEditable(true);
 		}
 		return signRequest;
 	}
@@ -1253,6 +1261,7 @@ public class SignRequestService {
 	public List<String> getSignImagesForSignRequest(SignRequest signRequestRef, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestRef.getId(), userEppn, authUserEppn);
 		signRequestRef.setSignable(signRequest.getSignable());
+		signRequestRef.setEditable(signRequest.getEditable());
 		LinkedList<String> signImages = new LinkedList<>();
 		if (signRequest.getSignedDocuments().size() > 0 || signRequest.getOriginalDocuments().size() > 0) {
 			List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
@@ -1329,7 +1338,13 @@ public class SignRequestService {
 			if (documents.size() > 1) {
 				return null;
 			} else {
-				return fileService.getFileResponse(documents.get(0).getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), documents.get(0).getFileName(), documents.get(0).getContentType());
+				Document document;
+				if(documents.size() > 0) {
+					document = documents.get(0);
+				} else {
+					document = signRequest.getOriginalDocuments().get(0);
+				}
+				return fileService.getFileResponse(document.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), document.getFileName(), document.getContentType());
 			}
 		} else {
 			FsFile fsFile = getLastSignedFsFile(signRequest);

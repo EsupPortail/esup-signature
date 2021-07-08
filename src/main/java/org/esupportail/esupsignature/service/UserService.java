@@ -247,7 +247,7 @@ public class UserService {
         }
         if(signImageBase64 != null && !signImageBase64.isEmpty()) {
             authUser.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signImageBase64), authUser.getEppn() + "_sign.png", "image/png"));
-            if(authUser.getSignImages().size() == 0) {
+            if(authUser.getSignImages().size() == 1) {
                 authUser.setDefaultSignImageNumber(0);
             }
         }
@@ -454,6 +454,12 @@ public class UserService {
     public void deleteSign(String authUserEppn, long id) {
         User authUser = getByEppn(authUserEppn);
         Document signDocument = documentService.getById(id);
+        int test = authUser.getSignImages().indexOf(signDocument);
+        if(authUser.getDefaultSignImageNumber().equals(authUser.getSignImages().indexOf(signDocument))) {
+            authUser.setDefaultSignImageNumber(0);
+        } else {
+            authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
+        }
         authUser.getSignImages().remove(signDocument);
     }
 
