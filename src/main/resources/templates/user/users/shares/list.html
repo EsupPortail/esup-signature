@@ -5,7 +5,6 @@
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from '/static/js/modules/ui/users/ShareUi.js?version=[[${version}]]';
-
     new ShareUi();
 </script>
 <body>
@@ -167,7 +166,7 @@
                         <div class="form-group mb-3">
                             <label>Type de délégation</label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
-                                <div class="form-check text-left">
+                                <div class="form-check text-left required">
                                     <input th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types" th:value="${shareType.name()}" disabled/>
                                     <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
                                 </div>
@@ -199,7 +198,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>
-                        <input type="submit" class="btn btn-success" value="Valider">
+                        <input id="submitShare" type="button" class="btn btn-success" value="Valider">
+                        <input id="sendShare" type="submit" class="d-none">
                     </div>
                 </form>
             </div>

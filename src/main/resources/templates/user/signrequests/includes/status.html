@@ -20,7 +20,7 @@
 			<i class="fas fa-ban"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 			<br>
-			<span th:if="${signRequest.comments.size() > 0}" th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger"></span>
+			<p th:if="${signRequest.comments.size() > 0}" th:title="${signRequest.comments.get(signRequest.comments.size() - 1).text}" th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger"></p>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fas fa-check-circle"></i>

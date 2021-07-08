@@ -213,7 +213,7 @@ public class SignRequestController {
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("signable", signRequest.getSignable());
-        model.addAttribute("editable", signRequest.getCreateBy().getEppn().equals(userEppn) && (signRequest.getStatus().equals(SignRequestStatus.draft) || signRequest.getStatus().equals(SignRequestStatus.pending)));
+        model.addAttribute("editable", signRequest.getEditable());
         model.addAttribute("isNotSigned", signRequestService.isNotSigned(signRequest));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(id));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -262,6 +262,7 @@ public class SignRequestController {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
         model.addAttribute("signable", signRequest.getSignable());
+        model.addAttribute("editable", signRequest.getEditable());
         model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";

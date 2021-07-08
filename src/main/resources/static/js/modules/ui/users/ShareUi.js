@@ -16,6 +16,15 @@ export default class ShareUi {
                 $('#sign-mod').removeClass("d-none");
             }
         }
+
+        $("#submitShare").on('click', function (){
+            if($('div.form-check.required :checkbox:checked').length > 0) {
+                $("#sendShare").click();
+            } else {
+                bootbox.alert("Vous devez sélectionner un type de délégation", null);
+            }
+        });
+
     }
 
     toggleShareForm() {
