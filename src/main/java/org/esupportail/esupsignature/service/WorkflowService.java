@@ -362,7 +362,9 @@ public class WorkflowService {
     }
 
     public List<Workflow> getAuthorizedToShareWorkflows() {
-        return workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
+        List<Workflow> workflows = workflowRepository.findDistinctByAuthorizedShareTypesIsNotNull();
+        workflows = workflows.stream().filter(workflow -> workflow.getAuthorizedShareTypes().size() > 0).collect(Collectors.toList());
+        return workflows;
     }
 
     public List<Workflow> getAllWorkflows() {
