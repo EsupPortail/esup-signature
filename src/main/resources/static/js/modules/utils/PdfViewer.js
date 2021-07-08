@@ -4,11 +4,12 @@ import {DataField} from "../../prototypes/DataField.js";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, editable, currentStepNumber, currentStepId, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
         this.url= url;
         this.signable = signable;
+        this.editable = editable;
         this.currentStepNumber = currentStepNumber;
         this.currentStepId = currentStepId;
         this.pageNum = 1;
@@ -599,7 +600,7 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.signable;
+        return (isIncludeCurrentStep || (this.currentStepNumber === 0 && dataField.stepZero)) && this.editable;
     }
 
     renderPdfForm(items) {
