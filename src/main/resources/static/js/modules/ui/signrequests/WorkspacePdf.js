@@ -340,21 +340,55 @@ export class WorkspacePdf {
         if (this.isPdf) {
             this.pdfViewer.checkForm().then(function (result) {
                 if (result === "ok") {
-                    if (self.attachmentRequire) {
-                        bootbox.alert("Vous devez obligatoirement joindre un document à cette étape", null);
+                    if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
+                        bootbox.alert("Merci de placer la signature", null);
                     } else {
-                        if (!self.checkSignsPositions() && (self.signType !== "hiddenVisa")) {
-                            bootbox.alert("Merci de placer la signature", null);
+                        if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
+                            bootbox.confirm({
+                                message: "Attention vous allez signez ce document sans visuel",
+                                buttons: {
+                                    cancel: {
+                                        label: '<i class="fa fa-times"></i> Annuler'
+                                    },
+                                    confirm: {
+                                        label: '<i class="fa fa-check"></i> Confirmer'
+                                    }
+                                },
+                                callback: function (result) {
+                                    if (result) {
+                                        if (self.attachmentRequire) {
+                                            bootbox.confirm({
+                                                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
+                                                buttons: {
+                                                    cancel: {
+                                                        label: '<i class="fa fa-times"></i> Annuler'
+                                                    },
+                                                    confirm: {
+                                                        label: '<i class="fa fa-check"></i> Continuer'
+                                                    }
+                                                },
+                                                callback: function (result) {
+                                                    if (result) {
+                                                        self.confirmLaunchSignModal();
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            self.confirmLaunchSignModal();
+                                        }
+                                    }
+                                }
+                            });
                         } else {
-                            if (self.signPosition.signRequestParamses.size === 0 && (self.signType === "certSign" || self.signType === "nexuSign")) {
+                            if (self.attachmentRequire) {
                                 bootbox.confirm({
-                                    message: "Attention vous allez signez ce document sans visuel",
+                                    message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
                                     buttons: {
                                         cancel: {
                                             label: '<i class="fa fa-times"></i> Annuler'
                                         },
                                         confirm: {
-                                            label: '<i class="fa fa-check"></i> Confirmer'
+                                            label: '<i class="fa fa-check"></i> Continuer'
                                         }
                                     },
                                     callback: function (result) {
