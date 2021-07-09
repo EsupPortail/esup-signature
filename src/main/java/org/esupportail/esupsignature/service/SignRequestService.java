@@ -920,11 +920,16 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
+		User user = userService.getUserByEppn(userEppn);
 		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
 			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 			User authUser = userService.getUserByEppn(authUserEppn);
-			if((data != null && (data.getForm() != null && data.getForm().getManagers().contains(authUser.getEmail()))) ||signRequest.getCreateBy().getEppn().equals(userEppn) || signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn)) || signRequests.size() > 0) {
+			if((data != null && (data.getForm() != null && data.getForm().getManagers().contains(authUser.getEmail())))
+					|| signRequest.getCreateBy().getEppn().equals(userEppn)
+					|| signRequest.getParentSignBook().getViewers().contains(userService.getUserByEppn(authUserEppn))
+					|| signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getUsers).anyMatch(users -> users.contains(user))
+					|| signRequests.size() > 0) {
 				return true;
 			}
 		}
