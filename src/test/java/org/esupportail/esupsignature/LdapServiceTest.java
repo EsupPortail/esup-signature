@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
-import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +18,6 @@ public class LdapServiceTest {
 
     @Autowired(required = false)
     private LdapContextSource ldapContextSource;
-
-    @Autowired(required = false)
-    private LdapPersonService ldapPersonService;
 
     @Autowired(required = false)
     private LdapOrganizationalUnitService ldapOrganizationalUnitService;

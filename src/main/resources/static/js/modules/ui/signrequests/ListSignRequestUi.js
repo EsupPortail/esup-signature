@@ -211,9 +211,12 @@ export default class ListSignRequestUi {
             url: "/user/signrequests/mass-sign/?" + self.csrf.parameterName + "=" + self.csrf.token,
             type: 'POST',
             data: signRequestUrlParams,
+            success: function() {
+                document.location.reload();
+            },
             error: function(e) {
                 bootbox.alert("La signature s'est terminée, d'une façon inattendue. La page va s'actualiser", function() {
-                    document.location.reload();
+                    location.href = "/user/reports";
                 });
             }
         });
