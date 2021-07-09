@@ -762,12 +762,12 @@ public class SignRequestService {
 						for (SignRequest signRequest : signRequests) {
 							if (target.getTargetType().equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
-								ActionType actionType = ActionType.signed;
+								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
-									actionType = ActionType.refused;
+									status = SignRequestStatus.refused;
 								}
 								try {
-									ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + actionType.name(), String.class);
+									ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + status.name(), String.class);
 									if (response.getStatusCode().equals(HttpStatus.OK)) {
 										target.setTargetOk(true);
 										updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);

@@ -656,17 +656,24 @@ export class PdfViewer extends EventFactory {
                     inputField.attr('id', inputName);
                     inputField.val(item.fieldValue);
                     inputField.attr('wrap', "hard");
-                    let limit = Math.round(parseInt(inputField.css("height")) / this.scale / 11) + 1;
-                    inputField.on("keypress", e => this.limitLines(e, limit));
+                    inputField.on("keypress", e => this.limitLines(e, inputField));
                 }
             }
         }
     }
 
-    limitLines(e, keynum) {
+    limitLines(e, input) {
+        let keynum;
+        if(window.event) { // IE
+            keynum = e.keyCode;
+        } else if(e.which){ // Netscape/Firefox/Opera
+            keynum = e.which;
+        }
+        let limit = Math.round(parseInt(input.css("height")) / 11 * .75) + 1;
+        console.info(limit);
         let text = $(e.currentTarget).val();
         let lines = text.split(/\r|\r\n|\n/);
-        if(lines.length > keynum) {
+        if(lines.length > limit || (lines.length === limit && keynum === 13)) {
             e.preventDefault();
         }
     }
