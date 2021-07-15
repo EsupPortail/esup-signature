@@ -156,7 +156,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
-        SignRequest signRequest = signRequestService.getById(id);
+        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, userEppn, authUserEppn);
 //        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 //            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
 //            return "redirect:/user/";
