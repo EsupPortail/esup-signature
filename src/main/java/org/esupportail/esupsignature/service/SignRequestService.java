@@ -1069,10 +1069,9 @@ public class SignRequestService {
 			signRequest.setSignable(true);
 		}
 		User user = userService.getUserByEppn(userEppn);
-		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
+		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
 				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
-				&& signRequest.getOriginalDocuments().size() > 0
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)
+				&& signRequest.getOriginalDocuments().size() > 0) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			signRequest.setEditable(true);
 		}
