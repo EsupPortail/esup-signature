@@ -122,6 +122,11 @@
         <div id="content" class="content">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a class="btn-lg btn-floating bg-primary waves-effect"
+                           th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
+                           title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
+                    </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Signer"><i class="fas fa-file-signature"></i></a>
@@ -151,11 +156,6 @@
                      th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
                      onmouseover="$('#openButtons').toggleClass('active');"
                      onmouseout="$('#openButtons').toggleClass('active');">
-                    <li>
-                        <a class="btn-lg btn-floating bg-primary waves-effect"
-                           th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
-                    </li>
                     <li>
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/user/signrequests/get-last-file-report/' + ${id}" target="_blank"
