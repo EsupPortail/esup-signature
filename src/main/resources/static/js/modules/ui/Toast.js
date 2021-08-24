@@ -13,6 +13,7 @@ export default class Toast {
             $(this).toast('show');
         });
         this.toastBackdrop = $("#toast-backdrop");
+        this.toast = null;
         this.initListener();
     }
 
@@ -53,6 +54,7 @@ export default class Toast {
         toastBackdrop.on("click", function () {
             toast.toast('hide');
         });
+        this.toast = toast;
         new Notification(message.text);
         let start = new Date();
         let end = new Date();
@@ -67,6 +69,7 @@ export default class Toast {
         elem.attr('max', max);
         elem.attr('value', max);
         let toastBackdrop = this.toastBackdrop;
+        let toast = this.toast;
         let setValue = function() {
             let currentTime = new Date().getTime();
             let ellasped = endTime - currentTime;
@@ -74,7 +77,9 @@ export default class Toast {
                 ellasped = 0
                 window.clearTimeout(timer)
                 toastBackdrop.removeClass("backdrop");
-                toastBackdrop.unbind();            }
+                toastBackdrop.unbind();
+                toast.toast('hide');
+            }
             elem.attr('value', ellasped);
         }
         setValue();

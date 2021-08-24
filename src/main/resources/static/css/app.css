@@ -1865,10 +1865,10 @@ progress:before {
 
 @keyframes blink { 50% { border-color:#fff !important; }  }
 
-.fa-file-alt {
+.file-alt-color {
     color: #096fb2;
 }
 
-.fa-project-diagram {
+.project-diagram-color {
     color: #0f6674;
 }
