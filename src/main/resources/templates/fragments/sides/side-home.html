@@ -1,6 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<!--/*@thymesVar id="activeMenu" type="java.lang.String"*/-->
 <nav th:fragment="side-home" id="sidebar">
     <div class="ms-1 mt-2">
         <h5 class="text-center sidebar-label"><b>Filtres</b></h5>
@@ -11,10 +11,10 @@
             <i class="fas fa-tools"></i> <span class="sidebar-label">Outils de signature</span>
         </button>
         <button id="workflowFilterButton" title="Circuits" type="button" class="mb-1 col-12 btn text-left btn-light">
-            <i class="fas fa-project-diagram"></i> <span class="sidebar-label">Circuits</span>
+            <i class="fas fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
         </button>
         <button id="formFilterButton" th:classappend="${activeMenu == 'datas'} ? 'bg-secondary'" title="Formulaires" class="mb-1 col-12 btn text-left btn-light">
-            <i class="fas fa-file-alt"></i> <span class="sidebar-label">Formulaires</span>
+            <i class="fas fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </button>
     </div>
 </nav>
