@@ -406,6 +406,14 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @GetMapping(value = "/restore/{id}", produces = "text/html")
+    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        signRequestService.restore(id, authUserEppn);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         signRequestService.delete(id, authUserEppn);

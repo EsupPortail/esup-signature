@@ -269,7 +269,7 @@ export class WorkspacePdf {
     }
 
     pushData(redirect) {
-        console.debug("push data");
+        console.debug("debug - " + "push data");
         let formData = new Map();
 
         let self = this;
@@ -454,8 +454,8 @@ export class WorkspacePdf {
 
     disableForm() {
         $("#signForm :input").not(':input[type=button], :input[type=submit], :input[type=reset]').each(function (i, e) {
-            console.debug("disable ");
-            console.debug(e);
+            console.debug("debug - " + "disable ");
+            console.debug("debug - " + e);
             e.disabled = true;
         });
     }
@@ -497,7 +497,7 @@ export class WorkspacePdf {
             $("#commentPosX").val(xPos);
             $('#commentPosY').val(yPos);
             $('#commentPageNumber').val(this.pdfViewer.pageNum);
-            console.debug("mouse pos : " + xPos + ", " + yPos);
+            console.debug("debug - " + "mouse pos : " + xPos + ", " + yPos);
     }
 
     saveComment() {
@@ -540,7 +540,7 @@ export class WorkspacePdf {
     }
 
     refreshAfterPageChange() {
-        console.debug("refresh comments and sign pos" + this.pdfViewer.pageNum);
+        console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
         let self = this;
         this.postits.forEach((comment, iterator) => {
             if(comment.stepNumber == null) {
@@ -879,7 +879,7 @@ export class WorkspacePdf {
     }
 
     pageTop() {
-        console.debug("prev page");
+        console.debug("debug - " + "prev page");
         if (this.pdfViewer.pageNum > 1) {
             this.pdfViewer.prevPage();
             window.scrollTo(0, document.body.scrollHeight);
@@ -887,7 +887,7 @@ export class WorkspacePdf {
     }
 
     pageBottom() {
-        console.debug("next page");
+        console.debug("debug - " + "next page");
         if (this.pdfViewer.pdfDoc != null && this.pdfViewer.pageNum < this.pdfViewer.pdfDoc.numPages) {
             this.pdfViewer.nextPage();
         }
@@ -1032,7 +1032,7 @@ export class WorkspacePdf {
     }
 
     initFormAction() {
-        console.debug("eval : " + this.action);
+        console.debug("debug - " + "eval : " + this.action);
         jQuery.globalEval(this.action);
     }
 
