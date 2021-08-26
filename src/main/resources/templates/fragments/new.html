@@ -59,7 +59,7 @@
                                 th:attr="data-workflow-id=${workflow.id}, data-workflow-name=${workflow.name} "
                                 th:title="'Circuit : ' + ${workflow.description}">
                                 <div class="crop">
-                                    <i class="fas fa-project-diagram fa-4x"></i>
+                                    <i class="fas fa-project-diagram fa-4x project-diagram-color"></i>
                                 </div>
                                 <h6 th:text="'Circuit : ' + ${workflow.description}"></h6>
                                 <form th:id="${'deleteWorkflow_' + workflow.id}" th:if="${workflow.createBy.eppn == userEppn}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
@@ -92,7 +92,7 @@
                                style="width: 150px; height: 200px;" data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}"
                                th:title="'Formulaire : ' + ${form.title} + ' v.' + ${form.version}">
                                 <div class="crop">
-                                    <i class="fas fa-file-alt fa-4x"></i>
+                                    <i class="fas fa-file-alt fa-4x file-alt-color"></i>
     <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                                 </div>
                                 <h6 th:text="${form.title}"></h6>

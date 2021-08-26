@@ -18,7 +18,7 @@ export class UiParams extends EventFactory {
 
     assignParams(data) {
         this.params = data;
-        console.debug(this.params);
+        console.debug("debug - " + this.params);
         this.fireEvent('ready', ['ok']);
     }
 
