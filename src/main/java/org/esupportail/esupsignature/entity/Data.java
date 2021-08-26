@@ -30,7 +30,10 @@ public class Data {
 
 	@ManyToOne
 	private User createBy;
-    
+
+	@ManyToOne
+	private User updateBy;
+
     @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
@@ -126,6 +129,14 @@ public class Data {
 
 	public void setStatus(SignRequestStatus status) {
 		this.status = status;
+	}
+
+	public User getUpdateBy() {
+		return updateBy;
+	}
+
+	public void setUpdateBy(User updateBy) {
+		this.updateBy = updateBy;
 	}
 
 	public Date getUpdateDate() {
