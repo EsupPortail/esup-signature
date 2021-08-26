@@ -25,9 +25,6 @@ public class Data {
 
     private String name;
 
-    @ManyToOne
-	private User owner;
-
 	@ManyToOne
 	private User createBy;
 
@@ -97,14 +94,6 @@ public class Data {
 
 	public void setDatas(Map<String, String> datas) {
 		this.datas = datas;
-	}
-
-	public User getOwner() {
-		return owner;
-	}
-
-	public void setOwner(User owner) {
-		this.owner = owner;
 	}
 
 	public User getCreateBy() {

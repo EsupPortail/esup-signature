@@ -14,7 +14,6 @@ public interface DataRepository extends CrudRepository<Data, Long>, PagingAndSor
     List<Data> findByFormId(Long formId);
     List<Data> findByCreateByAndStatus(User createBy, SignRequestStatus status);
     Long countByCreateByAndStatus(User createBy, SignRequestStatus status);
-    List<Data> findByOwnerAndStatus(User createBy, SignRequestStatus status);
     Data findBySignBook(SignBook signBook);
 
 }
