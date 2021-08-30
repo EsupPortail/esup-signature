@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -98,29 +97,6 @@ public class DataController {
 		Data data = dataService.addData(id, dataLongId , datas, user, authUser);
 		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Données enregistrées"));
 		return data.getId().toString();
-	}
-
-	@PreAuthorize("@preAuthorizeService.dataUpdate(#id, #userEppn)")
-	@PostMapping("{id}/send")
-	public String sendDataById(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-							   @PathVariable("id") Long id,
-                               @RequestParam(required = false) List<String> recipientEmails,
-							   @RequestParam(required = false) List<String> allSignToCompletes,
-							   @RequestParam(required = false) List<String> targetEmails,
-							   RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
-		try {
-			SignBook signBook = dataService.initSendData(id, targetEmails, recipientEmails, allSignToCompletes, userEppn, authUserEppn);
-			if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().get(0).getUsers().get(0).getEppn().equals(userEppn)) {
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Vous devez maintenant signer cette demande"));
-				return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
-			} else {
-				redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Demande envoyée"));
-				return "redirect:/user/";
-			}
-		} catch (EsupSignatureException e) {
-			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
-		}
-		return "redirect:/user/datas/" + id + "/update";
 	}
 
 	@GetMapping("forms/{id}/get-image")

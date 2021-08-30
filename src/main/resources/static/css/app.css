@@ -580,6 +580,7 @@ th .ss-content {
 .sign-space {
     cursor: pointer !important;
     position: absolute;
+    z-index: 2 !important;
 }
 
 .wrapper {
@@ -1485,7 +1486,6 @@ input:focus, textarea:focus, select:focus {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 0.5) !important;
     cursor: pointer;
-    z-index: 1;
 }
 
 .sign-field:hover {
