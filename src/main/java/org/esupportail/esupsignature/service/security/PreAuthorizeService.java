@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 
 @Service
 @Transactional
@@ -42,12 +41,6 @@ public class PreAuthorizeService {
         Form form = formService.getById(id);
         User user = userService.getByEppn(userEppn);
         return form.getManagers().contains(user.getEmail());
-    }
-
-    public boolean dataUpdate(Long id, String userEppn) {
-        Data data = dataService.getById(id);
-        User user = userService.getByEppn(userEppn);
-        return data.getCreateBy().equals(user) || data.getOwner().equals(user);
     }
 
     public boolean signBookView(Long id, String userEppn) {

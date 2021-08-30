@@ -647,6 +647,9 @@ export class PdfViewer extends EventFactory {
                 signFieldNumber = signFieldNumber + 1;
                 continue;
             }
+            if(!item.fieldName) {
+                continue;
+            }
             let inputName = item.fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if (inputField.length) {
