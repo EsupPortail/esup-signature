@@ -338,6 +338,7 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
+						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
@@ -352,6 +353,8 @@ public class SignRequestService {
 				file.delete();
 			} catch (IOException e) {
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
+			} catch (EsupSignatureException e) {
+				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
 	}

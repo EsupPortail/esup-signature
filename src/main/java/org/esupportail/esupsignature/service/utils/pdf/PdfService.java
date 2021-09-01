@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.utils.pdf;
 
+import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -41,6 +42,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureSignException;
 import org.esupportail.esupsignature.service.LogService;
+import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +86,9 @@ public class PdfService {
 
     @Resource
     private LogService logService;
+
+    @Resource
+    private ValidationService validationService;
 
     public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
@@ -398,6 +403,55 @@ public class PdfService {
             String defFile = PdfService.class.getResource("/PDFA_def.ps").getFile();
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dSubsetFonts=true -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dNOSAFER -sColorConversionStrategy=UseDeviceIndependentColor -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1 -dCompatibilityLevel=1.7 -sDocumentUUID=" + UUID + " -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + defFile + "' '" + file.getAbsolutePath() + "'";
             //String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dBATCH -dNOPAUSE -dPreserveAnnots=true -dShowAnnots=true -dPrinted=false -dDOPDFMARKS -dNOSAFER -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -sOutputFile='" + targetFile.getAbsolutePath() + "' -c '/PreserveAnnotTypes [/Text /UnderLine /Link /Stamp /FreeText /Squiggly /Underline] def' -f '" + file.getAbsolutePath() + "'";
+            logger.info("GhostScript PDF/A convertion : " + cmd);
+
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            if(SystemUtils.IS_OS_WINDOWS) {
+                processBuilder.command("cmd", "/C", cmd);
+            } else {
+                processBuilder.command("bash", "-c", cmd);
+            }
+            //processBuilder.directory(new File("/tmp"));
+            try {
+                Process process = processBuilder.start();
+                StringBuilder output = new StringBuilder();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line + "\n");
+                }
+
+                int exitVal = process.waitFor();
+                if (exitVal == 0) {
+                    logger.info("Convert success");
+                    logger.debug(output.toString());
+                } else {
+                    logger.warn("Convert fail");
+                    logger.warn(cmd);
+                    logger.warn(output.toString());
+                    throw new EsupSignatureSignException("PDF/A convertion failure");
+                }
+            } catch (InterruptedException e) {
+                logger.error("GhostScript launcs error : check installation or path", e);
+                throw new EsupSignatureSignException("GhostScript launch error");
+            }
+            InputStream convertedInputStream = new FileInputStream(targetFile);
+            file.delete();
+            targetFile.delete();
+            return convertedInputStream;
+        } else {
+            FileInputStream fileInputStream = new FileInputStream(file);
+            file.delete();
+            return fileInputStream;
+        }
+    }
+
+    public InputStream normalizeGS(InputStream inputStream) throws IOException, EsupSignatureException {
+        File file = fileService.inputStreamToTempFile(inputStream, "temp.pdf");
+        Reports reports = validationService.validate(new FileInputStream(file), null);
+        if (isPdfAComplient(new FileInputStream(file)) && reports.getSimpleReport().getSignatureIdList().size() == 0) {
+            File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite -d -sOutputFile='" + targetFile.getAbsolutePath() + "' '" + file.getAbsolutePath() + "'";
             logger.info("GhostScript PDF/A convertion : " + cmd);
 
             ProcessBuilder processBuilder = new ProcessBuilder();
