@@ -70,7 +70,7 @@
                                     </th:block>
                                 </td>
                                 <td class="text-center">
-                                    <div class="position-relative">
+                                    <div class="position-relative" th:if="${workflow.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${workflow.title}"
                                                 th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>

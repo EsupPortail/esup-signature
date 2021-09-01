@@ -112,7 +112,8 @@
                                            th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
                                            th:data-id-signbook="${signRequest.parentSignBook.id}">
                                 </td>
-                                <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
+                                <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.liveWorkflow.workflow.description}"></td>
+                                <td th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
                                 <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
                                 <td class="clickable-td d-none d-xxl-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
                                 <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>

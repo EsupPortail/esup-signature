@@ -48,7 +48,8 @@
                             <tbody>
                             <th:block th:each="signRequest : ${signRequests}">
                                 <tr>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
+                                    <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null}" class="text-break" th:text="${signRequest.parentSignBook.liveWorkflow.workflow.description}"></td>
+                                    <td th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}" class="text-break" th:text="${signRequest.parentSignBook.title}"></td>
                                     <td><p class="text-break" th:title="${signRequest.title}"
                                                         th:text="${signRequest.title}"></p></td>
                                     <td><span

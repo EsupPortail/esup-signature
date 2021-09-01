@@ -448,7 +448,8 @@ public class WorkflowService {
     public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) {
         User user = userService.getByEppn(userEppn);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
-            for (User oneUser : workflowStep.getUsers()) {
+            List<User> users = new ArrayList<>(workflowStep.getUsers());
+            for (User oneUser : users) {
                 if (oneUser.getEppn().equals("creator")) {
                     workflowStep.getUsers().remove(oneUser);
                     workflowStep.getUsers().add(user);
