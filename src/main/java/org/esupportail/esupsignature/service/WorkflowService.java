@@ -549,7 +549,7 @@ public class WorkflowService {
     @Transactional
     public boolean addTarget(Long id, String targetType, String documentsTargetUri) {
         Workflow workflow = getById(id);
-        if(workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
+        if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
             Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
             workflow.getTargets().add(target);
             return true;
