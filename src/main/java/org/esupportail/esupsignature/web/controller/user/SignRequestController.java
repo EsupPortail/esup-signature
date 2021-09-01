@@ -156,7 +156,7 @@ public class SignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureException {
-        SignRequest signRequest = signRequestService.getById(id);
+        SignRequest signRequest = signRequestService.getSignRequestsFullById(id, userEppn, authUserEppn);
 //        if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
 //            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Demande supprimée"));
 //            return "redirect:/user/";
@@ -402,6 +402,14 @@ public class SignRequestController {
     public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
         signRequestService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
+        return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @GetMapping(value = "/restore/{id}", produces = "text/html")
+    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+        signRequestService.restore(id, authUserEppn);
+        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
         return "redirect:/user/signrequests/" + id;
     }
 

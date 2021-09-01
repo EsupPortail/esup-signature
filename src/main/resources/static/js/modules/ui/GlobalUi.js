@@ -201,7 +201,7 @@ export class GlobalUi {
     }
 
     listenHelpMarkAsReadButton(btn) {
-        console.debug("listen to" + btn);
+        console.debug("debug - " + "listen to" + btn);
         $(btn).on('click', e => this.markHelpAsRead(e));
     }
 
@@ -212,7 +212,7 @@ export class GlobalUi {
     }
 
     listenMarkAsReadButton(btn) {
-        console.debug("listen to" + btn);
+        console.debug("debug - " + "listen to" + btn);
         $(btn).on('click', e => this.markAsRead(e));
     }
 
@@ -248,7 +248,7 @@ export class GlobalUi {
             console.info("auto adjust : hide");
             this.hideSideBar();
         } else {
-            console.debug("auto adjust : display");
+            console.debug("debug - " + "auto adjust : display");
             let url = window.location.pathname;
             if(this.sideBarStatus === 'on') {
                 this.showSideBar();
@@ -279,7 +279,7 @@ export class GlobalUi {
     }
 
     disableSideBarButton() {
-        console.debug("disable side button");
+        console.debug("debug - " + "disable side button");
         $("#sidebarCollapse").attr("disabled", true).addClass('d-none');
         $('#returnButton').removeClass('d-none');
     }
@@ -338,7 +338,7 @@ export class GlobalUi {
     }
 
     showSideBar() {
-        console.debug("show side");
+        console.debug("debug - " + "show side");
         this.sideBar.removeClass('active');
         this.sideBar2.removeClass('d-none');
         this.sideBarLabels.removeClass('d-none');
@@ -347,7 +347,7 @@ export class GlobalUi {
     }
 
     hideSideBar() {
-        console.debug("hide side");
+        console.debug("debug - " + "hide side");
         this.sideBar.addClass('active');
         this.sideBar2.addClass('d-none');
         this.sideBarLabels.addClass('d-none');

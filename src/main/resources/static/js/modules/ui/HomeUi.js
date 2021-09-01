@@ -14,6 +14,9 @@ export class HomeUi {
         this.menuToggled = false;
         this.uiParams = new UiParams();
         this.initListeners();
+        if(localStorage.getItem('menuToggled') === "true") {
+            this.toggleNewMenu();
+        }
     }
 
     initListeners() {
@@ -47,6 +50,7 @@ export class HomeUi {
         $('.noForm').toggleClass('d-none');
         $('.noWorkflow').toggleClass('d-none');
         this.menuToggled = !this.menuToggled;
+        localStorage.setItem('menuToggled', this.menuToggled);
     }
 
     hideAll() {

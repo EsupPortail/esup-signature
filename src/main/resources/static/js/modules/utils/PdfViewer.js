@@ -69,7 +69,7 @@ export class PdfViewer extends EventFactory {
                                 q: request.term
                             },
                             success: function (data) {
-                                console.debug("search user " + request.term);
+                                console.debug("debug - " + "search user " + request.term);
                                 response($.map(data, function (item) {
                                     return {
                                         label: item.text,
@@ -147,7 +147,7 @@ export class PdfViewer extends EventFactory {
 
     renderPage(num) {
         console.group("Start render");
-        console.debug("render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
+        console.debug("debug - " + "render page " + num + ", scale : " + this.scale + ", signable : " + this.signable + " ,step : " + this.currentStepNumber);
         this.pageNum = num;
         if(this.pdfDoc != null) {
             if(this.page != null) {
@@ -360,7 +360,7 @@ export class PdfViewer extends EventFactory {
     renderPdfFormWithFields(items) {
         this.pdfFields = items;
         let datePickerIndex = 40;
-        console.debug("rending pdfForm items");
+        console.debug("debug - " + "rending pdfForm items");
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldType === undefined) {
@@ -399,7 +399,7 @@ export class PdfViewer extends EventFactory {
                     inputField.addClass('disabled-field disable-selection');
                     inputField.prop('disabled', true);
                 }
-                console.debug(dataField);
+                console.debug("debug - " + dataField);
                 if(this.isFieldEnable(dataField)) {
                     if(dataField.readOnly) {
                         inputField.addClass('disabled-field disable-selection');
@@ -589,7 +589,7 @@ export class PdfViewer extends EventFactory {
             }
 
         }
-        console.debug(">>End compute field");
+        console.debug("debug - " + ">>End compute field");
     }
 
     isFieldEnable(dataField) {
@@ -604,26 +604,34 @@ export class PdfViewer extends EventFactory {
     }
 
     renderPdfForm(items) {
-        console.debug("rending pdfForm items");
+        console.debug("debug - " + "rending pdfForm items");
+        $('[id^="signField_"]').each(function (){
+            $(this).unbind();
+            $(this).remove();
+        });
         let signFieldNumber = 0;
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
-            console.debug(">>Start compute item");
-            if(item.fieldType === undefined) {
+            console.debug("debug - " +  ">> Start compute item of type : " + item.fieldType);
+            if(item.fieldType === "Sig") {
                 console.log(item);
-                if(item.title && item.title.toLowerCase().includes('sign')) {
-                    signFieldNumber = signFieldNumber + 1;
-                    $('.popupWrapper').remove();
-                    let section = $('section[data-annotation-id=' + item.id +']');
-                    let signField = $('section[data-annotation-id=' + item.id + '] > div');
+                // $('.popupWrapper').remove();
+                // let section = $('section[data-annotation-id=' + item.id +']');
+                // let signField = $('section[data-annotation-id=' + item.id + '] > div');
+                if(!$("#signSpace_" + signFieldNumber).length) {
+                    let pdf = $("#pdf");
+                    let left = Math.round(item.rect[0] / .75 * this.scale);
+                    let top = Math.round(pdf.height() - ((item.rect[1] + (item.rect[3] - item.rect[1])) / .75 * this.scale));
+                    let width = Math.round((item.rect[2] - item.rect[0]) / .75 * this.scale);
+                    let height = Math.round((item.rect[3] - item.rect[1]) / .75 * this.scale);
+                    let signDiv = "<div id='signField_" + signFieldNumber + "' class='sign-field' style='position: absolute; left: " + left + "px; top: " + top + "px;width: " + width + "px; height: " + height + "px;'></div>";
+                    pdf.append(signDiv);
+                    let signField = $('#signField_' + signFieldNumber);
                     signField.css("font-size", 8);
-                    // signField.addClass("sign-field");
-                    signField.unbind();
-                    section.unbind();
-                    section.attr("id", signFieldNumber);
-                    section.on('click', function () {
-                        let report = $("#report_" + $(this).attr("id"));
-                        if(report.length) {
+                    signField.attr("data-id", signFieldNumber);
+                    signField.on('click', function () {
+                        let report = $("#report_" + $(this).attr("data-id"));
+                        if (report.length) {
                             $("#reportModal").modal("show");
                             $("div[id^='report_']").each(function () {
                                 $(this).hide();
@@ -636,11 +644,14 @@ export class PdfViewer extends EventFactory {
                     // signField.addClass("d-none");
                     // signField.parent().remove();
                 }
+                signFieldNumber = signFieldNumber + 1;
+                continue;
+            }
+            if(!item.fieldName) {
                 continue;
             }
             let inputName = item.fieldName.split(/\$|#|!/)[0];
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
-            console.debug(inputField);
             if (inputField.length) {
                 inputField.attr('name', inputName);
                 inputField.removeAttr("maxlength");
@@ -656,17 +667,24 @@ export class PdfViewer extends EventFactory {
                     inputField.attr('id', inputName);
                     inputField.val(item.fieldValue);
                     inputField.attr('wrap', "hard");
-                    let limit = Math.round(parseInt(inputField.css("height")) / this.scale / 11) + 1;
-                    inputField.on("keypress", e => this.limitLines(e, limit));
+                    inputField.on("keypress", e => this.limitLines(e, inputField));
                 }
             }
         }
     }
 
-    limitLines(e, keynum) {
+    limitLines(e, input) {
+        let keynum;
+        if(window.event) { // IE
+            keynum = e.keyCode;
+        } else if(e.which){ // Netscape/Firefox/Opera
+            keynum = e.which;
+        }
+        let limit = Math.round(parseInt(input.css("height")) / 11 * .75) + 1;
+        console.info(limit);
         let text = $(e.currentTarget).val();
         let lines = text.split(/\r|\r\n|\n/);
-        if(lines.length > keynum) {
+        if(lines.length > limit || (lines.length === limit && keynum === 13)) {
             e.preventDefault();
         }
     }

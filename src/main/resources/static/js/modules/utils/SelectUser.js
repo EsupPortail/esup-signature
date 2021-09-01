@@ -84,7 +84,7 @@ export default class SelectUser {
                                     }
                                 }
                             }).catch(function () {
-                               console.debug("abort last search");
+                               console.debug("debug - " + "abort last search");
                             });
                         if(data.length > 0) {
                             callback(data);

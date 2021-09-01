@@ -259,7 +259,7 @@ export default class ListSignRequestUi {
                 cloneBarText.html(message.text);
             }
         } else {
-            console.debug("update bar");
+            console.debug("debug - " + "update bar");
             bar.css("display", "block");
             bar.css("width", this.percent + "%");
             barText.html(message.text);
