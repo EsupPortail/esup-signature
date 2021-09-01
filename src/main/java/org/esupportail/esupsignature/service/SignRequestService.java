@@ -762,12 +762,12 @@ public class SignRequestService {
 						for (SignRequest signRequest : signRequests) {
 							if (target.getTargetType().equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
-								ActionType actionType = ActionType.signed;
+								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
-									actionType = ActionType.refused;
+									status = SignRequestStatus.refused;
 								}
 								try {
-									ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + actionType.name(), String.class);
+									ResponseEntity<String> response = restTemplate.getForEntity(target.getTargetUri() + "?signRequestId=" + signRequest.getId() + "&status=" + status.name(), String.class);
 									if (response.getStatusCode().equals(HttpStatus.OK)) {
 										target.setTargetOk(true);
 										updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
@@ -950,6 +950,19 @@ public class SignRequestService {
 	}
 
 	@Transactional
+	public void restore(Long signRequestId, String userEppn) {
+		SignRequest signRequest = getById(signRequestId);
+		if(signRequest.getStatus().equals(SignRequestStatus.deleted)) {
+			List<Log> logs = logService.getBySignRequest(signRequestId);
+			logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
+			SignRequestStatus restoreStatus = SignRequestStatus.valueOf(logs.get(1).getFinalStatus());
+			signRequest.setStatus(restoreStatus);
+			signRequest.getParentSignBook().setStatus(restoreStatus);
+			logService.create(signRequest, restoreStatus, "Restauration par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+		}
+	}
+
+	@Transactional
 	public void delete(Long signRequestId, String userEppn) {
 		//TODO critères de suppression ou en conf (if deleteDefinitive)
 		SignRequest signRequest = getById(signRequestId);
@@ -961,7 +974,7 @@ public class SignRequestService {
 				signRequest.getSignedDocuments().clear();
 			}
 			signRequest.setStatus(SignRequestStatus.deleted);
-			logService.create(signRequest, SignRequestStatus.deleted, "DELETE", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
+			logService.create(signRequest, SignRequestStatus.deleted, "Suppression par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
 			otpService.deleteOtpBySignRequestId(signRequestId);
 		}
 	}
@@ -1069,10 +1082,9 @@ public class SignRequestService {
 			signRequest.setSignable(true);
 		}
 		User user = userService.getUserByEppn(userEppn);
-		if ((signRequest.getStatus().equals(SignRequestStatus.pending) || signRequest.getStatus().equals(SignRequestStatus.draft))
+		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
 				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
-				&& signRequest.getOriginalDocuments().size() > 0
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)
+				&& signRequest.getOriginalDocuments().size() > 0) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			signRequest.setEditable(true);
 		}

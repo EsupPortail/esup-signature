@@ -580,6 +580,7 @@ th .ss-content {
 .sign-space {
     cursor: pointer !important;
     position: absolute;
+    z-index: 2 !important;
 }
 
 .wrapper {
@@ -1484,8 +1485,7 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 0.5) !important;
-    cursor: default;
-    z-index: 1;
+    cursor: pointer;
 }
 
 .sign-field:hover {
@@ -1864,3 +1864,11 @@ progress:before {
 }
 
 @keyframes blink { 50% { border-color:#fff !important; }  }
+
+.file-alt-color {
+    color: #096fb2;
+}
+
+.project-diagram-color {
+    color: #0f6674;
+}

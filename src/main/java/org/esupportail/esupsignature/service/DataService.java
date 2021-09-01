@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
@@ -13,9 +12,6 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -162,9 +158,8 @@ public class DataService {
         data.setFormName(form.getName());
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
-        data.setCreateBy(authUser);
-        data.setOwner(user);
-        data.setCreateDate(new Date());
+        data.setUpdateBy(authUser);
+        data.setUpdateDate(new Date());
         dataRepository.save(data);
         return data;
     }
@@ -178,7 +173,6 @@ public class DataService {
         cloneData.setStatus(SignRequestStatus.draft);
         cloneData.setCreateBy(authUser);
         cloneData.setCreateDate(new Date());
-        cloneData.setOwner(data.getOwner());
         cloneData.getDatas().putAll(data.getDatas());
         cloneData.setForm(form);
         dataRepository.save(cloneData);
@@ -205,27 +199,6 @@ public class DataService {
 
     public Data getBySignBook(SignBook signBook) {
         return dataRepository.findBySignBook(signBook);
-    }
-
-    public List<Data> getDataDraftByOwner(String userEppn) {
-        User user = userService.getByEppn(userEppn);
-        return dataRepository.findByOwnerAndStatus(user, SignRequestStatus.draft);
-    }
-
-    public Page<Data> getDatasPaged(List<Data> datas, Pageable pageable, String userEppn, String authUserEppn) {
-        Page<Data> datasPage;
-        if(!userEppn.equals(authUserEppn)) {
-            List<Data> datasOk = new ArrayList<>();
-            for(Data data : datas) {
-                if(userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, data.getForm())) {
-                    datasOk.add(data);
-                }
-            }
-            datasPage = new PageImpl<>(datasOk, pageable, datas.size());
-        } else {
-            datasPage = new PageImpl<>(datas, pageable, datas.size());
-        }
-        return datasPage;
     }
 
     public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
@@ -303,7 +276,7 @@ public class DataService {
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
         data.setCreateBy(authUser);
-        data.setOwner(user);
+//        data.setOwner(user);
         data.setCreateDate(new Date());
         dataRepository.save(data);
         return data;

@@ -15,18 +15,18 @@ export class WheelDetector extends EventFactory {
     computeWhellEvent(event) {
         if(event.ctrlKey === true) {
             if (this.detectMouseWheelDirection(event) === 'down'){
-                console.debug("wheel down zoom out");
+                console.debug("debug - " + "wheel down zoom out");
                 this.fireEvent("zoomout");
             } else {
-                console.debug("wheel up zoom in");
+                console.debug("debug - " + "wheel up zoom in");
                 this.fireEvent("zoomin");
             }
         } else {
             if (this.detectMouseWheelDirection(event) === 'down' && parseInt($(window).scrollTop() + $(window).height()) >= parseInt($(document).height())) {
-                console.debug("wheel down");
+                console.debug("debug - " + "wheel down");
                 this.fireEvent("pagebottom");
             } else if (this.detectMouseWheelDirection(event) === 'up' && window.scrollY === 0) {
-                console.debug("wheel up");
+                console.debug("debug - " + "wheel up");
                 this.fireEvent("pagetop");
             }
         }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DataExportService {
@@ -87,7 +88,8 @@ public class DataExportService {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
         int step = 1;
-        for (Map.Entry<Recipient, Action> actions : recipientHasSigned.entrySet()) {
+        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().sorted((o1, o2) -> o1.getValue().getDate().compareTo(o2.getValue().getDate())).collect(Collectors.toList());
+        for (Map.Entry<Recipient, Action> actions : actionsList) {
             if (!actions.getValue().getActionType().equals(ActionType.none)) {
                 toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
                 toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());

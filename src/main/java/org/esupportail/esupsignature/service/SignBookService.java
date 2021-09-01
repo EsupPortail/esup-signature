@@ -505,13 +505,13 @@ public class SignBookService {
         }
         if(template.contains("[date-fr]")) {
             Date date = Calendar.getInstance().getTime();
-            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy hh:mm");
+            DateFormat dateFormat = new SimpleDateFormat("ddMMyyyyhhmm");
             String strDate = dateFormat.format(date);
             template = template.replace("[date-fr]", strDate);
         }
         if(template.contains("[date-en]")) {
             Date date = Calendar.getInstance().getTime();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+            DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmm");
             String strDate = dateFormat.format(date);
             template = template.replace("[date-en]", strDate);
         }

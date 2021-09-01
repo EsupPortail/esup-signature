@@ -122,6 +122,11 @@
         <div id="content" class="content">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a class="btn-lg btn-floating bg-primary waves-effect"
+                           th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
+                           title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
+                    </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success waves-effect"
                            title="Signer"><i class="fas fa-file-signature"></i></a>
@@ -135,27 +140,37 @@
                            th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fas fa-file-excel"></i></a>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn == userEppn}">
-                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
-                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}">
+                        <a th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" class="btn-floating btn-lg bg-primary waves-effect" title="Restaurer"><i class="fas fa-trash-restore"></i></a>
+                    </li>
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect"
+                           th:title="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"
+                           data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fa-stack">
+                              <i class="fas fa-trash-alt" style="opacity: 0.85;"></i>
+                              <i class="fas fa-ban fa-stack-1x" style="font-size: 45px;"></i>
+                            </span>
+                            <i th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="fas fa-trash-alt"></i>
+                        </a>
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
-                    <li><a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
-                           data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fas fa-play"></i></a></li>
-                    <li><a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
+                    <li>
+                        <a role="button" class="btn-floating btn-lg bg-success waves-effect" title="Démarrer le circuit"
+                           data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fas fa-play"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" class="btn-floating btn-lg bg-danger waves-effect" title="Supprimer"
                            data-bs-toggle="modal" data-bs-target="#modal-warning"
-                           th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i></a>
+                           th:data-bs-target="'#modal-warning-' + ${signRequest.id}"><i class="fas fa-trash-alt"></i>
+                        </a>
                     </li>
                 </th:block>
                 <th:block id="openButtons" class="fixed-action-btns active"
                      th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
                      onmouseover="$('#openButtons').toggleClass('active');"
                      onmouseout="$('#openButtons').toggleClass('active');">
-                    <li>
-                        <a class="btn-lg btn-floating bg-primary waves-effect"
-                           th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Enregistrer le document signé sous"><i class="fas fa-download"></i></a>
-                    </li>
                     <li>
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/user/signrequests/get-last-file-report/' + ${id}" target="_blank"
@@ -660,13 +675,10 @@
             <form th:action="'/user/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <textarea placeholder="Vous devez ajouter un commentaire" class="form-control" name="comment"
-                              required></textarea>
+                    <textarea placeholder="Vous devez ajouter un commentaire" class="form-control" name="comment" required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
