@@ -33,7 +33,7 @@ public class Form {
 	@ElementCollection(targetClass=String.class)
 	private List<String> managers = new ArrayList<>();
 
-	@ManyToOne
+	@OneToOne
 	private Workflow workflow;
 	
 	private String preFillType;

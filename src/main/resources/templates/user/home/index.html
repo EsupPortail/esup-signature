@@ -32,19 +32,48 @@
                             <table th:if="${signRequests.getNumberOfElements() > 0}"
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
-                                <th:block th:each="signRequest : ${signRequests}">
-                                    <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                <th:block th:each="signBook : ${signBooks}">
+                                    <tr th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
+                                        <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell"><i class="fas fa-book p-2"></i></td>
-                                        <td class="text-break w-40" th:text="${signRequest.title}"></td>
-                                        <td class="text-break w-30 d-none d-md-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}">
+                                        <td class="text-break w-30" th:text="${signBook.title}"></td>
+                                        <td class="text-break w-30">
+                                            <span th:if="${signBook.signRequests.size() > 1}">
+                                                <i class="fas fa-caret-down"></i>
+                                                <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                                <i class="fas fa-caret-down"></i>
+                                            </span>
+                                            <span th:unless="${signBook.signRequests.size() > 1}" th:text="${signBook.signRequests.get(0).title}"></span>
                                         </td>
-                                        <td class="text-break w-20"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <td class="text-break w-20 d-none d-md-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                        </td>
+                                        <td class="text-break w-20"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                                         </td>
                                         <td class="text-center w-5">
                                              <a aria-label="Accéder à la demande"
                                                class="btn btn-sm text-dark"
-                                               title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i
-                                                    class="fas fa-eye"></i> </a>
+                                               title="Voir" th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}"><i class="fas fa-eye"></i> </a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${signBook.signRequests.size() > 1}">
+                                        <td></td>
+                                        <td></i></td>
+                                        <td colspan="4">
+                                            <div class="collapse" th:id="'row_' + ${signBook.id}">
+                                                <table class="table table-hover">
+                                                    <th:block th:each="signRequest : ${signBook.signRequests}">
+                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                                            <td><i class="fas fa-file-alt"></i></td>
+                                                            <td th:text="${signRequest.title}"></td>
+                                                            <td class="text-center w-5">
+                                                                <a aria-label="Accéder à la demande"
+                                                                   class="btn btn-sm text-dark"
+                                                                   title="Voir" th:href="'/user/signrequests/' + ${signRequest.id}"><i class="fas fa-eye"></i> </a>
+                                                            </td>
+                                                        </tr>
+                                                    </th:block>
+                                                </table>
+                                            </div>
                                         </td>
                                     </tr>
                                 </th:block>

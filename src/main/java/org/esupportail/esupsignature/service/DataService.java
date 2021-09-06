@@ -182,7 +182,7 @@ public class DataService {
     public InputStream generateFile(Data data) {
         Form form = data.getForm();
         if(form.getDocument() != null) {
-            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas());
+            return pdfService.fill(form.getDocument().getInputStream(), data.getDatas(), false);
         } else {
             try {
                 return pdfService.generatePdfFromData(data);
