@@ -126,6 +126,7 @@ public class SignRequestController {
         Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("signRequests", signRequestPage);
+        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
@@ -148,6 +149,7 @@ public class SignRequestController {
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         model.addAttribute("signRequests", signRequestPage);
+        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
         ctx.setVariables(model.asMap());
         ctx.setVariable("token", token);
         return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);

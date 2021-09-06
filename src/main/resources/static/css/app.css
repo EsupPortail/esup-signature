@@ -78,6 +78,10 @@ pre {
     color: black !important;
 }
 
+section {
+    border-width: 0px !important;
+}
+
 @-moz-document url-prefix() {
     textarea {
         overflow-x: hidden;
@@ -1038,10 +1042,6 @@ height: 100%;
     font-size: 10px;
 }
 
-.annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
-    font-family: "LiberationSans-Regular", sans-serif;
-}
-
 input:placeholder-shown.required-field {
     background-color: rgba(255, 0, 21, 0.13) !important;
 }
@@ -1087,9 +1087,13 @@ textarea:placeholder-shown.required-field {
     border-color: transparent !important;
 }
 
-.field-type-checkbox {
-    border-color: transparent !important;
+.annotationLayer .textWidgetAnnotation input, .annotationLayer .textWidgetAnnotation textarea, .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {
+    border: 1px solid rgba(0,0,0,1) !important;
 }
+
+/*.field-type-checkbox {*/
+/*    border-color: transparent !important;*/
+/*}*/
 
 .field-type-textarea {
     border-color: transparent !important;
