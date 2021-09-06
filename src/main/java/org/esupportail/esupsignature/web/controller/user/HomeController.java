@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.user;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Message;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -11,6 +12,7 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
@@ -82,7 +85,9 @@ public class HomeController {
                 messages.addAll(messageService.getByUser(authUser));
             }
             model.addAttribute("messageNews", messages);
-            model.addAttribute("signRequests", new PageImpl<>(signRequestService.getToSignRequests(userEppn), pageable, signRequestService.getToSignRequests(userEppn).size()));
+            Page<SignRequest> signRequestPage = new PageImpl<>(signRequestService.getToSignRequests(userEppn), pageable, signRequestService.getToSignRequests(userEppn).size());
+            model.addAttribute("signRequests", signRequestPage);
+            model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

@@ -338,6 +338,7 @@ public class SignRequestService {
 				String contentType = multipartFile.getContentType();
 				if (multipartFiles.length == 1) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
+						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
@@ -352,6 +353,8 @@ public class SignRequestService {
 				file.delete();
 			} catch (IOException e) {
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
+			} catch (EsupSignatureException e) {
+				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
 	}
@@ -491,7 +494,7 @@ public class SignRequestService {
 		}
 		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap);
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signBookService.isMoreWorkflowStep(signRequest.getParentSignBook()));
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
@@ -1013,23 +1016,23 @@ public class SignRequestService {
 			List<SignRequest> signRequestByTitle = signRequestRepository.findByTitle(docTitleFilter);
 			signRequests.retainAll(signRequestByTitle);
 		}
-		List<SignRequest> signRequestsGrouped = new ArrayList<>();
-		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
-		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
-			int last = signBookListEntry.getValue().size() - 1;
-			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
-		}
+//		List<SignRequest> signRequestsGrouped = new ArrayList<>();
+//		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
+//		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
+//			int last = signBookListEntry.getValue().size() - 1;
+//			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
+//		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
-			Collections.sort(signRequestsGrouped, new PropertyComparator(sortDefinition));
+			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
 		}
-		for(SignRequest signRequest : signRequestsGrouped) {
+		for(SignRequest signRequest : signRequests) {
 			if(signRequest.getEndDate() == null) {
 				signRequest.setEndDate(getEndDate(signRequest));
 			}
 		}
-		return signRequestsGrouped;
+		return signRequests;
 	}
 
 	private Date getEndDate(SignRequest signRequest) {
