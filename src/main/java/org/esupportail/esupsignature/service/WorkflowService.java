@@ -356,8 +356,7 @@ public class WorkflowService {
     }
 
     public List<Workflow> getSystemWorkflows() {
-        List<Workflow> workflowTypes = new ArrayList<>();
-        workflowTypes.addAll(getWorkflowsBySystemUser());
+        List<Workflow> workflowTypes = new ArrayList<>(workflowRepository.findNotInForm());
         return workflowTypes;
     }
 
@@ -448,7 +447,8 @@ public class WorkflowService {
     public void replaceStepSystemUsers(String userEppn, WorkflowStep workflowStep) {
         User user = userService.getByEppn(userEppn);
         if(TransactionSynchronizationManager.isActualTransactionActive()) {
-            for (User oneUser : workflowStep.getUsers()) {
+            List<User> users = new ArrayList<>(workflowStep.getUsers());
+            for (User oneUser : users) {
                 if (oneUser.getEppn().equals("creator")) {
                     workflowStep.getUsers().remove(oneUser);
                     workflowStep.getUsers().add(user);
@@ -549,7 +549,7 @@ public class WorkflowService {
     @Transactional
     public boolean addTarget(Long id, String targetType, String documentsTargetUri) {
         Workflow workflow = getById(id);
-        if(workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
+        if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
             Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
             workflow.getTargets().add(target);
             return true;
