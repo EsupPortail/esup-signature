@@ -610,7 +610,7 @@ public class PdfService {
         return pageNrByAnnotDict;
     }
 
-    public InputStream fill(InputStream pdfFile, Map<String, String> datas) {
+    public InputStream fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep) {
         try {
             PDDocument pdDocument = PDDocument.load(pdfFile);
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -637,6 +637,22 @@ public class PdfService {
                                 pdRadioButton.setValue(value);
                             } catch (NullPointerException e) {
                                 logger.debug("radio buton is null");
+                            }
+                        } else if (pdField instanceof PDListBox) {
+                            PDListBox pdListBox = (PDListBox) pdField;
+                            pdField.getCOSObject().setNeedToBeUpdated(true);
+                            try {
+                                String value = datas.get(filedName);
+                                List<String> values = new ArrayList<>();
+                                values.add(value);
+                                if(isLastStep) {
+                                    pdListBox.setOptions(values);
+                                    pdListBox.getOptions().add(value);
+                                }
+                                pdListBox.setDefaultValue(value);
+                                pdListBox.setValue(value);
+                            } catch (NullPointerException e) {
+                                logger.debug("listBox buton is null");
                             }
                         } else {
                             if (!(pdField instanceof PDSignatureField)) {

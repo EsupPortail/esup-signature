@@ -292,6 +292,11 @@ export class PdfViewer extends EventFactory {
                         });
                         return;
                     }
+                    if (inputField.is('select')) {
+                        let value = inputField.val();
+                        this.savedFields.set(item.fieldName, value);
+                        return;
+                    }
                     let value = inputField.val();
                     this.savedFields.set(item.fieldName, value);
                 }
@@ -314,7 +319,7 @@ export class PdfViewer extends EventFactory {
             if(items[i].fieldName != null) {
                 let inputName = items[i].fieldName.split(/\$|#|!/)[0];
                 let savedValue = this.savedFields.get(items[i].fieldName);
-                let inputField = $('input[name=\'' + inputName + '\']');
+                let inputField = $('#' + $.escapeSelector(inputName));
                 if (inputField.val() != null) {
                     if(savedValue != null) {
                         if (inputField.is(':checkbox')) {
@@ -327,7 +332,6 @@ export class PdfViewer extends EventFactory {
                         }
                         if (inputField.is(':radio')) {
                             let radio = $('input[name=\'' + inputName + '\'][value=\'' + items[i].buttonValue + '\']');
-                            console.log("test " + items[i].fieldName + " " + savedValue + " = " + inputField.val());
                             if (savedValue === radio.val()) {
                                 radio.prop("checked", true);
                             }
@@ -344,11 +348,18 @@ export class PdfViewer extends EventFactory {
                         continue;
                     }
                 }
+                if (inputField.is('select')) {
+                    $("#" + inputName + " option[value='" + savedValue + "']").prop('selected', true);
+                    inputField.val(savedValue);
+                    continue;
+                }
                 let selectField = $('select[name=\'' + inputName + '\']');
                 if (selectField.val() != null) {
-                    $('#' + inputName + ' option').each(function()
-                    {
-                        if(this.savedFields.get(items[i].fieldName) === $(this).value) {
+                    let savedFields = this.savedFields;
+                    $('#' + inputName + ' option').each(function() {
+                        let fieldName = items[i].fieldName;
+                        let value = $(this).val();
+                        if(savedFields.get(fieldName) === value) {
                             $(this).prop("selected", true);
                         }
                     });
@@ -377,7 +388,6 @@ export class PdfViewer extends EventFactory {
                     return obj.name === inputName
                 })[0];
             }
-
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if(inputField.length && dataField != null) {
                 inputField.addClass("field-type-text");

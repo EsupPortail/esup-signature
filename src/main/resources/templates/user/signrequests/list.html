@@ -106,7 +106,7 @@
                         </thead>
                         <tbody id="signRequestTable">
                         <th:block th:each="signRequest : ${signRequests}">
-                            <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                            <tr th:data-href="'/user/signrequests/' + ${signRequest.id}" data-toggle="tooltip" th:title="'Contient ' + ${signRequest.parentSignBook.signRequests.size()} + ' document(s)'">
                                 <td class="w-20 d-none d-lg-table-cell">
                                     <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                                            th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
