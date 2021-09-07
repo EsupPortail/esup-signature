@@ -13,11 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +31,7 @@ public class DataExportService {
     @Resource
     private FileService fileService;
 
-    public InputStream getCsvDatasFromForms(List<Form> forms) throws SQLException, IOException {
+    public InputStream getCsvDatasFromForms(List<Form> forms) throws IOException {
         return mapListToCSV(getDatasToExport(forms));
     }
 
@@ -88,23 +84,17 @@ public class DataExportService {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
         int step = 1;
-        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().sorted((o1, o2) -> o1.getValue().getDate().compareTo(o2.getValue().getDate())).collect(Collectors.toList());
+        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none)).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
         for (Map.Entry<Recipient, Action> actions : actionsList) {
-            if (!actions.getValue().getActionType().equals(ActionType.none)) {
-                toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
-                toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
-                toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
-            } else {
-                toExportDatas.put("sign_step_" + step + "_user_eppn", "");
-                toExportDatas.put("sign_step_" + step + "_type", "");
-                toExportDatas.put("sign_step_" + step + "_date", "");
-            }
+            toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
+            toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
+            toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
             step++;
         }
         return toExportDatas;
     }
 
-    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException, SQLException {
+    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException {
         File csvFile = fileService.getTempFile("export.csv");
         FileWriter out = new FileWriter(csvFile);
         String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
