@@ -494,7 +494,7 @@ public class SignRequestService {
 		}
 		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
 		if(formDataMap != null && formDataMap.size() > 0 && toSignDocuments.get(0).getContentType().equals("application/pdf") && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signBookService.isMoreWorkflowStep(signRequest.getParentSignBook()));
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, signBookService.isStepAllSignDone(signRequest.getParentSignBook()));
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
