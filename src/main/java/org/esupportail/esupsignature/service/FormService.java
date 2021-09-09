@@ -115,7 +115,7 @@ public class FormService {
 
 	public List<Form> getAllForms(){
 		List<Form> list = new ArrayList<>();
-		formRepository.findFormByDeletedIsNullOrDeletedIsFalse().forEach(e -> list.add(e));
+		formRepository.findAll().forEach(e -> list.add(e));
 		return list;
 	}
 
