@@ -138,9 +138,7 @@ public class FormService {
 		form.getRoles().clear();
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
-		if(updateForm.getWorkflow() != null) {
-			form.setWorkflow(updateForm.getWorkflow());
-		}
+		form.setWorkflow(updateForm.getWorkflow());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
 		form.setPublicUsage(updateForm.getPublicUsage());
