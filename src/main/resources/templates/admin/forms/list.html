@@ -35,6 +35,7 @@
                                 <th>Circuit</th>
                                 <th>Version</th>
                                 <th>Actif</th>
+                                <th>Supprimé</th>
                                 <th>Rôle</th>
                                 <th class="text-center">Action</th>
                             </tr>
@@ -48,6 +49,9 @@
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
+                                </td>
+                                <td>
+                                    <i th:if="${form.deleted}" class="fas fa-times text-danger"></i>
                                 </td>
                                 <td th:text="${form.roles}"></td>
 
