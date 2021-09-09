@@ -43,7 +43,7 @@
                             <tr th:each="form : ${forms}">
                                 <td th:text="${form.title}"></td>
                                 <td th:text="${form.name}"></td>
-                                <td th:text="${form.workflow.description}"></td>
+                                <td><span th:if="${form.workflow != null}" th:text="${form.workflow.description}"></span></td>
                                 <td th:text="${form.version}"></td>
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
