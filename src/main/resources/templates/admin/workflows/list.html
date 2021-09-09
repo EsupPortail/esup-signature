@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
+<!--/*@thymesVar id="workflowTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.workflow.Workflow>"*/-->
 <head th:replace="fragments/head"></head>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -8,112 +10,106 @@
     <div class="wrapper">
         <nav th:insert="/fragments/sides/side-admin"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-            <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active">Liste des circuits de visas</li>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Liste des formulaires</li>
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="fixed-action-btn-simple" >
-                <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newSignBook" type="button"
-                   class="btn-floating btn-lg bg-primary wave-effect">
+            <div id="addButton" class="fixed-action-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <a class="btn-floating btn-lg bg-primary waves-effect">
                     <i class="fas fa-plus"></i>
                 </a>
+                <ul id="collapseExample" class="list-unstyled">
+                    <li><a title="Créer un formulaire manuellement" role="button" class="btn-floating bg-primary waves-effect" onclick="location.href='/admin/forms/create'"><i class="fas fa-hand-paper"></i></a></li>
+                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-floating text-dark bg-primary waves-effect"><i class="fas fa-file-pdf"></i></a></li>
+                </ul>
             </div>
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
-                    <div class="input-group mb-3">
-                    <span class="input-group-text">Filtrer</span>
-                    <select name="displayWorkflowType" class="form-select" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
-                        <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
-                        <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
-                        <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
-                    </select>
-                    </div>
-                    <table class="table table-sm table-borderless table-hover table-striped">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Nom</th>
-                            <th>Créé par</th>
-                            <th>Destinataires</th>
-                            <th>Superviseur(s) du circuit</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="workflow : ${workflows}">
+                    <div class="">
+                        <table class="table table-sm table-striped table-hover table-borderless">
+                            <thead class="table-secondary">
                             <tr>
-                                <td th:text="${workflow.description}"></td>
-                                <td th:text="${workflow.createBy.eppn}"></td>
-                                <td th:if="${workflow.workflowSteps.size() > 0}">
-                                    <ul class="list-group">
-                                    <th:block th:each="workflowStep,iterator : ${workflow.workflowSteps}">
-                                        <li class="list-group-item py-1">
-                                            <span th:text="${iterator.index + 1}" class="d-inline"></span>
-                                            <th:block th:each="user : ${workflowStep.users}">
-                                                <i class="fas fa-user"></i>
-                                                <span th:text="${user.firstname + ' ' + user.name}"></span>
-                                                <br/>
-                                            </th:block>
-                                        </li>
-                                    </th:block>
-                                    </ul>
-                                </td>
-                                <td th:unless="${#lists.size(workflow.workflowSteps) > 0}">
-                                    Aucun
-                                </td>
+                                <th class="w-50">Titre</th>
+                                <th>Nom</th>
+                                <th>Circuit</th>
+                                <th>Version</th>
+                                <th>Actif</th>
+                                <th>Rôle</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="form : ${forms}">
+                                <td th:text="${form.title}"></td>
+                                <td th:text="${form.name}"></td>
+                                <td th:text="${form.workflow.description}"></td>
+                                <td th:text="${form.version}"></td>
                                 <td>
-                                    <th:block th:each="manager : ${workflow.managers}">
-                                        <i class="fas fa-people"></i>
-                                        <span th:text="${manager}"></span>
-                                        <br/>
-                                    </th:block>
+                                    <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
+                                    <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
                                 </td>
+                                <td th:text="${form.roles}"></td>
+
                                 <td class="text-center">
-                                    <div class="position-relative" th:if="${workflow.id != null}">
-                                        <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${workflow.title}"
-                                                th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                    <div class="position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark toggle-mini-menu" th:title="'Actions ' + ${form.title}"
+                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="collapse">
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${workflow.id}">
+                                        <div class="card position-absolute collapse mini-menu" th:id="'menu-' + ${form.id}">
                                             <div class=" card-body">
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/workflows/update/' + ${workflow.id}">
-                                                    <i class="fas fa-pencil-alt pr-2"></i> Voir/Modifier les paramètres
+                                                   th:href="'/admin/forms/update/' + ${form.id}">
+                                                    <i class="fas fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                   th:href="'/admin/workflows/' + ${workflow.id}">
-                                                    <i class="fas fa-shoe-prints pr-2"></i> Voir/Modifier les étapes
+                                                   th:href="'/admin/forms/' + ${form.id} + '/fields'">
+                                                    <i class="fas fa-align-justify pr-2"></i> Modifier les champs
                                                 </a>
-                                                <a class="btn btn-transparent text-dark text-left col-12" title="Exporter le circuit" role="button"
-                                                   th:href="'/admin/workflows/export/' + ${workflow.id}">
-                                                    <i class="fas fa-file-export pr-2"></i> Exporter le circuit
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
+                                                   th:href="'/admin/forms/export/' + ${form.id}">
+                                                    <i class="fas fa-file-export pr-2"></i> Exporter la configuration
                                                 </a>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
-                                                    <i class="fas fa-binoculars pr-2"></i> Scanner la source
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/admin/forms/' + ${form.id} + '/signs'">
+                                                    <i class="fas fa-signature pr-2"></i> Configurer les champs signatures
                                                 </a>
-                                                <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
-                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                                                   th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
+                                                    <i class="fas fa-file-export pr-2"></i> Exporter les données saisies
+                                                </a>
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
+                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
                                                     <i class="fas fa-trash-alt pr-2"></i> Supprimer
                                                 </a>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
+                                    <div class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="command" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete">
+                                                <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
                                                     <div class="modal-header">
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                                aria-label="Close">
+
+                                                        </button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <div class="alert alert-danger text-center">Confirmez-vous la suppression du circuit ?
+                                                        <div class="alert alert-danger text-center">Confirmez-vous la
+                                                            suppression du formulaire ?
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
-                                                        <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
+                                                        <button type="button" class="btn btn-outline pull-left"
+                                                                data-bs-dismiss="modal">Non
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="btn btn-outline pull-left btn-danger">
+                                                            Oui
+                                                        </button>
                                                     </div>
                                                 </form>
                                             </div>
@@ -122,37 +118,77 @@
 
                                 </td>
                             </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
+                        Aucun formulaire pour le moment
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<div class="modal fade" id="newSignBook" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<div class="modal fade" id="newForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <form th:action="'/admin/workflows'" method="post">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Nouveau formulaire</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
-                    </button>
-                </div>
+                </button>
+            </div>
+            <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="description"><strong>Titre</strong></label>
-                        <input id="description" name="description" class="form-control" type="text" value="" required="required">
+                        <label for="name" class="col-form-label">Nom</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="title"><strong>Prefix</strong> (utilisé lors de l'import de documents dans le circuit)</label>
-                        <input id="title" name="title" class="form-control" type="text" value="" required>
+                        <label for="name" class="col-form-label">Titre</label>
+                        <input type="text" id="title" name="title" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="col-form-label">Modèle PDF Form</label>
+                        <div class="custom-file">
+                            <input aria-describedby="inputGroupFileAddon01" class="form-control"
+                                   data-buttonText="Choisir fichier" id="modelFile" name="multipartFile"
+                                   type="file" required/>
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <label for="publicUsage" class="form-check-label">Visibilité publique (diffusion immédiate)</label>
+                        <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="roleNames" class="col-form-label">Nom du role autorisé à acceder au formulaire</label>
+                        <select id="roleNames" class="form-control" type="text" name="roleNames" multiple>
+                            <th:block th:each="newRole : ${roles}">
+                                <option th:text="${newRole}" th:value="${newRole}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="workflowId" class="col-form-label">Type de workflow</label>
+                        <select class="slim-select-simple" id="workflowId" name="workflowId">
+                            <th:block th:each="workflowType : ${workflowTypes}">
+                                <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="prefillType" class="col-form-label">Type de pré-remplissage</label>
+                        <select class="slim-select-simple" id="prefillType" name="prefillType">
+                            <th:block th:each="preFillType : ${preFillTypes}">
+                                <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"
+                                        th:text="${preFillType.description}"></option>
+                            </th:block>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">Creer</button>
+                    <input type="submit" class="btn btn-success" value="Valider">
                 </div>
             </form>
         </div>
