@@ -172,7 +172,9 @@ public class FormAdminController {
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("document", form.getDocument());
-		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+		List<Workflow> workflows = workflowService.getSystemWorkflows();
+		workflows.add(form.getWorkflow());
+		model.addAttribute("workflowTypes", workflows);
 		List<PreFill> preFillTypes = preFillService.getPreFillValues();
 		model.addAttribute("preFillTypes", preFillTypes);
 		model.addAttribute("shareTypes", ShareType.values());
