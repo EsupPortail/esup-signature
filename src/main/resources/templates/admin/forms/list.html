@@ -32,6 +32,7 @@
                             <tr>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
+                                <th>Circuit</th>
                                 <th>Version</th>
                                 <th>Actif</th>
                                 <th>Rôle</th>
@@ -42,6 +43,7 @@
                             <tr th:each="form : ${forms}">
                                 <td th:text="${form.title}"></td>
                                 <td th:text="${form.name}"></td>
+                                <td th:text="${form.workflow.description}"></td>
                                 <td th:text="${form.version}"></td>
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
