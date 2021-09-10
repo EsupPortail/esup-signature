@@ -88,7 +88,7 @@ public class DataExportService {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
         int step = 1;
-        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().sorted((o1, o2) -> o1.getValue().getDate().compareTo(o2.getValue().getDate())).collect(Collectors.toList());
+        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
         for (Map.Entry<Recipient, Action> actions : actionsList) {
             if (!actions.getValue().getActionType().equals(ActionType.none)) {
                 toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
