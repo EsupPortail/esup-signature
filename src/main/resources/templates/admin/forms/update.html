@@ -116,8 +116,9 @@
                         <div class="form-group mb-3">
                             <label for="workflowType">Type de workflow</label>
                             <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
+                                <option value="">-- dissocier d'un circuit --</option>
                                 <th:block th:each="workflowType : ${workflowTypes}">
-                                    <option th:value="${workflowType.id}"
+                                    <option th:if="${workflowType != null}" th:value="${workflowType.id}"
                                             th:text="${workflowType.description}"></option>
                                 </th:block>
                             </select>

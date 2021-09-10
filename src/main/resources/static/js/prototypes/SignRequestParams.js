@@ -66,22 +66,7 @@ export class SignRequestParams  extends EventFactory {
         this.cross.css("z-index", "5");
         this.cross.attr("data-id", this.id);
         let self = this;
-        this.cross.draggable({
-            containment: "#pdf",
-            scroll: false,
-            drag: function() {
-                let thisPos = $(this).position();
-                if(!self.firstLaunch) {
-                    let x = Math.round(thisPos.left / self.currentScale);
-                    let y = Math.round(thisPos.top / self.currentScale);
-                    self.xPos = x;
-                    self.yPos = y;
-                } else {
-                    self.firstLaunch = false;
-                    window.scrollTo(0, self.yPos);
-                }
-            }
-        });
+        this.madeCrossDraggable();
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
@@ -191,6 +176,25 @@ export class SignRequestParams  extends EventFactory {
         } else {
             return Math.round((ui.size.height / self.currentScale) / (self.originalHeight) * 100) / 100;
         }
+    }
+
+    madeCrossDraggable() {
+        this.cross.draggable({
+            containment: "#pdf",
+            scroll: false,
+            drag: function() {
+                let thisPos = $(this).position();
+                if(!self.firstLaunch) {
+                    let x = Math.round(thisPos.left / self.currentScale);
+                    let y = Math.round(thisPos.top / self.currentScale);
+                    self.xPos = x;
+                    self.yPos = y;
+                } else {
+                    self.firstLaunch = false;
+                    window.scrollTo(0, self.yPos);
+                }
+            }
+        });
     }
 
     initEventListeners() {
@@ -303,9 +307,10 @@ export class SignRequestParams  extends EventFactory {
         this.border.removeClass("static-border");
         this.border.addClass("anim-border");
         this.tools.removeClass("d-none");
-        if(this.textareaExtra != null) {
-            this.textareaExtra.removeClass("sign-textarea-lock");
-            this.textareaExtra.focus();
+        if(this.textareaPart != null) {
+            this.textareaPart.removeClass("sign-textarea-lock");
+            this.textareaPart.focus();
+            this.cross.draggable("disable");
         }
     }
 
@@ -610,16 +615,36 @@ export class SignRequestParams  extends EventFactory {
         this.cross.append(divExtraHtml);
         this.cross.attr('title', 'Double click pour éditer');
         this.textareaPart = $("#textPart_" + this.id);
-        this.textareaPart.css('pointer-events', 'none');
         this.textareaPart.css('width', '100%');
         // this.textareaPart.css('height', '100%');
         this.textareaPart.on("input", function () {
             self.resizeText();
         });
-        this.cross.dblclick(function() {
-            self.textareaPart.focus();
-        });
+        // this.cross.dblclick(function() {
+        //     self.textareaPart.focus();
+        // });
         this.resizeText();
+        this.cross.resizable("destroy");
+        let textGrow = $("#textGrow_" + this.id);
+        let textReduce = $("#textReduce_" + this.id);
+        textGrow.show();
+        textReduce.show();
+        textGrow.on("click", function () {
+            self.fontSize = self.fontSize + 1
+            self.resizeText();
+        });
+        textReduce.on("click", function () {
+            self.fontSize = self.fontSize - 1
+            self.resizeText();
+        });
+        this.textareaPart.focusout(function (){
+            self.cross.draggable("enable");
+            self.textareaPart.css('pointer-events', 'none');
+        });
+        this.textareaPart.focusin(function (){
+            self.cross.draggable("disable");
+            self.textareaPart.css('pointer-events', 'auto');
+        });
     }
 
     resizeText() {
