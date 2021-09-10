@@ -62,7 +62,7 @@ public class DataExportService {
 
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
-        if(signRequest.getParentSignBook() != null) {
+        if(signRequest != null && signRequest.getParentSignBook() != null) {
             Data data = dataService.getBySignRequest(signRequest);
             if(data != null) {
                 return getToExportDatas(data, signRequest.getParentSignBook());
