@@ -9,19 +9,19 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class DataExportService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataExportService.class);
 
     @Resource
     private DataRepository dataRepository;
@@ -35,7 +35,7 @@ public class DataExportService {
     @Resource
     private FileService fileService;
 
-    public InputStream getCsvDatasFromForms(List<Form> forms) throws SQLException, IOException {
+    public InputStream getCsvDatasFromForms(List<Form> forms) throws IOException {
         return mapListToCSV(getDatasToExport(forms));
     }
 
@@ -62,8 +62,17 @@ public class DataExportService {
 
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
-        Data data = dataService.getBySignRequest(signRequest);
-        return getToExportDatas(data, signRequest.getParentSignBook());
+        if(signRequest.getParentSignBook() != null) {
+            Data data = dataService.getBySignRequest(signRequest);
+            if(data != null) {
+                return getToExportDatas(data, signRequest.getParentSignBook());
+            } else {
+                logger.warn("signRequest " + id + " doesn't have any data");
+            }
+        } else {
+            logger.warn("signRequest " + id + " doesn't exist");
+        }
+        return null;
     }
 
     private LinkedHashMap<String, String> getToExportDatas(Data data, SignBook signBook) {
@@ -90,21 +99,15 @@ public class DataExportService {
         int step = 1;
         List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
         for (Map.Entry<Recipient, Action> actions : actionsList) {
-            if (!actions.getValue().getActionType().equals(ActionType.none)) {
-                toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
-                toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
-                toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
-            } else {
-                toExportDatas.put("sign_step_" + step + "_user_eppn", "");
-                toExportDatas.put("sign_step_" + step + "_type", "");
-                toExportDatas.put("sign_step_" + step + "_date", "");
-            }
+            toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
+            toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
+            toExportDatas.put("sign_step_" + step + "_date", actions.getValue().getDate().toString());
             step++;
         }
         return toExportDatas;
     }
 
-    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException, SQLException {
+    public InputStream mapListToCSV(List<Map<String, String>> list) throws IOException {
         File csvFile = fileService.getTempFile("export.csv");
         FileWriter out = new FileWriter(csvFile);
         String[] headers = list.stream().flatMap(map -> map.keySet().stream()).distinct().toArray(String[]::new);
