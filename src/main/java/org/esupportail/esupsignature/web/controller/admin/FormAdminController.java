@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
@@ -172,7 +173,9 @@ public class FormAdminController {
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("document", form.getDocument());
-		model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+		List<Workflow> workflows = workflowService.getSystemWorkflows();
+		workflows.add(form.getWorkflow());
+		model.addAttribute("workflowTypes", workflows);
 		List<PreFill> preFillTypes = preFillService.getPreFillValues();
 		model.addAttribute("preFillTypes", preFillTypes);
 		model.addAttribute("shareTypes", ShareType.values());

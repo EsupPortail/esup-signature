@@ -32,8 +32,10 @@
                             <tr>
                                 <th class="w-50">Titre</th>
                                 <th>Nom</th>
+                                <th>Circuit</th>
                                 <th>Version</th>
                                 <th>Actif</th>
+                                <th>Supprimé</th>
                                 <th>Rôle</th>
                                 <th class="text-center">Action</th>
                             </tr>
@@ -42,10 +44,14 @@
                             <tr th:each="form : ${forms}">
                                 <td th:text="${form.title}"></td>
                                 <td th:text="${form.name}"></td>
+                                <td><span th:if="${form.workflow != null}" th:text="${form.workflow.description}"></span></td>
                                 <td th:text="${form.version}"></td>
                                 <td>
                                     <i th:if="${form.activeVersion}" class="fas fa-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fas fa-times text-danger"></i>
+                                </td>
+                                <td>
+                                    <i th:if="${form.deleted}" class="fas fa-times text-danger"></i>
                                 </td>
                                 <td th:text="${form.roles}"></td>
 
