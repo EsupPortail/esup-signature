@@ -595,6 +595,7 @@ public class WorkflowService {
         String savedTitle = workflow.getTitle();
         ObjectMapper objectMapper = new ObjectMapper();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
+        workflow.getWorkflowSteps().clear();
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
@@ -606,7 +607,12 @@ public class WorkflowService {
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
         }
-        update(workflow, workflowSetup.getCreateBy(), workflowSetup.getManagers().toArray(String[]::new), workflowSetup.getManagers());
+        workflow.getTargets().clear();
+        update(workflow, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
+        for(Target target : workflowSetup.getTargets()) {
+            Target newTarget = targetService.createTarget(target.getTargetType(), target.getTargetUri());
+            workflow.getTargets().add(newTarget);
+        }
         workflow.setName(savedName);
         workflow.setTitle(savedTitle);
         return;

@@ -179,6 +179,7 @@ export class SignRequestParams  extends EventFactory {
     }
 
     madeCrossDraggable() {
+        let self = this;
         this.cross.draggable({
             containment: "#pdf",
             scroll: false,
