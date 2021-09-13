@@ -61,6 +61,8 @@ public class SignRequestParams {
 
     private Integer blue = 0;
 
+    private Integer fontSize = 12;
+
     public Long getId() {
         return id;
     }
@@ -267,5 +269,13 @@ public class SignRequestParams {
 
     public void setBlue(Integer blue) {
         this.blue = blue;
+    }
+
+    public Integer getFontSize() {
+        return fontSize;
+    }
+
+    public void setFontSize(Integer fontSize) {
+        this.fontSize = fontSize;
     }
 }
