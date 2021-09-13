@@ -9,6 +9,8 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -18,6 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class DataExportService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DataExportService.class);
 
     @Resource
     private DataRepository dataRepository;
@@ -58,8 +62,17 @@ public class DataExportService {
 
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
-        Data data = dataService.getBySignRequest(signRequest);
-        return getToExportDatas(data, signRequest.getParentSignBook());
+        if(signRequest != null && signRequest.getParentSignBook() != null) {
+            Data data = dataService.getBySignRequest(signRequest);
+            if(data != null) {
+                return getToExportDatas(data, signRequest.getParentSignBook());
+            } else {
+                logger.warn("signRequest " + id + " doesn't have any data");
+            }
+        } else {
+            logger.warn("signRequest " + id + " doesn't exist");
+        }
+        return null;
     }
 
     private LinkedHashMap<String, String> getToExportDatas(Data data, SignBook signBook) {
@@ -84,7 +97,7 @@ public class DataExportService {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
         int step = 1;
-        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none)).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
+        List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
         for (Map.Entry<Recipient, Action> actions : actionsList) {
             toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
             toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());
