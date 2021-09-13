@@ -619,7 +619,7 @@ export class PdfViewer extends EventFactory {
             $(this).unbind();
             $(this).remove();
         });
-        let signFieldNumber = 0;
+        let signFieldNumber = 1;
         for (let i = 0; i < items.length; i++) {
             let item = items[i];
             console.debug("debug - " +  ">> Start compute item of type : " + item.fieldType);
@@ -640,13 +640,14 @@ export class PdfViewer extends EventFactory {
                     signField.css("font-size", 8);
                     signField.attr("data-id", signFieldNumber);
                     signField.on('click', function () {
+                        console.info("click on " + signFieldNumber);
                         let report = $("#report_" + $(this).attr("data-id"));
-                        if (report.length) {
+                        if (report != null) {
                             $("#reportModal").modal("show");
                             $("div[id^='report_']").each(function () {
                                 $(this).hide();
                             });
-                            report.show();
+                            report.css("display", "block");
                         }
                     })
                     // signField.attr("data-toggle", "modal");

@@ -22,7 +22,7 @@ export class UserParamsHelp {
         this.intro.addStep({
             intro: "Sur cette page vous pouvez modifier vos paramètres de signature :" +
                 "<ul>" +
-                "<li>Ajouter / supprimer des images de votre siganture</li>" +
+                "<li>Ajouter / supprimer des images de votre signature</li>" +
                 "<li>Ajouter un certificat pour effectuer des signatures électroniques</li>" +
                 "<li>Ajuster vos paramètres d'alerte</li>" +
                 "</ul>"
