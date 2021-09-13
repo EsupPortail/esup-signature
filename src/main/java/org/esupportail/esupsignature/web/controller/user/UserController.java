@@ -169,12 +169,14 @@ public class UserController {
 
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		UserPropertie userPropertie = userPropertieService.getUserPropertiesByUserEppn(authUserEppn);
-		if (userPropertie != null) {
-			List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
-			entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+		List<UserPropertie> userProperties = userPropertieService.getUserProperties(authUserEppn);
+		if (userProperties != null && userProperties.size() > 0) {
 			Map<User, Date> sortedMap = new LinkedHashMap<>();
-			entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+			for (UserPropertie userPropertie : userProperties) {
+				List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
+				entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+				entrySet.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+			}
 			model.addAttribute("userProperties", sortedMap);
 		}
 		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
