@@ -7,10 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserPropertieService {
@@ -33,12 +30,16 @@ public class UserPropertieService {
     }
 
     public void createUserPropertie(User user, User favoriteUser) {
-        UserPropertie userPropertie = getUserProperties(user.getEppn());
-        if (userPropertie == null) {
+        List<UserPropertie> userProperties = getUserProperties(user.getEppn());
+        if (userProperties == null || userProperties.size() == 0) {
             addPropertie(user, favoriteUser);
         } else {
-            userPropertie.getFavorites().put(favoriteUser, new Date());
-            userPropertieRepository.save(userPropertie);
+            for(UserPropertie userPropertie : userProperties) {
+                if(userPropertie.getFavorites().containsKey(favoriteUser)) {
+                    userPropertie.getFavorites().put(favoriteUser, new Date());
+                    userPropertieRepository.save(userPropertie);
+                }
+            }
         }
     }
 
@@ -50,26 +51,24 @@ public class UserPropertieService {
     }
 
     public List<String> getFavoritesEmails(String userEppn) {
-        List<String> favoriteUserEmails = new ArrayList<>();
-        UserPropertie userPropertie = getUserProperties(userEppn);
-        if(userPropertie != null) {
-            Map<User, Date> favorites = userPropertie.getFavorites();
-            if (favorites.size() > 0) {
-                List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
-                entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
-                for (int i = 0; i < Math.min(entrySet.size(), 5); i++) {
-                    favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+        Set<String> favoriteUserEmails = new HashSet<>();
+        List<UserPropertie> userProperties = getUserProperties(userEppn);
+        if(userProperties != null && userProperties.size() > 0) {
+            for(UserPropertie userPropertie : userProperties) {
+                Map<User, Date> favorites = userPropertie.getFavorites();
+                if (favorites.size() > 0) {
+                    List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
+                    entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
+                    for (int i = 0; i < Math.min(entrySet.size(), 5); i++) {
+                        favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+                    }
                 }
             }
         }
-        return favoriteUserEmails;
+        return new ArrayList<>(favoriteUserEmails);
     }
 
-    public UserPropertie getUserProperties(String userEppn) {
-        return userPropertieRepository.findByUserEppn(userEppn);
-    }
-
-    public UserPropertie  getUserPropertiesByUserEppn(String userEppn) {
+    public List<UserPropertie> getUserProperties(String userEppn) {
         return userPropertieRepository.findByUserEppn(userEppn);
     }
 
@@ -81,8 +80,10 @@ public class UserPropertieService {
 
     @Transactional
     public void delete(String authUserEppn, Long id) {
-        UserPropertie userPropertie = getUserPropertiesByUserEppn(authUserEppn);
-        User user = userService.getById(id);
-        userPropertie.getFavorites().remove(user);
+        List<UserPropertie> userProperties = getUserProperties(authUserEppn);
+        for(UserPropertie userPropertie : userProperties) {
+            User user = userService.getById(id);
+            userPropertie.getFavorites().remove(user);
+        }
     }
 }

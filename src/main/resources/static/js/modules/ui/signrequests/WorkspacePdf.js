@@ -321,7 +321,8 @@ export class WorkspacePdf {
     }
 
     checkSignsPositions() {
-        if(this.signPosition.signRequestParamses.size > 0) {
+        let testSign = Array.from(this.signPosition.signRequestParamses.values());
+        if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
                     return false;
@@ -993,10 +994,17 @@ export class WorkspacePdf {
                 selected: true
             });
         }
-        if(this.status === "draft" || this.status === "pending" || this.postits.length > 0) {
+        if(this.status === "draft" || this.status === "pending") {
             data.push({
                 innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
                 text: 'Annoter',
+                value: 'comment'
+            });
+        }
+        if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
+            data.push({
+                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Voir les annotations</b></div>',
+                text: 'Consulter les annotations',
                 value: 'comment'
             });
         }
@@ -1014,6 +1022,9 @@ export class WorkspacePdf {
                 onChange: e => this.changeMode(e),
                 data: data
             });
+        }
+        if(this.changeModeSelector != null) {
+            this.changeModeSelector.set("read");
         }
     }
 
