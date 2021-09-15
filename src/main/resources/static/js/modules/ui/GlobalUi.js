@@ -24,6 +24,7 @@ export class GlobalUi {
         this.initBootBox();
         this.initSideBar();
         this.checkCurrentPage();
+        this.initTooltips();
     }
 
     initListeners() {
@@ -125,6 +126,26 @@ export class GlobalUi {
             e.stopPropagation();
         });
         this.bindKeyboardKeys();
+    }
+
+    initTooltips() {
+        // $(document).tooltip({
+        //     disabled: true
+        // });
+        $("#newScroll").tooltip({
+            disabled: false,
+            show: { effect: "fade", duration: 800 }
+        });
+        $("#tools").tooltip({
+            disabled: false,
+            show: { effect: "fade", duration: 800 },
+            position: { my: "left top+5" }
+        });
+        $("#signButtons").tooltip({
+            disabled: false,
+            show: { effect: "fade", duration: 800 },
+            position: { my: "left+15 center", at: "right center", collision: "flip" }
+        });
     }
 
     initBootBox() {
