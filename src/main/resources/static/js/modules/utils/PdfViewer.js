@@ -642,7 +642,7 @@ export class PdfViewer extends EventFactory {
                     signField.on('click', function () {
                         console.info("click on " + signFieldNumber);
                         let report = $("#report_" + $(this).attr("data-id"));
-                        if (report != null) {
+                        if (report.length) {
                             $("#reportModal").modal("show");
                             $("div[id^='report_']").each(function () {
                                 $(this).hide();

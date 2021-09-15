@@ -16,9 +16,6 @@ public class PreAuthorizeService {
     private UserService userService;
 
     @Resource
-    private DataService dataService;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
