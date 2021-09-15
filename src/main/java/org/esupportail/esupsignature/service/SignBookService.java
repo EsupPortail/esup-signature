@@ -372,7 +372,7 @@ public class SignBookService {
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(signBook.getCreateBy().getEppn().equals(userEppn) || recipientService.recipientsContainsUser(recipients, userEppn) > 0) {
+        if(signBook.getViewers().stream().anyMatch(user -> user.getEppn().equals(userEppn)) || signBook.getCreateBy().getEppn().equals(userEppn) || recipientService.recipientsContainsUser(recipients, userEppn) > 0) {
             return true;
         }
         return false;
