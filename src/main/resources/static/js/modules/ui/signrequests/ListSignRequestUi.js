@@ -110,7 +110,7 @@ export default class ListSignRequestUi {
 
         if(ids.length > 0) {
             let self = this;
-            bootbox.confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?", function(result) {
+            bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?", function(result) {
                 if(result) {
                     $.ajax({
                         url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,

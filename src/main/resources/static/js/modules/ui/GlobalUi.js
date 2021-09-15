@@ -405,8 +405,10 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            $(this).addClass("slim-select-hack");
-        })
+            if(!$(this).hasClass("slim-select-no-hack")) {
+                $(this).addClass("slim-select-hack");
+            }
+        });
     }
 
     enableSummerNote() {
@@ -450,20 +452,6 @@ export class GlobalUi {
                         break;
                 }
                 switch (event.which) {
-                    case 39:
-                        let nextSignRequestButton = $("#nextSignRequestButton");
-                        if(nextSignRequestButton.length) {
-                            event.preventDefault();
-                            location.href = nextSignRequestButton.attr('href');
-                        }
-                        break;
-                    case 37:
-                        event.preventDefault();
-                        let prevSignRequestButton = $("#prevSignRequestButton");
-                        if(prevSignRequestButton.length) {
-                            location.href = prevSignRequestButton.attr('href');
-                        }
-                        break;
                     case 13:
                         event.preventDefault();
                         let signLaunchButton = $("#signLaunchButton");

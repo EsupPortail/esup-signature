@@ -34,10 +34,6 @@
 			<url>https://maven.springframework.org/release</url>
 		</repository>
 		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-		<repository>
 			<id>cefdigital</id>
 			<name>cefdigital</name>
 			<url>https://ec.europa.eu/cefdigital/artifact/content/repositories/esignaturedss/</url>
@@ -257,7 +253,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>slim-select</artifactId>
-			<version>1.24.0</version>
+			<version>1.26.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>
