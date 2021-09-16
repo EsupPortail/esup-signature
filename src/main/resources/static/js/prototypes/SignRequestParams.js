@@ -308,10 +308,11 @@ export class SignRequestParams  extends EventFactory {
         this.border.removeClass("static-border");
         this.border.addClass("anim-border");
         this.tools.removeClass("d-none");
-        if(this.textareaPart != null) {
-            this.textareaPart.removeClass("sign-textarea-lock");
-            this.textareaPart.focus();
-            this.cross.draggable("disable");
+        if(this.textareaExtra != null) {
+            this.textareaExtra.removeClass("sign-textarea-lock");
+            let textExtra = $("#textExtra_" + this.id);
+            textExtra.focus();
+            // this.cross.draggable("disable");
         }
     }
 
@@ -531,7 +532,8 @@ export class SignRequestParams  extends EventFactory {
 
     toggleText() {
         if(!this.extraType && !this.extraDate && !this.extraName && this.isExtraText) return;
-        $("#textExtra_" + this.id).toggle();
+        let textExtra = $("#textExtra_" + this.id);
+        textExtra.toggle();
         this.textareaExtra.toggleClass("disabled");
         $("#extraText_" + this.id).toggleClass("btn-outline-light");
         if(this.extraText === "") {
@@ -591,7 +593,8 @@ export class SignRequestParams  extends EventFactory {
         }
         this.extraText = text;
         this.textareaExtra.val(text);
-        if(lines.length != this.textareaExtra.attr("rows")) {
+        let rows = parseInt(this.textareaExtra.attr("rows"));
+        if(lines.length != rows) {
             this.textareaExtra.attr("rows", lines.length);
             this.updateSize();
         }
@@ -614,16 +617,11 @@ export class SignRequestParams  extends EventFactory {
         let self = this;
         let divExtraHtml = "<textarea id='textPart_" + this.id + "' class='sign-textarea align-top' rows='1' style='overflow: hidden'></textarea>";
         this.cross.append(divExtraHtml);
-        this.cross.attr('title', 'Double click pour éditer');
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
-        // this.textareaPart.css('height', '100%');
         this.textareaPart.on("input", function () {
             self.resizeText();
         });
-        // this.cross.dblclick(function() {
-        //     self.textareaPart.focus();
-        // });
         this.resizeText();
         this.cross.resizable("destroy");
         let textGrow = $("#textGrow_" + this.id);
