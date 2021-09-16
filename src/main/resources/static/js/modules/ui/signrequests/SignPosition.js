@@ -70,8 +70,6 @@ export class SignPosition extends EventFactory {
                 let sizes = self.getImageDimensions(img);
                 sizes.then(result => signRequestParams.changeSignSize(result));
             });
-        } else {
-            signRequestParams.simulateDrop();
         }
     }
 

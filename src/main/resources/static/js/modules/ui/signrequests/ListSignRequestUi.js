@@ -2,14 +2,26 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js";
 
 export default class ListSignRequestUi {
 
-    constructor(signRequests, statusFilter, infiniteScrolling, csrf) {
+    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, infiniteScrolling, csrf) {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.infiniteScrolling = infiniteScrolling;
         this.totalElementsToDisplay = signRequests.totalElements - signRequests.numberOfElements;
         this.statusFilter = "";
+        this.recipientsFilter = "";
+        this.workflowFilter = "";
+        this.docTitleFilter = "";
         if(statusFilter != null) {
             this.statusFilter = statusFilter;
+        }
+        if(recipientsFilter != null) {
+            this.recipientsFilter = recipientsFilter;
+        }
+        if(workflowFilter != null) {
+            this.workflowFilter = workflowFilter;
+        }
+        if(docTitleFilter != null) {
+            this.docTitleFilter = docTitleFilter;
         }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable");
@@ -98,7 +110,7 @@ export default class ListSignRequestUi {
 
         if(ids.length > 0) {
             let self = this;
-            bootbox.confirm("Voulez-vous supprimer définitivement les demandes sélectionnées ?", function(result) {
+            bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?", function(result) {
                 if(result) {
                     $.ajax({
                         url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
@@ -133,7 +145,7 @@ export default class ListSignRequestUi {
             console.info("Add to page");
             this.page++;
             let self = this;
-            $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
+            $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
                 self.signRequestTable.append(data);
                 let clickableRow = $(".clickable-row");
                 clickableRow.unbind();
@@ -145,20 +157,14 @@ export default class ListSignRequestUi {
     }
 
     buildUrlFilter() {
-        let url = '/user/signrequests'
+        let currentParams = new URLSearchParams(window.location.search);
         let filters = $('.sign-request-filter');
-        let firstParameter = true;
         for (let i = 0 ; i < filters.length ; i++) {
             if (filters.eq(i).val() !== "") {
-                if (firstParameter) {
-                    url = url + '?' + filters.eq(i).attr('id') + '=' + filters.eq(i).val();
-                    firstParameter = false;
-                } else {
-                    url = url + '&' + filters.eq(i).attr('id') + '=' + filters.eq(i).val();
-                }
+                currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
             }
         }
-        document.location.href = url;
+        document.location.href = "/user/signrequests?" + currentParams.toString();
     }
 
     launchMassSign(comeFromDispatcher) {
