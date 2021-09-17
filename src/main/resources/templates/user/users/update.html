@@ -139,7 +139,7 @@
                     </div>
                 </div>
 
-                <div class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled}">
+                <div class="card mb-1 col-lg-10 mx-auto" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <div class="card-body">
                         <h5 class="text-center"><b>Paramètres de signature électronique</b> (Facultatif)</h5>
                         <div id="keyForm" class="form-group col-10 mx-auto">

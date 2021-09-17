@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/admin/workflows")
@@ -74,7 +73,6 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/{id}")
 	public String show(@PathVariable("id") Long id, Model model) {
 		model.addAttribute("fromAdmin", true);
-		model.addAttribute("signTypes", SignType.values());
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
 		return "admin/workflows/show";
@@ -104,7 +102,6 @@ public class WorkflowAdminController {
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
-		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
         return "admin/workflows/update";
     }
 

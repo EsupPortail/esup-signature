@@ -14,26 +14,84 @@ public class GlobalProperties implements Cloneable {
      * Chemin d'acces à l'application
      */
     private String rootUrl;
+    /**
+     * Nom de domainde ex : univ-ville.fr
+     */
     private String domain;
-    private String nexuUrl;
+    /**
+     * Chemin d'écoute de NexU
+     */
+    private String nexuUrl = "http://localhost:9795";
+    /**
+     * Version nécessaire de NexU
+     */
     private String nexuVersion;
+    /**
+     * Chemin de télechargement de NexU
+     */
     private String nexuDownloadUrl;
+    /**
+     * Masquer la tuile Créer une demande personnalisée
+     */
     private Boolean hideWizard;
+    /**
+     * Masquer la tuile Auto-signature
+     */
     private Boolean hideAutoSign;
+    /**
+     * Masquer la tuile Demander une signature
+     */
     private Boolean hideSendSignRequest;
+    /**
+     * Liste des roles faisant exception à la valeur de hideWizard
+     */
     private List<String> hideWizardExceptRoles = new ArrayList<>();
+    /**
+     * Liste des roles faisant exception à la valeur de hideAutoSign
+     */
     private List<String> hideAutoSignExceptRoles = new ArrayList<>();
+    /**
+     * Liste des roles faisant exception à la valeur de hideSendSignRequest
+     */
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
+    /**
+     * Les documents des demandes terminées seront arvhivées vers ce dossier
+     */
     private String archiveUri;
+    /**
+     * Délai en nombre de jours avant que les documents ne soient effacé de la base (ne concerne que les documents à l'état archivé)
+     */
     private Integer delayBeforeCleaning = -1;
+    /**
+     * Délai de conservation dans la corbeille (en jours)
+     */
     private Integer trashKeepDelay = -1;
+    /**
+     * Activer la fonction Switch User pour les administrateurs
+     */
     private Boolean enableSu = false;
+    /**
+     * Activer le message d'accueil pour les nouveaux utilisateurs
+     */
     private Boolean enableSplash = false;
+    /**
+     * Géré automatiquement, ne pas modifier!
+     */
     private String version = "";
     private String applicationEmail = "esup.signature@univ-ville.fr";
+    /**
+     * Nombre d'heure minimum entre deux relances manuelles
+     */
     private int hoursBeforeRefreshNotif = 24;
+    /**
+     * Activer le scrolling infini sur le tableau de bord (sinon pagination)
+     */
     private Boolean infiniteScrolling = true;
+    /**
+     * Redirection après signature. true : retour à l'acceuil, false : on reste sur la demande
+     */
     private Boolean returnToHomeAfterSign = true;
+
     /**
      *Le modèle est construit à l'aide d'attributs entre crochets.
      *default : [title]
@@ -53,6 +111,9 @@ public class GlobalProperties implements Cloneable {
      *</ul>
      */
     private String namingTemplate = "[title]";
+    /**
+     * Suffix ajouté aux documents signés
+     */
     private String signedSuffix = "_signed";
     /**
      * Choisir le fonctionnement des délégations :
@@ -63,7 +124,11 @@ public class GlobalProperties implements Cloneable {
      *      <li>3 : le mandant peut choisir la signature du délégué</li>
      *  </ul>
      */
-    private int shareMode = 0;
+    private Integer shareMode = 0;
+    /**
+     * Désactiver la possibilité de stocker des certificats utilisateurs
+     */
+    private Boolean disableCertStorage = false;
 
     public String getRootUrl() {
         return rootUrl;
@@ -255,5 +320,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setSignedSuffix(String signedSuffix) {
         this.signedSuffix = signedSuffix;
+    }
+
+    public Boolean getDisableCertStorage() {
+        return disableCertStorage;
+    }
+
+    public void setDisableCertStorage(Boolean disableCertStorage) {
+        this.disableCertStorage = disableCertStorage;
     }
 }

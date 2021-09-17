@@ -106,6 +106,7 @@ public class ScheduledTaskService {
 		}
 		if(globalProperties.getTrashKeepDelay() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.deleted);
+			int i = 0;
 			for (SignBook signBook : signBooks) {
 				if (signBook.getUpdateDate() != null) {
 					LocalDateTime deleteDate = LocalDateTime.ofInstant(signBook.getUpdateDate().toInstant(), ZoneId.systemDefault());
@@ -113,8 +114,12 @@ public class ScheduledTaskService {
 					long nbDays = ChronoUnit.DAYS.between(deleteDate, nowDate);
 					if (Math.abs(nbDays) >= globalProperties.getTrashKeepDelay()) {
 						signBookService.deleteDefinitive(signBook.getId());
+						i++;
 					}
 				}
+			}
+			if(i > 0) {
+				logger.info(i + " item are deleted");
 			}
 		} else {
 			logger.debug("cleaning trashes was skipped because neg value");
