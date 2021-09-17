@@ -59,7 +59,6 @@ public class ManagerWorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String show(@PathVariable("id") Long id, Model model, @ModelAttribute("authUserEppn") String authUserEppn) {
         model.addAttribute("fromAdmin", true);
-        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
         return "managers/workflows/show";
@@ -90,7 +89,6 @@ public class ManagerWorkflowController {
         model.addAttribute("sourceTypes", DocumentIOType.values());
         model.addAttribute("targetTypes", DocumentIOType.values());
         model.addAttribute("shareTypes", ShareType.values());
-        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         return "managers/workflows/update";
     }
 

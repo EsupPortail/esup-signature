@@ -63,7 +63,7 @@
                             <br/>
                             <label>Type de signature :</label>
                             <select class="slim-select-simple" name="signType">
-                                <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).getAuthorisedValues()}">
+                                <th:block th:each="signType : ${signTypes}">
                                     <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"
                                             th:selected="${signRequest.parentSignBook.liveWorkflow.currentStep.signType == signType}"></option>
                                 </th:block>

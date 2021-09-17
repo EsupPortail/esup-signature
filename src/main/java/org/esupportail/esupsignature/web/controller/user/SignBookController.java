@@ -87,7 +87,6 @@ public class SignBookController {
             model.addAttribute("comments", logService.getLogs(signRequest.getId()));
             model.addAttribute("logs", signBook.getLogs());
             model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
-            model.addAttribute("signTypes", SignType.getAuthorisedValues());
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
             return "user/signrequests/update";
         } else {

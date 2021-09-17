@@ -234,7 +234,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr>
+                <tr th:if="${!globalProperties.disableCertStorage}">
                     <th>Magasin de certificats</th>
                     <td>
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
@@ -289,7 +289,7 @@
                         <br>
                         <label for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="slim-select-simple">
-                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).getAuthorisedValues()}">
+                            <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
@@ -344,7 +344,7 @@
                     <div class="form-group mb-3">
                         <label class="form-label" for="signType2">Choisir un type de signature</label>
                         <select class="slim-select-simple" name="signType" id="signType2">
-                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).getAuthorisedValues()}">
+                            <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
                             </th:block>
