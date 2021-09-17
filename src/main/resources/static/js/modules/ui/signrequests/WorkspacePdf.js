@@ -806,6 +806,8 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         if (this.status === 'pending') {
             $('#workspace').addClass('alert-secondary');
+        } else if (this.status === 'deleted') {
+            $('#workspace').addClass('alert-danger');
         } else {
             $('#workspace').addClass('alert-success');
         }
