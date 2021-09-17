@@ -56,10 +56,12 @@
 	</div>
 	<div id="second-tools" class="d-none mb-1">
 		<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-			<div class="btn btn-outline-dark disabled text-dark me-1">Choix du mode : </div>
-			<div class="me-1">
-			<select id="changeMode" name="changeMode" class=""></select>
-			</div>
+			<th:block th:if="${editable}">
+				<div class="btn btn-outline-dark disabled text-dark me-1">Choix du mode : </div>
+				<div class="me-1">
+				<select id="changeMode" name="changeMode" class=""></select>
+				</div>
+			</th:block>
 			<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" style="display: none;" class="me-1">
 				<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
 				||

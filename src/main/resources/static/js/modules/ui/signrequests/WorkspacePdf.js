@@ -996,20 +996,20 @@ export class WorkspacePdf {
         }
         if(this.status === "draft" || this.status === "pending") {
             data.push({
-                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Annoter</b></div>',
+                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Annoter</b></div>',
                 text: 'Annoter',
                 value: 'comment'
             });
         }
         if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
             data.push({
-                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2"></i> <b>Voir les annotations</b></div>',
+                innerHTML: '<div style="width: 200px;"><i class="fas fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
                 text: 'Consulter les annotations',
                 value: 'comment'
             });
         }
         data.push({
-            innerHTML: '<div style="width: 200px;"><i class="fas fa-eye pr-2"></i> <b>Mode lecture</b></div>',
+            innerHTML: '<div style="width: 200px;"><i class="fas fa-eye text-info pr-2 m-1"></i><b>Mode lecture</b></div>',
             text: 'Lecture',
             value: 'read'
         });
@@ -1024,7 +1024,11 @@ export class WorkspacePdf {
             });
         }
         if(this.changeModeSelector != null) {
-            this.changeModeSelector.set("read");
+            if(this.signable) {
+                this.changeModeSelector.set("sign");
+            } else {
+                this.changeModeSelector.set("read");
+            }
         }
     }
 

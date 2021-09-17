@@ -268,7 +268,6 @@ public class SignRequestController {
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
-        model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";
     }

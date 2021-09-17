@@ -487,7 +487,7 @@ public class SignBookService {
             template = template.replace("[user.eppn]", user.getEppn());
         }
         if(template.contains("[user.name]")) {
-            template = template.replace("[user.name]", user.getFirstname() + " " + user.getName());
+            template = template.replace("[user.name]", user.getFirstname() + "-" + user.getName());
         }
         if(template.contains("[user.initials]")) {
             template = template.replace("[user.initials]", user.getName().substring(0,1).toUpperCase() + user.getFirstname().substring(0,1).toUpperCase());
