@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.SignTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,6 +50,9 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private ReportService reportService;
+
+    @Resource
+    private SignTypeService signTypeService;
 
     @Resource
     private OJService ojService;
@@ -104,11 +107,12 @@ public class GlobalAttributsControllerAdvice {
         } else {
             model.addAttribute("version", "dev");
         }
-        List<SignType> signTypes = Arrays.asList(SignType.values());
+        List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
         if(userKeystoreService == null) {
         	signTypes.remove(SignType.certSign);
         	signTypes.remove(SignType.nexuSign);
         }
+        model.addAttribute("signTypes", signTypes);
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));

@@ -239,7 +239,7 @@ public class UserService {
     @Transactional
     public void updateUser(String authUserEppn, String signImageBase64, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore) throws IOException {
         User authUser = getByEppn(authUserEppn);
-        if(multipartKeystore != null && !multipartKeystore.isEmpty()) {
+        if(multipartKeystore != null && !multipartKeystore.isEmpty() && !globalProperties.getDisableCertStorage()) {
             if(authUser.getKeystore() != null) {
                 documentService.delete(authUser.getKeystore());
             }
