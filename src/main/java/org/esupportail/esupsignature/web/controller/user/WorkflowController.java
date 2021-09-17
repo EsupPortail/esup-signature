@@ -29,7 +29,7 @@ public class WorkflowController {
     @GetMapping(value = "/{id}", produces = "text/html")
     public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         model.addAttribute("fromAdmin", false);
-        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
         return "user/workflows/show";

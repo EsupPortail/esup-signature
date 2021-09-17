@@ -73,7 +73,7 @@ public class WizardController {
                 model.addAttribute("isTempUsers", signRequestService.isTempUsers(signBook.getSignRequests().get(0).getId()));
                 return "user/wizard/wiz-setup-workflow";
             }
-            model.addAttribute("signTypes", SignType.values());
+            model.addAttribute("signTypes", SignType.getAuthorisedValues());
         }
         return "user/wizard/wiz-init-steps";
     }
@@ -95,7 +95,7 @@ public class WizardController {
                 }
                 liveWorkflowStepService.addNewStepToSignBook(id, SignType.valueOf(step.getSignType()), step.getAllSignToComplete(), step.getRecipientsEmails(), step.getExternalUsersInfos(), authUserEppn);
                 if (addNew != null) {
-                    model.addAttribute("signTypes", SignType.values());
+                    model.addAttribute("signTypes", SignType.getAuthorisedValues());
                 }
             } else {
                 end = true;
@@ -137,7 +137,7 @@ public class WizardController {
 
     @GetMapping(value = "/wiz-init-steps-workflow")
     public String wizWorkflow(@ModelAttribute("userEppn") String userEppn, Model model) {
-        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         return "user/wizard/wiz-init-steps-workflow";
     }
 

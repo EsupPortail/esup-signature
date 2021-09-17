@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -104,7 +103,7 @@ public class GlobalAttributsControllerAdvice {
         } else {
             model.addAttribute("version", "dev");
         }
-        List<SignType> signTypes = Arrays.asList(SignType.values());
+        List<SignType> signTypes = SignType.getAuthorisedValues();
         if(userKeystoreService == null) {
         	signTypes.remove(SignType.certSign);
         	signTypes.remove(SignType.nexuSign);

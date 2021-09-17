@@ -466,7 +466,7 @@
                     <div class="form-group mb-3">
                     <label for="signTypeInfinite">Choisir un type de signature</label>
                         <select name="signType" id="signTypeInfinite" class="form-control">
-                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
+                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).getAuthorisedValues()}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
                             </th:block>

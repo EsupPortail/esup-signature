@@ -79,7 +79,7 @@ public class UserController {
 
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
-		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
+		model.addAttribute("signTypes", SignType.getAuthorisedValues());
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		model.addAttribute("uiParams", userService.getUiParams(authUserEppn));

@@ -147,7 +147,7 @@
                                     </label>
                                     <div class="col-lg-10">
                                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
-                                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).values()}">
+                                            <th:block th:each="signType : ${T(org.esupportail.esupsignature.entity.enums.SignType).getAuthorisedValues()}">
                                                 <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                                             </th:block>
                                         </select>

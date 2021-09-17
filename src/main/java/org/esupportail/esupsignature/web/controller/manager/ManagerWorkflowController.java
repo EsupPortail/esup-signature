@@ -21,7 +21,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.Arrays;
 import java.util.List;
 
 @RequestMapping("/manager/workflows")
@@ -60,7 +59,7 @@ public class ManagerWorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String show(@PathVariable("id") Long id, Model model, @ModelAttribute("authUserEppn") String authUserEppn) {
         model.addAttribute("fromAdmin", true);
-        model.addAttribute("signTypes", SignType.values());
+        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
         return "managers/workflows/show";
@@ -91,7 +90,7 @@ public class ManagerWorkflowController {
         model.addAttribute("sourceTypes", DocumentIOType.values());
         model.addAttribute("targetTypes", DocumentIOType.values());
         model.addAttribute("shareTypes", ShareType.values());
-        model.addAttribute("signTypes", Arrays.asList(SignType.values()));
+        model.addAttribute("signTypes", SignType.getAuthorisedValues());
         return "managers/workflows/update";
     }
 

@@ -33,7 +33,11 @@ public class GlobalProperties implements Cloneable {
     private String applicationEmail = "esup.signature@univ-ville.fr";
     private int hoursBeforeRefreshNotif = 24;
     private Boolean infiniteScrolling = true;
+    /**
+     * Délai de conservation dans la corbeille (en jours)
+     */
     private Boolean returnToHomeAfterSign = true;
+
     /**
      *Le modèle est construit à l'aide d'attributs entre crochets.
      *default : [title]
@@ -63,7 +67,11 @@ public class GlobalProperties implements Cloneable {
      *      <li>3 : le mandant peut choisir la signature du délégué</li>
      *  </ul>
      */
-    private int shareMode = 0;
+    private Integer shareMode = 0;
+    /**
+     * Désactiver la possibilité de stocker des certificats utilisateurs
+     */
+    private Boolean disableCertStorage = false;
 
     public String getRootUrl() {
         return rootUrl;
@@ -255,5 +263,13 @@ public class GlobalProperties implements Cloneable {
 
     public void setSignedSuffix(String signedSuffix) {
         this.signedSuffix = signedSuffix;
+    }
+
+    public Boolean getDisableCertStorage() {
+        return disableCertStorage;
+    }
+
+    public void setDisableCertStorage(Boolean disableCertStorage) {
+        this.disableCertStorage = disableCertStorage;
     }
 }
