@@ -142,9 +142,12 @@ public class SignRequestController {
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
-                                    @RequestParam(value = "statusFilter", required = false) String statusFilter,
-                                    @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, null, null, null, pageable);
+                         @RequestParam(value = "statusFilter", required = false) String statusFilter,
+                         @RequestParam(value = "recipientsFilter", required = false) String recipientsFilter,
+                         @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
+                         @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
+                         @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
@@ -265,7 +268,6 @@ public class SignRequestController {
         model.addAttribute("toSignDocument", signRequestService.getToSignDocuments(id).get(0));
         model.addAttribute("signable", signRequest.getSignable());
         model.addAttribute("editable", signRequest.getEditable());
-        model.addAttribute("signTypes", SignType.values());
         model.addAttribute("workflows", workflowService.getAllWorkflows());
         return "user/signrequests/details";
     }
