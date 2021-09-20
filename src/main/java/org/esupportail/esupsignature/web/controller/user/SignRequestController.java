@@ -374,6 +374,7 @@ public class SignRequestController {
                                   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
+        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
