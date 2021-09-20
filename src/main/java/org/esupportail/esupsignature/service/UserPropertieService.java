@@ -60,7 +60,9 @@ public class UserPropertieService {
                     List<Map.Entry<User, Date>> entrySet = new ArrayList<>(favorites.entrySet());
                     entrySet.sort(Map.Entry.<User, Date>comparingByValue().reversed());
                     for (int i = 0; i < Math.min(entrySet.size(), 5); i++) {
-                        favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+                        if(entrySet.get(i).getKey().getReplaceByUser() == null) {
+                            favoriteUserEmails.add(entrySet.get(i).getKey().getEmail());
+                        }
                     }
                 }
             }

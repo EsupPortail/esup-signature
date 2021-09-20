@@ -96,11 +96,14 @@
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-lg-inline">Délégation</span>
+                        <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Autorisations</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarShareDropdown" >
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Remplacement" href="/user/users/replace">
+                            <i class="fas fa-people-arrows"></i> <span class="nav-item-label d-none d-lg-inline">Remplacement</span>
+                        </a>
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
-                            <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Gérer mes délégations</span>
+                            <i class="fas fa-users"></i> <span class="nav-item-label d-none d-lg-inline">Délégations</span>
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">

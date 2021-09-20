@@ -1526,4 +1526,30 @@ public class SignRequestService {
 		}
 		zipOutputStream.close();
 	}
+
+	public int transfer(String authUserEppn) {
+		int i = 0;
+		User user = userService.getUserByEppn(authUserEppn);
+		User replacedByUser = user.getCurrentReplaceUser();
+		if(replacedByUser != null) {
+			List<SignRequest> signRequests = getToSignRequests(authUserEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+			for(SignRequest signRequest : signRequests) {
+				for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+					for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+						if(recipient.getUser().getEppn().equals(authUserEppn)) {
+							recipient.setUser(replacedByUser);
+						}
+					}
+					for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
+						if(recipient.getUser().getEppn().equals(authUserEppn)) {
+							recipient.setUser(replacedByUser);
+						}
+					}
+				}
+				i++;
+			}
+		}
+		return i;
+	}
+
 }
