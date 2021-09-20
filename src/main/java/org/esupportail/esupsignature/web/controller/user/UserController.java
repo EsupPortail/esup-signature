@@ -5,14 +5,13 @@ import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.LdapAliasService;
 import org.esupportail.esupsignature.service.ldap.PersonLdapLight;
-import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +78,6 @@ public class UserController {
 
     @GetMapping
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
-		model.addAttribute("signTypes", Arrays.asList(SignType.values()));
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		model.addAttribute("uiParams", userService.getUiParams(authUserEppn));

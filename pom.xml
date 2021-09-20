@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.14.7</version>
+	<version>1.14.8</version>
 	<name>esup-signature</name>
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
@@ -32,10 +32,6 @@
 			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
 			<url>https://maven.springframework.org/release</url>
-		</repository>
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
 		</repository>
 		<repository>
 			<id>cefdigital</id>
@@ -257,7 +253,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>slim-select</artifactId>
-			<version>1.24.0</version>
+			<version>1.26.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars</groupId>

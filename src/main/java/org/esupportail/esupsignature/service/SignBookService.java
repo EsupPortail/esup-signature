@@ -195,7 +195,6 @@ public class SignBookService {
 
     @Transactional
     public void delete(Long signBookId, String userEppn) {
-        //TODO critères de suppression ou en conf (if deleteDefinitive)
         SignBook signBook = getById(signBookId);
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
@@ -373,7 +372,7 @@ public class SignBookService {
         for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             recipients.addAll(liveWorkflowStep.getRecipients());
         }
-        if(signBook.getCreateBy().getEppn().equals(userEppn) || recipientService.recipientsContainsUser(recipients, userEppn) > 0) {
+        if(signBook.getViewers().stream().anyMatch(user -> user.getEppn().equals(userEppn)) || signBook.getCreateBy().getEppn().equals(userEppn) || recipientService.recipientsContainsUser(recipients, userEppn) > 0) {
             return true;
         }
         return false;
@@ -488,7 +487,7 @@ public class SignBookService {
             template = template.replace("[user.eppn]", user.getEppn());
         }
         if(template.contains("[user.name]")) {
-            template = template.replace("[user.name]", user.getFirstname() + " " + user.getName());
+            template = template.replace("[user.name]", user.getFirstname() + "-" + user.getName());
         }
         if(template.contains("[user.initials]")) {
             template = template.replace("[user.initials]", user.getName().substring(0,1).toUpperCase() + user.getFirstname().substring(0,1).toUpperCase());

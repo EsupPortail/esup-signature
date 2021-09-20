@@ -1004,15 +1004,15 @@ public class SignRequestService {
 	@Transactional
 	public List<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
 		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
-		if (recipientsFilter != null) {
+		if (recipientsFilter != null && !recipientsFilter.equals("") && !recipientsFilter.equals("all")) {
 			List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
 			signRequests.retainAll(signRequestByRecipients);
 		}
-		if (workflowFilter != null) {
+		if (workflowFilter != null && !workflowFilter.equals("") && !workflowFilter.equals("all")) {
 			List<SignRequest> signRequestByWorkflow = signRequestRepository.findByParentSignBookTitle(workflowFilter);
 			signRequests.retainAll(signRequestByWorkflow);
 		}
-		if (docTitleFilter != null) {
+		if (docTitleFilter != null && !docTitleFilter.equals("") && !docTitleFilter.equals("all")) {
 			List<SignRequest> signRequestByTitle = signRequestRepository.findByTitle(docTitleFilter);
 			signRequests.retainAll(signRequestByTitle);
 		}
