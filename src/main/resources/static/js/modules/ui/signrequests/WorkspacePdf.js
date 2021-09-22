@@ -184,9 +184,9 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
-        if(this.currentStepMultiSign != null && !this.currentStepMultiSign) {
-           $("#addSignButton").attr("disabled", true);
-        }
+        // if(this.currentStepMultiSign != null && !this.currentStepMultiSign) {
+        //    $("#addSignButton").attr("disabled", true);
+        // }
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
         if(forceSignNumber != null) {

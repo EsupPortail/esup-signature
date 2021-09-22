@@ -123,10 +123,10 @@ public class SignRequestController {
         if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
         List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
         model.addAttribute("statusFilter", statusFilter);
-        model.addAttribute("signRequests", signRequestPage);
-        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
+        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
+        Page<SignBook> signBookPage = new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
+        model.addAttribute("signBooks", signBookPage);
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
@@ -148,11 +148,11 @@ public class SignRequestController {
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
+        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
+        Page<SignBook> signBookPage = new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
+        model.addAttribute("signBooks", signBookPage);
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
-        model.addAttribute("signRequests", signRequestPage);
-        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
         ctx.setVariables(model.asMap());
         ctx.setVariable("token", token);
         return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
@@ -374,6 +374,7 @@ public class SignRequestController {
                                   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
+        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
@@ -528,6 +529,18 @@ public class SignRequestController {
             logger.error("get file error", e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-last-files/{id}", produces = "application/zip")
+    @ResponseBody
+    public ResponseEntity<Void> getLastFiles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        signRequestService.getMultipleSignedDocuments(Collections.singletonList(id), httpServletResponse);
+        httpServletResponse.flushBuffer();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")

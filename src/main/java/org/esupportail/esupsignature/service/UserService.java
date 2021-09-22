@@ -26,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +38,7 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
 
     private LdapPersonService ldapPersonService;
 
@@ -97,7 +100,7 @@ public class UserService {
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        userRepository.findAll().forEach(e -> list.add(e));
+        userRepository.findAll().forEach(list::add);
         return list;
     }
 
@@ -281,9 +284,6 @@ public class UserService {
         users.addAll(userRepository.findByEppnStartingWith(searchString));
         users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString));
         users.addAll(userRepository.findByEmailStartingWith(searchString));
-        for (User user : users) {
-            personLdaps.add(getPersonLdapLightFromUser(user));
-        }
         if (ldapPersonService != null && !searchString.trim().isEmpty() && searchString.length() > 2) {
             List<PersonLdapLight> ldapSearchList = ldapPersonService.searchLight(searchString);
             if (ldapSearchList.size() > 0) {
@@ -295,6 +295,12 @@ public class UserService {
                         }
                     }
                 }
+            }
+        }
+        for (User user : users) {
+            if(user.getReplaceByUser() != null) {
+                personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
+                personLdaps.add(getPersonLdapLightFromUser(user));
             }
         }
         return personLdaps;
@@ -313,11 +319,19 @@ public class UserService {
 
     public PersonLdapLight getPersonLdapLightFromUser(User user) {
         PersonLdapLight personLdap = new PersonLdapLight();
-        personLdap.setUid(user.getEppn());
-        personLdap.setSn(user.getName());
-        personLdap.setGivenName(user.getFirstname());
-        personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
-        personLdap.setMail(user.getEmail());
+        if(user.getReplaceByUser() != null) {
+            personLdap.setUid(user.getReplaceByUser().getEppn());
+            personLdap.setSn(user.getReplaceByUser().getName());
+            personLdap.setGivenName(user.getReplaceByUser().getFirstname());
+            personLdap.setDisplayName(user.getFirstname() + " " + user.getName() + " remplacé par " + user.getReplaceByUser().getFirstname() + " " + user.getReplaceByUser().getName());
+            personLdap.setMail(user.getReplaceByUser().getEmail());
+        } else {
+            personLdap.setUid(user.getEppn());
+            personLdap.setSn(user.getName());
+            personLdap.setGivenName(user.getFirstname());
+            personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
+            personLdap.setMail(user.getEmail());
+        }
         return personLdap;
     }
 
@@ -529,4 +543,32 @@ public class UserService {
     public List<User> getByManagersRoles(String role) {
         return userRepository.findByManagersRolesIn(Collections.singletonList(role));
     }
+
+    @Transactional
+    public void updateReplaceUserBy(String eppn, String[] byEmail, String beginDate, String endDate) {
+        User user = getUserByEppn(eppn);
+        if(user != null ) {
+            if(byEmail != null) {
+                User byUser = getUserByEmail(byEmail[0]);
+                Date beginDateDate = null;
+                Date endDateDate = null;
+                if (beginDate != null && endDate != null) {
+                    try {
+                        beginDateDate = new SimpleDateFormat(DATE_PATTERN).parse(beginDate);
+                        endDateDate = new SimpleDateFormat(DATE_PATTERN).parse(endDate);
+                    } catch (ParseException e) {
+                        logger.error("error on parsing dates");
+                    }
+                }
+                user.setReplaceByUser(byUser);
+                user.setReplaceBeginDate(beginDateDate);
+                user.setReplaceEndDate(endDateDate);
+            } else {
+                user.setReplaceByUser(null);
+                user.setReplaceBeginDate(null);
+                user.setReplaceEndDate(null);
+            }
+        }
+    }
+
 }

@@ -1,13 +1,23 @@
 <html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
-<th:block th:each="signRequest : ${signRequests}">
-    <tr th:data-href="'/user/signrequests/' + ${signRequest.id}">
+<th:block th:each="signBook : ${signBooks}">
+    <tr th:with="signRequest = ${signBook.signRequests.get(0)}" th:data-href="'/user/signrequests/' + ${signRequest.id}" data-toggle="tooltip" th:title="'Contient ' + ${signRequest.parentSignBook.signRequests.size()} + ' document(s)'">
         <td class="w-20 d-none d-lg-table-cell">
-            <input type="checkbox" class="form-check-input sign-requests-ids" autocomplete="off" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
+            <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-status="${signRequest.status}"
                    th:data-sign-type="${signRequest.parentSignBook.liveWorkflow.currentStep != null ? signRequest.parentSignBook.liveWorkflow.currentStep.signType : ''}"
                    th:data-id-signbook="${signRequest.parentSignBook.id}">
         </td>
-        <td th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
-        <td class="clickable-td text-break"><span th:text="${signRequest.title}"></span></td>
+        <td th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.liveWorkflow.workflow.description}"></td>
+        <td th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}" th:data-href="'/user/signrequests/' + ${signRequest.id}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signRequest.parentSignBook.title}"></td>
+        <td class="clickable-td text-break">
+                                    <span th:unless="${signBook.signRequests.size() > 1}">
+                                        <i class="fa fa-file"></i>
+                                        <span th:text="${signRequest.title}"></span>
+                                    </span>
+            <span th:if="${signBook.signRequests.size() > 1}">
+                                        <i class="fa fa-folder-open"></i>
+                                        <span th:text="' Contient ' + ${signBook.signRequests.size()} + ' documents '"></span>
+                                     </span>
+        </td>
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
@@ -55,11 +65,19 @@
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-signature pr-2"></i> Signer
                         </a>
-                        <a target="_blank" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button" th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
+                        <a target="_blank" th:if="${signBook.signRequests.size() > 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                           th:href="'/user/signrequests/get-last-files/' + ${signBook.id}">
+                            <i class="fas fa-download pr-2"></i> Télécharger tout
+                        </a>
+                        <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                           th:href="'/user/signrequests/get-last-file/' + ${signRequest.id}">
                             <i class="fas fa-download pr-2"></i> Télécharger
                         </a>
+                        <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted && signRequest.parentSignBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signrequests/restore/' + ${signRequest.id}" role="button" title="Restaurer">
+                            <i class="fas fa-trash-restore pr-2"></i> Restaurer
+                        </a>
                         <a th:if="${signRequest.parentSignBook.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i class="fas fa-trash-alt pr-2"></i> Supprimer
+                            <i class="fas fa-trash-alt pr-2"></i> <span th:text="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </div>
                 </div>

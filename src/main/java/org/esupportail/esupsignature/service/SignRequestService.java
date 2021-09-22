@@ -189,7 +189,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
 		if(!userEppn.equals(authUserEppn)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkShare(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
+				if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -514,7 +514,7 @@ public class SignRequestService {
 				signedInputStream = pdfService.convertGS(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs), signRequest.getToken());
 			}
 			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), signType, comment);
-			documentService.addSignedFile(signRequest, signedInputStream, fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
+			documentService.addSignedFile(signRequest, signedInputStream, signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType());
 		} else {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
@@ -908,7 +908,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
-		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest, ShareType.sign)) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)) {
 			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
 				if (recipient.isPresent()
@@ -924,7 +924,7 @@ public class SignRequestService {
 
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
-		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
 			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 			User authUser = userService.getUserByEppn(authUserEppn);
@@ -1526,4 +1526,30 @@ public class SignRequestService {
 		}
 		zipOutputStream.close();
 	}
+
+	public int transfer(String authUserEppn) {
+		int i = 0;
+		User user = userService.getUserByEppn(authUserEppn);
+		User replacedByUser = user.getCurrentReplaceUser();
+		if(replacedByUser != null) {
+			List<SignRequest> signRequests = getToSignRequests(authUserEppn).stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+			for(SignRequest signRequest : signRequests) {
+				for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
+					for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+						if(recipient.getUser().getEppn().equals(authUserEppn)) {
+							recipient.setUser(replacedByUser);
+						}
+					}
+					for(Recipient recipient : signRequest.getRecipientHasSigned().keySet()) {
+						if(recipient.getUser().getEppn().equals(authUserEppn)) {
+							recipient.setUser(replacedByUser);
+						}
+					}
+				}
+				i++;
+			}
+		}
+		return i;
+	}
+
 }
