@@ -40,9 +40,9 @@ public class PreAuthorizeService {
         return form.getManagers().contains(user.getEmail());
     }
 
-    public boolean signBookView(Long id, String userEppn) {
+    public boolean signBookView(Long id, String userEppn, String authUserEppn) {
         SignBook signBook = signBookService.getById(id);
-        return signBookService.checkUserViewRights(userEppn, signBook);
+        return signBookService.checkUserViewRights(userEppn, authUserEppn, signBook);
     }
 
     public boolean signBookManage(Long id, String userEppn) {

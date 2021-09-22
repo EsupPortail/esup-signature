@@ -189,7 +189,7 @@ public class SignRequestService {
 		List<SignRequest> signRequests = getSignRequestsByStatus(userEppn, statusFilter);
 		if(!userEppn.equals(authUserEppn)) {
 			for(SignRequest signRequest: signRequests) {
-				if(userShareService.checkShare(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
+				if(userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest) || getSharedSignedSignRequests(authUserEppn).contains(signRequest)) {
 					signRequestList.add(signRequest);
 				}
 			}
@@ -908,7 +908,7 @@ public class SignRequestService {
 	}
 
 	public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
-		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest, ShareType.sign)) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)) {
 			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 				Optional<Recipient> recipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
 				if (recipient.isPresent()
@@ -924,7 +924,7 @@ public class SignRequestService {
 
 	public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
-		if(userEppn.equals(authUserEppn) || userShareService.checkShare(userEppn, authUserEppn, signRequest)) {
+		if(userEppn.equals(authUserEppn) || userShareService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest)) {
 			List<SignRequest> signRequests = signRequestRepository.findByIdAndRecipient(signRequest.getId(), userEppn);
 			Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 			User authUser = userService.getUserByEppn(authUserEppn);
