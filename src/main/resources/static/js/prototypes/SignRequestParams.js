@@ -356,9 +356,6 @@ export class SignRequestParams  extends EventFactory {
             this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
             this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
         }
-        if(this.firstLaunch && result != null) {
-            this.simulateDrop();
-        }
     }
 
     show() {
