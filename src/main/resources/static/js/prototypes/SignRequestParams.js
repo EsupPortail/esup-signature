@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa, isElec) {
+    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
@@ -11,6 +11,8 @@ export class SignRequestParams  extends EventFactory {
         this.signPageNumber = 1;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
+        this.authUserName = authUserName;
+        this.isShare = userName != authUserName;
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
@@ -165,6 +167,21 @@ export class SignRequestParams  extends EventFactory {
             this.toggleMinimalTools();
             this.toggleWatermark();
             this.toggleExtra();
+            this.refreshExtraDiv();
+            this.updateSize();
+        }
+        if(this.isShare) {
+            this.toggleMinimalTools();
+            this.signColorPicker.spectrum("destroy");
+            this.signColorPicker.hide();
+            this.toggleExtra();
+            this.toggleName();
+            this.toggleText();
+            $("#extraTools_" + this.id).addClass("d-none");
+            $("#crossTools_" + this.id).css("top", "-45px");
+            this.textPart = this.userName + "\nP.O.\n" + this.authUserName;
+            this.textareaExtra.val(this.textPart);
+            this.textareaExtra.attr("readonly", true);
             this.refreshExtraDiv();
             this.updateSize();
         }
