@@ -30,7 +30,7 @@ export default class FilesInput extends EventFactory {
     }
 
     initListeners() {
-        $("#fileUpload").on('click', e => this.fileUpload());
+        $("#fileUploadBtn").on('click', e => this.fileUpload());
         if(!this.async) {
             console.info("set async");
             this.input.on('fileloaded', e => this.uploadFile());
@@ -181,9 +181,11 @@ export default class FilesInput extends EventFactory {
         if(nbFiles > 0) {
             $('#unique').removeClass('d-none');
             $('#forceAllSign').removeClass('d-none');
+            $('#forceAllSign2').removeClass('d-none');
         } else {
             $('#unique').addClass('d-none');
             $('#forceAllSign').addClass('d-none');
+            $('#forceAllSign2').removeClass('d-none');
         }
     }
 

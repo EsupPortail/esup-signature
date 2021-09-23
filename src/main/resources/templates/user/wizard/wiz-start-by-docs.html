@@ -31,28 +31,29 @@
         </div>
     </div>
     <div class="form-group mb-3">
-    <div id="unique" class="form-check d-none">
-        <label class="switch">
-            <input type="checkbox" class="form-check-input" name="unique">
-            <span class="slider round"></span>
-        </label>
-        <label>Activer pour encapsuler les documents au format asic (signature électronique non visuelle)</label>
-    </div>
-    <div>
-        <label for="commentWiz">Commentaire</label>
-        <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="commentWiz" name="commentWiz" class="form-control"></textarea>
-    </div>
-    <div>
-        <label for="recipientsCCEmailsWiz">Choisir les observateurs en copie</label>
-        <div class="form-group mb-3">
-            <select class="select-users" data-check="true" name="recipientsCCEmailsWiz" id="recipientsCCEmailsWiz" size="5" multiple="multiple">
-            </select>
+        <div id="forceAllSign2" class="form-check form-switch form-switch-md d-none">
+            <input class="form-check-input" type="checkbox" name="forceAllSign2">
+            <label class="form-check-label">Forcer la signature de tous les documents</label>
         </div>
+        <div id="unique" class="form-check form-switch form-switch-md d-none">
+            <input type="checkbox" class="form-check-input" name="unique">
+            <label class="form-check-label">Activer pour encapsuler tous les documents dans une seule signature numérique</label>
+        </div>
+        <div>
+            <label for="commentWiz">Commentaire</label>
+            <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" id="commentWiz" name="commentWiz" class="form-control"></textarea>
+        </div>
+    <div>
+    <label for="recipientsCCEmailsWiz">Choisir les observateurs en copie</label>
+    <div class="form-group mb-3">
+        <select class="select-users" data-check="true" name="recipientsCCEmailsWiz" id="recipientsCCEmailsWiz" size="5" multiple="multiple">
+        </select>
+    </div>
     </div>
     </div>
 </div>
 <div class="inline-flex">
-    <button type="button" id="fileUpload" class="btn btn-success float-end m-1">
+    <button type="button" id="fileUploadBtn" class="btn btn-success float-end m-1">
         Suivant <i class="fas fa-angle-right"></i>
     </button>
 </div>

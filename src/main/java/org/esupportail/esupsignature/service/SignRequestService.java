@@ -259,7 +259,9 @@ public class SignRequestService {
 		List<SignRequest> signRequests = new ArrayList<>();
 		List<Data> datas = dataService.getDatasByForm(form.getId());
 		for(Data data : datas) {
-			signRequests.add(data.getSignBook().getSignRequests().get(0));
+			if(data.getSignBook() != null && data.getSignBook().getSignRequests().size() > 0) {
+				signRequests.add(data.getSignBook().getSignRequests().get(0));
+			}
 		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
@@ -1239,11 +1241,13 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException, EsupSignatureIOException {
+		if(forceAllSign == null) forceAllSign = false;
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
 		}
 		SignBook signBook = signBookService.addDocsInNewSignBookSeparated(fileService.getNameOnly(multipartFiles[0].getOriginalFilename()), "Demande simple", multipartFiles, user);
+		signBook.setForceAllDocsSign(forceAllSign);
 		try {
 			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
 		} catch (EsupSignatureMailException e) {
