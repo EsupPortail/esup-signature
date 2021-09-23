@@ -28,6 +28,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.metric.CustomMetricsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
@@ -161,6 +162,9 @@ public class SignRequestService {
 
 	@Resource
 	private FOPService fopService;
+
+	@Resource
+	private WebUtilsService webUtilsService;
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -694,7 +698,7 @@ public class SignRequestService {
 	}
 
 	public boolean isCurrentStepCompleted(SignRequest signRequest) {
-		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed));
+		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed) || sr.getStatus().equals(SignRequestStatus.refused));
 	}
 
 	public boolean isSignRequestCompleted(SignRequest signRequest) {
@@ -733,7 +737,9 @@ public class SignRequestService {
 
 	public void completeSignRequests(List<SignRequest> signRequests, String authUserEppn) {
 		for(SignRequest signRequest : signRequests) {
-			updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS", authUserEppn, authUserEppn);
+			if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+				updateStatus(signRequest, SignRequestStatus.completed, "Terminé", "SUCCESS", authUserEppn, authUserEppn);
+			}
 		}
 	}
 
@@ -897,7 +903,22 @@ public class SignRequestService {
 	@Transactional
 	public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
 		SignRequest signRequest = getById(signRequestId);
-		signBookService.refuse(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
+		SignBook signBook = signRequest.getParentSignBook();
+		if(signBook.getSignRequests().size() > 1 && (signBook.getForceAllDocsSign() == null || !signBook.getForceAllDocsSign())) {
+			commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
+			updateStatus(signRequest, SignRequestStatus.refused, "Refusé", "SUCCESS", null, null, null, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
+			for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+				if (recipient.getUser().getEppn().equals(userEppn)) {
+					Action action = signRequest.getRecipientHasSigned().get(recipient);
+					action.setActionType(ActionType.refused);
+					action.setUserIp(webUtilsService.getClientIp());
+					action.setDate(new Date());
+					recipient.setSigned(true);
+				}
+			}
+		} else {
+			signBookService.refuse(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
+		}
 	}
 
 	public boolean needToSign(SignRequest signRequest, String userEppn) {

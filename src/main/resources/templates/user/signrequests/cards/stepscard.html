@@ -30,11 +30,16 @@
                                     </span>
                                 </th:block>
                                 <th:block th:if="${iterator.index + 1 < signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                    <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                        <i class="fas fa-check"></i>
-                                    </span>
-                                    <span title="Etape signé" th:unless="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                        <i class="fas fa-signature"></i>
+                                    <th:block th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                                        <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                        <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}" class="bs-stepper-circle bg-success">
+                                            <i class="fas fa-signature"></i>
+                                        </span>
+                                    </th:block>
+                                    <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
+                                        <i class="fas fa-times"></i>
                                     </span>
                                 </th:block>
                                 <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>

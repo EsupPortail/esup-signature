@@ -405,33 +405,32 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(liveWorkflowStep != null) {
-                signRequestService.pendingSignRequest(signRequest, userEppn);
-                if (!emailSended) {
-                    try {
-                        signRequestService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
-                        emailSended = true;
-                    } catch (EsupSignatureMailException e) {
-                        throw new EsupSignatureException(e.getMessage());
-                    }
-                }
-                for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-//                    if(!signRequest.getCreateBy().getEppn().equals(userEppn)) {
-//                        eventService.publishEvent(new JsonMessage("info", "Vous avez une nouvelle demande", null), "user", eventService.getClientIdByEppn(recipient.getUser().getEppn()));
-//                    }
-                    if(recipient.getUser().getUserType().equals(UserType.external)) {
+             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+                if (liveWorkflowStep != null) {
+                    signRequestService.pendingSignRequest(signRequest, userEppn);
+                    if (!emailSended) {
                         try {
-                            otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
+                            signRequestService.sendEmailAlerts(signRequest, userEppn, data, forceSendEmail);
+                            emailSended = true;
                         } catch (EsupSignatureMailException e) {
                             throw new EsupSignatureException(e.getMessage());
                         }
                     }
+                    for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
+                        if (recipient.getUser().getUserType().equals(UserType.external)) {
+                            try {
+                                otpService.generateOtpForSignRequest(signRequest.getId(), recipient.getUser());
+                            } catch (EsupSignatureMailException e) {
+                                throw new EsupSignatureException(e.getMessage());
+                            }
+                        }
+                    }
+                    logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
+                } else {
+                    completeSignBook(signBook.getId(), userEppn);
+                    logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
+                    break;
                 }
-                logger.info("Circuit " + signBook.getId() + " envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber());
-            } else {
-                completeSignBook(signBook.getId(), userEppn);
-                logger.info("Circuit " + signBook.getId() + " terminé car ne contient pas d'étape");
-                break;
             }
         }
     }

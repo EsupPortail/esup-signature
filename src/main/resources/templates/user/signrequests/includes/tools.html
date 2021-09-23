@@ -107,7 +107,10 @@
 				   th:href="'/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
-						<i th:class="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}? 'fas fa-file-signature text-success' : 'fas fa-file'"></i>&nbsp;<span th:text="${signRequestTab.title}"></span>
+						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fas fa-file"></i>
+						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="fas fa-file-signature text-success"></i>
+						<i th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="fas fa-file-excel text-danger"></i>
+						&nbsp;<span th:text="${signRequestTab.title}"></span>
 					</div>
 				</a>
 			</li>
