@@ -15,7 +15,7 @@ export default class FilesInput extends EventFactory {
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
         this.async = false;
-        this.uploadUrl = ' ';
+        this.uploadUrl = null;
         if(signRequestId != null) {
             this.async = false;
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
@@ -94,7 +94,7 @@ export default class FilesInput extends EventFactory {
             dropZoneEnabled: !readOnly && !this.async,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
-            uploadAsync: false,
+            uploadAsync: this.async,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
@@ -177,9 +177,6 @@ export default class FilesInput extends EventFactory {
 
 
     checkUniqueFile() {
-        this.input.fileinput('lock');
-        this.input.fileinput('disable');
-        this.input.attr('disabled', 'disabled');
         let nbFiles = this.input.fileinput('getFilesCount', true);
         if(nbFiles > 0) {
             $('#unique').removeClass('d-none');
