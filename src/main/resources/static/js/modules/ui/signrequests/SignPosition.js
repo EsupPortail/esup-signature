@@ -72,9 +72,6 @@ export class SignPosition extends EventFactory {
                 sizes.then(result => signRequestParams.changeSignSize(result));
             });
         }
-        if(signRequestParams.firstLaunch) {
-            signRequestParams.simulateDrop();
-        }
     }
 
     getImageDimensions(file) {
@@ -144,9 +141,6 @@ export class SignPosition extends EventFactory {
         }
         this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign"));
         this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
-        // if(this.firstLaunch && this.signRequestParamses.get(id) != null) {
-        //     this.simulateDrop();
-        // }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
@@ -155,6 +149,7 @@ export class SignPosition extends EventFactory {
         if(signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
+        this.signRequestParamses.get(id).simulateDrop();
         this.id++;
         return this.signRequestParamses.get(id);
     }
