@@ -1224,6 +1224,8 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+			int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+			signRequestParams.setSignDocumentNumber(docNumber);
 			signRequest.getSignRequestParams().add(signRequestParams);
 			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
@@ -1505,12 +1507,18 @@ public class SignRequestService {
 
 	@Transactional
 	public List<SignRequestParams> getToUseSignRequestParams(long id) {
+		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
-		int signOrderNumbr = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-			return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumbr)).collect(Collectors.toList());
+			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
+			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
+				if(signRequest.getSignRequestParams().contains(signRequestParams)) {
+					toUserSignRequestParams.add(signRequestParams);
+				}
+			}
 		}
-		return new ArrayList<>();
+		return toUserSignRequestParams;
 	}
 
 	@Transactional
