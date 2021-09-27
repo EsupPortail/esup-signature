@@ -152,8 +152,26 @@ export default class ListSignRequestUi {
                 clickableRow.on('click',  function() {
                     window.location = $(this).closest('tr').attr('data-href');
                 });
+                self.refreshClickableTd();
+
             });
         }
+    }
+
+    refreshClickableTd() {
+        this.clickableTd = $(".clickable-td");
+        this.clickableTd.unbind();
+        this.clickableTd.on('click',  function() {
+            let test = false;
+            $(".card").each(function (index, e) {
+                if(e.classList.contains("show")) {
+                    test = true;
+                }
+            });
+            if(!test) {
+                window.location = $(this).closest('tr').attr('data-href');
+            }
+        });
     }
 
     buildUrlFilter() {

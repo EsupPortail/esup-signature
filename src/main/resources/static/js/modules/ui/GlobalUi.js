@@ -1,5 +1,4 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
-import {CsrfToken} from "../../prototypes/CsrfToken.js";
 import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
@@ -56,17 +55,7 @@ export class GlobalUi {
         this.clickableRow.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });
-        this.clickableTd.on('click',  function() {
-            let test = false;
-            $(".card").each(function (index, e) {
-                if(e.classList.contains("show")) {
-                    test = true;
-                }
-            });
-            if(!test) {
-                window.location = $(this).closest('tr').attr('data-href');
-            }
-        });
+        this.refreshClickableTd();
         this.inputFiles.on('change', e => this.changeFileInputName(e));
         let delay = 0;
         let offset = 300;
@@ -499,4 +488,19 @@ export class GlobalUi {
         });
     }
 
+    refreshClickableTd() {
+        this.clickableTd = $(".clickable-td");
+        this.clickableTd.unbind();
+        this.clickableTd.on('click',  function() {
+            let test = false;
+            $(".card").each(function (index, e) {
+                if(e.classList.contains("show")) {
+                    test = true;
+                }
+            });
+            if(!test) {
+                window.location = $(this).closest('tr').attr('data-href');
+            }
+        });
+    }
 }
