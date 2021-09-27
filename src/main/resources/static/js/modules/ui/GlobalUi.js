@@ -45,6 +45,7 @@ export class GlobalUi {
             return false;
         };
 
+        $(document).on("refreshClickableTd", e => this.refreshClickableTd());
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         this.markHelpAsReadButtons.each((index, e) => this.listenHelpMarkAsReadButton(e));
         $('#sidebarCollapse').unbind('click').on('click', e => this.toggleSideBarAction());
