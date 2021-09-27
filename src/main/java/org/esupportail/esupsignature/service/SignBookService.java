@@ -214,7 +214,9 @@ public class SignBookService {
     @Transactional
     public void deleteDefinitive(Long signBookId) {
         SignBook signBook = getById(signBookId);
+        signBook.getLiveWorkflow().setCurrentStep(null);
         List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).collect(Collectors.toList());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();
         for (Long liveWorkflowStepId : liveWorkflowStepIds) {
             liveWorkflowStepService.delete(liveWorkflowStepId);
         }

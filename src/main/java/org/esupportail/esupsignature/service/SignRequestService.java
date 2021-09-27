@@ -1008,19 +1008,18 @@ public class SignRequestService {
 	@Transactional
 	public void deleteDefinitive(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
+		signRequest.getRecipientHasSigned().clear();
+		signRequestRepository.save(signRequest);
 		if (signRequest.getData() != null) {
 			Long dataId = signRequest.getData().getId();
 			signRequest.setData(null);
 			dataService.deleteOnlyData(dataId);
 		}
+		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).collect(Collectors.toList());
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId);
 		}
 		signRequest.getParentSignBook().getSignRequests().remove(signRequest);
-		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().clear();
-		}
 		signRequestRepository.delete(signRequest);
 	}
 
