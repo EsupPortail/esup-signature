@@ -364,6 +364,7 @@ public class SignRequestController {
                                   @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                                   @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
                                   @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                   @RequestParam(value = "pending", required = false) Boolean pending,
                                   @RequestParam(value = "comment", required = false) String comment,
@@ -379,7 +380,7 @@ public class SignRequestController {
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false);
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {

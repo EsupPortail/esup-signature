@@ -152,6 +152,7 @@ export default class ListSignRequestUi {
                 clickableRow.on('click',  function() {
                     window.location = $(this).closest('tr').attr('data-href');
                 });
+                $(document).trigger("refreshClickableTd");
             });
         }
     }

@@ -442,7 +442,12 @@ input:checked + .slider:before {
 }
 
 .ss-main .ss-single-selected .placeholder, .ss-main .ss-single-selected .placeholder * {
+    color: #212529;
     overflow: visible;
+}
+
+.ss-content .ss-list .ss-option {
+    color: #212529;
 }
 
 .ss-main .ss-multi-selected {
@@ -866,7 +871,7 @@ height: 100%;
     box-shadow: 5px 5px 7px rgba(33,33,33,.7);
     position:relative;
     top:-5px;
-    z-index: 5 !important;
+    z-index: 10000 !important;
 }
 
 .box-wrap{
@@ -1145,6 +1150,10 @@ textarea:placeholder-shown.required-field {
     -moz-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     -webkit-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.5), 0 2px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.form-label {
+    font-weight: bold;
 }
 
 .form-group {

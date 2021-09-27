@@ -62,6 +62,8 @@ public class SignBook {
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
 
+    private Boolean forceAllDocsSign = false;
+
     public Long getId() {
         return id;
     }
@@ -180,5 +182,13 @@ public class SignBook {
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public Boolean getForceAllDocsSign() {
+        return forceAllDocsSign;
+    }
+
+    public void setForceAllDocsSign(Boolean forceAllDocsSign) {
+        this.forceAllDocsSign = forceAllDocsSign;
     }
 }

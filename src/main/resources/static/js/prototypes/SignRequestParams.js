@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, restore, isSign, isVisa, isElec) {
+    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
@@ -11,6 +11,8 @@ export class SignRequestParams  extends EventFactory {
         this.signPageNumber = 1;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
+        this.authUserName = authUserName;
+        this.isShare = userName != authUserName;
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
@@ -33,10 +35,12 @@ export class SignRequestParams  extends EventFactory {
         this.signHeight = 75;
         this.extraWidth = 0;
         this.extraHeight = 0;
+        this.signFieldPresent = true;
         if(signRequestParams == null) {
             this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
             let mid = $(window).scrollTop() + Math.floor($(window).height() / 2);
             this.yPos = Math.round(mid / scale) - (this.signHeight * scale / 2);
+            this.signFieldPresent = false;
         }
         this.visual = true;
         this.addWatermark = false;
@@ -168,6 +172,21 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
+        if(this.isShare) {
+            this.toggleMinimalTools();
+            this.signColorPicker.spectrum("destroy");
+            this.signColorPicker.hide();
+            this.toggleExtra();
+            this.toggleName();
+            this.toggleText();
+            $("#extraTools_" + this.id).addClass("d-none");
+            $("#crossTools_" + this.id).css("top", "-45px");
+            this.textPart = this.userName + "\nP.O.\n" + this.authUserName;
+            this.textareaExtra.val(this.textPart);
+            this.textareaExtra.attr("readonly", true);
+            this.refreshExtraDiv();
+            this.updateSize();
+        }
     }
 
     getNewScale(self, ui) {
@@ -185,14 +204,16 @@ export class SignRequestParams  extends EventFactory {
             scroll: false,
             drag: function() {
                 let thisPos = $(this).position();
+                let x = Math.round(thisPos.left / self.currentScale);
+                let y = Math.round(thisPos.top / self.currentScale);
                 if(!self.firstLaunch) {
-                    let x = Math.round(thisPos.left / self.currentScale);
-                    let y = Math.round(thisPos.top / self.currentScale);
                     self.xPos = x;
                     self.yPos = y;
                 } else {
+                    if(self.signFieldPresent) {
+                        window.scrollTo(self.xPos * self.currentScale, self.yPos * self.currentScale);
+                    }
                     self.firstLaunch = false;
-                    window.scrollTo(0, self.yPos);
                 }
             }
         });
@@ -339,9 +360,6 @@ export class SignRequestParams  extends EventFactory {
             this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
             this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
         }
-        if(this.firstLaunch && result != null) {
-            this.simulateDrop();
-        }
     }
 
     show() {
@@ -442,7 +460,6 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
-            this.textareaExtra.focus();
         } else {
             if(!this.extraOnTop) {
                 this.toggleExtraOnTop();
@@ -460,6 +477,9 @@ export class SignRequestParams  extends EventFactory {
         this.toggleType();
         this.toggleText();
         this.updateSize();
+        if(this.addExtra) {
+            this.textareaExtra.focus();
+        }
     }
 
     toggleExtraOnTop() {
