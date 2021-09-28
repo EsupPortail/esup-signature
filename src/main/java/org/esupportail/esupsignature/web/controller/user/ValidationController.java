@@ -122,7 +122,7 @@ public class ValidationController {
 		try {
 			String simpleReport = (String) session.getAttribute("simpleReportXml");
 			response.setContentType(MimeType.PDF.getMimeTypeString());
-			response.setHeader("Content-Disposition", "attachment; filename=DSS-Simple-report.pdf");
+			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature.pdf");
 			fopService.generateSimpleReport(simpleReport, response.getOutputStream());
 		} catch (Exception e) {
 			logger.error("An error occured while generating pdf for simple report : " + e.getMessage(), e);
@@ -134,7 +134,7 @@ public class ValidationController {
 		try {
 			String detailedReport = (String) session.getAttribute("detailedReportXml");
 			response.setContentType(MimeType.PDF.getMimeTypeString());
-			response.setHeader("Content-Disposition", "attachment; filename=DSS-Detailed-report.pdf");
+			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature-Complet.pdf");
 			fopService.generateDetailedReport(detailedReport, response.getOutputStream());
 		} catch (Exception e) {
 			logger.error("An error occured while generating pdf for detailed report : " + e.getMessage(), e);

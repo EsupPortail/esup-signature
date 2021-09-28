@@ -113,6 +113,7 @@ textarea:invalid {
 
 .form-switch.form-switch-md .form-check-label {
     padding-top: 0.5em;
+    font-weight: bold;
 }
 
 #actionDiv {
@@ -537,7 +538,7 @@ th .ss-content {
 }
 
 .cross {
-    z-index: 3;
+    z-index: 9999999999999999 !important;
     background-position: bottom left;
     background-repeat: no-repeat;
     cursor: move;

@@ -21,7 +21,7 @@ public class LiveWorkflow {
     @OrderColumn
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private LiveWorkflowStep currentStep;
 
     @OneToMany(cascade = CascadeType.REMOVE)
