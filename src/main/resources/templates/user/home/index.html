@@ -33,7 +33,7 @@
                                    class="table table-sm table-borderless table-hover">
                                 <tbody>
                                 <th:block th:each="signBook : ${signBooks}">
-                                    <tr th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
+                                    <tr th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
                                         <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell"><i class="fas fa-folder-open p-2"></i></td>
                                         <td class="text-break w-30" th:text="${signBook.title}"></td>
@@ -55,7 +55,7 @@
                                                title="Voir" th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}"><i class="fas fa-eye"></i> </a>
                                         </td>
                                     </tr>
-                                    <tr th:if="${signBook.signRequests.size() > 1}">
+                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
                                         <td></td>
                                         <td></i></td>
                                         <td colspan="4">

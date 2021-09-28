@@ -39,6 +39,10 @@
 					 th:text="${attachments.size() + signRequest.links.size()}"
 					 class="badge bg-primary"></div>
 			</button>
+			<button class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
+					data-bs-target="#addCommentModal">
+				<i class="fas fa-sticky-note"></i> Post-it</span>
+			</button>
 			<div th:if="${notifTime >= hoursBeforeRefreshNotif}" class="border ms-3 me-3"></div>
 			<form th:if="${notifTime >= hoursBeforeRefreshNotif && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
 				<button type="submit" class="btn btn-light btn-outline-dark ms-1">

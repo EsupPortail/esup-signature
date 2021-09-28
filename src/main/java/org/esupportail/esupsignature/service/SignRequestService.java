@@ -1219,7 +1219,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer spotStepNumber, String authUserEppn) {
+	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
 		SignRequest signRequest = getById(id);
 		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
@@ -1228,7 +1228,7 @@ public class SignRequestService {
 			signRequest.getSignRequestParams().add(signRequestParams);
 			signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 		}
-		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, false, null, authUserEppn);
+		commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, postit.equals("on"), null, authUserEppn);
 		if(!(spotStepNumber != null && spotStepNumber > 0)) {
 			updateStatus(signRequest, null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
 		} else {
@@ -1402,7 +1402,7 @@ public class SignRequestService {
 	public void getToSignFileReportResponse(Long signRequestId, HttpServletResponse response) throws Exception {
 		SignRequest signRequest = getById(signRequestId);
 		response.setContentType("application/zip; charset=utf-8");
-		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "_report", StandardCharsets.UTF_8.toString()) + ".zip");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "-avec_rapport", StandardCharsets.UTF_8.toString()) + ".zip");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 		String name = "";
 		InputStream inputStream = null;
@@ -1438,7 +1438,7 @@ public class SignRequestService {
 			Reports reports = validationService.validate(new ByteArrayInputStream(fileBytes), null);
 
 			fopService.generateSimpleReport(reports.getXmlSimpleReport(), new FileOutputStream(reportFile));
-			zipOutputStream.putNextEntry(new ZipEntry("report.pdf"));
+			zipOutputStream.putNextEntry(new ZipEntry("rapport-signature.pdf"));
 			IOUtils.copy(new FileInputStream(reportFile), zipOutputStream);
 			zipOutputStream.closeEntry();
 			reportFile.delete();
