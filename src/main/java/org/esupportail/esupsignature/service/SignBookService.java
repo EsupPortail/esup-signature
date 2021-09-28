@@ -353,11 +353,11 @@ public class SignBookService {
     }
 
     public boolean nextWorkFlowStep(SignBook signBook) {
-        boolean isMoreWorkStep = isMoreWorkflowStep(signBook);
-        if (isMoreWorkStep) {
+        if (isMoreWorkflowStep(signBook)) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(signBook.getLiveWorkflow().getCurrentStepNumber()));
+            return signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
         }
-        return isMoreWorkStep && signBook.getLiveWorkflow().getCurrentStepNumber() > -1;
+        return false;
     }
 
     public boolean isMoreWorkflowStep(SignBook signBook) {
@@ -550,10 +550,11 @@ public class SignBookService {
             message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
         }
         if (comment != null && !comment.isEmpty()) {
-            for (SignRequest signRequest : signBook.getSignRequests()) {
-                commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
-                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
-            }
+            signBook.setDescription(comment);
+//            for (SignRequest signRequest : signBook.getSignRequests()) {
+//                commentService.create(signRequest.getId(), comment, null, null, null, null, true, null, user.getEppn());
+//                signRequestService.updateStatus(signRequest, signRequest.getStatus(), "comment", comment, "SUCCES", null, null, null, 0, user.getEppn(), authUser.getEppn());
+//            }
         }
         Map<SignBook, String> signBookStringMap = new HashMap<>();
         signBookStringMap.put(signBook, message);

@@ -91,8 +91,14 @@ export class SignUi {
     }
 
     launchSign(gotoNext) {
+        let signModal = $('#signModal');
+        if (!this.workspace.checkSignsPositions() && (this.workspace.signType !== "hiddenVisa")) {
+            bootbox.alert("Merci de placer la signature", null);
+            signModal.modal('hide');
+            return;
+        }
         this.gotoNext = gotoNext;
-        $('#signModal').modal('hide');
+        signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;

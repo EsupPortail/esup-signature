@@ -284,6 +284,16 @@ public class SignRequestController {
                                @RequestParam(value = "certType", required = false) String certType,
                                        HttpSession httpSession) {
         if (visual == null) visual = true;
+        ObjectMapper objectMapper = new ObjectMapper();
+        Object[] signRequestParamses = new Object[0];
+        try {
+            signRequestParamses = objectMapper.readValue(signRequestParamsJsonString, Object[].class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        if(signRequestParamses.length == 0 && visual) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Il manque une signature !");
+        }
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
@@ -635,8 +645,9 @@ public class SignRequestController {
                           @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
-                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, spotStepNumber, authUserEppn);
+                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                          @RequestParam(value = "postit", required = false) String postit) {
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 
