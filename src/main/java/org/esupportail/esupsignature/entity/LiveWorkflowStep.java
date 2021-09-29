@@ -28,6 +28,8 @@ public class LiveWorkflowStep {
 
     private Boolean multiSign = true;
 
+    private Boolean autoSign = false;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -83,6 +85,14 @@ public class LiveWorkflowStep {
 
     public void setMultiSign(Boolean multiSign) {
         this.multiSign = multiSign;
+    }
+
+    public Boolean getAutoSign() {
+        return autoSign;
+    }
+
+    public void setAutoSign(Boolean autoSign) {
+        this.autoSign = autoSign;
     }
 
     public SignType getSignType() {

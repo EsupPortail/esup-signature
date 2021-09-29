@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -9,10 +10,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.WorkflowStepService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +58,9 @@ public class WorkflowAdminController {
 	@Resource
 	private WorkflowStepService workflowStepService;
 
+	@Resource
+	private CertificatService certificatService;
+
 	@GetMapping
 	public String list(@RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
 		if(displayWorkflowType == null) {
@@ -75,6 +76,8 @@ public class WorkflowAdminController {
 		model.addAttribute("fromAdmin", true);
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
+		List<Certificat> certificats = certificatService.getAllCertificats();
+		model.addAttribute("certificats", certificats);
 		return "admin/workflows/show";
 	}
 
@@ -134,9 +137,19 @@ public class WorkflowAdminController {
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 						  @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
-		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire);
+						  @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureException {
+		workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
 		return "redirect:/admin/workflows/" + id;
+	}
+
+	@PostMapping(value = "/add-auto-step/{id}")
+	public String addAutoStep(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
+							  @RequestParam(name="description", required = false) String description,
+							  @RequestParam(name="certificatId", required = false) Long certificatId
+	) throws EsupSignatureException {
+		workflowStepService.addStep(id, SignType.certSign.name(), description, null, false, false, 1, userEppn, true, false, true, certificatId);
+
+		return "redirect:/user/workflows/" + id;
 	}
 
 	@PostMapping(value = "/update-step/{id}/{step}")

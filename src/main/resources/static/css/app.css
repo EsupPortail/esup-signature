@@ -538,7 +538,7 @@ th .ss-content {
 }
 
 .cross {
-    z-index: 9999999999999999 !important;
+    z-index: 3;
     background-position: bottom left;
     background-repeat: no-repeat;
     cursor: move;
@@ -1501,11 +1501,12 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field {
     border: 1px solid transparent !important;
-    background-color: rgba(189, 255, 189, 0.5) !important;
+    background-color: rgba(189, 255, 189, 0.3) !important;
     cursor: pointer;
 }
 
 .sign-field:hover {
+    background-color: rgba(189, 255, 189, 0.0) !important;
     border: 1px solid green !important;
 }
 
