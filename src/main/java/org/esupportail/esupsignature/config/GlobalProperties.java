@@ -130,6 +130,8 @@ public class GlobalProperties implements Cloneable {
      */
     private Boolean disableCertStorage = false;
 
+    private Boolean enableCaptcha = false;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -329,4 +331,13 @@ public class GlobalProperties implements Cloneable {
     public void setDisableCertStorage(Boolean disableCertStorage) {
         this.disableCertStorage = disableCertStorage;
     }
+
+    public Boolean getEnableCaptcha() {
+        return enableCaptcha;
+    }
+
+    public void setEnableCaptcha(Boolean enableCaptcha) {
+        this.enableCaptcha = enableCaptcha;
+    }
+
 }
