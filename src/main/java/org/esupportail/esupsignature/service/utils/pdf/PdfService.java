@@ -711,14 +711,11 @@ public class PdfService {
                 resources.put(COSName.getPDFName("LiberationSans"), pdFont);
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
-                PDSignatureField pdSignatureField = null;
                 for(PDField pdField : fields) {
                     if(pdField instanceof PDSignatureField) {
-                        pdSignatureField = (PDSignatureField) pdField;
                         List<PDAnnotationWidget> widgets = pdField.getWidgets();
                         for (PDAnnotationWidget widget : widgets) {
-                            PDPage page = widget.getPage();
-                            if (page != null) {
+                            for(PDPage page : pdDocument.getPages()) {
                                 List<PDAnnotation> annotations = page.getAnnotations();
                                 boolean removed = false;
                                 for (PDAnnotation annotation : annotations) {
@@ -729,15 +726,11 @@ public class PdfService {
                                 }
                                 if (!removed)
                                     System.out.println("Inconsistent annotation definition: Page annotations do not include the target widget.");
-                            } else {
-                                System.out.println("Widget annotation does not have an associated page; cannot remove widget.");
-                                // TODO: In this case iterate all pages and try to find and remove widget in all of them
                             }
                         }
+                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        pdAcroForm.getFields().remove(pdSignatureField);
                     }
-                }
-                if(pdSignatureField != null) {
-                    pdAcroForm.getFields().remove(pdSignatureField);
                 }
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();

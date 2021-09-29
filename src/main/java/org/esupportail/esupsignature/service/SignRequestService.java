@@ -1511,14 +1511,15 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequestParams> getToUseSignRequestParams(long id) {
+	public List<SignRequestParams> getToUseSignRequestParams(long id, String userEppn) {
+		User user = userService.getUserByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getSignRequestParams().contains(signRequestParams)) {
+				if(signRequest.getSignRequestParams().contains(signRequestParams) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
 					toUserSignRequestParams.add(signRequestParams);
 				}
 			}

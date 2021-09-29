@@ -165,9 +165,12 @@ public class SignBookService {
     }
 
     public SignBook getById(Long id) {
-        SignBook signBook = signBookRepository.findById(id).get();
-        signBook.setLogs(getLogsFromSignBook(signBook));
-        return signBook;
+        Optional<SignBook> signBook = signBookRepository.findById(id);
+        if(signBook.isPresent()) {
+            signBook.get().setLogs(getLogsFromSignBook(signBook.get()));
+            return signBook.get();
+        }
+        return null;
     }
 
     public List<SignBook> getSharedSignBooks(String userEppn) {
