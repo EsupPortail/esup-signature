@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -68,6 +69,9 @@ public class IndexController {
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 
+	@Resource
+	private GlobalProperties globalProperties;
+
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
@@ -80,6 +84,7 @@ public class IndexController {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices);
+				model.addAttribute("globalProperties", globalProperties);
 				if(defaultSavedRequest != null) {
 					model.addAttribute("redirect", defaultSavedRequest.getRequestURL());
 				}

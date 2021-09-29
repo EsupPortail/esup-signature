@@ -11,7 +11,7 @@
                 <span th:if="${auth != null}" th:text="${auth}"></span>
             </div>
             <div th:if="${#authorization.expression('isAnonymous()')}">
-                <form id="captchaForm" class="form" action="">
+                <form id="captchaForm" class="form" action="" th:if="${globalProperties.enableCaptcha}">
                     <div class="input-group mb-3">
                         <input id="captchaInput" class="jCaptcha form-control" type="text" placeholder="Entrez le résultat">
                         <div class="input-group-append">
@@ -19,7 +19,7 @@
                         </div>
                     </div>
                 </form>
-                <div class="d-none" id="loginBlock">
+                <div th:class="${globalProperties.enableCaptcha} ? 'd-none' : ''" id="loginBlock">
                     <h3>Se connecter avec :</h3>
                     <th:block th:each="securityConfig : ${securityServices}">
                         <button type="button" th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
@@ -32,7 +32,7 @@
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
-<script>
+<script th:if="${globalProperties.enableCaptcha}">
     $(function() {
         let myCaptcha = new jCaptcha({
             el: '.jCaptcha',
