@@ -40,9 +40,6 @@ public class GlobalAttributsControllerAdvice {
     private FormService formService;
 
     @Resource
-    private DataService dataService;
-
-    @Resource
     private UserShareService userShareService;
 
     @Resource
@@ -113,7 +110,6 @@ public class GlobalAttributsControllerAdvice {
         	signTypes.remove(SignType.nexuSign);
         }
         model.addAttribute("signTypes", signTypes);
-        model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
