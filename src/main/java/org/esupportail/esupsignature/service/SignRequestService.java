@@ -348,7 +348,9 @@ public class SignRequestService {
 						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
-						inputStream = pdfService.removeSignField(new FileInputStream(file));
+						if(validationService.validate(new FileInputStream(file), null).getSimpleReport().getSignatureIdList().size() == 0) {
+							inputStream = pdfService.removeSignField(new FileInputStream(file));
+						}
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
