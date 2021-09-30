@@ -1501,8 +1501,17 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field {
     border: 1px solid transparent !important;
-    background-color: rgba(189, 255, 189, 0.3) !important;
+    background-color: rgba(189, 255, 189, 1) !important;
+    mix-blend-mode: multiply;
     cursor: pointer;
+}
+
+
+.annotationLayer .linkAnnotation > a:hover, .annotationLayer .buttonWidgetAnnotation.pushButton > a:hover {
+    opacity: 0.3;
+    background: rgba(189, 255, 189, 1);
+    mix-blend-mode: multiply !important;
+    box-shadow: unset;
 }
 
 .sign-field:hover {
