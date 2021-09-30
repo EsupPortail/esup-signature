@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.ui.Model;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -79,10 +80,18 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
+        StopWatch stopWatch = new StopWatch();
+
+        stopWatch.start("Get User");
         User user = userService.getUserByEppn(userEppn);
+        stopWatch.stop();
         model.addAttribute("user", user);
+        stopWatch.start("Parse role");
         parseRoles(user);
+        stopWatch.stop();
+        stopWatch.start("Get Auth User");
         User authUser = userService.getByEppn(authUserEppn);
+        stopWatch.stop();
         model.addAttribute("authUser", authUser);
         model.addAttribute("keystoreFileName", user.getKeystoreFileName());
         model.addAttribute("userImagesIds", user.getSignImagesIds());
@@ -90,7 +99,9 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
         model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
         model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
+        stopWatch.start("Get Managed Form");
         model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
+        stopWatch.stop();
         model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
         model.addAttribute("validationToolsEnabled", validationService != null);
         if(this.myGlobalProperties.getVersion().isEmpty()) this.myGlobalProperties.setVersion("dev");
@@ -113,10 +124,13 @@ public class GlobalAttributsControllerAdvice {
         	signTypes.remove(SignType.nexuSign);
         }
         model.addAttribute("signTypes", signTypes);
+        stopWatch.start("Multiple Count SR");
         model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
+        stopWatch.stop();
+        logger.info(stopWatch.prettyPrint());
         try {
             model.addAttribute("dssStatus", ojService.checkOjFreshness());
         } catch (IOException e) {
