@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.ws;
+package org.esupportail.esupsignature.web.wssecure;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.User;
