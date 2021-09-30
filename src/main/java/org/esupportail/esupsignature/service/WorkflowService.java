@@ -298,7 +298,7 @@ public class WorkflowService {
                                         if(workflow.getWorkflowSteps().size() > i) {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
-                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, true, false, SignType.valueOf(signType), recipientList, null);
+                                        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, true, false, false, SignType.valueOf(signType), recipientList, null);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                         i++;
                                     }

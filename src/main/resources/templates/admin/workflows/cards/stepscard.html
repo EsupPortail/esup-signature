@@ -19,13 +19,9 @@
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label>Nombre maximum de participants:</label>
-                                    <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}"/>
-                                </div>
-                                <div class="form-group mb-3">
                                     <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
-                                    <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}">
+                                    <select class="slim-select-simple" name="signType" th:id="'signType-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                         <th:block th:each="signType : ${signTypes}">
                                             <option th:value="${signType}"
                                                     th:text="#{'signbook.signtype.' + ${signType}}"
@@ -33,40 +29,53 @@
                                         </th:block>
                                     </select>
                                 </div>
-                                <div class="form-check form-switch form-switch-md">
-                                    <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}"/>
-                                    <label for="changeable" class="form-check-label">
-                                        Le createur peut modifier les participants
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch form-switch-md">
-                                    <input type="checkbox" class="form-check-input" id="repeatable" name="repeatable"
-                                               th:checked="${workflowStep.repeatable}"/>
-                                    <label for="repeatable" class="form-check-label">
-                                        Le signataire peut insérer une étape avant la suivante
-                                    </label>
-                                </div>
-                                <div class="form-check form-switch form-switch-md">
-                                    <label class="form-check-label">
-                                        Le signataire peut apposer plusieurs signatures
-                                    </label>
-                                    <input type="checkbox" class="form-check-input" name="multiSign"
-                                               th:checked="${workflowStep.multiSign}"/>
-                                </div>
-                                <div class="form-check form-switch form-switch-md">
-                                    <label class="form-check-label">
-                                        Tous les participants doivent signer à cette étape
-                                    </label>
-                                    <input type="checkbox" class="form-check-input" name="allSignToComplete"
-                                               th:checked="${workflowStep.allSignToComplete}"/>
-                                </div>
-                                <div class="form-check form-switch form-switch-md">
-                                    <label class="form-check-label">
-                                        Une piece jointe doit-être insérée lors de cette étape
-                                    </label>
-                                    <input type="checkbox" class="form-check-input" name="attachmentRequire"
-                                           th:checked="${workflowStep.attachmentRequire}"/>
-                                </div>
+                                <th:block th:if="${workflowStep.autoSign}">
+                                    <div class="form-group mb-3">
+                                        <label>Auto signature avec le certificat :</label>
+                                        <br/>
+                                        <span th:text="${workflowStep.certificat.keystore.fileName}"></span>
+                                    </div>
+                                </th:block>
+                                <th:block th:if="${!workflowStep.autoSign}">
+                                    <div class="form-group mb-3">
+                                        <label>Nombre maximum de participants:</label>
+                                        <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}"/>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}"/>
+                                        <label for="changeable" class="form-check-label">
+                                            Le createur peut modifier les participants
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <input type="checkbox" class="form-check-input" id="repeatable" name="repeatable"
+                                                   th:checked="${workflowStep.repeatable}"/>
+                                        <label for="repeatable" class="form-check-label">
+                                            Le signataire peut insérer une étape avant la suivante
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <label class="form-check-label">
+                                            Le signataire peut apposer plusieurs signatures
+                                        </label>
+                                        <input type="checkbox" class="form-check-input" name="multiSign"
+                                                   th:checked="${workflowStep.multiSign}"/>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <label class="form-check-label">
+                                            Tous les participants doivent signer à cette étape
+                                        </label>
+                                        <input type="checkbox" class="form-check-input" name="allSignToComplete"
+                                                   th:checked="${workflowStep.allSignToComplete}"/>
+                                    </div>
+                                    <div class="form-check form-switch form-switch-md">
+                                        <label class="form-check-label">
+                                            Une piece jointe doit-être insérée lors de cette étape
+                                        </label>
+                                        <input type="checkbox" class="form-check-input" name="attachmentRequire"
+                                               th:checked="${workflowStep.attachmentRequire}"/>
+                                    </div>
+                                </th:block>
                                 <button type="submit" class="btn btn-success float-end ms-2 mb-2">
                                     <i class="fas fa-save"></i></button>
                             </form>
@@ -78,7 +87,7 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </form>
-                            <table class="table table-sm table-bordered">
+                            <table class="table table-sm table-bordered" th:if="${!workflowStep.autoSign}">
                                 <thead class="table-secondary">
                                 <tr>
                                     <th>Participants</th>

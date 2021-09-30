@@ -7,6 +7,7 @@ export class Step {
         this.stepNumber;
         this.allSignToComplete;
         this.multiSign;
+        this.autoSign;
         this.signType;
         this.externalUsersInfos = [];
         Object.assign(this, signRequestParams);

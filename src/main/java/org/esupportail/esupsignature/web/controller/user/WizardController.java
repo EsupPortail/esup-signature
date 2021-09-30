@@ -46,7 +46,6 @@ public class WizardController {
 
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        logger.debug("Choix des fichiers");
         if (workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
             model.addAttribute("workflow", workflow);

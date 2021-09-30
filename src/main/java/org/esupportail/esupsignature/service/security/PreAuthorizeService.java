@@ -47,7 +47,11 @@ public class PreAuthorizeService {
 
     public boolean signBookManage(Long id, String userEppn) {
         SignBook signBook = signBookService.getById(id);
-        return signBookService.checkUserManageRights(userEppn, signBook);
+        if(signBook != null) {
+            return signBookService.checkUserManageRights(userEppn, signBook);
+        } else {
+            return true;
+        }
     }
 
     public boolean signRequestOwner(Long id, String userEppn) {

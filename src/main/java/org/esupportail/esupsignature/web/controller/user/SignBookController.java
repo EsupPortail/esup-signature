@@ -100,10 +100,11 @@ public class SignBookController {
                           @RequestParam("recipientsEmails") List<String> recipientsEmails,
                           @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                          @RequestParam(name="autoSign", required = false) Boolean autoSign,
                           @RequestParam("signType") SignType signType,
                           RedirectAttributes redirectAttributes) {
         try {
-            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false, true, authUserEppn);
+            signBookService.addLiveStep(id, recipientsEmails, stepNumber, allSignToComplete, signType, false, true, autoSign, authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Étape ajoutée"));
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
@@ -119,7 +120,7 @@ public class SignBookController {
                                                     @PathVariable("id") Long id,
                                                     @RequestBody JsonWorkflowStep step) {
         try {
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step.getRecipientsEmails(), step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, true, authUserEppn);
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step.getRecipientsEmails(), step.getStepNumber(), step.getAllSignToComplete(), SignType.valueOf(step.getSignType()), true, true, step.getAutoSign(), authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (EsupSignatureException e) {
             logger.error(e.getMessage());

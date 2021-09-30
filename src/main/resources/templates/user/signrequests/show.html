@@ -9,7 +9,7 @@
 <head th:replace="fragments/head"></head>
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
-<script language="JavaScript">
+<script>
     // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
@@ -84,27 +84,6 @@
         [[${attachmentRequire}]]
     );
 </script>
-<!--<script>-->
-<!--    var clicked = false, clickY;-->
-<!--    $(document).on({-->
-<!--        'mousemove': function(e) {-->
-<!--            clicked && updateScrollPos(e);-->
-<!--        },-->
-<!--        'mousedown': function(e) {-->
-<!--            clicked = true;-->
-<!--            clickY = e.pageY;-->
-<!--        },-->
-<!--        'mouseup': function() {-->
-<!--            clicked = false;-->
-<!--            $('html').css('cursor', 'auto');-->
-<!--        }-->
-<!--    });-->
-
-<!--    var updateScrollPos = function(e) {-->
-<!--        $('html').css('cursor', 'row-resize');-->
-<!--        $(window).scrollTop($(window).scrollTop() + (clickY - e.pageY));-->
-<!--    }-->
-<!--</script>-->
 <main role="main">
     <div class="wrapper">
         <nav th:insert="/fragments/sides/side-sign"></nav>
@@ -637,15 +616,6 @@
                     <button type="submit" class="btn btn-success">Valider</button>
                 </div>
             </form>
-            <script type="javascript">
-                $("#send").on('submit', function (e) {
-                    e.preventDefault();
-                    alert("Merci de saisir les participants");
-                    if ($(e.target).is(':invalid')) {
-                        alert("Merci de saisir les participants");
-                    }
-                });
-            </script>
         </div>
     </div>
 </div>
@@ -725,7 +695,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <textarea name="comment" class="form-control" rows="3"></textarea>
+                    <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
                     <input type="hidden" name="postit" value="on" />
                 </div>
                 <div class="modal-footer">

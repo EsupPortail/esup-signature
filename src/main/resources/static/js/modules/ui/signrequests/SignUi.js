@@ -47,7 +47,13 @@ export class SignUi {
         }
 
         $("#copyButton").on('click', e => this.copy());
-        // document.addEventListener("sign", e => this.updateWaitModal(e));
+        $("#send").on('submit', function (e) {
+            e.preventDefault();
+            alert("Merci de saisir les participants");
+            if ($(e.target).is(':invalid')) {
+                alert("Merci de saisir les participants");
+            }
+        });
     }
 
     initReportModal() {
@@ -236,6 +242,7 @@ export class SignUi {
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.multiSign = $('#multiSign').is(':checked');
+        step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,

@@ -140,6 +140,7 @@ export class WizUi {
         step.workflowId = $('#wizWorkflowId').val();
         step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-check='true']`).prevObject[0].slim.selected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
+        step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
         $("div[id^='externalUserInfos_']").each(function() {

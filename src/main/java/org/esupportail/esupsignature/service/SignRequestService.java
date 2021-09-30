@@ -342,18 +342,23 @@ public class SignRequestService {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
 				String contentType = multipartFile.getContentType();
+				InputStream inputStream = new FileInputStream(file);
 				if (multipartFiles.length == 1) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
 						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
 						signRequest.getSignRequestParams().addAll(signRequestParams);
+						if(validationService.validate(new FileInputStream(file), null).getSimpleReport().getSignatureIdList().size() == 0) {
+							inputStream = pdfService.removeSignField(new FileInputStream(file));
+						}
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
 						file.delete();
 						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
 						contentType = "application/pdf";
+						inputStream = new FileInputStream(file);
 					}
 				}
-				Document document = documentService.createDocument(new FileInputStream(file), multipartFile.getOriginalFilename(), contentType);
+				Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
 				file.delete();
@@ -613,6 +618,9 @@ public class SignRequestService {
 		try {
 			if(user.getKeystore() != null && certType.equals("profil")) {
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			} else if(user.getKeystore() != null && certType.equals("auto")) {
+				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
 			} else {
 				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
 				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
@@ -1238,7 +1246,7 @@ public class SignRequestService {
 
 	public void addStep(Long id, List<String> recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, true, authUserEppn);
+		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, true, false, authUserEppn);
 	}
 
 	@Transactional
@@ -1505,14 +1513,15 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequestParams> getToUseSignRequestParams(long id) {
+	public List<SignRequestParams> getToUseSignRequestParams(long id, String userEppn) {
+		User user = userService.getUserByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getSignRequestParams().contains(signRequestParams)) {
+				if(signRequest.getSignRequestParams().contains(signRequestParams) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
 					toUserSignRequestParams.add(signRequestParams);
 				}
 			}
