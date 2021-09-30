@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +40,7 @@ public class UserWsController {
     @Resource
     private UserService userService;
 
-    @Resource
+    @Autowired(required = false)
     private SmsService smsService;
 
     @Resource
