@@ -6,6 +6,8 @@ import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.FieldPropertieService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,12 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/users")
 public class UserWsController {
@@ -36,6 +41,17 @@ public class UserWsController {
 
     @Resource
     private SmsService smsService;
+
+    @Resource
+    private ExtValueService extValueService;
+
+    @GetMapping(value="/search-extvalue")
+    @ResponseBody
+    public List<Map<String, Object>> searchValue(@RequestParam(value="searchType") String searchType, @RequestParam(value="searchString") String searchString, @RequestParam(value = "serviceName") String serviceName, @RequestParam(value = "searchReturn") String searchReturn) {
+        ExtValue extValue = extValueService.getExtValueServiceByName(serviceName);
+        List<Map<String, Object>> values = extValue.search(searchType, searchString, searchReturn);
+        return values.stream().sorted(Comparator.comparing(v -> v.values().iterator().next().toString())).collect(Collectors.toList());
+    }
 
     @ResponseBody
     @GetMapping("/get-favorites")
