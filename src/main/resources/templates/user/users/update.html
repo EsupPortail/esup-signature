@@ -48,7 +48,7 @@
                                         <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                             <tr>
                                                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img class="thumbnail" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
+                                                    <img class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" />
                                                 </td>
                                                 <td>
                                                     <a th:href="'/user/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
@@ -160,7 +160,7 @@
                             </label>
                             <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
                                 Keystore actuel : <a
-                                    href="/user/users/get-keystore"><span
+                                    href="/ws-secure/users/get-keystore"><span
                                     th:text="${keystoreFileName}"></span></a>
                                 <br>
                                 <button type="button"

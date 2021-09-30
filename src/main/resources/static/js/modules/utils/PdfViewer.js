@@ -401,7 +401,7 @@ export class PdfViewer extends EventFactory {
                     let sendField = inputField;
                     $.ajax({
                         type: "GET",
-                        url: '/user/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/users/get-favorites/' + dataField.id,
                         success : response => this.autocomplete(response, sendField)
                     });
                 }
@@ -534,7 +534,7 @@ export class PdfViewer extends EventFactory {
                 if(dataField.favorisable) {
                     $.ajax({
                         type: "GET",
-                        url: '/user/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/users/get-favorites/' + dataField.id,
                         success : response => this.autocomplete(response, sendField)
                     });
                 }

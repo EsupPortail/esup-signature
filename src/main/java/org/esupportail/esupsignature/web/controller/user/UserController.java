@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
@@ -87,18 +86,6 @@ public class UserController {
 		model.addAttribute("activeMenu", "settings");
 		return "user/users/update";
     }
-
-	@GetMapping("/get-ui-params")
-	@ResponseBody
-	public Map<UiParams, String> getUiParams(@ModelAttribute("authUserEppn") String authUserEppn) {
-    	return userService.getUiParams(authUserEppn);
-	}
-
-	@GetMapping("/set-ui-params/{key}/{value}")
-	@ResponseBody
-	public void setUiParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String key, @PathVariable String value) {
-		userService.setUiParams(authUserEppn, key, value);
-	}
 
 	@PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
@@ -226,57 +213,10 @@ public class UserController {
 		return "redirect:"+ referer;
 	}
 
-	@GetMapping(value = "/get-keystore")
-	public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
-		Map<String, Object> keystore = userService.getKeystoreByUser(authUserEppn);
-		return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), (String) keystore.get("fileName"), (String) keystore.get("contentType"));
-	}
-
-	@GetMapping(value = "/get-sign-image/{id}")
-	public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
-		Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
-		return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
-	}
-
-	private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
-		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()));
-		response.setContentType(contentType);
-		IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
 	@ResponseBody
 	@PostMapping(value ="/check-users-certificate")
 	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
     	return userService.getUserWithoutCertificate(userEmails);
-	}
-
-	@ResponseBody
-	@PostMapping(value ="/check-temp-users")
-	private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-		if (recipientEmails!= null && recipientEmails.size() > 0) {
-			List<User> users = userService.getTempUsersFromRecipientList(recipientEmails);
-			if (smsService != null) {
-				return users;
-			} else {
-				if (users.size() > 0) {
-					return null;
-				}
-			}
-		}
-		return new ArrayList<>();
-	}
-
-	@ResponseBody
-	@GetMapping("/get-favorites")
-	private List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn) {
-    	return userPropertieService.getFavoritesEmails(authUserEppn);
-	}
-
-	@GetMapping(value = "/get-favorites/{id}")
-	@ResponseBody
-	public List<String> getFavorites(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
-		return fieldPropertieService.getFavoritesValues(authUserEppn, id);
 	}
 
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
