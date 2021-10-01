@@ -63,7 +63,7 @@ export class PdfViewer extends EventFactory {
                 source: function( request, response ) {
                     if(request.term.length > 2) {
                         $.ajax({
-                            url: "/user/user-ws/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/ws-secure/users/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             data: {
                                 q: request.term
@@ -401,7 +401,7 @@ export class PdfViewer extends EventFactory {
                     let sendField = inputField;
                     $.ajax({
                         type: "GET",
-                        url: '/user/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/users/get-favorites/' + dataField.id,
                         success : response => this.autocomplete(response, sendField)
                     });
                 }
@@ -534,7 +534,7 @@ export class PdfViewer extends EventFactory {
                 if(dataField.favorisable) {
                     $.ajax({
                         type: "GET",
-                        url: '/user/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/users/get-favorites/' + dataField.id,
                         success : response => this.autocomplete(response, sendField)
                     });
                 }

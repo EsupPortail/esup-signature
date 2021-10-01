@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.SignTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

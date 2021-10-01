@@ -15,7 +15,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.wssecure"})
 public class SecurityControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityControllerAdvice.class);
