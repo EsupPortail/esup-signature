@@ -162,7 +162,7 @@ export class SignRequestParams  extends EventFactory {
                 this.toggleWatermark();
             }
         }
-        if(this.isVisa && this.isSign) {
+        if(this.isVisa || this.isSign) {
             this.signHeight = 0;
             this.cross.css('width', (this.signWidth * this.currentScale));
             this.cross.css('height', (this.signHeight * this.currentScale));
