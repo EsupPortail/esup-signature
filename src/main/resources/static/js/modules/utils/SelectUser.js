@@ -129,7 +129,7 @@ export default class SelectUser {
         if(this.csrf) {
             let csrf = this.csrf;
             $.ajax({
-                url: "/user/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
+                url: "/ws-secure/users/check-temp-users/?" + csrf.parameterName + "=" + csrf.token,
                 type: 'POST',
                 contentType: "application/json",
                 dataType: 'json',
@@ -257,7 +257,7 @@ export default class SelectUser {
 
     populateWithFavorites() {
         $.ajax({
-            url: "/user/users/get-favorites",
+            url: "/ws-secure/users/get-favorites",
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",

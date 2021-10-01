@@ -49,9 +49,9 @@ public class SignBookController {
     @Resource
     private SignRequestService signRequestService;
 
-    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         SignBook signBook = signBookService.getById(id);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
     }

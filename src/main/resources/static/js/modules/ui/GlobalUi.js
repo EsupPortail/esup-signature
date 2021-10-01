@@ -16,7 +16,6 @@ export class GlobalUi {
         this.inputFiles = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
         this.clickableTd = $(".clickable-td");
-        this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
         this.initListeners();

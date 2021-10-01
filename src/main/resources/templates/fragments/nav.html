@@ -219,7 +219,7 @@
                             <div class="carousel-inner">
                                 <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
+                                        <img width="250" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" />
                                     </div>
                                 </th:block>
                             </div>
@@ -243,7 +243,7 @@
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
-                            <a href="/user/users/get-keystore">
+                            <a href="/ws-secure/users/get-keystore">
                                 <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
