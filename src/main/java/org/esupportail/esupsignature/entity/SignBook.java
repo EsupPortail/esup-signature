@@ -45,11 +45,11 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
