@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
@@ -235,9 +236,12 @@ public class SignRequestController {
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         if(signRequest.getSignable()
-            && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
-            && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
+                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
+                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
+                && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
             model.addAttribute("message", new JsonMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
+
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
