@@ -122,11 +122,9 @@ public class SignRequestController {
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
-        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
-        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
-        Page<SignBook> signBookPage = new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
-        model.addAttribute("signBooks", signBookPage);
+        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
@@ -139,6 +137,11 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
+    public Page<SignBook> signRequestToSignBookPages(@PageableDefault(size = 10) @SortDefault(value = "createDate", direction = Direction.DESC) Pageable pageable,List<SignRequest> signRequests) {
+        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
+        return new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
+    }
+
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
@@ -147,10 +150,8 @@ public class SignRequestController {
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
-        Page<SignBook> signBookPage = new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
-        model.addAttribute("signBooks", signBookPage);
+        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());

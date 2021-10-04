@@ -1032,7 +1032,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public List<SignRequest> getSignRequestsPageGrouped(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
+	public List<SignRequest> getSignRequests(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, Pageable pageable) {
 		List<SignRequest> signRequests = getSignRequestsForCurrentUserByStatus(userEppn, authUserEppn, statusFilter);
 		if (recipientsFilter != null && !recipientsFilter.equals("") && !recipientsFilter.equals("all")) {
 			List<SignRequest> signRequestByRecipients = signRequestRepository.findByRecipient(recipientsFilter);
@@ -1046,12 +1046,6 @@ public class SignRequestService {
 			List<SignRequest> signRequestByTitle = signRequestRepository.findByTitle(docTitleFilter);
 			signRequests.retainAll(signRequestByTitle);
 		}
-//		List<SignRequest> signRequestsGrouped = new ArrayList<>();
-//		Map<SignBook, List<SignRequest>> signBookSignRequestMap = signRequests.stream().collect(Collectors.groupingBy(SignRequest::getParentSignBook, Collectors.toList()));
-//		for(Map.Entry<SignBook, List<SignRequest>> signBookListEntry : signBookSignRequestMap.entrySet()) {
-//			int last = signBookListEntry.getValue().size() - 1;
-//			signRequestsGrouped.add(signBookListEntry.getValue().get(last));
-//		}
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
