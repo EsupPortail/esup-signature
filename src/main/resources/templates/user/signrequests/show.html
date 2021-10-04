@@ -81,7 +81,8 @@
         [[${action}]],
         [[${signRequest.parentSignBook.signRequests.size()}]],
         [[${isNotSigned}]],
-        [[${attachmentRequire}]]
+        [[${attachmentRequire}]],
+        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]
     );
 </script>
 <main role="main">

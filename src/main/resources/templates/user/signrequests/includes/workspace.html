@@ -131,7 +131,7 @@
                     style="z-index: 3;">
                 <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
             </button>
-            <button type="button" id="signExtra_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter un texte à la signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
@@ -144,15 +144,15 @@
                     style="z-index: 3;">
                 <i class="fas fa-retweet"></i>
             </button>
-            <button type="button" id="watermark_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fab fa-markdown"></i>
             </button>
-            <button th:if="${isNotSigned}" type="button" id="allPages_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-transparent text-white"watermark_0
+                    class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fas fa-reply-all"></i>
             </button>
@@ -164,7 +164,7 @@
                 <i class="fas fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="d-none">
+        <div id="extraTools_x" class="d-none" th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}">
             <button type="button" id="extraType_x"
                     title="Afficher le type de signature"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"
