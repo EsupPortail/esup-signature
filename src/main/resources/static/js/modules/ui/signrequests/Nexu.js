@@ -21,10 +21,14 @@ export class Nexu {
             console.warn("NexU detected");
             $("#warning-text").html("");
             $("#nexu_missing_alert").hide();
+            $("#alertNexu").remove();
             $("#signFormConfirm").show();
             if(id != null) {
                 self.loadScript();
             }
+        }).catch(function (){
+            $("#alertNexu").show();
+            $("#signLaunchButton").hide();
         });
     }
 
@@ -87,8 +91,10 @@ export class Nexu {
         console.log(error);
         $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null && error.responseJSON !=null) {
-            var jsonResp = error.responseJSON;
-            if (jsonResp.errorMessage !=null){
+            let jsonResp = error.responseJSON;
+            if (jsonResp.message !=null){
+                $("#errorcontent").html(jsonResp.message);
+            } else if (jsonResp.errorMessage !=null){
                 $("#errorcontent").html(jsonResp.errorMessage);
             }
             else if (jsonResp.error != null){
@@ -126,6 +132,9 @@ export class Nexu {
                         self.detectedPort = port.trim();
                         self.checkNexu(data);
                         resolve("nexu detected");
+                    },
+                    error: function () {
+                        reject();
                     }
                 });
             });
