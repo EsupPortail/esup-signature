@@ -166,6 +166,9 @@ public class SignRequestService {
 	@Resource
 	private WebUtilsService webUtilsService;
 
+	@Resource
+	private TargetService targetService;
+
 	@PostConstruct
 	public void initSignrequestMetrics() {
 		customMetricsService.registerValue("esup-signature.signrequests", "new");
@@ -1245,7 +1248,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException {
 		if(forceAllSign == null) forceAllSign = false;
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
@@ -1256,6 +1259,9 @@ public class SignRequestService {
 			signBookService.sendCCEmail(signBook.getId(), recipientsCCEmails);
 		} catch (EsupSignatureMailException e) {
 			throw new EsupSignatureException(e.getMessage());
+		}
+		if(targetUrl != null && !targetUrl.isEmpty()) {
+			signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.rest, targetUrl));
 		}
 		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
 	}
