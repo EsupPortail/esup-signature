@@ -68,6 +68,7 @@ public class SignRequestWsController {
             Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true, forceAllSign);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
+            logger.error(e.getMessage());
             return -1L;
         }
     }
