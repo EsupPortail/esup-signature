@@ -303,7 +303,10 @@ public class SignRequestController {
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
+            boolean result = signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
+            if(!result) {
+                return ResponseEntity.status(HttpStatus.OK).body("initNexu");
+            }
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
             logger.warn("message", e);

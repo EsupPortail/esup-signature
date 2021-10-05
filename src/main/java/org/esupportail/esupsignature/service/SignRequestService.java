@@ -434,7 +434,8 @@ public class SignRequestService {
 		}
 		if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 			signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
-			throw new EsupSignatureException("initNexu");
+			return false;
+//			throw new EsupSignatureException("initNexu");
 		}
 		User user = userService.getByEppn(userEppn);
 		User authUser = userService.getByEppn(authUserEppn);
