@@ -9,7 +9,7 @@
 <head th:replace="fragments/head"></head>
 <body>
 <header th:unless="${frameMode}" th:replace="fragments/nav"></header>
-<script language="JavaScript">
+<script>
     // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
@@ -68,6 +68,7 @@
         [[${workflow}]],
         [[${signImages}]],
         [[${user.firstname + ' ' + user.name}]],
+        [[${authUser.firstname + ' ' + authUser.name}]],
         [[${_csrf}]],
         [[${fields}]],
         [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
@@ -80,30 +81,10 @@
         [[${action}]],
         [[${signRequest.parentSignBook.signRequests.size()}]],
         [[${isNotSigned}]],
-        [[${attachmentRequire}]]
+        [[${attachmentRequire}]],
+        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]
     );
 </script>
-<!--<script>-->
-<!--    var clicked = false, clickY;-->
-<!--    $(document).on({-->
-<!--        'mousemove': function(e) {-->
-<!--            clicked && updateScrollPos(e);-->
-<!--        },-->
-<!--        'mousedown': function(e) {-->
-<!--            clicked = true;-->
-<!--            clickY = e.pageY;-->
-<!--        },-->
-<!--        'mouseup': function() {-->
-<!--            clicked = false;-->
-<!--            $('html').css('cursor', 'auto');-->
-<!--        }-->
-<!--    });-->
-
-<!--    var updateScrollPos = function(e) {-->
-<!--        $('html').css('cursor', 'row-resize');-->
-<!--        $(window).scrollTop($(window).scrollTop() + (clickY - e.pageY));-->
-<!--    }-->
-<!--</script>-->
 <main role="main">
     <div class="wrapper">
         <nav th:insert="/fragments/sides/side-sign"></nav>
@@ -176,7 +157,7 @@
                      th:if="${viewRight && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}"
                      onmouseover="$('#openButtons').toggleClass('active');"
                      onmouseout="$('#openButtons').toggleClass('active');">
-                    <li th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
+                    <li>
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/user/signrequests/get-last-file-report/' + ${id}" target="_blank"
                            title="Enregistrer le document signé et le rapport de signature"><i class="fas fa-file-archive"></i></a>
@@ -204,7 +185,7 @@
             <div style="position: absolute;left: 270px;top: 180px;">
                 <th:block th:each="postit, iterate : ${postits}">
                     <div class="postit-global d-none"
-                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${200 + (iterate.index * 190)} + 'px;'">
+                         th:style="'background-color: ' + ${postit.postitColor} + ';position: fixed; right: ' + ${150 - (iterate.index * 10)} + 'px; top : ' + ${215 + (iterate.index * 190)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -636,15 +617,6 @@
                     <button type="submit" class="btn btn-success">Valider</button>
                 </div>
             </form>
-            <script type="javascript">
-                $("#send").on('submit', function (e) {
-                    e.preventDefault();
-                    alert("Merci de saisir les participants");
-                    if ($(e.target).is(':invalid')) {
-                        alert("Merci de saisir les participants");
-                    }
-                });
-            </script>
         </div>
     </div>
 </div>
@@ -708,6 +680,28 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addCommentModal" tabindex="-1" role="dialog" aria-labelledby="detailsModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signrequests/comment/' + ${signRequest.id}" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
+                    <input type="hidden" name="postit" value="on" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
                 </div>
             </form>
         </div>

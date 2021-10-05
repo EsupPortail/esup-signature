@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.FieldPropertie;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -56,6 +57,9 @@ public class UserController {
 	
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignRequestService signRequestService;
 
 	@Resource
 	private UserPropertieService userPropertieService;
@@ -215,14 +219,42 @@ public class UserController {
 
 	@ResponseBody
 	@PostMapping(value ="/check-users-certificate")
-	private List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
+	public List<User> checkUserCertificate(@RequestBody List<String> userEmails) {
     	return userService.getUserWithoutCertificate(userEmails);
 	}
 
 	@GetMapping("/set-default-sign-image/{signImageNumber}")
-	private String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
+	public String setDefaultSignImage(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signImageNumber") Integer signImageNumber) {
     	userService.setDefaultSignImage(authUserEppn, signImageNumber);
 		return "redirect:/user/users";
 	}
 
+	@GetMapping("/replace")
+	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+		List<SignRequest> signRequests = signRequestService.getToSignRequests(authUserEppn);
+		model.addAttribute("signRequests", signRequests);
+		return "user/users/replace";
+	}
+
+	@PostMapping("/replace/update")
+	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn,
+							  @RequestParam(value = "userIds", required = false) String[] userEmails,
+							  @RequestParam(value = "beginDate", required = false) String beginDate,
+							  @RequestParam(value = "endDate", required = false) String endDate,
+							  RedirectAttributes redirectAttributes) {
+		userService.updateReplaceUserBy(authUserEppn, userEmails, beginDate, endDate);
+		redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le remplacement a été modifier"));
+		return "redirect:/user/users/replace";
+	}
+
+	@GetMapping("/replace/transfer")
+	public String transfert(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+		int result = signRequestService.transfer(authUserEppn);
+		if(result > 0) {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Le transfert des demandes à bien été effectué. " + result + " demande(s) transférées."));
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucune modification n'a été effectuée"));
+		}
+		return "redirect:/user/users/replace";
+	}
 }

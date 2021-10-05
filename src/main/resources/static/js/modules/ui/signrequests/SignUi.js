@@ -4,7 +4,7 @@ import {Step} from "../../../prototypes/Step.js";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentRequire) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentRequire, isOtp) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
@@ -15,7 +15,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentRequire);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentRequire, isOtp);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -47,7 +47,13 @@ export class SignUi {
         }
 
         $("#copyButton").on('click', e => this.copy());
-        // document.addEventListener("sign", e => this.updateWaitModal(e));
+        $("#send").on('submit', function (e) {
+            e.preventDefault();
+            alert("Merci de saisir les participants");
+            if ($(e.target).is(':invalid')) {
+                alert("Merci de saisir les participants");
+            }
+        });
     }
 
     initReportModal() {
@@ -91,8 +97,14 @@ export class SignUi {
     }
 
     launchSign(gotoNext) {
+        let signModal = $('#signModal');
+        if (!this.workspace.checkSignsPositions() && (this.workspace.signType !== "hiddenVisa")) {
+            bootbox.alert("Merci de placer la signature", null);
+            signModal.modal('hide');
+            return;
+        }
         this.gotoNext = gotoNext;
-        $('#signModal').modal('hide');
+        signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
         let good = true;
@@ -230,6 +242,7 @@ export class SignUi {
         step.stepNumber = this.currentStepNumber;
         step.allSignToComplete = $('#allSignToCompleteInfinite').is(':checked');
         step.multiSign = $('#multiSign').is(':checked');
+        step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signTypeInfinite').val();
         $.ajax({
             url: "/user/signbooks/add-repeatable-step/" + signRequestId + "/?" + csrf.parameterName + "=" + csrf.token,

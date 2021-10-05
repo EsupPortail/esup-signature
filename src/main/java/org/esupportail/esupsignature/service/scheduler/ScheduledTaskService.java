@@ -92,7 +92,7 @@ public class ScheduledTaskService {
 		}
 	}
 
-	@Scheduled(initialDelay = 120000, fixedRate = 300000)
+	@Scheduled(initialDelay = 30000, fixedRate = 30000)
 	@Transactional
 	public void scanAllSignbooksToClean() {
 		logger.debug("scan all signRequest to clean");

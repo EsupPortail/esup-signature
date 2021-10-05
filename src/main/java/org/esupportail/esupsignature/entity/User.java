@@ -92,6 +92,15 @@ public class User {
     @ElementCollection
     private List<String> roles = new ArrayList<>();
 
+    @ManyToOne
+    private User replaceByUser;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date replaceBeginDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date replaceEndDate;
+
 	public Long getId() {
         return this.id;
     }
@@ -261,10 +270,52 @@ public class User {
     }
 
     public Integer getDefaultSignImageNumber() {
-        return defaultSignImageNumber;
+        if(defaultSignImageNumber != null) {
+            return defaultSignImageNumber;
+        } else {
+            if(getSignImages().size() > 0) {
+                return getSignImages().size() - 1;
+            }
+        }
+        return null;
     }
 
     public void setDefaultSignImageNumber(Integer defaultSignImageNumber) {
         this.defaultSignImageNumber = defaultSignImageNumber;
+    }
+
+    public User getReplaceByUser() {
+        return replaceByUser;
+    }
+
+    public void setReplaceByUser(User replaceByUser) {
+        this.replaceByUser = replaceByUser;
+    }
+
+    public Date getReplaceBeginDate() {
+        return replaceBeginDate;
+    }
+
+    public void setReplaceBeginDate(Date replaceBeginDate) {
+        this.replaceBeginDate = replaceBeginDate;
+    }
+
+    public Date getReplaceEndDate() {
+        return replaceEndDate;
+    }
+
+    public void setReplaceEndDate(Date replaceEndDate) {
+        this.replaceEndDate = replaceEndDate;
+    }
+
+    public User getCurrentReplaceUser() {
+        Date checkDate = new Date();
+        if((replaceBeginDate == null
+                || checkDate.after(replaceBeginDate))
+                && (replaceEndDate == null
+                || checkDate.before(replaceEndDate))) {
+            return replaceByUser;
+        }
+        return null;
     }
 }

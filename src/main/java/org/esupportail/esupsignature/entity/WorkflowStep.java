@@ -38,6 +38,11 @@ public class WorkflowStep {
 
     private Boolean multiSign = true;
 
+    private Boolean autoSign = false;
+
+    @ManyToOne
+    private Certificat certificat;
+
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
@@ -100,6 +105,17 @@ public class WorkflowStep {
         this.multiSign = multiSign;
     }
 
+    public Boolean getAutoSign() {
+        if(autoSign == null) {
+            return false;
+        }
+        return autoSign;
+    }
+
+    public void setAutoSign(Boolean autoSign) {
+        this.autoSign = autoSign;
+    }
+
     public SignType getSignType() {
         return signType;
     }
@@ -146,5 +162,13 @@ public class WorkflowStep {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public Certificat getCertificat() {
+        return certificat;
+    }
+
+    public void setCertificat(Certificat certificat) {
+        this.certificat = certificat;
     }
 }

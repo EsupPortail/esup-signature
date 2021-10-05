@@ -6,16 +6,16 @@ export default class FilesInput extends EventFactory {
 
     constructor(input, workflowName, name, documents, readOnly, csrf, signRequestId) {
         super();
-        console.info("enable complete file input for : " + name);
         this.input = input;
         this.name = name;
         if(this.name == null) {
             this.name = "Demande personnalisée"
         }
+        console.info("enable complete file input for : " + name);
         this.workflowName = workflowName;
         this.csrf = new CsrfToken(csrf);
-        this.async = true;
-        this.uploadUrl = ' ';
+        this.async = false;
+        this.uploadUrl = null;
         if(signRequestId != null) {
             this.async = false;
             this.uploadUrl = '/user/signrequests/add-docs/' + signRequestId + '?'+ this.csrf.parameterName + '=' + this.csrf.token;
@@ -25,17 +25,18 @@ export default class FilesInput extends EventFactory {
                 this.uploadUrl = '/user/signbooks/add-docs-in-sign-book-unique/' + this.workflowName + '/' + this.name + '?' + this.csrf.parameterName + '=' + this.csrf.token;
             }
         }
-        this.initListeners();
         this.initFileInput(documents, readOnly);
+        this.initListeners();
     }
 
     initListeners() {
-        $("#fileUpload").on('click', e => this.fileUpload());
+        $("#fileUploadBtn").on('click', e => this.fileUpload());
         if(!this.async) {
             console.info("set async");
             this.input.on('fileloaded', e => this.uploadFile());
         }
         this.input.on('fileloaded', e => this.checkUniqueFile());
+        this.input.on('fileclear', e => this.input.fileinput('unlock'));
         $('#unique :checkbox').change(e => this.changerUploadMethod());
 
     }
@@ -93,7 +94,7 @@ export default class FilesInput extends EventFactory {
             dropZoneEnabled: !readOnly && !this.async,
             browseOnZoneClick: !readOnly,
             uploadUrl: this.uploadUrl,
-            uploadAsync: false,
+            uploadAsync: this.async,
             theme: 'explorer-fas',
             pdfRendererUrl: 'http://plugins.krajee.com/pdfjs/web/viewer.html',
             initialPreview: urls,
@@ -164,7 +165,6 @@ export default class FilesInput extends EventFactory {
     }
 
     fileUpload() {
-
         console.info("file upload");
         this.input.fileinput('upload');
         let self = this;
@@ -177,10 +177,15 @@ export default class FilesInput extends EventFactory {
 
 
     checkUniqueFile() {
-        if(this.input.fileinput('getFilesCount') > 0) {
+        let nbFiles = this.input.fileinput('getFilesCount', true);
+        if(nbFiles > 0) {
             $('#unique').removeClass('d-none');
+            $('#forceAllSign').removeClass('d-none');
+            $('#forceAllSign2').removeClass('d-none');
         } else {
             $('#unique').addClass('d-none');
+            $('#forceAllSign').addClass('d-none');
+            $('#forceAllSign2').removeClass('d-none');
         }
     }
 

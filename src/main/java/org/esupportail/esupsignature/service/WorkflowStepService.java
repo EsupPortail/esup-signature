@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,9 @@ public class WorkflowStepService {
 
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
+
+    @Resource
+    private CertificatService certificatService;
 
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, String... recipientEmails) {
@@ -104,13 +108,21 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire) {
+    public void addStep(Long workflowId, String signType, String description, String[] recipientsEmails, Boolean changeable, Boolean allSignToComplete, Integer maxRecipients, String authUserEppn, boolean saveFavorite, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureException {
+        if(autoSign && certificatId == null) {
+            throw new EsupSignatureException("Certificat is empty");
+        }
         Workflow workflow = workflowService.getById(workflowId);
         WorkflowStep workflowStep = createWorkflowStep("", allSignToComplete, SignType.valueOf(signType), recipientsEmails);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(changeable);
         workflowStep.setMaxRecipients(maxRecipients);
         workflowStep.setAttachmentRequire(attachmentRequire);
+        workflowStep.setAutoSign(autoSign);
+        if(autoSign) {
+            Certificat certificat = certificatService.getById(certificatId);
+            workflowStep.setCertificat(certificat);
+        }
         workflow.getWorkflowSteps().add(workflowStep);
         if(recipientsEmails != null && saveFavorite) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Arrays.asList(recipientsEmails));

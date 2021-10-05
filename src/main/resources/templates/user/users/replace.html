@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<head th:replace="fragments/head"></head>
+<script th:inline="javascript" type="module">
+    import {default as ShareUi} from '/static/js/modules/ui/users/ShareUi.js?version=[[${version}]]';
+    new ShareUi();
+</script>
+<body>
+<nav th:replace="fragments/nav"></nav>
+<main role="main">
+    <div class="wrapper">
+        <nav th:insert="/fragments/sides/side-user"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item active">Délégations</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn">
+                <a title="Mettre en place une redirection" data-bs-toggle="modal" data-bs-target="#newReplaceModal" type="button"
+                   class="btn-floating btn-lg bg-primary wave-effect">
+                    <i class="fas fa-plus"></i>
+                </a>
+            </div>
+            <div class="card col-lg-10 mx-auto">
+                <div class="card-body">
+                    <div class="alert alert-success" th:if="${user.replaceByUser != null}">
+                        Vos demandes sont redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
+                        <div th:if="${signRequests.size() > 0}" class="m-2">
+                            <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes')"
+                               class="btn btn-primary" href="/user/users/replace/transfer">Tranférer toutes mes demandes en cours</a>
+                        </div>
+                        <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
+                            <input type="submit" class="btn btn-danger" value="Supprimer la redirection">
+                        </form>
+                    </div>
+                    <div class="alert alert-danger" th:unless="${user.replaceByUser != null}">
+                        Aucune redirection n'est mise en place actuellement
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="newReplaceModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Mettre en place une redirection pour les demandes qui me sont adressées</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="shareForm" th:action="'/user/users/replace/update'" method="post">
+                    <div class="modal-body">
+
+                        <div class="form-group mb-3">
+                            <label for="selectUsers">Choix du destinataire</label>
+                            <select id="selectUsers" class="select-users" name="userIds"
+                                    required="required"></select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="beginDate">Date de début</label>
+                            <input type="datetime-local" name="beginDate" class="form-control">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="endDate">Date de fin</label>
+                            <input type="datetime-local" name="endDate" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>
+                        <input type="submit" class="btn btn-success" value="Valider">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</main>
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

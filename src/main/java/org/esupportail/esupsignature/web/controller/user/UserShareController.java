@@ -111,7 +111,7 @@ public class UserShareController {
             httpSession.setAttribute("suEppn", null);
             redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation désactivée"));
         } else {
-            if(userShareService.checkShare(eppn, authUserEppn)) {
+            if(userShareService.isOneShareActive(eppn, authUserEppn)) {
                 httpSession.setAttribute("suEppn", eppn);
                 httpSession.setAttribute("userShareId", userShareId);
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + eppn));

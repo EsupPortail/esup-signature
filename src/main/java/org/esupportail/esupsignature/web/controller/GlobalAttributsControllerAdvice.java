@@ -39,9 +39,6 @@ public class GlobalAttributsControllerAdvice {
     private FormService formService;
 
     @Resource
-    private DataService dataService;
-
-    @Resource
     private UserShareService userShareService;
 
     @Resource

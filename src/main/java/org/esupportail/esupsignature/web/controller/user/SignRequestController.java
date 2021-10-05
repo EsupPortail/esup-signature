@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
@@ -122,11 +123,9 @@ public class SignRequestController {
                        @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
         if(statusFilter == null) statusFilter = "all";
         if(statusFilter.equals("all")) statusFilter = "";
-        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
+        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
         model.addAttribute("statusFilter", statusFilter);
-        model.addAttribute("signRequests", signRequestPage);
-        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
+        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
@@ -139,6 +138,11 @@ public class SignRequestController {
         return "user/signrequests/list";
     }
 
+    public Page<SignBook> signRequestToSignBookPages(@PageableDefault(size = 10) @SortDefault(value = "createDate", direction = Direction.DESC) Pageable pageable,List<SignRequest> signRequests) {
+        List<SignBook> signBooks = signRequests.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList());
+        return new PageImpl<>(signBooks.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signBooks.size());
+    }
+
     @GetMapping(value = "/list-ws")
     @ResponseBody
     public String listWs(@ModelAttribute(name = "userEppn") String userEppn, @ModelAttribute(name = "authUserEppn") String authUserEppn,
@@ -147,12 +151,10 @@ public class SignRequestController {
                          @RequestParam(value = "workflowFilter", required = false) String workflowFilter,
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 5) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
-        List<SignRequest> signRequests = signRequestService.getSignRequestsPageGrouped(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
-        Page<SignRequest> signRequestPage = new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
+        List<SignRequest> signRequests = signRequestService.getSignRequests(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, pageable);
+        model.addAttribute("signBooks", signRequestToSignBookPages(pageable, signRequests));
         CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
-        model.addAttribute("signRequests", signRequestPage);
-        model.addAttribute("signBooks", signRequestPage.stream().map(SignRequest::getParentSignBook).distinct().collect(Collectors.toList()));
         ctx.setVariables(model.asMap());
         ctx.setVariable("token", token);
         return templateEngine.process("user/signrequests/includes/list-elem.html", ctx);
@@ -199,7 +201,7 @@ public class SignRequestController {
         model.addAttribute("nextSignRequest", signRequestService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("prevSignRequest", signRequestService.getPreviousSignRequest(signRequest.getId(), userEppn, authUserEppn));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id));
+        model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
         model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
             try {
@@ -234,9 +236,12 @@ public class SignRequestController {
         List<Log> logs = logService.getBySignRequest(signRequest.getId());
         logs = logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).collect(Collectors.toList());
         if(signRequest.getSignable()
-            && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
-            && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
+                && (signRequest.getParentSignBook().getLiveWorkflow() == null || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null ||userService.getUiParams(authUserEppn) == null || userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
+                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)
+                && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() > 1 || !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(signRequest.getCreateBy()))) {
             model.addAttribute("message", new JsonMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
+
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
@@ -284,6 +289,16 @@ public class SignRequestController {
                                @RequestParam(value = "certType", required = false) String certType,
                                        HttpSession httpSession) {
         if (visual == null) visual = true;
+        ObjectMapper objectMapper = new ObjectMapper();
+        Object[] signRequestParamses = new Object[0];
+        try {
+            signRequestParamses = objectMapper.readValue(signRequestParamsJsonString, Object[].class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        if(signRequestParamses.length == 0 && visual) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Il manque une signature !");
+        }
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
@@ -364,6 +379,7 @@ public class SignRequestController {
                                   @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                                   @RequestParam(value = "recipientsCCEmails", required = false) List<String> recipientsCCEmails,
                                   @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete,
+                                  @RequestParam(name = "forceAllSign", required = false) Boolean forceAllSign,
                                   @RequestParam(name = "userSignFirst", required = false) Boolean userSignFirst,
                                   @RequestParam(value = "pending", required = false) Boolean pending,
                                   @RequestParam(value = "comment", required = false) String comment,
@@ -374,11 +390,12 @@ public class SignRequestController {
                                   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
         User authUser = (User) model.getAttribute("authUser");
+        recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if (multipartFiles != null) {
             try {
-                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false);
+                Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, signType, allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, authUser, false, forceAllSign);
                 if (signBookStringMap.values().iterator().next() != null) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", signBookStringMap.values().toArray()[0].toString()));
                 } else {
@@ -530,6 +547,18 @@ public class SignRequestController {
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-last-files/{id}", produces = "application/zip")
+    @ResponseBody
+    public ResponseEntity<Void> getLastFiles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        signRequestService.getMultipleSignedDocuments(Collections.singletonList(id), httpServletResponse);
+        httpServletResponse.flushBuffer();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file-report/{id}")
     public ResponseEntity<Void> getLastFileReport(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
@@ -621,8 +650,9 @@ public class SignRequestController {
                           @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
-                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, spotStepNumber, authUserEppn);
+                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                          @RequestParam(value = "postit", required = false) String postit) {
+        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
         return "redirect:/user/signrequests/" + id;
     }
 

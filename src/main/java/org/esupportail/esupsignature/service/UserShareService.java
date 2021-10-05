@@ -166,7 +166,7 @@ public class UserShareService {
         }
     }
 
-    public Boolean checkShare(String fromUserEppn, String toUserEppn, SignRequest signRequest, ShareType shareType) {
+    public Boolean checkShareForSignRequest(String fromUserEppn, String toUserEppn, SignRequest signRequest, ShareType shareType) {
         List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnInAndAllSignRequestsIsTrueAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), shareType);
         if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
@@ -185,14 +185,17 @@ public class UserShareService {
         return false;
     }
 
-    public Boolean checkShare(String fromUserEppn, String toUserEppn, SignRequest signRequest) {
-        return checkShare(fromUserEppn, toUserEppn, signRequest, ShareType.read)
-            || checkShare(fromUserEppn, toUserEppn, signRequest, ShareType.sign)
-            || checkShare(fromUserEppn, toUserEppn, signRequest, ShareType.create);
+    public Boolean checkAllShareTypesForSignRequest(String fromUserEppn, String toUserEppn, SignRequest signRequest) {
+        for(ShareType shareType : ShareType.values()) {
+            if(checkShareForSignRequest(fromUserEppn, toUserEppn, signRequest, shareType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
-        public Boolean checkShare(String fromUserEppn, String toUserEppn) {
+    public Boolean isOneShareActive(String fromUserEppn, String toUserEppn) {
         List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnIn(fromUserEppn, Collections.singletonList(toUserEppn));
         for(UserShare userShare : userShares) {
             if (checkUserShareDate(userShare)) {
@@ -276,7 +279,7 @@ public class UserShareService {
         return userShareRepository.findByToUsersEppnInAndShareTypesContains(usersIds, shareType);
     }
 
-    public User checkShare(SignRequest signRequest, String authUserEppn) {
+    public User checkShareForSignRequest(SignRequest signRequest, String authUserEppn) {
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook != null) {
             List<UserShare> userShares = userShareRepository.findByToUsersEppnInAndShareTypesContains(Collections.singletonList(authUserEppn), ShareType.sign);

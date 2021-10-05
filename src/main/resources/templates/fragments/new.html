@@ -208,7 +208,7 @@
 
                         </button>
                     </div>
-                    <form th:action="'/user/datas/sendForm/' + ${form.id}" method="post">
+                    <form th:action="'/user/datas/send-form/' + ${form.id}" method="post">
                         <div class="modal-body">
                             <p th:if="${form.workflow == null || form.workflow.workflowSteps.size() == 0}">Après la validation, vous pourrez télécharger le document</p>
                             <div th:if="${form.workflow != null && form.workflow.workflowSteps.size() > 0}">

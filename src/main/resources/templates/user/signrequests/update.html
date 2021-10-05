@@ -27,6 +27,12 @@
             </div>
             <div class="card col-lg-10 mx-auto mb-1">
                 <div class="card-body">
+                    <h5 class="text-center"><b>Description</b></h5>
+                    <textarea class="form-control" th:text="${signRequest.parentSignBook.description}"></textarea>
+                </div>
+            </div>
+            <div class="card col-lg-10 mx-auto mb-1">
+                <div class="card-body">
                     <h5 class="text-center"><b>Demandes à signer dans ce parapheur</b></h5>
                     <div th:if="${#lists.size(signBook.signRequests) > 0}" class="table-responsive">
                         <table class="table table-sm table-hover">
