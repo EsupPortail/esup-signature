@@ -503,9 +503,9 @@ public class UserService {
     }
 
     @Transactional
-    public void setUiParams(String authUserEppn, String key, String value) {
+    public void setUiParams(String authUserEppn, UiParams key, String value) {
         User user = getUserByEppn(authUserEppn);
-        user.getUiParams().put(UiParams.valueOf(key), value);
+        user.getUiParams().put(key, value);
     }
 
     @Transactional

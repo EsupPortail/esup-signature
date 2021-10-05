@@ -270,7 +270,14 @@ public class User {
     }
 
     public Integer getDefaultSignImageNumber() {
-        return defaultSignImageNumber;
+        if(defaultSignImageNumber != null) {
+            return defaultSignImageNumber;
+        } else {
+            if(getSignImages().size() > 0) {
+                return getSignImages().size() - 1;
+            }
+        }
+        return null;
     }
 
     public void setDefaultSignImageNumber(Integer defaultSignImageNumber) {

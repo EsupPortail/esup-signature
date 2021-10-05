@@ -2,13 +2,15 @@ import {EventFactory} from "../modules/utils/EventFactory.js";
 
 export class SignRequestParams  extends EventFactory {
 
-    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec) {
+    constructor(signRequestParams, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp) {
         super();
         this.signRequestParams = signRequestParams;
         Object.assign(this, signRequestParams);
         this.id = id;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
+        alert(isOtp);
+        this.isOtp = isOtp;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.authUserName = authUserName;
@@ -162,12 +164,16 @@ export class SignRequestParams  extends EventFactory {
                 this.toggleWatermark();
             }
         }
-        if(this.isVisa && this.isSign) {
+        if(this.isVisa || this.isSign) {
             this.signHeight = 0;
             this.cross.css('width', (this.signWidth * this.currentScale));
             this.cross.css('height', (this.signHeight * this.currentScale));
-            this.toggleMinimalTools();
-            this.toggleWatermark();
+            if(this.isVisa) {
+                this.toggleMinimalTools();
+            }
+            if(!this.isOtp) {
+                this.toggleWatermark();
+            }
             this.toggleExtra();
             this.refreshExtraDiv();
             this.updateSize();

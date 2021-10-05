@@ -76,7 +76,7 @@ public class UserWsController {
     @GetMapping("/set-ui-params/{key}/{value}")
     @ResponseBody
     public void setUiParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String key, @PathVariable String value) {
-        userService.setUiParams(authUserEppn, key, value);
+        userService.setUiParams(authUserEppn, UiParams.valueOf(key), value);
     }
 
 

@@ -106,6 +106,9 @@ public class WorkflowStep {
     }
 
     public Boolean getAutoSign() {
+        if(autoSign == null) {
+            return false;
+        }
         return autoSign;
     }
 

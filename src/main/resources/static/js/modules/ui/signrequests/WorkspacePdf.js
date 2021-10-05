@@ -5,9 +5,10 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire, isOtp) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
+        this.isOtp = isOtp;
         this.changeModeSelector = null;
         this.action = action;
         this.dataId = dataId;
@@ -44,7 +45,7 @@ export class WorkspacePdf {
             currentSignRequestParamses,
             signImageNumber,
             signImages,
-            userName, authUserName, signable, this.forcePageNum);
+            userName, authUserName, signable, this.forcePageNum, this.isOtp);
         this.currentSignRequestParamses = this.signPosition.currentSignRequestParamses;
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
