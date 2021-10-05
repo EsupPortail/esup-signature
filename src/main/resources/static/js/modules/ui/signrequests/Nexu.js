@@ -21,10 +21,14 @@ export class Nexu {
             console.warn("NexU detected");
             $("#warning-text").html("");
             $("#nexu_missing_alert").hide();
+            $("#alertNexu").remove();
             $("#signFormConfirm").show();
             if(id != null) {
                 self.loadScript();
             }
+        }).catch(function (){
+            $("#alertNexu").show();
+            $("#signLaunchButton").hide();
         });
     }
 
@@ -128,6 +132,9 @@ export class Nexu {
                         self.detectedPort = port.trim();
                         self.checkNexu(data);
                         resolve("nexu detected");
+                    },
+                    error: function () {
+                        reject();
                     }
                 });
             });
