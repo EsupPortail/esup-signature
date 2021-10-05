@@ -9,7 +9,6 @@ export class SignRequestParams  extends EventFactory {
         this.id = id;
         this.currentScale = parseFloat(scale);
         this.signPageNumber = 1;
-        alert(isOtp);
         this.isOtp = isOtp;
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
