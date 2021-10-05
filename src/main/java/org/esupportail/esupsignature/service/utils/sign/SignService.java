@@ -125,18 +125,13 @@ public class SignService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
-	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) {
+	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) throws DSSException, IOException {
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		ToBeSigned toBeSigned = null;
-		try {
-			DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
-			AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
-			toBeSigned = service.getDataToSign(toSignDocument, parameters);
-		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
-		}
+		DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
+		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
+		ToBeSigned  toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		logger.info("End getDataToSign with one document");
 		return toBeSigned;
 	}
@@ -375,7 +370,7 @@ public class SignService {
 			abstractSignatureForm = signatureDocumentForm;
 		}
 		if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
-			abstractSignatureForm.setSignWithExpiredCertificate(true);
+			abstractSignatureForm.setSignWithExpiredCertificate(false);
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
 		if(signatureForm.equals(SignatureForm.PAdES)) {
