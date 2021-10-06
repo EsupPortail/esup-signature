@@ -138,7 +138,7 @@
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a class="btn-lg btn-floating bg-primary waves-effect"
                            th:href="'/user/signrequests/get-last-file/' + ${id}" target="_blank"
-                           title="Télécharger le document finalisé"><i class="fas fa-file-download"></i></a>
+                           title="Télécharger la dernière version"><i class="fas fa-file-download"></i></a>
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                     <li>

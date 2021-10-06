@@ -449,7 +449,7 @@ public class SignBookService {
                             if(signRequestParamses.size() > 0) {
                                 signRequest1.setSignable(true);
                                 try {
-                                    signRequestService.sign(signRequest1, "", "auto", true, signRequestParamses, null, userService.getSystemUser(), userService.getSystemUser(), null, "");
+                                    signRequestService.sign(signRequest1, "", "auto", signRequestParamses, null, userService.getSystemUser(), userService.getSystemUser(), null, "");
                                 } catch (IOException | InterruptedException | EsupSignatureMailException e) {
                                     logger.error("auto sign fail", e);
                                 }

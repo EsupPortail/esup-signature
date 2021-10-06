@@ -59,7 +59,12 @@ public class ValidationService {
                 documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(signInputStream));
                 documentValidator.setDetachedContents(detachedContents);
             } else {
-                documentValidator = SignedDocumentValidator.fromDocument(DssUtils.toDSSDocument(docInputStream));
+                DSSDocument dssDocument = DssUtils.toDSSDocument(docInputStream);
+                if(dssDocument != null) {
+                    documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
+                } else {
+                    return null;
+                }
             }
             logger.debug("validate with : " + documentValidator.getClass());
             documentValidator.setCertificateVerifier(certificateVerifier);
