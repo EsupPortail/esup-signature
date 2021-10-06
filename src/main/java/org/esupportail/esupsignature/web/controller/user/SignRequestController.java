@@ -297,7 +297,7 @@ public class SignRequestController {
             e.printStackTrace();
         }
         if(signRequestParamses.length == 0 && visual) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Il manque une signature !");
+            //return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Il manque une signature !");
         }
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
