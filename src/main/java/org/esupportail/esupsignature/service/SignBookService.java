@@ -411,11 +411,11 @@ public class SignBookService {
         updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
+            if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                 signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.certSign);
                 signBook.getLiveWorkflow().getCurrentStep().getRecipients().add(recipientService.createRecipient(userService.getSystemUser()));
             }
-             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+            if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
                 if (liveWorkflowStep != null) {
                     signRequestService.pendingSignRequest(signRequest, userEppn);
                     if (!emailSended) {
@@ -449,7 +449,7 @@ public class SignBookService {
                             if(signRequestParamses.size() > 0) {
                                 signRequest1.setSignable(true);
                                 try {
-                                    signRequestService.sign(signRequest1, "", "auto", true, signRequestParamses, null, userService.getSystemUser(), userService.getSystemUser(), null, "");
+                                    signRequestService.sign(signRequest1, "", "auto", signRequestParamses, null, userService.getSystemUser(), userService.getSystemUser(), null, "");
                                 } catch (IOException | InterruptedException | EsupSignatureMailException e) {
                                     logger.error("auto sign fail", e);
                                 }

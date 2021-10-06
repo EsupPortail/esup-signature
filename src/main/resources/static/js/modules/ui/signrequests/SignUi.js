@@ -98,7 +98,7 @@ export class SignUi {
 
     launchSign(gotoNext) {
         let signModal = $('#signModal');
-        if (!this.workspace.checkSignsPositions() && (this.workspace.signType !== "hiddenVisa")) {
+        if (this.isPdf && !this.workspace.checkSignsPositions() && this.workspace.signType !== "hiddenVisa") {
             bootbox.alert("Merci de placer la signature", null);
             signModal.modal('hide');
             return;
@@ -156,11 +156,12 @@ export class SignUi {
                 signRequestParamses[i].divExtra = null;
                 signRequestParamses[i].signColorPicker = null;
             }
+            // let visual = !(this.workspace.signPosition.signType === "hiddenVisa") && this.isPdf;
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : $("#certType").val(),
                 'signRequestParams' : JSON.stringify(Array.from(this.workspace.signPosition.signRequestParamses.values())),
-                'visual' : this.workspace.signPosition.visualActive,
+                // 'visual' : visual,
                 'comment' : this.signComment.val(),
                 'formData' : JSON.stringify(formData)
             };

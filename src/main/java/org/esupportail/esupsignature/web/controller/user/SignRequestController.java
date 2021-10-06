@@ -284,11 +284,9 @@ public class SignRequestController {
                                @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
                                @RequestParam(value = "comment", required = false) String comment,
                                @RequestParam(value = "formData", required = false) String formData,
-                               @RequestParam(value = "visual", required = false) Boolean visual,
                                @RequestParam(value = "password", required = false) String password,
                                @RequestParam(value = "certType", required = false) String certType,
                                        HttpSession httpSession) {
-        if (visual == null) visual = true;
         ObjectMapper objectMapper = new ObjectMapper();
         Object[] signRequestParamses = new Object[0];
         try {
@@ -296,21 +294,18 @@ public class SignRequestController {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        if(signRequestParamses.length == 0 && visual) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Il manque une signature !");
-        }
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            boolean result = signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, visual, password, certType, userShareId, userEppn, authUserEppn);
+            boolean result = signRequestService.initSign(id, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
             if(!result) {
                 return ResponseEntity.status(HttpStatus.OK).body("initNexu");
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            logger.warn("message", e);
-            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+            logger.warn(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
