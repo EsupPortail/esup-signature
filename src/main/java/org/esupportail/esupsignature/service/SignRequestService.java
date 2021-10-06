@@ -396,7 +396,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, Boolean visual, String password, String certType, Long userShareId, String userEppn, String authUserEppn) throws EsupSignatureMailException, IOException, InterruptedException, EsupSignatureException {
+	public boolean initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String certType, Long userShareId, String userEppn, String authUserEppn) throws EsupSignatureMailException, IOException, InterruptedException, EsupSignatureException {
 		SignRequest signRequest = getSignRequestsFullById(signRequestId, userEppn, authUserEppn);
 		Map<String, String> formDataMap = null;
 		List<String> toRemoveKeys = new ArrayList<>();
@@ -438,11 +438,10 @@ public class SignRequestService {
 		if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 			signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 			return false;
-//			throw new EsupSignatureException("initNexu");
 		}
 		User user = userService.getByEppn(userEppn);
 		User authUser = userService.getByEppn(authUserEppn);
-		sign(signRequest, password, certType, visual, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
+		sign(signRequest, password, certType, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
 		return true;
 	}
 
@@ -471,7 +470,7 @@ public class SignRequestService {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.noSignField);
 				error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
 			}
-			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, true, password, certType, userShareId, userEppn, authUserEppn)) {
+			else if (signRequest.getStatus().equals(SignRequestStatus.pending) && initSign(id,null, null, null, password, certType, userShareId, userEppn, authUserEppn)) {
 				reportService.addSignRequestToReport(report.getId(), signRequest, ReportStatus.signed);
 				error = null;
 			}
@@ -482,7 +481,7 @@ public class SignRequestService {
 		return error;
 	}
 
-	public void sign(SignRequest signRequest, String password, String certType, boolean visual, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
+	public void sign(SignRequest signRequest, String password, String certType, List<SignRequestParams> signRequestParamses, Map<String, String> formDataMap, User user, User authUser, Long userShareId, String comment) throws EsupSignatureException, IOException, InterruptedException, EsupSignatureMailException {
 		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
@@ -513,11 +512,14 @@ public class SignRequestService {
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream();
 		}
-
+		boolean visual = true;
 		if( signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)  || signType.equals(SignType.pdfImageStamp)) {
 			InputStream signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
-
+			if(signType.equals(SignType.hiddenVisa)) visual = false;
+			if(signRequestParamses.size() == 0 && visual) {
+				throw new EsupSignatureException("Il manque une signature !");
+			}
 			List<Log> lastSignLogs = new ArrayList<>();
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
 				for(SignRequestParams signRequestParams : signRequestParamses) {
@@ -534,7 +536,11 @@ public class SignRequestService {
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(filledInputStream);
-				visual = true;
+			} else {
+				visual = false;
+			}
+			if(signRequestParamses.size() == 0 && visual) {
+				throw new EsupSignatureException("Il manque une signature !");
 			}
 			certSign(signRequest, signerUser, password, certType, visual);
 			applyEndOfSignRules(signRequest, user.getEppn(), authUser.getEppn(), SignType.certSign, comment);
