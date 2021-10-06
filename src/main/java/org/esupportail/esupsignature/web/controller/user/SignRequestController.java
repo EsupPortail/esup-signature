@@ -304,7 +304,7 @@ public class SignRequestController {
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            logger.warn(e.getMessage());
+            logger.warn(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }

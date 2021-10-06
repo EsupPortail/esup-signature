@@ -88,6 +88,9 @@ public class LiveWorkflowStep {
     }
 
     public Boolean getAutoSign() {
+        if(autoSign == null) {
+            return false;
+        }
         return autoSign;
     }
 
