@@ -64,35 +64,40 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		this.ftpPassiveMode = ftpPassiveMode;
 	}
 
-	@Override
-	public void open() {
-		super.open();
-		try {
-			if(!isOpened()) {
-				FileSystemOptions fsOptions = new FileSystemOptions();
-				
-				if ( ftpControlEncoding != null )
-					FtpFileSystemConfigBuilder.getInstance().setControlEncoding(fsOptions, ftpControlEncoding);
+    private FileObject open(String uri) {
+        try {
+            FileSystemOptions fsOptions = new FileSystemOptions();
+            
+            if ( ftpControlEncoding != null )
+                FtpFileSystemConfigBuilder.getInstance().setControlEncoding(fsOptions, ftpControlEncoding);
 
-				if(sftpSetUserDirIsRoot) {
-					SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, true);
-					FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, true);
-				} else {
-				    SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
-				    FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
-				}
+            if(sftpSetUserDirIsRoot) {
+                SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, true);
+                FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, true);
+            } else {
+                SftpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
+                FtpFileSystemConfigBuilder.getInstance().setUserDirIsRoot(fsOptions, false);
+            }
 
-				if(!strictHostKeyChecking) {
-					SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
-				}
-				
-				FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, ftpPassiveMode);
+            if(!strictHostKeyChecking) {
+                SftpFileSystemConfigBuilder.getInstance().setStrictHostKeyChecking(fsOptions, "no");
+            }
+            
+            FtpFileSystemConfigBuilder.getInstance().setPassiveMode(fsOptions, ftpPassiveMode);
 
-				fsManager = VFS.getManager();
-				root = fsManager.resolveFile(uri, fsOptions);
-			}
-		} catch(FileSystemException e) {
-			logger.error("unable to open vfs", e);
+            fsManager = VFS.getManager();
+            return fsManager.resolveFile(uri, fsOptions);
+        } catch(FileSystemException e) {
+            logger.error("unable to open vfs", e);
+            return null;
+        }
+    }
+
+    @Override
+    public void open() {
+        super.open();
+        if(!isOpened()) {
+            root = open(uri);
 		}
 	}
 
@@ -105,6 +110,20 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			this.root = null;
 		}
 	}
+
+    private boolean use_stateful_filesystem(String uri) {
+        return !uri.startsWith("sftp://");
+    }
+
+    private void may_close(String uri, FileObject o) {
+        if (!use_stateful_filesystem(uri)) {
+            try {
+                VFS.getManager().closeFileSystem(o.getFileSystem());
+            } catch (FileSystemException e) {
+                logger.error("unable to close vfs", e);
+            }
+        }
+    }
 
 	public void destroy() throws Exception {
 		this.close();
@@ -121,12 +140,14 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			this.open();
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
+			} else if (use_stateful_filesystem(path)) {
+				returnValue = root.resolveFile("/" + path);
 			} else {
-				returnValue = root.resolveFile(getUri() + "/" + path);
+				returnValue = open(path);
 			}
 			returnValue.refresh();
 		} catch(FileSystemException e) {
-			logger.error("unable to open directory");
+			logger.error("unable to open directory", e);
 		}
 		return returnValue;
 	}
@@ -150,6 +171,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 		} catch (IOException e) {
 			throw new EsupSignatureFsException(e);
+		} finally {
+			may_close(url, resource);
 		}
 		return fsFiles;
 	}
@@ -184,6 +207,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			} else {
 				logger.info("file " + title + " already exists !");
 			}
+			may_close(parentPath, parent);
 		} catch (FileSystemException e) {
 			logger.info("can't create file because of FileSystemException : "
 					+ e.getMessage(), e);
@@ -207,6 +231,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			} else {
 				logger.info("file " + title + " already exists !");
 			}
+			may_close(path, file);
 		} catch (FileSystemException e) {
 			logger.info("can't rename file because of FileSystemException : "
 					+ e.getMessage(), e);
@@ -229,6 +254,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 				}
 
 			}
+			may_close(dir, folder);
 			return true;
 		} catch (FileSystemException e) {
 			logger.warn("can't move/copy file because of FileSystemException : "
@@ -240,6 +266,7 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public FsFile getFile(String dir) {
 		try {
+			if (!use_stateful_filesystem(dir)) throw new RuntimeException("TODO");
 			FileObject fileObject = cd(dir);
 			return toFsFile(fileObject);
 		} catch (IOException e) {
@@ -286,6 +313,8 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			OutputStream outstr = newFile.getContent().getOutputStream();
 
 			FileCopyUtils.copy(inputStream, outstr);
+
+			may_close(dir, folder);
 
 			success = true;
 		} catch (FileSystemException e) {
