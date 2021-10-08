@@ -32,11 +32,11 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape", example = "[stepNumber*email]") List<String> recipientEmails,
                       @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
-                      @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl
+                      @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
         Data data = dataService.addData(id, eppn, eppn);
         try {
-            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrl, eppn, eppn, true);
+            SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true);
             return signBook.getSignRequests().get(0).getId();
         } catch (EsupSignatureException | EsupSignatureIOException e) {
             return -1L;

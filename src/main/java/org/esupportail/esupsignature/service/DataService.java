@@ -109,7 +109,7 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
@@ -136,8 +136,10 @@ public class DataService {
         signBookService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
-        if(targetUrl != null && !targetUrl.isEmpty()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(getPathIOType(targetUrl), targetUrl));
+        if (targetUrls != null) {
+            for (String targetUrl : targetUrls) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(getPathIOType(targetUrl), targetUrl));
+            }
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
