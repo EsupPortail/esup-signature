@@ -85,11 +85,9 @@ public class DocumentService {
 				InputStream inputStream = signedFile.getInputStream();
 				if (fsAccessService.putFile(targetUrl, signedFile.getFileName(), inputStream, UploadActionType.OVERRIDE)) {
 					documentUri = targetUrl + "/" + signedFile.getFileName();
-					if (fsAccessService.getFileFromURI(documentUri) != null) {
+					
 						return documentUri;
-					} else {
-						throw new EsupSignatureFsException("file is not exported");
-					}
+					
 				} else {
 					throw new EsupSignatureFsException("file is not exported");
 				}
