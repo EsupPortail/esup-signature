@@ -336,9 +336,6 @@ export class SignRequestParams  extends EventFactory {
         this.tools.removeClass("d-none");
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
-            let textExtra = $("#textExtra_" + this.id);
-            textExtra.focus();
-            // this.cross.draggable("disable");
         }
     }
 
@@ -661,13 +658,16 @@ export class SignRequestParams  extends EventFactory {
             self.fontSize = self.fontSize - 1
             self.resizeText();
         });
+        this.cross.draggable("enable");
+        this.textareaPart.css('pointer-events', 'none');
         this.textareaPart.focusout(function (){
             self.cross.draggable("enable");
             self.textareaPart.css('pointer-events', 'none');
         });
-        this.textareaPart.focusin(function (){
+        this.cross.mouseup(function (){
             self.cross.draggable("disable");
             self.textareaPart.css('pointer-events', 'auto');
+            self.textareaPart.focus();
         });
     }
 
