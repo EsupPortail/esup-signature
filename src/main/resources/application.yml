@@ -19,6 +19,7 @@ global:
     share-mode: 3
     infinite-scrolling: true
     return-to-home-after-sign: false
+    naming-template: "[user.initials]-[title]"
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
