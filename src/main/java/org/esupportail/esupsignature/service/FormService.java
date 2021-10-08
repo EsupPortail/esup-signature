@@ -443,7 +443,7 @@ public class FormService {
 	}
 
 	public List<Form> getByRoles(String role) {
-		return formRepository.findByRolesInAndDeletedIsNullOrDeletedIsFalse(Collections.singletonList(role));
+		return formRepository.findByRolesIn(Collections.singletonList(role));
 	}
 
 	@Transactional
