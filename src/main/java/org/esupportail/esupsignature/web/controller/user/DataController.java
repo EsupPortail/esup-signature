@@ -55,7 +55,7 @@ public class DataController {
 	@Resource
 	private UserService userService;
 
-	@PostMapping("sendForm/{id}")
+	@PostMapping("/send-form/{id}")
 	public String sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestParam(required = false) List<String> recipientEmails,
 						   @RequestParam(required = false) List<String> allSignToCompletes,
@@ -77,7 +77,7 @@ public class DataController {
 
 	}
 
-	@PostMapping("form/{id}")
+	@PostMapping("/form/{id}")
 	@ResponseBody
 	public String addData(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						  @PathVariable("id") Long id,
@@ -99,7 +99,7 @@ public class DataController {
 		return data.getId().toString();
 	}
 
-	@GetMapping("forms/{id}/get-image")
+	@GetMapping("/forms/{id}/get-image")
 	public ResponseEntity<Void> getImagePdfAsByteArray(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws Exception {
 		Form form = formService.getById(id);
 		InputStream in = pdfService.pageAsInputStream(form.getDocument().getInputStream(), 0);

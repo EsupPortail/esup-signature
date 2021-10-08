@@ -125,18 +125,13 @@ public class SignService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
-	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) {
+	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) throws DSSException, IOException {
 		SignRequest signRequest = signRequestService.getById(id);
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
-		ToBeSigned toBeSigned = null;
-		try {
-			DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
-			AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
-			toBeSigned = service.getDataToSign(toSignDocument, parameters);
-		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
-		}
+		DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
+		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
+		ToBeSigned  toBeSigned = service.getDataToSign(toSignDocument, parameters);
 		logger.info("End getDataToSign with one document");
 		return toBeSigned;
 	}
@@ -204,11 +199,17 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
-			InputStream signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, SignType.nexuSign, user, date, fixFactor);
+		if(user.getSignImages().size() > signRequestParams.getSignImageNumber() || user.getEppn().equals("system")) {
+			InputStream inputStream;
+			if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
+				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+			} else {
+				inputStream = SignService.class.getResourceAsStream("/static/images/empty-sign.png");
+			}
+			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-				fileService.addImageWatermark(PdfService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
+				fileService.addImageWatermark(SignService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
 				signImage = new FileInputStream(fileWithWatermark);
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);
@@ -219,6 +220,7 @@ public class SignService {
 			imageParameters.setImage(fileDocumentImage);
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
+//			signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
 //			if(signRequestParams.getAddExtra()) {

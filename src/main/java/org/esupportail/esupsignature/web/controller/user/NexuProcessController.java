@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.ToBeSigned;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
@@ -69,10 +70,14 @@ public class NexuProcessController implements Serializable {
 			abstractSignatureForm.setContentTimestamp(DssUtils.fromTimestampToken(signService.getContentTimestamp((SignatureDocumentForm) abstractSignatureForm)));
 		}
 		httpSession.setAttribute("abstractSignatureForm", abstractSignatureForm);
-		ToBeSigned dataToSign = signService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm);
 		GetDataToSignResponse responseJson = new GetDataToSignResponse();
-		responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
-		return responseJson;
+		try {
+			ToBeSigned dataToSign = signService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm);
+			responseJson.setDataToSign(DatatypeConverter.printBase64Binary(dataToSign.getBytes()));
+			return responseJson;
+		} catch (DSSException e) {
+			throw new EsupSignatureException(e.getMessage());
+		}
 	}
 
 	@Scope(value = "session")

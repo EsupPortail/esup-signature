@@ -126,8 +126,8 @@ public class ManagerWorkflowController {
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire
-                        ) {
-        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire);
+                        ) throws EsupSignatureException {
+        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, authUserEppn, false, attachmentRequire, false, null);
         return "redirect:/manager/workflows/" + id;
     }
 

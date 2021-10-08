@@ -169,14 +169,15 @@ public class FormService {
 			form.setDocument(null);
 			documentService.delete(oldModel.getId());
 			try {
-				Document newModel = documentService.createDocument(multipartModel.getInputStream(), multipartModel.getOriginalFilename(), multipartModel.getContentType());
-				form.setDocument(newModel);
-				List<Field> fields = getFields(newModel, form.getWorkflow());
+				File tempDocument = fileService.inputStreamToTempFile(multipartModel.getInputStream(), multipartModel.getOriginalFilename());
+				List<Field> fields = getFields(new FileInputStream(tempDocument), form.getWorkflow());
 				for(Field field : fields) {
 					if(form.getFields().stream().noneMatch(field1 -> field1.getName().equals(field.getName()))) {
 						form.getFields().add(field);
 					}
 				}
+				Document newModel = documentService.createDocument(pdfService.removeSignField(new FileInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
+				form.setDocument(newModel);
 			} catch (IOException e) {
 				logger.error("unable to modif model", e);
 			}
@@ -240,7 +241,7 @@ public class FormService {
 				form.getFields().addAll(testForms.get(0).getFields());
 			} else {
 				form.setVersion(1);
-				form.setFields(getFields(document, workflow));
+				form.setFields(getFields(document.getInputStream(), workflow));
 			}
 		}
 		form.setDocument(document);
@@ -262,10 +263,10 @@ public class FormService {
 		return form;
 	}
 
-	private List<Field> getFields(Document document, Workflow workflow) throws IOException, EsupSignatureException {
+	private List<Field> getFields(InputStream inputStream, Workflow workflow) throws IOException, EsupSignatureException {
 		List<Field> fields = new ArrayList<>();
 		List<Field> fieldsOrdered = new LinkedList<>();
-		PDDocument pdDocument = PDDocument.load(document.getInputStream());
+		PDDocument pdDocument = PDDocument.load(inputStream);
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
 		if(pdFields != null) {
 			PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
@@ -442,7 +443,7 @@ public class FormService {
 	}
 
 	public List<Form> getByRoles(String role) {
-		return formRepository.findByRolesInAndDeletedIsNullOrDeletedIsFalse(Collections.singletonList(role));
+		return formRepository.findByRolesIn(Collections.singletonList(role));
 	}
 
 	@Transactional

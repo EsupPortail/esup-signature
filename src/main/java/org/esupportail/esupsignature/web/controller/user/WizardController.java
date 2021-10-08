@@ -46,7 +46,6 @@ public class WizardController {
 
     @GetMapping(value = "/wiz-start-by-docs", produces = "text/html")
     public String wiz2(@RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
-        logger.debug("Choix des fichiers");
         if (workflowId != null) {
             Workflow workflow = workflowService.getById(workflowId);
             model.addAttribute("workflow", workflow);
@@ -57,11 +56,13 @@ public class WizardController {
     @GetMapping(value = "/wiz-init-steps/{id}")
     public String wiz4(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
+                       @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
                        Model model) {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
+        signBook.setForceAllDocsSign(forceAllSign);
         if(comment != null && !comment.isEmpty()) {
             commentService.create(signBook.getSignRequests().get(0).getId(), comment, 0, 0, 0, null, true, null, userEppn);
         }

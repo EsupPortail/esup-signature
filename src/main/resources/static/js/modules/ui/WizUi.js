@@ -94,11 +94,12 @@ export class WizUi {
         $('select[name="recipientsCCEmailsWiz"] option:selected').each(function() {
             recipientsCCEmailsWiz.push($(this).val());
         });
+        let forceAllSign = $('input[name="forceAllSign2"]').is(":checked");
         this.div.html("");
         this.signBookId = e;
         $.ajax({
             type: "GET",
-            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&comment=" + comment.val(),
+            url: '/user/wizard/wiz-init-steps/' + this.signBookId + '?workflowId=' + this.workflowId + "&recipientsCCEmailsWiz=" + recipientsCCEmailsWiz + "&forceAllSign=" + forceAllSign + "&comment=" + encodeURIComponent(comment.val()),
             dataType : 'html',
             cache: false,
             success : html => this.initWiz2(html)
@@ -139,6 +140,7 @@ export class WizUi {
         step.workflowId = $('#wizWorkflowId').val();
         step.recipientsEmails = $('#recipientsEmailsWiz').find(`[data-check='true']`).prevObject[0].slim.selected();
         step.allSignToComplete = $('#allSignToCompleteWiz').is(':checked');
+        step.autoSign = $('#autoSign').is(':checked');
         let userSignFirst = $('#userSignFirstWiz').is(':checked');
         step.signType = $('#signTypeWiz').val();
         $("div[id^='externalUserInfos_']").each(function() {

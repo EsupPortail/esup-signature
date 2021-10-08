@@ -51,7 +51,9 @@ public class CommentService {
             SignRequest signRequest = signRequestService.getSignRequestByComment(comment.get());
             if (comment.get().getStepNumber() != null) {
                 signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
-                signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).setSignRequestParams(null);
+                if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber()) {
+                    signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1).setSignRequestParams(null);
+                }
             }
             signRequest.getComments().remove(comment.get());
             commentRepository.delete(comment.get());

@@ -25,6 +25,8 @@ public class SignBook {
 
     private String title;
 
+    private String description;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -43,11 +45,11 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
@@ -61,6 +63,8 @@ public class SignBook {
 
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
+
+    private Boolean forceAllDocsSign = false;
 
     public Long getId() {
         return id;
@@ -92,6 +96,14 @@ public class SignBook {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Date getCreateDate() {
@@ -180,5 +192,13 @@ public class SignBook {
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public Boolean getForceAllDocsSign() {
+        return forceAllDocsSign;
+    }
+
+    public void setForceAllDocsSign(Boolean forceAllDocsSign) {
+        this.forceAllDocsSign = forceAllDocsSign;
     }
 }
