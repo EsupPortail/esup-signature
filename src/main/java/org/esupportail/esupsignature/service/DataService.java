@@ -91,6 +91,23 @@ public class DataService {
         dataRepository.delete(data);
     }
 
+    private DocumentIOType getPathIOType(String path) throws EsupSignatureException {
+        try {
+            var uri = new java.net.URI(path);
+            switch (uri.getScheme()) {
+                case "smb": return DocumentIOType.smb;
+                case "cmis": return DocumentIOType.cmis;
+                case "sftp": return DocumentIOType.vfs;
+
+                case "http":
+                case "https": return DocumentIOType.rest;
+            }
+            throw new EsupSignatureException("unknown protocol for url " + path);
+        } catch (java.net.URISyntaxException e) {
+            throw new EsupSignatureException("target Url error", e);
+        }
+    }
+
     @Transactional
     public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
         User user = userService.getUserByEppn(userEppn);
@@ -120,7 +137,7 @@ public class DataService {
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         if(targetUrl != null && !targetUrl.isEmpty()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.rest, targetUrl));
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(getPathIOType(targetUrl), targetUrl));
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
