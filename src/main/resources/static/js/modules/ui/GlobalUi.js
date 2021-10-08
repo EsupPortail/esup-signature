@@ -1,5 +1,4 @@
 import {default as SelectUser} from "../utils/SelectUser.js";
-import {CsrfToken} from "../../prototypes/CsrfToken.js";
 import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
@@ -17,7 +16,6 @@ export class GlobalUi {
         this.inputFiles = $(".custom-file-input");
         this.clickableRow = $(".clickable-row");
         this.clickableTd = $(".clickable-td");
-        this.autoHide = $('.auto-hide');
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
         this.initListeners();
@@ -46,6 +44,7 @@ export class GlobalUi {
             return false;
         };
 
+        $(document).on("refreshClickableTd", e => this.refreshClickableTd());
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         this.markHelpAsReadButtons.each((index, e) => this.listenHelpMarkAsReadButton(e));
         $('#sidebarCollapse').unbind('click').on('click', e => this.toggleSideBarAction());
@@ -56,17 +55,7 @@ export class GlobalUi {
         this.clickableRow.on('click',  function() {
             window.location = $(this).closest('tr').attr('data-href');
         });
-        this.clickableTd.on('click',  function() {
-            let test = false;
-            $(".card").each(function (index, e) {
-                if(e.classList.contains("show")) {
-                    test = true;
-                }
-            });
-            if(!test) {
-                window.location = $(this).closest('tr').attr('data-href');
-            }
-        });
+        this.refreshClickableTd();
         this.inputFiles.on('change', e => this.changeFileInputName(e));
         let delay = 0;
         let offset = 300;
@@ -499,4 +488,19 @@ export class GlobalUi {
         });
     }
 
+    refreshClickableTd() {
+        this.clickableTd = $(".clickable-td");
+        this.clickableTd.unbind();
+        this.clickableTd.on('click',  function() {
+            let test = false;
+            $(".card").each(function (index, e) {
+                if(e.classList.contains("show")) {
+                    test = true;
+                }
+            });
+            if(!test) {
+                window.location = $(this).closest('tr').attr('data-href');
+            }
+        });
+    }
 }

@@ -19,7 +19,7 @@ public class LiveWorkflowStep {
     @Version
     private Integer version;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<Recipient> recipients = new ArrayList<>();
 
     private Boolean allSignToComplete = false;
@@ -27,6 +27,8 @@ public class LiveWorkflowStep {
     private Boolean repeatable = false;
 
     private Boolean multiSign = true;
+
+    private Boolean autoSign = false;
 
     @Enumerated(EnumType.STRING)
     private SignType signType;
@@ -83,6 +85,17 @@ public class LiveWorkflowStep {
 
     public void setMultiSign(Boolean multiSign) {
         this.multiSign = multiSign;
+    }
+
+    public Boolean getAutoSign() {
+        if(autoSign == null) {
+            return false;
+        }
+        return autoSign;
+    }
+
+    public void setAutoSign(Boolean autoSign) {
+        this.autoSign = autoSign;
     }
 
     public SignType getSignType() {

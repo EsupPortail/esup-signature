@@ -5,9 +5,10 @@ import {Message} from "../../../prototypes/Message.js";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire, isOtp) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
+        this.isOtp = isOtp;
         this.changeModeSelector = null;
         this.action = action;
         this.dataId = dataId;
@@ -44,7 +45,7 @@ export class WorkspacePdf {
             currentSignRequestParamses,
             signImageNumber,
             signImages,
-            userName, signable, this.forcePageNum);
+            userName, authUserName, signable, this.forcePageNum, this.isOtp);
         this.currentSignRequestParamses = this.signPosition.currentSignRequestParamses;
         this.mode = 'sign';
         this.wheelDetector = new WheelDetector();
@@ -66,7 +67,11 @@ export class WorkspacePdf {
                 $(window).on('resize', function () {
                     self.autocollapse();
                 });
-                $("#workspace").css("margin-top", "214px");
+                if($("#second-tools").children().length > 0) {
+                    $("#workspace").css("margin-top", "216px");
+                } else {
+                    $("#workspace").css("margin-top", "178px");
+                }
             } else {
                 $("#workspace").css("margin-top", "170px");
             }
@@ -157,25 +162,26 @@ export class WorkspacePdf {
 
     initSignFields() {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let currentSignRequestParamses = this.currentSignRequestParamses[i];
             let signSpaceDiv = $("#signSpace_" + i);
             if (signSpaceDiv.length) {
                 signSpaceDiv.remove();
             }
-            if (this.currentSignRequestParamses[i].signPageNumber === this.pdfViewer.pageNum && this.mode === "sign" && this.signable) {
+            if (currentSignRequestParamses.signPageNumber === this.pdfViewer.pageNum && this.mode === "sign" && this.signable) {
                 let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature' class='sign-field sign-space'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                if(this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
+                if(currentSignRequestParamses.ready == null || !currentSignRequestParamses.ready) {
                     signSpaceDiv.text("Cliquez ici pour ajouter votre signature");
                 }
-                if (this.currentSignRequestParamses[i].ready) {
+                if (currentSignRequestParamses.ready) {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                signSpaceDiv.css("top", Math.round(this.currentSignRequestParamses[i].yPos * this.pdfViewer.scale));
-                signSpaceDiv.css("left", Math.round(this.currentSignRequestParamses[i].xPos * this.pdfViewer.scale));
-                signSpaceDiv.css("width", Math.round(this.currentSignRequestParamses[i].signWidth * this.pdfViewer.scale / .75) + "px");
-                signSpaceDiv.css("height", Math.round(this.currentSignRequestParamses[i].signHeight * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("top", Math.round(currentSignRequestParamses.yPos * this.pdfViewer.scale));
+                signSpaceDiv.css("left", Math.round(currentSignRequestParamses.xPos * this.pdfViewer.scale));
+                signSpaceDiv.css("width", Math.round(currentSignRequestParamses.signWidth * this.pdfViewer.scale / .75) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParamses.signHeight * this.pdfViewer.scale / .75) + "px");
                 signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
                 signSpaceDiv.on("click", e => this.addSign(i));
@@ -184,9 +190,9 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
-        if(this.currentStepMultiSign != null && !this.currentStepMultiSign) {
-           $("#addSignButton").attr("disabled", true);
-        }
+        // if(this.currentStepMultiSign != null && !this.currentStepMultiSign) {
+        //    $("#addSignButton").attr("disabled", true);
+        // }
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
         if(forceSignNumber != null) {
@@ -233,9 +239,9 @@ export class WorkspacePdf {
         }
         this.pdfViewer.adjustZoom();
         this.initLaunchButtons();
-        if(this.currentSignRequestParamses.length > 0 && this.signable) {
-            this.initSignFields();
-        }
+        // if(this.currentSignRequestParamses.length > 0 && this.signable) {
+        //     this.initSignFields();
+        // }
         this.pdfViewer.removeEventListener('ready');
         // if(this.signPosition.signImages.length === 0 && this.signType !== "visa" && this.signType !== "hiddenVisa") {
         //     this.signPosition.toggleVisual();
@@ -519,12 +525,13 @@ export class WorkspacePdf {
         if(this.addSpotEnabled) {
             spotStepNumber = spotStepNumberVal.val();
         }
-        let commentUrlParams = "comment=" + postitComment.val() +
+        let commentUrlParams = "comment=" + encodeURIComponent(postitComment.val()) +
             "&commentPosX=" + Math.round(xPos) +
             "&commentPosY=" + Math.round(yPos) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
             "&spotStepNumber=" + spotStepNumber +
             "&" + this.csrf.parameterName + "=" + this.csrf.token;
+
         $.ajax({
             method: 'POST',
             url: "/user/signrequests/comment/" + this.signRequestId + "/?" + commentUrlParams,
@@ -579,8 +586,8 @@ export class WorkspacePdf {
         this.postits.forEach((spot, iterator) => {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
-                let signSpaceHtml = "<div id='signSpace_" + iterator + "' title='Emplacement de signature " + (iterator + 1) + "' class='sign-field sign-space'></div>";
-                $("#pdf").append(signSpaceHtml);
+                // let signSpaceHtml = "<div id='signSpace_" + iterator + "' title='Emplacement de signature " + (iterator + 1) + "' class='sign-field sign-space'></div>";
+                // $("#pdf").append(signSpaceHtml);
                 let signSpaceDiv = $("#signSpace_" + iterator);
                 if (spot.pageNumber === this.pdfViewer.pageNum && this.mode === 'comment') {
                     spotDiv.show();

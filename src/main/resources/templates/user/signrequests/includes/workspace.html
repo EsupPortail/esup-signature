@@ -4,8 +4,12 @@
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
-<div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : 'alert-success')">
+<div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div style="top:0; position: absolute; z-index: 5; width: 100%; ">
+        <div id="signBookDesc" class="alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null}" style="width: 100%;">
+            <span th:text="${signRequest.parentSignBook.description}"></span>
+            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+        </div>
         <div id="alertSign" class="alert alert-primary border-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
             <span th:if="${signatureIds.size() > 1}">Ce document contient des signatures éléctroniques
             <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button></span>
@@ -13,6 +17,9 @@
             <button id="reportModalBtn" class="btn btn-sm btn-secondary d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+        </div>
+        <div id="alertNexu" class="alert alert-danger border-dark" style="display: none;">
+            L'application NexU n'a pas été détectée. Merci de lancer l’application sur votre poste puis d'actualiser la page.
         </div>
         <th:block th:if="${toSignDocument.contentType == 'application/pdf'}">
             <div id="commentHelp" th:unless="${signRequest.comments.size() > 0}" class="alert alert-warning border-dark d-none" style="width: 100%">
@@ -127,7 +134,7 @@
                     style="z-index: 3;">
                 <i style="line-height: 1.8em;" class="fas fa-arrow-left"></i>
             </button>
-            <button type="button" id="signExtra_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter un texte à la signature"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
@@ -140,15 +147,15 @@
                     style="z-index: 3;">
                 <i class="fas fa-retweet"></i>
             </button>
-            <button type="button" id="watermark_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="watermark_x"
                     title="Filigrane"
                     class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fab fa-markdown"></i>
             </button>
-            <button th:if="${isNotSigned}" type="button" id="allPages_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
-                    class="btn btn-sm btn-transparent text-white"watermark_0
+                    class="btn btn-sm btn-transparent text-white"
                     style="z-index: 3;">
                 <i class="fas fa-reply-all"></i>
             </button>
@@ -160,7 +167,7 @@
                 <i class="fas fa-ellipsis-v"></i>
             </button>
         </div>
-        <div id="extraTools_x" class="d-none">
+        <div id="extraTools_x" class="d-none" th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}">
             <button type="button" id="extraType_x"
                     title="Afficher le type de signature"
                     class="btn btn-sm btn-transparent text-white btn-outline-light"

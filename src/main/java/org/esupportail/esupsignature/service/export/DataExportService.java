@@ -86,9 +86,14 @@ public class DataExportService {
         toExportDatas.put("form_current_status", signBook.getStatus().name());
         Map<Recipient, Action> recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
         if(recipientHasSigned != null && recipientHasSigned.size() > 0 && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived)) {
-            Action lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst().get();
-            toExportDatas.put("form_completed_date", lastActionHero.getDate().toString());
-            toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastActionHero.equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
+            Optional<Action> lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst();
+            if(lastActionHero.isPresent()) {
+                toExportDatas.put("form_completed_date", lastActionHero.get().getDate().toString());
+                toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastActionHero.get().equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
+            } else {
+                toExportDatas.put("form_completed_date", "");
+                toExportDatas.put("form_completed_by", "");
+            }
         } else {
             toExportDatas.put("form_completed_date", "");
             toExportDatas.put("form_completed_by", "");

@@ -1,9 +1,11 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 @Controller
 @RequestMapping("/user/workflows")
@@ -25,12 +28,17 @@ public class WorkflowController {
     @Resource
     private WorkflowStepService workflowStepService;
 
+    @Resource
+    private CertificatService certificatService;
+
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
     public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         model.addAttribute("fromAdmin", false);
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
+        List<Certificat> certificats = certificatService.getAllCertificats();
+        model.addAttribute("certificats", certificats);
         return "user/workflows/show";
     }
 
@@ -44,8 +52,8 @@ public class WorkflowController {
                           @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-                          @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
-        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, userEppn, true, attachmentRequire);
+                          @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) throws EsupSignatureException {
+        workflowStepService.addStep(id, signType, description, recipientsEmails, changeable, allSignToComplete, maxRecipients, userEppn, true, attachmentRequire, false, null);
         return "redirect:/user/workflows/" + id;
     }
 

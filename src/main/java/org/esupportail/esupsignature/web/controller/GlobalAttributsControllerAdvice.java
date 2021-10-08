@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.SignTypeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,9 +37,6 @@ public class GlobalAttributsControllerAdvice {
 
     @Resource
     private FormService formService;
-
-    @Resource
-    private DataService dataService;
 
     @Resource
     private UserShareService userShareService;
@@ -113,7 +109,6 @@ public class GlobalAttributsControllerAdvice {
         	signTypes.remove(SignType.nexuSign);
         }
         model.addAttribute("signTypes", signTypes);
-        model.addAttribute("nbDatas", dataService.getNbCreateByAndStatus(userEppn));
         model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
         model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
         model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));

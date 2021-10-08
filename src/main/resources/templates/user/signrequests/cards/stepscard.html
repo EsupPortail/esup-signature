@@ -30,11 +30,16 @@
                                     </span>
                                 </th:block>
                                 <th:block th:if="${iterator.index + 1 < signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                    <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                        <i class="fas fa-check"></i>
-                                    </span>
-                                    <span title="Etape signé" th:unless="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                        <i class="fas fa-signature"></i>
+                                    <th:block th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                                        <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
+                                            <i class="fas fa-check"></i>
+                                        </span>
+                                        <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}" class="bs-stepper-circle bg-success">
+                                            <i class="fas fa-signature"></i>
+                                        </span>
+                                    </th:block>
+                                    <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
+                                        <i class="fas fa-times"></i>
                                     </span>
                                 </th:block>
                                 <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger float-end"><i class="fas fa-users"></i></span>
@@ -48,7 +53,7 @@
                                     <br/>
                                     <table class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                        <tr th:title="${signRequest.recipientHasSigned.get(recipient) != null ? #dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm') : ''}" >
+                                        <tr>
                                             <td th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td class="text-right">
                                                 <i title="A signé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fas fa-check-circle text-success"></i>
@@ -61,6 +66,11 @@
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'"
                                                         th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                                     <i class="fas fa-key"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">
+                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null}" th:text="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
                                             </td>
                                         </tr>
                                         <div th:if="${userEppn == signRequest.createBy.eppn && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="card position-absolute collapse mini-menu position-fixed" th:id="'menu-' + ${recipient.id}" style="z-index: 10000; width: 300px; left:150px">

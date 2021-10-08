@@ -77,6 +77,9 @@ public class AdminSignRequestController {
 			@RequestParam(value = "messageError", required = false) String messageError,
 			@SortDefault(value = "createDate", direction = Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
 		if(statusFilter != null) {
+			if(statusFilter.equals("")) {
+				statusFilter = "all";
+			}
 			if(!statusFilter.equals("all")) {
 				this.statusFilter = SignRequestStatus.valueOf(statusFilter);
 			} else {

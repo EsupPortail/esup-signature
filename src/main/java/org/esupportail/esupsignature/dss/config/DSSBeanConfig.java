@@ -57,14 +57,10 @@ public class DSSBeanConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);
 
-	private DSSProperties dssProperties;
+	private final DSSProperties dssProperties;
 
 	public DSSBeanConfig(DSSProperties dssProperties) {
 		this.dssProperties = dssProperties;
-	}
-
-	public DSSProperties getDssProperties() {
-		return dssProperties;
 	}
 
 	@Autowired(required = false)
