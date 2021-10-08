@@ -16,10 +16,13 @@ global:
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
     hours-before-refresh-notif: 24
-    share-mode: 3
+    share-mode: 1
     infinite-scrolling: true
     return-to-home-after-sign: false
+    naming-template: "[user.initials]-[title]"
     signed-suffix: "_signé"
+    trash-keep-delay: -1
+    disable-cert-storage: false
 
 #tomcat:
 #    ajp:

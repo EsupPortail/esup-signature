@@ -96,11 +96,14 @@
                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary'"
                        href="#" id="navbarShareDropdown"
                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-share-alt"></i> <span class="nav-item-label d-none d-lg-inline">Délégation</span>
+                        <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Autorisations</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarShareDropdown" >
+                        <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Remplacement" href="/user/users/replace">
+                            <i class="fas fa-people-arrows"></i> <span class="nav-item-label d-none d-lg-inline">Remplacement</span>
+                        </a>
                         <a class="btn text-white btn-transparent text-left m-1" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
-                            <i class="fas fa-users-cog"></i> <span class="nav-item-label d-none d-lg-inline">Gérer mes délégations</span>
+                            <i class="fas fa-users"></i> <span class="nav-item-label d-none d-lg-inline">Délégations</span>
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <th:block th:each="suUser : ${suUsers}">
@@ -216,7 +219,7 @@
                             <div class="carousel-inner">
                                 <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item" th:classappend="${iterator.index == 0} ? 'active'">
-                                        <img width="250" th:src="'/user/users/get-sign-image/' + ${signImageId}" />
+                                        <img width="250" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" />
                                     </div>
                                 </th:block>
                             </div>
@@ -240,7 +243,7 @@
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>
-                            <a href="/user/users/get-keystore">
+                            <a href="/ws-secure/users/get-keystore">
                                 <span th:text="${keystoreFileName}"></span>
                             </a>
                         </div>
@@ -287,7 +290,7 @@
                             </label>
                         </div>
                         <br>
-                        <label for="signType">Choisir un type de signature</label>
+                        <label class="form-label" for="signType">Choisir un type de signature</label>
                         <select name="signType" id="signType" class="slim-select-simple">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:value="${signType}"
@@ -334,12 +337,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="inputGroupFile02">Choix des fichiers à signer</label>
+                        <label class="form-label" for="inputGroupFile02">Choix des fichiers à signer</label>
                         <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
                             import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
                             new FilesInput($("#inputGroupFile02"));
                         </script>
+                    </div>
+                    <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
+                        <input class="form-check-input" type="checkbox" name="forceAllSign">
+                        <label class="form-check-label">Forcer la signature de tous les documents</label>
                     </div>
                     <div class="form-group mb-3">
                         <label class="form-label" for="signType2">Choisir un type de signature</label>
@@ -364,17 +371,17 @@
                     </div>
                     <div class="form-group mb-3">
                     <div class="form-check form-switch form-switch-md">
-                        <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi ?</label>
+                        <label class="form-check-label" for="userSignFirst">Je dois signer ce document avant l'envoi</label>
                         <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst">
                     </div>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="recipientsCCEmails">Choisir les observateurs en copie</label>
+                        <label class="form-label" for="recipientsCCEmails">Choisir les observateurs en copie</label>
                         <select class="select-users" data-check="true" name="recipientsCCEmails" id="recipientsCCEmails" size="5" multiple="multiple">
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="comment" >Commentaire</label>
+                        <label class="form-label" for="comment" >Commentaire</label>
                         <textarea id="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                     </div>
                 </div>

@@ -28,6 +28,8 @@ public class JsonWorkflowStep {
 
 	private Boolean multiSign = true;
 
+	private Boolean autoSign = false;
+
 	public Long getWorkflowId() {
 		return workflowId;
 	}
@@ -106,5 +108,13 @@ public class JsonWorkflowStep {
 
 	public void setMultiSign(Boolean multiSign) {
 		this.multiSign = multiSign;
+	}
+
+	public Boolean getAutoSign() {
+		return autoSign;
+	}
+
+	public void setAutoSign(Boolean autoSign) {
+		this.autoSign = autoSign;
 	}
 }

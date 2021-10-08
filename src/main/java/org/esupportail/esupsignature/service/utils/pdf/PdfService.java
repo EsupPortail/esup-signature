@@ -18,6 +18,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
@@ -694,6 +695,49 @@ public class PdfService {
             } else {
                 throw new EsupSignatureException("Le document ne contient pas de formulaire");
             }
+        } catch (IOException e) {
+            logger.error("file read error", e);
+        }
+        return null;
+    }
+
+    public InputStream removeSignField(InputStream pdfFile) {
+        try {
+            PDDocument pdDocument = PDDocument.load(pdfFile);
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if(pdAcroForm != null) {
+                PDFont pdFont = PDTrueTypeFont.load(pdDocument, new ClassPathResource("static/fonts/LiberationSans-Regular.ttf").getFile(), WinAnsiEncoding.INSTANCE);
+                PDResources resources = pdAcroForm.getDefaultResources();
+                resources.put(COSName.getPDFName("LiberationSans"), pdFont);
+                pdAcroForm.setDefaultResources(resources);
+                List<PDField> fields = pdAcroForm.getFields();
+                for(PDField pdField : fields) {
+                    if(pdField instanceof PDSignatureField) {
+                        List<PDAnnotationWidget> widgets = pdField.getWidgets();
+                        for (PDAnnotationWidget widget : widgets) {
+                            for(PDPage page : pdDocument.getPages()) {
+                                List<PDAnnotation> annotations = page.getAnnotations();
+                                boolean removed = false;
+                                for (PDAnnotation annotation : annotations) {
+                                    if (annotation.getCOSObject().equals(widget.getCOSObject())) {
+                                        removed = annotations.remove(annotation);
+                                        break;
+                                    }
+                                }
+                                if (!removed)
+                                    System.out.println("Inconsistent annotation definition: Page annotations do not include the target widget.");
+                            }
+                        }
+                        PDSignatureField pdSignatureField = (PDSignatureField) pdField;
+                        pdAcroForm.getFields().remove(pdSignatureField);
+                    }
+                }
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pdDocument.setAllSecurityToBeRemoved(true);
+            pdDocument.save(out);
+            pdDocument.close();
+            return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {
             logger.error("file read error", e);
         }

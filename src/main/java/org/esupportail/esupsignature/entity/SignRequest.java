@@ -62,7 +62,7 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
 

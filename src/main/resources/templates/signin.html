@@ -11,16 +11,74 @@
                 <span th:if="${auth != null}" th:text="${auth}"></span>
             </div>
             <div th:if="${#authorization.expression('isAnonymous()')}">
-                <h3>Se connecter avec :</h3>
-                <th:block th:each="securityConfig : ${securityServices}">
-                    <button type="button" th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
-                            onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.title}"
-                            class="btn btn-primary btn-lg col-6 mb-2"></button>
-                </th:block>
+                <form id="captchaForm" class="form" action="" th:if="${globalProperties.enableCaptcha}">
+                    <div class="input-group mb-3">
+                        <input id="captchaInput" class="jCaptcha form-control" type="text" placeholder="Entrez le résultat">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" id="captchaButton" type="submit">Je ne suis pas un robot</button>
+                        </div>
+                    </div>
+                </form>
+                <div th:class="${globalProperties.enableCaptcha} ? 'd-none' : ''" id="loginBlock">
+                    <h3>Se connecter avec :</h3>
+                    <th:block th:each="securityConfig : ${securityServices}">
+                        <button type="button" th:data-url="${securityConfig.loginUrl} + '?redirect=' + ${redirect}"
+                                onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.title}"
+                                class="btn btn-primary btn-lg col-6 mb-2"></button>
+                    </th:block>
+                </div>
             </div>
         </div>
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
+<script th:if="${globalProperties.enableCaptcha}">
+    $(function() {
+        let myCaptcha = new jCaptcha({
+            el: '.jCaptcha',
+            canvasClass: 'jCaptchaCanvas',
+            canvasStyle: {
+                // required properties for captcha stylings:
+                width: 150,
+                height: 15,
+                textBaseline: 'top',
+                font: '15px Arial',
+                textAlign: 'left',
+                fillStyle: '#111'
+            },
+            // set callback function for success and error messages:
+            callback: ( response, $captchaInputElement, numberOfTries ) => {
+                if ( response == 'success' ) {
+                    $("#loginBlock").removeClass('d-none');
+                    $("#captchaForm").addClass('d-none');
+                }
+                if ( response == 'error' ) {
+                    $("#captchaInput").removeClass('success');
+                    $("#captchaInput").addClass('error');
+                    $("#captchaInput").attr('placeholder',  "Please try again!");
+
+                    if (numberOfTries === 3) {
+                        // maximum attempts reached, so do something
+                        // e.g. disable the form:
+                        $("#captchaForm").off("submit", formSubmit);
+                        $("#captchaInput").attr('placeholder',  "Maximum attempts reached!");
+                        $("#captchaInput").attr("disabled", "true");
+                        $("#captchaButton").attr("disabled", "true");
+                    }
+                }
+            }
+        });
+
+        function formSubmit(e) {
+            e.preventDefault();
+
+            // myCaptcha validate
+            myCaptcha.validate();
+        }
+
+        $('#captchaForm').on('submit', formSubmit)
+
+    });
+</script>
 </body>
 </html>

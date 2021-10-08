@@ -4,7 +4,7 @@
     <div class="bs-stepper-header" role="tablist">
         <div class="step" data-bs-target="#test-l-2">
             <span class="bs-stepper-circle bg-success"><i class="fas fa-copy"></i></span>
-            <span class="bs-stepper-label">Copie des fichiers</span>
+            <span class="bs-stepper-label">Dépôt des fichiers</span>
         </div>
         <div class="bs-stepper-line"></div>
         <div class="step active" data-bs-target="#test-l-3">
@@ -57,16 +57,16 @@
     </div>
 </div>
 <hr>
-<form id="wiz-step-form">
 <h4 class="d-flex justify-content-center mt-4">Paramètres de l'étape&nbsp;<span th:text="${signBook.liveWorkflow.liveWorkflowSteps.size() + 1}"></span></h4>
+<form id="wiz-step-form">
 <div class="col-12">
     <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group form-switch form-switch-md mb-3">
         <input type="checkbox" class="form-check-input" name="userSignFirstWiz" id="userSignFirstWiz"/>
         <label for="userSignFirstWiz" class="form-check-label">
-            Je dois signer ce document avant l'envoi ?
+            Je dois signer ce document avant l'envoi
         </label>
     </div>
-    <label for="recipientsEmailsWiz">Choisir les participants</label>
+    <label class="form-label" for="recipientsEmailsWiz">Choisir les participants</label>
     <select name="recipientsEmails" id="recipientsEmailsWiz" size="5" multiple="multiple" required="required">
     </select>
     <div id="tempUsers-recipientsEmailsWiz"></div>
@@ -77,13 +77,14 @@
         </label>
         <input type="checkbox" class="form-check-input" id="allSignToCompleteWiz" name="allSignToComplete"/>
     </div>
-    <label>Type de signature :</label>
+    <label class="form-label">Type de signature :</label>
     <select class="form-select" id="signTypeWiz" name="signType">
         <th:block th:each="signType : ${signTypes}">
             <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
         </th:block>
     </select>
 </div>
+<hr>
 <div class="inline-flex">
     <button type="submit" id="addNew" value="true" class="btn btn-primary float-end m-1">
         <i class="fas fa-save"></i> Enregistrer l'étape

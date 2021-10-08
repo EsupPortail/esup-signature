@@ -17,11 +17,11 @@ public class LiveWorkflow {
     @Version
     private Integer version;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private LiveWorkflowStep currentStep;
 
     @OneToMany(cascade = CascadeType.REMOVE)
