@@ -96,6 +96,8 @@ export default class ListSignRequestUi {
 
     detectEndDiv(e) {
         if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
+            $("#listSignRequestTable").addClass("wait");
+            $("#loader").show();
             this.addToPage();
         }
     }
@@ -153,6 +155,8 @@ export default class ListSignRequestUi {
                     window.location = $(this).closest('tr').attr('data-href');
                 });
                 $(document).trigger("refreshClickableTd");
+                $("#listSignRequestTable").removeClass("wait");
+                $("#loader").hide();
             });
         }
     }

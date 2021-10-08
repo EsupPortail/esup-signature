@@ -1406,6 +1406,18 @@ textarea:placeholder-shown.required-field {
     max-height: 80%;
 }
 
+.wait:after {
+    content: "";
+    display: block;
+    position: absolute; /* could also be absolute */
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 10000;
+    background-color: rgba(255, 255, 255 ,0.5);
+}
+
 .waves-effect {
     display: inline-block;
     overflow: hidden;
