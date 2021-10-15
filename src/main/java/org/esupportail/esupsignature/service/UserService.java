@@ -83,7 +83,7 @@ public class UserService {
     }
 
     public User getSystemUser() {
-        return createUser("system", "", "", "system", UserType.system, false);
+        return createUser("system", "Esup-Signature", "Automate", "system", UserType.system, false);
     }
 
     public User getCreatorUser() {
@@ -156,6 +156,7 @@ public class UserService {
                 throw new EsupSignatureUserException("ldap user not found : " + eppn);
             }
         }
+        logger.error("user not found with : " + eppn);
         return null;
     }
 
@@ -180,6 +181,7 @@ public class UserService {
         } else if (userType.equals(UserType.shib)) {
             return createUser(mail, mail, "Nouvel utilisateur fédération", mail, UserType.shib, false);
         }
+        logger.error("user not found with : " + mail);
         return null;
     }
 
@@ -200,6 +202,7 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
+        logger.warn("mail");
         createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
