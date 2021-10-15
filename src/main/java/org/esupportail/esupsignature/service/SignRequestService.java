@@ -805,7 +805,7 @@ public class SignRequestService {
 										allTargetsDone = false;
 									}
 								} catch (Exception e) {
-									logger.error("rest export fail : " + target.getTargetUri(), e.getMessage());
+									logger.error("rest export fail : " + target.getTargetUri(), e);
 									allTargetsDone = false;
 								}
 							} else {
