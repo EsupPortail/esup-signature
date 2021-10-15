@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.config.security.shib;
 
 import org.esupportail.esupsignature.service.security.DevSecurityFilter;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.annotation.Resource;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 
+@EnableConfigurationProperties(DevShibProperties.class)
 public class DevClientRequestFilter extends GenericFilterBean  implements DevSecurityFilter {
 	
 	@Resource
