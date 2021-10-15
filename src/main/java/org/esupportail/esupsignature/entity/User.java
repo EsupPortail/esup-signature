@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.DayOfWeek;
 import java.util.*;
 
@@ -23,13 +24,16 @@ public class User {
     private Integer version;
 	
 	private String name;
+
 	
 	private String firstname;
 	
     @Column(unique=true)
+    @NotNull
     private String eppn;
 
     @Column(unique=true)
+    @NotNull
     private String email;
 
     @ElementCollection(targetClass=String.class)
