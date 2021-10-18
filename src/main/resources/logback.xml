@@ -8,8 +8,8 @@
     <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
         <smtpHost>smtp.univ-ville.fr</smtpHost>
         <smtpPort>25</smtpPort>
-        <to>support@univ-ville.fr</to>
-        <from>esup-signature@univ-ville.fr</from>
+        <to>david.lemaignent@univ-rouen.fr</to>
+        <from>esup-signature@univ-rouen.fr</from>
         <subject>%-5level - esup-signature %date{dd/MM/yyyy HH:mm:ss}
         </subject>
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -44,6 +44,7 @@
     <root level="info">
         <appender-ref ref="FILE"/>
         <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="EMAIL"/>
     </root>
 
 </configuration>
