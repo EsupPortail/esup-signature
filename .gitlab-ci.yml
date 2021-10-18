@@ -7,8 +7,10 @@ build:
 
 build2:
   script: mvn clean initialize && mvn -Dspring.config.location=/opt/tomcat-esup-signature/conf/app_config/application.yml clean package && cp -rf target/esup-signature.war /opt/tomcat-esup-signature/webapps/ROOT.war
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_REF_NAME != "prod" && $CI_COMMIT_TAG != ""
+      when: on_success
+    - when: never
+
   tags:
     - prod
-
