@@ -15,11 +15,11 @@ global:
     enable-su: false
     enable-splash: true
     application-email: esup.signature@univ-ville.fr
-    hours-before-refresh-notif: 0
+    hours-before-refresh-notif: 24
     share-mode: 1
     infinite-scrolling: true
     return-to-home-after-sign: false
-    naming-template: "[user.initials]-[title]"
+    naming-template: "[title]"
     signed-suffix: "_signé"
     trash-keep-delay: -1
     disable-cert-storage: false
@@ -106,17 +106,15 @@ spring:
         mode: HTML
 
 ldap:
-#    search-base: ou=people
-#    list-search-base: ou=aliases-list
-#    list-search-filter: (|(mail={0}*)(cn={0}*))
-#    group-search-base: ou=groups
-#    group-search-filter: member={0}
-#    user-id-search-filter: (uid={0})
-#    member-search-filter: (&(uid={0})({1}))
-#    mapping-filters-groups:
-#        student : "eduPersonAffiliation:=student"
-#        staff : "eduPersonAffiliation:=staff"
-#        affiliate : "eduPersonAffiliation:=affiliate"
+    search-base: ou=people
+    group-search-base: ou=groups
+    group-search-filter: member={0}
+    user-id-search-filter: (uid={0})
+    member-search-filter: (&(uid={0})({1}))
+    mapping-filters-groups:
+        student : "eduPersonAffiliation:=student"
+        staff : "eduPersonAffiliation:=staff"
+        affiliate : "eduPersonAffiliation:=affiliate"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
@@ -144,6 +142,7 @@ dss:
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
+    trusted-certificat-url-list:
 
 fs:
 #    smb-login: esup-signature
@@ -163,16 +162,22 @@ pdf:
     pdf-to-image-dpi: 72
 
 security:
-#    cas:
-#        service: https://esup-signature.univ-ville.fr/login/cas
-#        title: Compte Université (CAS)
-#        url: https://cas.univ-ville.fr
     shib:
         credentials-request-header: MEMBER
         idp-url: https://idp.univ-ville.fr
         principal-request-header: REMOTE_USER
         title: Compte d’un autre établissement (Shibboleth)
         domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+    cas:
+        service: https://esup-signature.univ-ville.fr/login/cas
+        title: Compte Université (CAS)
+        url: https://cas.univ-ville.fr
+#    shib:
+#        credentials-request-header: MEMBER
+#        idp-url: https://idp.univ-ville.fr
+#        principal-request-header: REMOTE_USER
+#        title: Compte d’un autre établissement (Shibboleth)
+#        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:
         group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:

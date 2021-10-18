@@ -6,10 +6,10 @@
 
 
     <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
-        <smtpHost>smtp.univ-rouen.fr</smtpHost>
+        <smtpHost>smtp.univ-ville.fr</smtpHost>
         <smtpPort>25</smtpPort>
-        <to>esup-signature@univ-rouen.fr</to>
-        <from>esup-signature@univ-rouen.fr</from>
+        <to>support@univ-ville.fr</to>
+        <from>esup-signature@univ-ville.fr</from>
         <subject>%-5level - esup-signature %date{dd/MM/yyyy HH:mm:ss}
         </subject>
         <layout class="ch.qos.logback.classic.PatternLayout">
