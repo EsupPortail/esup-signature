@@ -763,11 +763,11 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
+	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
 		boolean allTargetsDone = true;
 		for(Target target : targets) {
 			if(!target.getTargetOk()) {
-				DocumentIOType documentIOType = target.getTargetType();
+				DocumentIOType documentIOType = fsAccessFactory.getPathIOType(target.getTargetUri());
 				String targetUrl = target.getTargetUri();
 				if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 					if (documentIOType.equals(DocumentIOType.mail)) {
@@ -789,7 +789,7 @@ public class SignRequestService {
 						}
 					} else {
 						for (SignRequest signRequest : signRequests) {
-							if (target.getTargetType().equals(DocumentIOType.rest)) {
+							if (fsAccessFactory.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
 								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
@@ -821,7 +821,7 @@ public class SignRequestService {
 									target.setTargetOk(true);
 									updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 								} catch (EsupSignatureFsException e) {
-									logger.error("fs export fail : " + target.getTargetUri(), e);
+									logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
 									allTargetsDone = false;
 								}
 							}
@@ -846,7 +846,7 @@ public class SignRequestService {
 		}
 	}
 
-	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException {
+	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
@@ -893,7 +893,7 @@ public class SignRequestService {
 		}
 	}
 
-	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
+	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException, EsupSignatureException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
@@ -1254,7 +1254,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException {
+	public Map<SignBook, String> sendSignRequest(MultipartFile[] multipartFiles, SignType signType, Boolean allSignToComplete, Boolean userSignFirst, Boolean pending, String comment, List<String> recipientsCCEmails, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, User user, User authUser, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
 		if(forceAllSign == null) forceAllSign = false;
 		if (!signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
@@ -1267,7 +1267,7 @@ public class SignRequestService {
 			throw new EsupSignatureException(e.getMessage());
 		}
 		if(targetUrl != null && !targetUrl.isEmpty()) {
-			signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.rest, targetUrl));
+			signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
 		}
 		return signBookService.sendSignBook(signBook, signType, allSignToComplete, userSignFirst, pending, comment, recipientsEmails, externalUsersInfos, user, authUser, forceSendEmail);
 	}
@@ -1392,7 +1392,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public Map<String, Object> getToSignFileResponse(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException {
+	public Map<String, Object> getToSignFileResponse(Long signRequestId) throws SQLException, EsupSignatureFsException, IOException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());

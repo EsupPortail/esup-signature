@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
@@ -88,8 +89,6 @@ public class WorkflowService {
             workflow.setDescription("Signature du créateur de la demande");
             workflow.setCreateDate(new Date());
             workflow.setCreateBy(userService.getSystemUser());
-            workflow.setSourceType(DocumentIOType.none);
-//            workflow.setTargetType(DocumentIOType.none);
             WorkflowStep workflowStep = workflowStepService.createWorkflowStep("Ma signature", false, SignType.pdfImageStamp, creator.getEmail());
             workflow.getWorkflowSteps().add(workflowStep);
             workflowRepository.save(workflow);
@@ -112,7 +111,6 @@ public class WorkflowService {
                 toUpdateWorkflow.getRoles().addAll(classWorkflow.getRoles());
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
                 toUpdateWorkflow.setTitle(classWorkflow.getTitle());
-                toUpdateWorkflow.setSourceType(classWorkflow.getSourceType());
                 toUpdateWorkflow.setDocumentsSourceUri(classWorkflow.getDocumentsSourceUri());
                 toUpdateWorkflow.getTargets().addAll(classWorkflow.getTargets());
                 toUpdateWorkflow.setAuthorizedShareTypes(classWorkflow.getAuthorizedShareTypes());
@@ -211,7 +209,6 @@ public class WorkflowService {
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
-            workflow.setSourceType(DocumentIOType.none);
             workflowRepository.save(workflow);
             return workflow;
         } else {
@@ -243,13 +240,13 @@ public class WorkflowService {
     }
 
     @Transactional
-    public int importFilesFromSource(Long workflowId, User user, User authUser) {
+    public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureFsException {
         Workflow workflow = getById(workflowId);
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
-        if (workflow.getSourceType() != null && !workflow.getSourceType().equals(DocumentIOType.none)) {
-            logger.debug("retrieve from " + workflow.getSourceType() + " in " + workflow.getDocumentsSourceUri());
-            FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getSourceType());
+        if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
+            logger.debug("retrieve from " + workflow.getProtectedDocumentsSourceUri());
+            FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
                 fsAccessService.open();
                 if (fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
@@ -305,7 +302,7 @@ public class WorkflowService {
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("target")) {
                                         String metadataTarget = metadatas.get(metadataKey);
                                         for(Target target : workflow.getTargets()) {
-                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri() + "/" + metadataTarget));
+                                            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri() + "/" + metadataTarget));
                                         }
                                         logger.info("target set to : " + signBook.getLiveWorkflow().getTargets().get(0).getTargetUri());
                                     }
@@ -392,7 +389,6 @@ public class WorkflowService {
     @Transactional
     public Workflow initWorkflow(User user, Long id, String name) {
         Workflow workflow = getById(id);
-        workflow.setSourceType(DocumentIOType.none);
         workflow.setCreateBy(user);
         workflow.setName(name);
         workflow.setDescription(name);
@@ -519,9 +515,10 @@ public class WorkflowService {
         for(UserShare userShare : userShares) {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
-        workflowToUpdate.setSourceType(workflow.getSourceType());
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+        if(!workflow.getDocumentsSourceUri().contains("********")) {
+            workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+        }
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
@@ -547,10 +544,11 @@ public class WorkflowService {
     }
 
     @Transactional
-    public boolean addTarget(Long id, String targetType, String documentsTargetUri) {
+    public boolean addTarget(Long id, String documentsTargetUri) throws EsupSignatureFsException {
         Workflow workflow = getById(id);
-        if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetType).noneMatch(tt -> tt.equals(DocumentIOType.mail))) {
-            Target target = targetService.createTarget(DocumentIOType.valueOf(targetType), documentsTargetUri);
+        DocumentIOType targetType = fsAccessFactory.getPathIOType(documentsTargetUri);
+        if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
+            Target target = targetService.createTarget(documentsTargetUri);
             workflow.getTargets().add(target);
             return true;
         }
@@ -589,7 +587,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException {
+    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException, EsupSignatureException, EsupSignatureFsException {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedTitle = workflow.getTitle();
@@ -610,7 +608,7 @@ public class WorkflowService {
         workflow.getTargets().clear();
         update(workflow, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
         for(Target target : workflowSetup.getTargets()) {
-            Target newTarget = targetService.createTarget(target.getTargetType(), target.getTargetUri());
+            Target newTarget = targetService.createTarget(target.getTargetUri());
             workflow.getTargets().add(newTarget);
         }
         workflow.setName(savedName);

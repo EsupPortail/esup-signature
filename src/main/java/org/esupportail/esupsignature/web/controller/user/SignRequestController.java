@@ -406,7 +406,7 @@ public class SignRequestController {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
-            } catch (EsupSignatureException | MessagingException e) {
+            } catch (EsupSignatureException | MessagingException | EsupSignatureFsException e) {
                 redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
             }
         } else {
@@ -616,7 +616,7 @@ public class SignRequestController {
                           @RequestParam(value = "names", required = false) List<String> names,
                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                           @RequestParam(value = "phones", required = false) List<String> phones,
-                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException {
+                          RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
         if(!signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));

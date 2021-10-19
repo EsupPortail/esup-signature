@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix="fs")
 public class FsProperties {
 
-    private String smbUri;
+    private String smbTestUri;
     private String smbLogin;
     private String smbPassword;
     private String smbDomain;
@@ -16,12 +16,12 @@ public class FsProperties {
     private String cmisRespositoryId;
     private String cmisRootPath;
 
-    public String getSmbUri() {
-        return smbUri;
+    public String getSmbTestUri() {
+        return smbTestUri;
     }
 
-    public void setSmbUri(String smbUri) {
-        this.smbUri = smbUri;
+    public void setSmbTestUri(String smbTestUri) {
+        this.smbTestUri = smbTestUri;
     }
 
     public String getSmbLogin() {

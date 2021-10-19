@@ -153,14 +153,14 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initSignBook(Long signBookId, Long id, User user) {
+    public void initSignBook(Long signBookId, Long id, User user) throws EsupSignatureFsException {
         SignBook signBook = getById(signBookId);
         Workflow workflow = workflowService.getById(id);
         signBook.setName(workflow.getName() + "_" + new Date() + "_" + user.getEppn());
         signBook.setTitle(workflow.getDescription());
         signBook.getLiveWorkflow().setWorkflow(workflow);
         for(Target target : workflow.getTargets()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetType(), target.getTargetUri()));
+            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(target.getTargetUri()));
         }
     }
 
@@ -200,6 +200,10 @@ public class SignBookService {
     @Transactional
     public void delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
+        if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
+            deleteDefinitive(signBookId);
+            return;
+        }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId, userEppn);
@@ -231,10 +235,6 @@ public class SignBookService {
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
         logger.info("definitive delete signbook : " + signBookId);
-    }
-
-    public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
-        signBook.getSignRequests().remove(signRequest);
     }
 
     public boolean checkUserManageRights(String userEppn, SignBook signBook) {
@@ -293,14 +293,14 @@ public class SignBookService {
         signRequestService.completeSignRequests(signBook.getSignRequests(), userEppn);
     }
 
-    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException {
+    public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
         if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
             signRequestService.archiveSignRequests(signBook.getSignRequests(), authUserEppn);
             signBook.setStatus(SignRequestStatus.archived);
         }
     }
 
-    public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
+    public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);
@@ -385,7 +385,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn) throws EsupSignatureException {
+    public void initWorkflowAndPendingSignBook(Long signRequestId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String userEppn, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         SignBook signBook = signRequest.getParentSignBook();
         if(signBook.getStatus().equals(SignRequestStatus.draft)) {
