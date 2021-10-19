@@ -8,8 +8,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,12 +35,8 @@ public class FsAccessFactory {
 	public void setCmisAccessImpl(CmisAccessImpl cmisAccessImpl) {
 		this.cmisAccessImpl = cmisAccessImpl;
 	}
-
-	public FsAccessService getFsAccessService(String path) throws EsupSignatureFsException {
-		return  getFsAccessService(getPathIOType(path));
-	}
-
-	public FsAccessService getFsAccessService(DocumentIOType type) {
+	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
+		DocumentIOType type = getPathIOType(uri);
 		switch (type) {
 			case smb:
 				return smbAccessImpl;
@@ -71,9 +65,20 @@ public class FsAccessFactory {
 
 	public DocumentIOType getPathIOType(String path) throws EsupSignatureFsException {
 		try {
-			URI uri = new URI(path);
-			return DocumentIOType.valueOf(uri.getScheme());
-		} catch (URISyntaxException e) {
+			var uri = new java.net.URI(path);
+			switch (uri.getScheme()) {
+				case "smb": return DocumentIOType.smb;
+				case "cmis": return DocumentIOType.cmis;
+				case "file":
+				case "sftp":
+				case "ftp":
+					return DocumentIOType.vfs;
+				case "http":
+				case "https":
+					return DocumentIOType.rest;
+			}
+			throw new EsupSignatureFsException("unknown protocol for url " + path);
+		} catch (java.net.URISyntaxException e) {
 			throw new EsupSignatureFsException("target Url error", e);
 		}
 	}

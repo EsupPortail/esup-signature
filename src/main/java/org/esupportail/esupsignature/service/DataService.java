@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -91,25 +91,8 @@ public class DataService {
         dataRepository.delete(data);
     }
 
-    private DocumentIOType getPathIOType(String path) throws EsupSignatureException {
-        try {
-            var uri = new java.net.URI(path);
-            switch (uri.getScheme()) {
-                case "smb": return DocumentIOType.smb;
-                case "cmis": return DocumentIOType.cmis;
-                case "sftp": return DocumentIOType.vfs;
-
-                case "http":
-                case "https": return DocumentIOType.rest;
-            }
-            throw new EsupSignatureException("unknown protocol for url " + path);
-        } catch (java.net.URISyntaxException e) {
-            throw new EsupSignatureException("target Url error", e);
-        }
-    }
-
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
@@ -138,7 +121,7 @@ public class DataService {
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
-                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(getPathIOType(targetUrl), targetUrl));
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
             }
         }
         data.setSignBook(signBook);
@@ -251,7 +234,7 @@ public class DataService {
                     signBook.setComment("Le document est prêt");
                 }
                 return signBook;
-            } catch (EsupSignatureException e) {
+            } catch (EsupSignatureException | EsupSignatureFsException e) {
                 logger.error(e.getMessage(), e);
                 throw new EsupSignatureException(e.getMessage(), e);
             }

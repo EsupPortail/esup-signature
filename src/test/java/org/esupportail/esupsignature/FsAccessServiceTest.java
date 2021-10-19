@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
@@ -32,8 +31,8 @@ public class FsAccessServiceTest {
     private GlobalProperties globalProperties;
 
     @Test
-    public void testSmbAccessImpl() {
-        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.smb);
+    public void testSmbAccessImpl() throws EsupSignatureFsException {
+        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService("smb://test");
         assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
@@ -50,8 +49,8 @@ public class FsAccessServiceTest {
     }
 
     @Test
-    public void testCmisAccessImpl() {
-        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.cmis);
+    public void testCmisAccessImpl() throws EsupSignatureFsException {
+        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService("cmis://test");
         assumeTrue("cmis not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
@@ -67,8 +66,8 @@ public class FsAccessServiceTest {
     }
 
     @Test
-    public void testVfsAccessImpl() {
-        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(DocumentIOType.vfs);
+    public void testVfsAccessImpl() throws EsupSignatureFsException {
+        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService("ftp://test");
         assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
             if (fsAccessService.cd("/") == null) {
@@ -86,7 +85,7 @@ public class FsAccessServiceTest {
     @Test
     public void testArchiveUri() throws EsupSignatureFsException {
         assumeTrue("archive url not configured", globalProperties.getArchiveUri() != null);
-        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(fsAccessFactory.getPathIOType(globalProperties.getArchiveUri()));
+        FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(globalProperties.getArchiveUri());
         fsAccessService.createURITree(globalProperties.getArchiveUri());
     }
 

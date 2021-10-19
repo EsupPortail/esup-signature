@@ -6,7 +6,11 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Entity
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
@@ -163,6 +167,17 @@ public class Workflow {
         return documentsSourceUri;
     }
 
+    public String getProtectedDocumentsSourceUri() {
+        Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
+        Matcher m = p.matcher(documentsSourceUri);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
     public void setDocumentsSourceUri(String documentsSourceUri) {
         this.documentsSourceUri = documentsSourceUri;
     }
@@ -190,22 +205,6 @@ public class Workflow {
     public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
         this.workflowSteps = workflowSteps;
     }
-
-//    public DocumentIOType getTargetType() {
-//        return targetType;
-//    }
-//
-//    public void setTargetType(DocumentIOType targetType) {
-//        this.targetType = targetType;
-//    }
-//
-//    public String getDocumentsTargetUri() {
-//        return documentsTargetUri;
-//    }
-//
-//    public void setDocumentsTargetUri(String documentsTargetUri) {
-//        this.documentsTargetUri = documentsTargetUri;
-//    }
 
     public List<String> getRoles() {
         return roles;

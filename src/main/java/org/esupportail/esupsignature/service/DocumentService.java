@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.BigFile;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
@@ -70,13 +71,13 @@ public class DocumentService {
 		return name;
 	}
 
-	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureFsException {
+	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureFsException, EsupSignatureException {
 		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureFsException {
 		String documentUri;
-		FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(documentIOType);
+		FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
 			try {
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + signedFile.getFileName());

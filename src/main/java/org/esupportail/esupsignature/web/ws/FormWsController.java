@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.export.DataExportService;
@@ -38,7 +39,7 @@ public class FormWsController {
         try {
             SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true);
             return signBook.getSignRequests().get(0).getId();
-        } catch (EsupSignatureException | EsupSignatureIOException e) {
+        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
             return -1L;
         }
     }

@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -198,7 +199,7 @@ public class WorkflowAdminController {
 	}
 
 	@GetMapping(value = "/get-files-from-source/{id}")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
 		User authUser = (User) model.getAttribute("authUser");
 		int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {
@@ -211,10 +212,9 @@ public class WorkflowAdminController {
 
 	@PostMapping(value = "/add-target/{id}")
 	public String addTarget(@PathVariable("id") Long id,
-							@RequestParam("targetType") String targetType,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
-							RedirectAttributes redirectAttributes) {
-		if(workflowService.addTarget(id, targetType, documentsTargetUri)) {
+							RedirectAttributes redirectAttributes) throws EsupSignatureException, EsupSignatureFsException {
+		if(workflowService.addTarget(id, documentsTargetUri)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("warn", "Une destination mail existe déjà"));
@@ -253,7 +253,7 @@ public class WorkflowAdminController {
 			if(multipartFormSetup.getSize() > 0) {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream());
 			}
-		} catch (IOException e) {
+		} catch (IOException | EsupSignatureException | EsupSignatureFsException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", e.getMessage()));
 		}
