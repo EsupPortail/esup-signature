@@ -89,7 +89,7 @@
                                                    th:href="'/admin/workflows/export/' + ${workflow.id}">
                                                     <i class="fas fa-file-export pr-2"></i> Exporter le circuit
                                                 </a>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null && workflow.sourceType.name() != 'none'}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
                                                     <i class="fas fa-binoculars pr-2"></i> Scanner la source
                                                 </a>
                                                 <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"

@@ -213,7 +213,7 @@ public class WorkflowAdminController {
 	@PostMapping(value = "/add-target/{id}")
 	public String addTarget(@PathVariable("id") Long id,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
-							RedirectAttributes redirectAttributes) throws EsupSignatureException, EsupSignatureFsException {
+							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
 		if(workflowService.addTarget(id, documentsTargetUri)) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Destination ajoutée"));
 		} else {

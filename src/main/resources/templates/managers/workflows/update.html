@@ -95,17 +95,6 @@
                                 </div>
                             </th:block>
                         </div>
-                        <div class="form-group mb-3">
-                            <label for="sourceTypeSelect">
-                                <strong> Protocole pour la source des documents </strong>
-                            </label>
-                            <select class="slim-select-simple" id="sourceTypeSelect" th:field="*{sourceType}" size="1">
-                                <th:block th:each="sourceType : ${sourceTypes}">
-                                    <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}"
-                                            th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
                         <div class="form-group mb-3" id="documentsSourceUriDiv">
                             <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
                             <input id="documentsSourceUri" th:field="*{documentsSourceUri}"
@@ -136,8 +125,6 @@
                                 <tbody>
                                 <th:block th:each="target, iterator : ${workflow.targets}">
                                     <tr>
-                                        <td class="text-left" th:text="${target.targetType}">
-                                        </td>
                                         <td class="text-left w-100" th:text="${target.targetUri}">
                                         </td>
                                         <td>

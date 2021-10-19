@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -54,9 +53,6 @@ public class Workflow {
 
     private Boolean sendAlertToAllRecipients = false;
 
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType sourceType;
-    
     private String documentsSourceUri;
     
     @ElementCollection(targetClass=String.class)
@@ -155,27 +151,22 @@ public class Workflow {
         this.publicUsage = publicUsage;
     }
 
-    public DocumentIOType getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(DocumentIOType sourceType) {
-        this.sourceType = sourceType;
-    }
-
     public String getDocumentsSourceUri() {
         return documentsSourceUri;
     }
 
     public String getProtectedDocumentsSourceUri() {
-        Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
-        Matcher m = p.matcher(documentsSourceUri);
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
+        if(documentsSourceUri != null) {
+            Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
+            Matcher m = p.matcher(documentsSourceUri);
+            StringBuffer sb = new StringBuffer();
+            while (m.find()) {
+                m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
+            }
+            m.appendTail(sb);
+            return sb.toString();
         }
-        m.appendTail(sb);
-        return sb.toString();
+        return "";
     }
 
     public void setDocumentsSourceUri(String documentsSourceUri) {

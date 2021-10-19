@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserService;
@@ -35,11 +34,6 @@ public class DefaultWorkflow extends Workflow implements Cloneable {
     @Override
     public String getDescription() {
         return "Workflow par défaut";
-    }
-
-    @Override
-    public DocumentIOType getSourceType() {
-        return DocumentIOType.none;
     }
 
     @Override

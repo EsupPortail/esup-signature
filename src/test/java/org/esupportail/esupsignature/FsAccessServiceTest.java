@@ -35,7 +35,7 @@ public class FsAccessServiceTest {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService("smb://test");
         assumeTrue("SMB not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
-            if (fsAccessService.cd("/") == null) {
+            if (fsAccessService.cd(fsAccessService.getUri()) == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
                 fail();
             } else {
@@ -70,7 +70,7 @@ public class FsAccessServiceTest {
         FsAccessService fsAccessService = fsAccessFactory.getFsAccessService("ftp://test");
         assumeTrue("vfs not configured", fsAccessService != null && fsAccessService.getUri() != null);
         try {
-            if (fsAccessService.cd("/") == null) {
+            if (fsAccessService.cd("file://tmp/") == null) {
                 logger.error(fsAccessService.getDriveName() + " unable to change to / directory. Please check configuration");
                 fail();
             } else {

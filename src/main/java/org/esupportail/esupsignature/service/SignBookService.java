@@ -200,6 +200,10 @@ public class SignBookService {
     @Transactional
     public void delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
+        if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
+            deleteDefinitive(signBookId);
+            return;
+        }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
             signRequestService.delete(signRequestId, userEppn);
@@ -231,10 +235,6 @@ public class SignBookService {
         dataService.nullifySignBook(signBook);
         signBookRepository.delete(signBook);
         logger.info("definitive delete signbook : " + signBookId);
-    }
-
-    public void removeSignRequestFromSignBook(SignBook signBook, SignRequest signRequest) {
-        signBook.getSignRequests().remove(signRequest);
     }
 
     public boolean checkUserManageRights(String userEppn, SignBook signBook) {
@@ -300,7 +300,7 @@ public class SignBookService {
         }
     }
 
-    public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException {
+    public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
         if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
             signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
             signBook.setStatus(SignRequestStatus.exported);

@@ -763,11 +763,11 @@ public class SignRequestService {
 		}
 	}
 
-	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException {
+	public void sendSignRequestsToTarget(List<SignRequest> signRequests, String title, List<Target> targets, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
 		boolean allTargetsDone = true;
 		for(Target target : targets) {
 			if(!target.getTargetOk()) {
-				DocumentIOType documentIOType = target.getTargetType();
+				DocumentIOType documentIOType = fsAccessFactory.getPathIOType(target.getTargetUri());
 				String targetUrl = target.getTargetUri();
 				if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 					if (documentIOType.equals(DocumentIOType.mail)) {
@@ -789,7 +789,7 @@ public class SignRequestService {
 						}
 					} else {
 						for (SignRequest signRequest : signRequests) {
-							if (target.getTargetType().equals(DocumentIOType.rest)) {
+							if (fsAccessFactory.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
 								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
@@ -821,7 +821,7 @@ public class SignRequestService {
 									target.setTargetOk(true);
 									updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 								} catch (EsupSignatureFsException e) {
-									logger.error("fs export fail : " + target.getTargetUri(), e);
+									logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
 									allTargetsDone = false;
 								}
 							}

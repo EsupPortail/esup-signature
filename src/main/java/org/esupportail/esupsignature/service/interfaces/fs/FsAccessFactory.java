@@ -8,8 +8,7 @@ import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URI;
 
 @Service
 public class FsAccessFactory {
@@ -35,6 +34,7 @@ public class FsAccessFactory {
 	public void setCmisAccessImpl(CmisAccessImpl cmisAccessImpl) {
 		this.cmisAccessImpl = cmisAccessImpl;
 	}
+
 	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
 		DocumentIOType type = getPathIOType(uri);
 		switch (type) {
@@ -49,33 +49,27 @@ public class FsAccessFactory {
 		}
 	}
 
-	public List<FsAccessService> getFsAccessServices() {
-		List<FsAccessService> fsAccessServices = new ArrayList<>();
-		if(smbAccessImpl != null) {
-			fsAccessServices.add(smbAccessImpl);
-		}
-		if(vfsAccessImpl != null) {
-			fsAccessServices.add(vfsAccessImpl);
-		}
-		if(cmisAccessImpl != null) {
-			fsAccessServices.add(cmisAccessImpl);
-		}
-		return fsAccessServices;
-	}
-
 	public DocumentIOType getPathIOType(String path) throws EsupSignatureFsException {
 		try {
-			var uri = new java.net.URI(path);
-			switch (uri.getScheme()) {
-				case "smb": return DocumentIOType.smb;
-				case "cmis": return DocumentIOType.cmis;
-				case "file":
-				case "sftp":
-				case "ftp":
-					return DocumentIOType.vfs;
-				case "http":
-				case "https":
-					return DocumentIOType.rest;
+			URI uri = new URI(path);
+			if(uri.getScheme() != null) {
+				switch (uri.getScheme()) {
+					case "mailto":
+						return DocumentIOType.mail;
+					case "smb":
+						return DocumentIOType.smb;
+					case "cmis":
+						return DocumentIOType.cmis;
+					case "file":
+					case "sftp":
+					case "ftp":
+						return DocumentIOType.vfs;
+					case "http":
+					case "https":
+						return DocumentIOType.rest;
+				}
+			} else {
+				return DocumentIOType.vfs;
 			}
 			throw new EsupSignatureFsException("unknown protocol for url " + path);
 		} catch (java.net.URISyntaxException e) {
