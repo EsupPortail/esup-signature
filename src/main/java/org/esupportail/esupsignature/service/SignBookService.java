@@ -603,7 +603,7 @@ public class SignBookService {
         int i = 0;
         for (MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
-            signRequestService.addDocsToSignRequest(signRequest, true, i, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
             i++;
         }
     }
@@ -620,7 +620,7 @@ public class SignBookService {
         User authUser = userService.getByEppn(authUserEppn);
         SignBook signBook = createSignBook(name, null, "","", authUser, false);
         SignRequest signRequest = signRequestService.createSignRequest(null, signBook, authUserEppn, authUserEppn);
-        signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFiles);
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, new ArrayList<>(), multipartFiles);
         logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
         return signBook;
     }

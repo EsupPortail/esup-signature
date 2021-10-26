@@ -273,7 +273,7 @@ public class WorkflowService {
                             }
                             List<String> workflowRecipientsEmails = new ArrayList<>();
                             workflowRecipientsEmails.add(user.getEmail());
-                            signRequestService.addDocsToSignRequest(signRequest, true, j, fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
+                            signRequestService.addDocsToSignRequest(signRequest, true, j, new ArrayList<>(), fileService.toMultipartFile(new ByteArrayInputStream(baos.toByteArray()), fsFile.getName(), fsFile.getContentType()));
                             j++;
                             if (workflow.getScanPdfMetadatas()) {
                                 String signType = metadatas.get("sign_type_default_val");
