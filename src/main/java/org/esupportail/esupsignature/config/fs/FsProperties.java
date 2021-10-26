@@ -9,7 +9,7 @@ public class FsProperties {
     private String smbLogin;
     private String smbPassword;
     private String smbDomain;
-    private String vfsUri;
+    private String vfsTestUri;
     private String cmisUri;
     private String cmisLogin;
     private String cmisPassword;
@@ -48,12 +48,12 @@ public class FsProperties {
         this.smbDomain = smbDomain;
     }
 
-    public String getVfsUri() {
-        return vfsUri;
+    public String getVfsTestUri() {
+        return vfsTestUri;
     }
 
-    public void setVfsUri(String vfsUri) {
-        this.vfsUri = vfsUri;
+    public void setVfsTestUri(String vfsTestUri) {
+        this.vfsTestUri = vfsTestUri;
     }
 
     public String getCmisUri() {

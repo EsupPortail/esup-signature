@@ -28,7 +28,6 @@ export class SignUi {
         if(status !== "exported") {
             this.initReportModal();
         }
-
     }
 
     initListeners() {

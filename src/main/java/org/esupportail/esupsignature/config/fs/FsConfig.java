@@ -52,9 +52,7 @@ public class FsConfig {
 	public VfsAccessImpl vfsAccessImpl(){
 		VfsAccessImpl vfsAccessImpl = new VfsAccessImpl();
 		vfsAccessImpl.setDriveName("VFS");
-		vfsAccessImpl.setUri(fsProperties.getVfsUri());
-		//vfsAccessImpl.setLogin(login);
-		//vfsAccessImpl.setPassword(password);
+		vfsAccessImpl.setUri(fsProperties.getVfsTestUri());
 		return vfsAccessImpl;
 	}
 
