@@ -214,6 +214,7 @@ public class SignRequestController {
                 model.addAttribute("message", new JsonMessage("warn", e.getMessage()));
             }
         }
+        model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = validationService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
