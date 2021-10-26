@@ -340,7 +340,7 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, List<SignRequestParams> signRequestParamses, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
@@ -349,8 +349,15 @@ public class SignRequestService {
 				if (multipartFiles.length == 1) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
 						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
-						List<SignRequestParams> signRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
-						signRequest.getSignRequestParams().addAll(signRequestParams);
+						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
+						if(signRequestParamses.size() == 0) {
+							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
+						} else {
+							for (SignRequestParams signRequestParams : signRequestParamses) {
+								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+							}
+						}
+						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
 						if(validationService.validate(new FileInputStream(file), null).getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new FileInputStream(file));
 						}
