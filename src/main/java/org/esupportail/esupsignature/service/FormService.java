@@ -176,9 +176,11 @@ public class FormService {
 						form.getFields().add(field);
 					}
 				}
+				updateSignRequestParams(id, new FileInputStream(tempDocument));
 				Document newModel = documentService.createDocument(pdfService.removeSignField(new FileInputStream(tempDocument)), multipartModel.getOriginalFilename(), multipartModel.getContentType());
 				form.setDocument(newModel);
-			} catch (IOException e) {
+
+			} catch (IOException | EsupSignatureIOException e) {
 				logger.error("unable to modif model", e);
 			}
 		}
@@ -447,9 +449,9 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateSignRequestParams(Long formId) throws EsupSignatureIOException {
+	public void updateSignRequestParams(Long formId, InputStream inputStream) throws EsupSignatureIOException {
 		Form form = getById(formId);
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(form.getDocument().getInputStream(), 0);
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0);
 
 		form.getSignRequestParams().removeIf(signRequestParams -> findedSignRequestParams.stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber()) && s.getxPos().equals(signRequestParams.getxPos()) && s.getyPos().equals(signRequestParams.getyPos())));
 
