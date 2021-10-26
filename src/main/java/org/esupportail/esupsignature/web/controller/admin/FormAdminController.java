@@ -103,7 +103,6 @@ public class FormAdminController {
 	@GetMapping("{id}/signs")
 	public String signs(@PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
 		Form form = formService.getById(id);
-		formService.updateSignRequestParams(id);
 		Map<Long, Integer> srpMap = new HashMap<>();
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
