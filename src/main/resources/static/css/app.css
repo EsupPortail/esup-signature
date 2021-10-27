@@ -1771,8 +1771,8 @@ input:focus, textarea:focus, select:focus {
 }
 
 .ui-autocomplete {
-    position: relative !important;
-    top: 0 !important;
+    /*position: relative !important;*/
+    /*top: 0 !important;*/
     transform: matrix(0.75, 0, 0, 0.75, 0, 0);
     transform-origin: 0.75% 0.75%;
     z-index: 1000;
