@@ -10,7 +10,6 @@ build2:
   only:
     - tags
   except:
-    except:
     - /^(?!(dev|test|master)$).*$/
   tags:
     - prod
