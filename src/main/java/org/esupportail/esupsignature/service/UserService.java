@@ -303,8 +303,8 @@ public class UserService {
         for (User user : users) {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
-                personLdaps.add(getPersonLdapLightFromUser(user));
             }
+            personLdaps.add(getPersonLdapLightFromUser(user));
         }
         return personLdaps;
     }

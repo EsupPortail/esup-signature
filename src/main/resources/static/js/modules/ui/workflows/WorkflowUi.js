@@ -2,20 +2,12 @@ export class WorkflowUi {
 
     constructor() {
         console.info("Starting workflow UI");
-        this.sourceTypeSelect = $("#sourceTypeSelect");
-        this.targetTypeSelect = $("#targetTypeSelect");
         this.visibility = $("#visibility");
-        this.sourceUri = document.getElementById("documentsSourceUriDiv");
-        if (this.sourceTypeSelect != null && this.sourceTypeSelect.value === "none") {
-            this.sourceUri.style.display = "none";
-        }
         this.initListeners();
     }
 
     initListeners() {
-        this.sourceTypeSelect.on('change', e => this.toggleSourceSelector());
-        $(document).ready(e => this.initDelListerner());
-        ;
+        $(document).ready(e => this.initDeleteListener());
         $("#delete-button").on("click", e => this.confirmDelete());
         this.visibility.on("change", function(e){
             if(this.checked) {
@@ -41,7 +33,7 @@ export class WorkflowUi {
         })
     }
 
-    initDelListerner() {
+    initDeleteListener() {
         let self = this;
         $(".del-step-btn").each(function(){
             $(this).on("click", e => self.launchDelete(e));
@@ -56,20 +48,4 @@ export class WorkflowUi {
         });
     }
 
-    toggleSourceSelector() {
-        console.log("toggle");
-        if (this.sourceTypeSelect.value !== "none") {
-            this.sourceUri.style.display = "block";
-        } else {
-            this.sourceUri.style.display = "none";
-        }
-    }
-
-    toggleTargetSelector() {
-        if (this.targetTypeSelect.value !== "none") {
-            this.targetUri.style.display = "block";
-        } else {
-            this.targetUri.style.display = "none";
-        }
-    }
 }

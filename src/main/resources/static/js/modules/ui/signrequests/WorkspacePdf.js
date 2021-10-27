@@ -1,7 +1,7 @@
-import {PdfViewer} from "../../utils/PdfViewer.js";
-import {SignPosition} from "./SignPosition.js";
-import {WheelDetector} from "../../utils/WheelDetector.js";
-import {Message} from "../../../prototypes/Message.js";
+import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
+import {SignPosition} from "./SignPosition.js?version=@version@";
+import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
+import {Message} from "../../../prototypes/Message.js?version=@version@";
 
 export class WorkspacePdf {
 

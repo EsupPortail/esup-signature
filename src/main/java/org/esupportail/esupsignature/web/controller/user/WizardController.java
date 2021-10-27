@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
@@ -59,7 +60,7 @@ public class WizardController {
                        @RequestParam(value = "forceAllSign", required = false) Boolean forceAllSign,
                        @RequestParam(value = "recipientsCCEmailsWiz", required = false) List<String> recipientsCCEmailsWiz,
                        @RequestParam(value = "comment", required = false) String comment,
-                       Model model) {
+                       Model model) throws EsupSignatureFsException {
         User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
         signBook.setForceAllDocsSign(forceAllSign);

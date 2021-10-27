@@ -1,6 +1,6 @@
-import {DocumentPreview} from "../../prototypes/DocumentPreview.js";
-import {CsrfToken} from "../../prototypes/CsrfToken.js";
-import {EventFactory} from "./EventFactory.js";
+import {DocumentPreview} from "../../prototypes/DocumentPreview.js?version=@version@";
+import {CsrfToken} from "../../prototypes/CsrfToken.js?version=@version@";
+import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export default class FilesInput extends EventFactory {
 

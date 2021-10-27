@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class FsAccessService {
 	
@@ -64,7 +66,7 @@ public abstract class FsAccessService {
 
 	protected void manipulateUri() {
 		// make only one uri manipulation
-		if(this.uriManipulateService != null && this.uriManipulateDone == false) {
+		if(this.uriManipulateService != null && !this.uriManipulateDone) {
 			this.uriManipulateDone = true;
 			this.uri = this.uriManipulateService.manipulate(uri);
 		}
@@ -124,6 +126,18 @@ public abstract class FsAccessService {
 	}
 	public boolean isSupportQuota(String path) {
 		return false;
+	}
+
+
+	protected String getProtectedUri(String uri) {
+		Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
+		Matcher m = p.matcher(uri);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+			m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
+		}
+		m.appendTail(sb);
+		return sb.toString();
 	}
 
 }

@@ -1,8 +1,11 @@
 package org.esupportail.esupsignature.entity;
 
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Entity
 public class Target {
@@ -10,9 +13,6 @@ public class Target {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    private DocumentIOType targetType;
 
     private String targetUri;
 
@@ -24,14 +24,6 @@ public class Target {
 
     public void setTargetOk(Boolean targetOk) {
         this.targetOk = targetOk;
-    }
-
-    public DocumentIOType getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(DocumentIOType targetType) {
-        this.targetType = targetType;
     }
 
     public String getTargetUri() {
@@ -48,5 +40,19 @@ public class Target {
 
     public Long getId() {
         return id;
+    }
+
+    public String getProtectedTargetUri() {
+        if(targetUri != null) {
+            Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
+            Matcher m = p.matcher(targetUri);
+            StringBuffer sb = new StringBuffer();
+            while (m.find()) {
+                m.appendReplacement(sb, m.group(0).replaceFirst(Pattern.quote(m.group(1)), "********"));
+            }
+            m.appendTail(sb);
+            return sb.toString();
+        }
+        return "";
     }
 }

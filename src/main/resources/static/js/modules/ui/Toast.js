@@ -1,4 +1,4 @@
-import {Message} from "../../prototypes/Message.js";
+import {Message} from "../../prototypes/Message.js?version=@version@";
 
 export default class Toast {
 
