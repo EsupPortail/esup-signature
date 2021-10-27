@@ -1,4 +1,4 @@
-import {UiParams} from "../utils/UiParams.js";
+import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
