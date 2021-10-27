@@ -50,7 +50,7 @@ export class PdfViewer extends EventFactory {
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
         $(window).on('resize', e => this.adjustZoom());
-        this.addEventListener("render", e => this.listenToSearchCompletion());
+        this.addEventListener("fieldsReady", e => this.listenToSearchCompletion());
    }
 
     listenToSearchCompletion() {
@@ -599,6 +599,7 @@ export class PdfViewer extends EventFactory {
             }
 
         }
+        this.fireEvent('fieldsReady', ['ok']);
         console.debug("debug - " + ">>End compute field");
     }
 
