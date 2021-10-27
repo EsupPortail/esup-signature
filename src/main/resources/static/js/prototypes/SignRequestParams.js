@@ -365,11 +365,11 @@ export class SignRequestParams  extends EventFactory {
     }
 
     show() {
-        this.cross.show();
+        this.cross.css('opacity', '1');
     }
 
     hide() {
-        this.cross.hide();
+        this.cross.css('opacity', '0');
     }
 
     simulateDrop() {

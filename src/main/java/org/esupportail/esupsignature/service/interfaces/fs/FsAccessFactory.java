@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class FsAccessFactory {
@@ -38,11 +35,8 @@ public class FsAccessFactory {
 		this.cmisAccessImpl = cmisAccessImpl;
 	}
 
-	public FsAccessService getFsAccessService(String path) throws EsupSignatureFsException {
-		return  getFsAccessService(getPathIOType(path));
-	}
-
-	public FsAccessService getFsAccessService(DocumentIOType type) {
+	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
+		DocumentIOType type = getPathIOType(uri);
 		switch (type) {
 			case smb:
 				return smbAccessImpl;
@@ -55,25 +49,30 @@ public class FsAccessFactory {
 		}
 	}
 
-	public List<FsAccessService> getFsAccessServices() {
-		List<FsAccessService> fsAccessServices = new ArrayList<>();
-		if(smbAccessImpl != null) {
-			fsAccessServices.add(smbAccessImpl);
-		}
-		if(vfsAccessImpl != null) {
-			fsAccessServices.add(vfsAccessImpl);
-		}
-		if(cmisAccessImpl != null) {
-			fsAccessServices.add(cmisAccessImpl);
-		}
-		return fsAccessServices;
-	}
-
 	public DocumentIOType getPathIOType(String path) throws EsupSignatureFsException {
 		try {
 			URI uri = new URI(path);
-			return DocumentIOType.valueOf(uri.getScheme());
-		} catch (URISyntaxException e) {
+			if(uri.getScheme() != null) {
+				switch (uri.getScheme()) {
+					case "mailto":
+						return DocumentIOType.mail;
+					case "smb":
+						return DocumentIOType.smb;
+					case "cmis":
+						return DocumentIOType.cmis;
+					case "file":
+					case "sftp":
+					case "ftp":
+						return DocumentIOType.vfs;
+					case "http":
+					case "https":
+						return DocumentIOType.rest;
+				}
+			} else {
+				return DocumentIOType.vfs;
+			}
+			throw new EsupSignatureFsException("unknown protocol for url " + path);
+		} catch (java.net.URISyntaxException e) {
 			throw new EsupSignatureFsException("target Url error", e);
 		}
 	}

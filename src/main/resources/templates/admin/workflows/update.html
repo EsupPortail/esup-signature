@@ -1,8 +1,6 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<!--/*@thymesVar id="sourceTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.DocumentIOType>"*/-->
-<!--/*@thymesVar id="targetTypes" type="java.util.List<org.esupportail.esupsignature.entity.enums.DocumentIOType>"*/-->
 <head th:replace="fragments/head"></head>
 <script type="module">
     import {WorkflowUi} from '/static/js/modules/ui/workflows/WorkflowUi.js?version=[[${version}]]';
@@ -131,22 +129,11 @@
                                 </div>
                             </th:block>
                         </div>
-                        <div class="form-group mb-3">
-                            <label for="sourceTypeSelect">
-                                <strong> Protocole pour la source des documents </strong>
-                            </label>
-                            <select class="slim-select-simple" id="sourceTypeSelect" th:field="*{sourceType}" size="1">
-                                <th:block th:each="sourceType : ${sourceTypes}">
-                                    <option th:selected="${workflow.sourceType == sourceType}" th:value="${sourceType}"
-                                            th:text="#{'signbook.documentiotype.' + ${sourceType}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
                         <div class="form-group mb-3" id="documentsSourceUriDiv">
                             <label for="documentsSourceUri"> <strong>Lien pour la source des documents</strong></label>
-                            <input id="documentsSourceUri" th:field="*{documentsSourceUri}"
+                            <input id="documentsSourceUri" name="documentsSourceUri"
                                    placeholder="Si autre que la valeur par défaut" class="form-control" type="text"
-                                   value=""
+                                   th:value="${workflow.protectedDocumentsSourceUri}"
                                    autocomplete="on">
                         </div>
                         <div class="form-check mb-2">
@@ -158,7 +145,6 @@
                             <table class="table table-borderless table-striped">
                                 <thead class="table-secondary">
                                 <tr>
-                                    <th class="text-left">Type</th>
                                     <th class="text-left">URI</th>
                                     <th>Supprimer
                                     </th>
@@ -170,11 +156,9 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <th:block th:each="target, iterator : ${workflow.targets}">
+                                <th:block th:each="target : ${workflow.targets}">
                                     <tr>
-                                        <td class="text-left" th:text="${target.targetType}">
-                                        </td>
-                                        <td class="text-left w-100" th:text="${target.targetUri}">
+                                        <td class="text-left w-100" th:text="${target.protectedTargetUri}">
                                         </td>
                                         <td>
                                             <a th:id="'deleteSign_' + ${signImageId}" th:href="'/admin/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}" role="button" class="btn btn-sm btn-danger text-white">
@@ -213,21 +197,17 @@
                     <h3 class="modal-title">Ajout d'une destination</h3>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label for="targetType">
-                            <strong> Protocole pour la destination des documents </strong>
-                        </label>
-                        <select class="slim-select-simple" id="targetType" name="targetType">
-                            <th:block th:each="targetType : ${T(org.esupportail.esupsignature.entity.enums.DocumentIOType).values()}">
-                                <option th:value="${targetType}" th:text="#{'signbook.documentiotype.' + ${targetType}}"></option>
-                            </th:block>
-                        </select>
-                    </div>
                     <div class="form-group mb-3" id="documentsTargetUriDiv">
                         <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
                         <input id="documentsTargetUri" name="documentsTargetUri" class="form-control" type="text" autocomplete="on">
-                        <p class="alert alert-info"><small>Séparez les mails par des ; dans la cas d'une destination mail</small></p>
                     </div>
+                    <p class="alert alert-info"><small>
+                        Utiliser le format uri pour saisir les destinations.
+                        <br>
+                        Pour les emails saisir comme suit : mailto:adresse1,adresse2,... sans espace
+                        <br>
+                        Pour plus de détails voir : <a href="https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI">https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI</a>
+                    </small></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-end"

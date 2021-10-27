@@ -67,7 +67,7 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 120000, fixedRate = 300000)
 	@Transactional
-	public void scanAllSignbooksSources() {
+	public void scanAllSignbooksSources() throws EsupSignatureFsException {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
