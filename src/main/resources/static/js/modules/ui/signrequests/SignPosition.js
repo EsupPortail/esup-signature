@@ -128,7 +128,7 @@ export class SignPosition extends EventFactory {
     addSign(page, restore, signImageNumber, forceSignNumber) {
         let id = this.id;
         let currentSignRequestParams = null;
-        if(signImageNumber >= 0) {
+        if(signImageNumber != null && signImageNumber >= 0) {
             if(forceSignNumber != null) {
                 currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
             } else {
@@ -141,13 +141,15 @@ export class SignPosition extends EventFactory {
             }
         }
         this.signRequestParamses.set(id, new SignRequestParams(currentSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, this.signType === "visa", this.signType === "certSign" || this.signType === "nexuSign", this.isOtp));
-        this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
+        if(signImageNumber != null) {
+            this.changeSignImage(signImageNumber, this.signRequestParamses.get(id));
+        }
         this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
         this.signRequestParamses.get(id).addEventListener("nextSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber + 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("prevSign", e => this.changeSignImage(this.signRequestParamses.get(id).signImageNumber - 1, this.signRequestParamses.get(id)));
         this.signRequestParamses.get(id).addEventListener("changeColor", e => this.changeSignColor(e, this.signRequestParamses.get(id)));
-        if(signImageNumber >= 0) {
+        if(signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
         this.signRequestParamses.get(id).simulateDrop();
