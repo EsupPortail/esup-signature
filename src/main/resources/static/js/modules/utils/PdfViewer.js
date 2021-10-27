@@ -1,6 +1,6 @@
-import {EventBus} from "../../customs/ui_utils.js";
-import {EventFactory} from "./EventFactory.js";
-import {DataField} from "../../prototypes/DataField.js";
+import {EventBus} from "../../customs/ui_utils.js?version=@version@";
+import {EventFactory} from "./EventFactory.js?version=@version@";
+import {DataField} from "../../prototypes/DataField.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 

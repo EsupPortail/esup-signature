@@ -1,7 +1,7 @@
-import {default as FilesInput} from "../utils/FilesInput.js";
-import {default as SelectUser} from "../utils/SelectUser.js";
-import {Step} from "../../prototypes/Step.js";
-import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js";
+import {default as FilesInput} from "../utils/FilesInput.js?version=@version@";
+import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
+import {Step} from "../../prototypes/Step.js?version=@version@";
+import {ExternalUserInfos} from "../../prototypes/ExternalUserInfos.js?version=@version@";
 
 export class WizUi {
 
