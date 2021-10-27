@@ -1,4 +1,4 @@
-import {CsrfToken} from "../../../prototypes/CsrfToken.js";
+import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 
 export default class ListSignRequestUi {
 

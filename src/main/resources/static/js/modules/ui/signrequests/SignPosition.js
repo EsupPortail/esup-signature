@@ -1,6 +1,6 @@
-import {SignRequestParams} from "../../../prototypes/SignRequestParams.js";
-import {EventFactory} from "../../utils/EventFactory.js";
-import {Color} from "../../utils/Color.js";
+import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
+import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
+import {Color} from "../../utils/Color.js?version=@version@";
 
 export class SignPosition extends EventFactory {
 

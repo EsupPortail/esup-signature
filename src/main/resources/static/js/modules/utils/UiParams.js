@@ -1,4 +1,4 @@
-import {EventFactory} from "./EventFactory.js";
+import {EventFactory} from "./EventFactory.js?version=@version@";
 
 export class UiParams extends EventFactory {
 

@@ -1,5 +1,5 @@
-import {UserSignaturePad} from "./UserSignaturePad.js";
-import {UserSignatureCrop} from "./UserSignatureCrop.js";
+import {UserSignaturePad} from "./UserSignaturePad.js?version=@version@";
+import {UserSignatureCrop} from "./UserSignatureCrop.js?version=@version@";
 
 export default class UserUi {
 

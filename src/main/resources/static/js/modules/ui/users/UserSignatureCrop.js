@@ -1,4 +1,4 @@
-import {EventFactory} from "../../utils/EventFactory.js";
+import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 
 export class UserSignatureCrop extends EventFactory {
 
