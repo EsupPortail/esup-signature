@@ -28,6 +28,8 @@ public class Workflow {
 
     private String description;
 
+    private Integer counter;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
@@ -109,6 +111,14 @@ public class Workflow {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Integer counter) {
+        this.counter = counter;
     }
 
     public Date getCreateDate() {

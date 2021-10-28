@@ -2,20 +2,15 @@ package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
 public class DefaultExtValue implements ExtValue {
-
-	@Resource
-	private SignBookRepository signBookRepository;
 
 	@Override
 	public String getValueByName(String name, User user, SignRequest signRequest) {
@@ -50,8 +45,7 @@ public class DefaultExtValue implements ExtValue {
 			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().stream().map(User::getEmail).collect(Collectors.joining(",")));
 			values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
 			if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
-				Integer order = signBookRepository.countByLiveWorkflowWorkflow(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
-				values.put("order", order + "");
+				values.put("counter", signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getCounter() + "");
 			}
 			values.put("id", String.valueOf(signRequest.getId()));
 		}
