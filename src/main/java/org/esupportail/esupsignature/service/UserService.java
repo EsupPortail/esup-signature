@@ -202,7 +202,6 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        logger.warn("mail");
         createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
