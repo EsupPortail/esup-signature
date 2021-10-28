@@ -303,7 +303,9 @@ public class UserService {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
-            personLdaps.add(getPersonLdapLightFromUser(user));
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
+                personLdaps.add(getPersonLdapLightFromUser(user));
+            }
         }
         return personLdaps;
     }
