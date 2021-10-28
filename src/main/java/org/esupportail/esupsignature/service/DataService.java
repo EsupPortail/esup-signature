@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -92,7 +92,7 @@ public class DataService {
     }
 
     @Transactional
-    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, String targetUrl, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException {
+    public SignBook sendForSign(Long dataId, List<String> recipientsEmails, List<String> allSignToCompletes, List<JsonExternalUserInfo> externalUsersInfos, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException, EsupSignatureIOException, EsupSignatureFsException {
         User user = userService.getUserByEppn(userEppn);
         User authUser = userService.getUserByEppn(authUserEppn);
         Data data = getById(dataId);
@@ -114,13 +114,15 @@ public class DataService {
             }
         }
         MultipartFile multipartFile = fileService.toMultipartFile(inputStream, name + ".pdf", "application/pdf");
-        signRequestService.addDocsToSignRequest(signRequest, true, 0, multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
         signBookService.importWorkflow(signBook, computedWorkflow, externalUsersInfos);
         signBookService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(form.getWorkflow().getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
-        if(targetUrl != null && !targetUrl.isEmpty()) {
-            signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(DocumentIOType.rest, targetUrl));
+        if (targetUrls != null) {
+            for (String targetUrl : targetUrls) {
+                signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl));
+            }
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
@@ -128,6 +130,11 @@ public class DataService {
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
+        }
+        if(workflow.getCounter() != null) {
+            workflow.setCounter(workflow.getCounter() + 1);
+        } else {
+            workflow.setCounter(0);
         }
         return signBook;
     }
@@ -232,7 +239,7 @@ public class DataService {
                     signBook.setComment("Le document est prêt");
                 }
                 return signBook;
-            } catch (EsupSignatureException e) {
+            } catch (EsupSignatureException | EsupSignatureFsException e) {
                 logger.error(e.getMessage(), e);
                 throw new EsupSignatureException(e.getMessage(), e);
             }

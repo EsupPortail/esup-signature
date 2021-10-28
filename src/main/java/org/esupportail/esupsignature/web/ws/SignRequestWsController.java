@@ -68,7 +68,7 @@ public class SignRequestWsController {
         try {
             Map<SignBook, String> signBookStringMap = signRequestService.sendSignRequest(multipartFiles, SignType.valueOf(signType), allSignToComplete, userSignFirst, pending, comment, recipientsCCEmails, recipientsEmails, externalUsersInfos, user, user, true, forceAllSign, targetUrl);
             return signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-        } catch (EsupSignatureException | EsupSignatureIOException e) {
+        } catch (EsupSignatureException | EsupSignatureIOException | EsupSignatureFsException e) {
             logger.error(e.getMessage(), e);
             return -1L;
         }
@@ -101,7 +101,7 @@ public class SignRequestWsController {
                 IOUtils.copyLarge((InputStream) fileResponse.get("inputStream"), httpServletResponse.getOutputStream());
             }
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (NoResultException | IOException | EsupSignatureFsException | SQLException e) {
+        } catch (NoResultException | IOException | EsupSignatureFsException | SQLException | EsupSignatureException e) {
             logger.error(e.getMessage(), e);
         }
         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

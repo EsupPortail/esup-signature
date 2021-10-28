@@ -1,5 +1,5 @@
-import {Message} from "../../../prototypes/Message.js";
-import Toast from "../Toast.js";
+import {Message} from "../../../prototypes/Message.js?version=@version@";
+import Toast from "../Toast.js?version=@version@";
 
 export default class FormSignsUi {
 

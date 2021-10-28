@@ -261,7 +261,7 @@
                                     </div>
                                 </th:block>
                                 <th:block th:each="target : ${form.workflow.targets}">
-                                    <div th:if="${target.targetType.name() == 'mail'}" class="form-group mb-3">
+                                    <div th:if="${target.targetUri.contains('mailto:')}" class="form-group mb-3">
                                         <label>Etape finale : Envoi par mail à </label>
                                         <select class="select-users" th:id="'targetEmailsSelect-' + ${form.id}" multiple="multiple" name="targetEmails">
                                             <option th:if="${target.targetUri != null && target.targetUri != ''}" th:value="${target.targetUri}" th:text="${target.targetUri}" selected></option>

@@ -25,11 +25,11 @@ public class FsConfig {
 	}
 
 	@Bean
-	@ConditionalOnProperty({"fs.smb-uri"})
+	@ConditionalOnProperty({"fs.smb-test-uri"})
 	public SmbAccessImpl smbAccessImpl(){
 		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();
 		smbAccessImpl.setDriveName("CIFS");
-		smbAccessImpl.setUri(fsProperties.getSmbUri());
+		smbAccessImpl.setUri(fsProperties.getSmbTestUri());
 		smbAccessImpl.setJcifsConfigProperties(smbProperties());
 		smbAccessImpl.setLogin(fsProperties.getSmbLogin());
 		smbAccessImpl.setPassword(fsProperties.getSmbPassword());
@@ -52,9 +52,7 @@ public class FsConfig {
 	public VfsAccessImpl vfsAccessImpl(){
 		VfsAccessImpl vfsAccessImpl = new VfsAccessImpl();
 		vfsAccessImpl.setDriveName("VFS");
-		vfsAccessImpl.setUri(fsProperties.getVfsUri());
-		//vfsAccessImpl.setLogin(login);
-		//vfsAccessImpl.setPassword(password);
+		vfsAccessImpl.setUri(fsProperties.getVfsTestUri());
 		return vfsAccessImpl;
 	}
 

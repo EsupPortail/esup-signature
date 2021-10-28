@@ -1,6 +1,6 @@
-import {WorkspacePdf} from "./WorkspacePdf.js";
-import {CsrfToken} from "../../../prototypes/CsrfToken.js";
-import {Step} from "../../../prototypes/Step.js";
+import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
+import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
+import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
@@ -28,7 +28,6 @@ export class SignUi {
         if(status !== "exported") {
             this.initReportModal();
         }
-
     }
 
     initListeners() {

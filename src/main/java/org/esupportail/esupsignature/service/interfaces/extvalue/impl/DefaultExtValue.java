@@ -44,6 +44,9 @@ public class DefaultExtValue implements ExtValue {
 		if(signRequest != null) {
 			values.put("stepUsers", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().stream().map(User::getEmail).collect(Collectors.joining(",")));
 			values.put("currentStepNumber", String.valueOf(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber()));
+			if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null) {
+				values.put("counter", signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getCounter() + "");
+			}
 			values.put("id", String.valueOf(signRequest.getId()));
 		}
 		return values;

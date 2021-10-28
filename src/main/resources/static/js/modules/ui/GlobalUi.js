@@ -1,4 +1,4 @@
-import {default as SelectUser} from "../utils/SelectUser.js";
+import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
 import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
