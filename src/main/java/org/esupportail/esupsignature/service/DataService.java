@@ -131,6 +131,11 @@ public class DataService {
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
         }
+        if(workflow.getCounter() != null) {
+            workflow.setCounter(workflow.getCounter() + 1);
+        } else {
+            workflow.setCounter(0);
+        }
         return signBook;
     }
 

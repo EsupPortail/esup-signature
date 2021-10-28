@@ -202,7 +202,6 @@ public class UserService {
         String mail = personLdaps.get(0).getMail();
         String name = personLdaps.get(0).getSn();
         String firstName = personLdaps.get(0).getGivenName();
-        logger.warn("mail");
         createUser(eppn, name, firstName, mail, UserType.ldap, true);
     }
 
@@ -304,7 +303,9 @@ public class UserService {
             if(user.getReplaceByUser() != null) {
                 personLdaps.remove(personLdaps.stream().filter(personLdap -> personLdap.getMail().equals(user.getEmail())).findFirst().get());
             }
-            personLdaps.add(getPersonLdapLightFromUser(user));
+            if(personLdaps.stream().noneMatch(personLdapLight -> personLdapLight.getMail().equals(user.getEmail()))) {
+                personLdaps.add(getPersonLdapLightFromUser(user));
+            }
         }
         return personLdaps;
     }

@@ -18,7 +18,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     @Query("select s from SignBook s where s.liveWorkflow.workflow.id = :workflowId")
     List<SignBook> findByWorkflowId(Long workflowId);
-    @Query("select s from SignBook s where s.liveWorkflow.workflow = :workflow")
+    @Query("select s from SignBook s where s.liveWorkflow.workflow = :workflow order by s.id")
     List<SignBook> findByLiveWorkflowWorkflow(Workflow workflow);
     @Query("select count(s) from SignBook s where s.liveWorkflow.workflow = :workflow")
     int countByLiveWorkflowWorkflow(Workflow workflow);
