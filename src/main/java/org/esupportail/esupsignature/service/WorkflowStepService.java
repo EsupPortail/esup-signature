@@ -78,7 +78,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public WorkflowStep addStepRecipients(Long workflowStepId, String recipientsEmails) {
+    public WorkflowStep addStepRecipients(Long workflowStepId, String[] recipientsEmails) {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
         addRecipientsToWorkflowStep(workflowStep, recipientsEmails);
         return workflowStep;
