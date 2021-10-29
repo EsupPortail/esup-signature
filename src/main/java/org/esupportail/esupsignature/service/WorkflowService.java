@@ -316,10 +316,10 @@ public class WorkflowService {
                             nbImportedFiles++;
                         }
                     } else {
-                        logger.info("aucun fichier à importer depuis : " + workflow.getDocumentsSourceUri());
+                        logger.info("aucun fichier à importer depuis : " + workflow.getProtectedDocumentsSourceUri());
                     }
                 } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getDocumentsSourceUri(), e);
+                    logger.error("error on import from " + workflow.getProtectedDocumentsSourceUri(), e);
                 }
                 fsAccessService.close();
             } else {

@@ -40,7 +40,6 @@ public class FsAccessFactory {
 
 	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
 		DocumentIOType type = getPathIOType(uri);
-		logger.info("search type for " + uri + " result " + type);
 		switch (type) {
 			case smb:
 				return smbAccessImpl;
