@@ -142,7 +142,7 @@ public class UserService {
 
     public User createUserWithEppn(String eppn) throws EsupSignatureUserException {
         User user = getUserByEppn(eppn);
-        if (!user.getEppn().equals(getSystemUser().getEppn())) {
+        if (user != null && !user.getEppn().equals(getSystemUser().getEppn())) {
             return user;
         }
         if (ldapPersonService != null) {

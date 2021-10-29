@@ -60,13 +60,13 @@ public class TestPreFill implements PreFill {
 						if(extValueName.equals("schacDateOfBirth")) {
 							field.setDefaultValue(extLdapValue.getValueByName("schacDateOfBirth", user, signRequest));
 						} else {
-							field.setDefaultValue((String) ldapValues.get(extValueName));
+							field.setDefaultValue(ldapValues.get(extValueName).toString());
 						}
 					}
 				} else if(field.getExtValueServiceName().equals("default")) {
 					String extValueName = field.getExtValueReturn();
 					if(defaultValues.containsKey(extValueName)) {
-						field.setDefaultValue((String) defaultValues.get(extValueName));
+						field.setDefaultValue(defaultValues.get(extValueName).toString());
 					}
 					if(field.getExtValueReturn().equals("covid(duree)")) {
 						field.setDefaultValue("1");
