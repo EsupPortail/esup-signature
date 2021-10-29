@@ -80,8 +80,8 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	protected void manipulateUri(Map<String, String> userInfos, String formUsername) {
 		if(rootPath != null & userInfos != null) {
-			for(String userInfoKey : (Set<String>)userInfos.keySet()) { 
-					String userInfo = (String)userInfos.get(userInfoKey);
+			for(String userInfoKey : userInfos.keySet()) {
+					String userInfo = userInfos.get(userInfoKey);
 					String userInfoKeyToken = TOKEN_SPECIAL_CHAR.concat(userInfoKey).concat(TOKEN_SPECIAL_CHAR);
 					// in nuxeo @ is replaced by - in path
 					userInfo = userInfo.replaceAll("@", "-");

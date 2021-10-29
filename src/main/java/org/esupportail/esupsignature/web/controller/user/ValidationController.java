@@ -120,7 +120,7 @@ public class ValidationController {
 	@GetMapping(value = "/download-simple-report")
 	public void downloadSimpleReport(HttpSession session, HttpServletResponse response) {
 		try {
-			String simpleReport = (String) session.getAttribute("simpleReportXml");
+			String simpleReport = session.getAttribute("simpleReportXml").toString();
 			response.setContentType(MimeType.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature.pdf");
 			fopService.generateSimpleReport(simpleReport, response.getOutputStream());
@@ -132,7 +132,7 @@ public class ValidationController {
 	@GetMapping(value = "/download-detailed-report")
 	public void downloadDetailedReport(HttpSession session, HttpServletResponse response) {
 		try {
-			String detailedReport = (String) session.getAttribute("detailedReportXml");
+			String detailedReport = session.getAttribute("detailedReportXml").toString();
 			response.setContentType(MimeType.PDF.getMimeTypeString());
 			response.setHeader("Content-Disposition", "attachment; filename=Rapport-Signature-Complet.pdf");
 			fopService.generateDetailedReport(detailedReport, response.getOutputStream());
@@ -143,7 +143,7 @@ public class ValidationController {
 
 	@RequestMapping(value = "/download-diagnostic-data")
 	public void downloadDiagnosticData(HttpSession session, HttpServletResponse response) {
-		String report = (String) session.getAttribute("diagnosticDataXml");
+		String report = session.getAttribute("diagnosticDataXml").toString();
 
 		response.setContentType(MimeType.XML.getMimeTypeString());
 		response.setHeader("Content-Disposition", "attachment; filename=DSS-Diagnotic-data.xml");
@@ -157,7 +157,7 @@ public class ValidationController {
 	@RequestMapping(value = "/diag-data.svg")
 	public @ResponseBody
 	ResponseEntity<String> downloadSVG(HttpSession session, HttpServletResponse response) {
-		String report = (String) session.getAttribute("diagnosticDataXml");
+		String report = session.getAttribute("diagnosticDataXml").toString();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.valueOf(MimeType.SVG.getMimeTypeString()));
@@ -238,7 +238,7 @@ public class ValidationController {
 	}
 
 	public DiagnosticData getDiagnosticData(HttpSession session) {
-		String diagnosticDataXml = (String) session.getAttribute("diagnosticDataXml");
+		String diagnosticDataXml = session.getAttribute("diagnosticDataXml").toString();
 		try {
 			XmlDiagnosticData xmlDiagData = DiagnosticDataFacade.newFacade().unmarshall(diagnosticDataXml);
 			return new DiagnosticData(xmlDiagData);
