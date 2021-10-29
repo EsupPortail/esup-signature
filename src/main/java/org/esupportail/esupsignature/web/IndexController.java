@@ -109,7 +109,7 @@ public class IndexController {
 	public String denied(HttpSession httpSession, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
-		String forwardUri = (String) httpServletRequest.getAttribute("javax.servlet.forward.request_uri");
+		String forwardUri = httpServletRequest.getAttribute("javax.servlet.forward.request_uri").toString();
 		if(forwardUri !=null) {
 			String[] uriParams = forwardUri.split("/");
 			if (uriParams.length == 4 && uriParams[1].equals("user") && uriParams[2].equals("signrequests")) {

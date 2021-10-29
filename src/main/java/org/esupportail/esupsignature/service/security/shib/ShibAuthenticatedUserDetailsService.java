@@ -69,7 +69,7 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 		Set<String> ldapGroups = new HashSet<>();
 		if(!token.getCredentials().equals("")) {
 			logger.debug("load user details from : " + token.getName());
-			String credentials = (String) token.getCredentials();
+			String credentials = token.getCredentials().toString();
 			logger.debug("credentials : " + credentials);
 			String[] splitCredentials = credentials.split(";");
 			try {

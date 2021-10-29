@@ -99,13 +99,13 @@ public class UserWsController {
     @GetMapping(value = "/get-sign-image/{id}")
     public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
         Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
-        return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
+        return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), signature.get("fileName").toString(), (String) signature.get("contentType"));
     }
 
     @GetMapping(value = "/get-keystore")
     public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn, HttpServletResponse response) throws IOException {
         Map<String, Object> keystore = userService.getKeystoreByUser(authUserEppn);
-        return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), (String) keystore.get("fileName"), (String) keystore.get("contentType"));
+        return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), keystore.get("fileName").toString(), keystore.get("contentType").toString());
     }
 
 
