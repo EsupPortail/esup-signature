@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service.interfaces.fs;
 
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
-import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
@@ -40,8 +39,8 @@ public class FsAccessFactory {
 	}
 
 	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
-		logger.info("search type for " + uri);
 		DocumentIOType type = getPathIOType(uri);
+		logger.info("search type for " + uri + " result " + type);
 		switch (type) {
 			case smb:
 				return smbAccessImpl;
