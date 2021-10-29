@@ -67,12 +67,12 @@ public class DefaultPreFill implements PreFill {
 							if (returnValue.equals("schacDateOfBirth")) {
 								result.append(extLdapValue.getValueByName("schacDateOfBirth", user, signRequest));
 							} else if (returnValue.equals("supannEntiteAffectationPrincipale")) {
-								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", (String) ldapValues.get(returnValue.trim()), "description");
+								List<Map<String, Object>> ouList = extLdapValue.search("organizationalUnit", ldapValues.get(returnValue.trim()).toString(), "description");
 								if(ouList.size() > 0) {
 									result.append(ouList.get(0).get("value"));
 								}
 							} else {
-								result.append((String) ldapValues.get(returnValue.trim()));
+								result.append(ldapValues.get(returnValue.trim()).toString());
 							}
 							if(returnValues.length > 1) {
 								result.append(separator);
@@ -86,7 +86,7 @@ public class DefaultPreFill implements PreFill {
 					}
 				} else if(field.getExtValueServiceName().equals("default")) {
 					if(defaultValues.containsKey(field.getExtValueReturn())) {
-						field.setDefaultValue((String) defaultValues.get(field.getExtValueReturn()));
+						field.setDefaultValue(defaultValues.get(field.getExtValueReturn()).toString());
 					}
 				}
 			}
