@@ -88,10 +88,10 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
             fsManager = VFS.getManager();
             return fsManager.resolveFile(uri, fsOptions);
         } catch(FileSystemException e) {
-            logger.error("unable to open vfs", e);
+            logger.error("unable to open with vfs", e);
             return null;
         } catch (IllegalArgumentException e) {
-			logger.error("unable to open vfs " + e.getMessage());
+			logger.error("unable to open with vfs " + uri);
 			return null;
 		}
     }
