@@ -75,8 +75,10 @@ public class FsAccessFactory {
 			} else {
 				return DocumentIOType.vfs;
 			}
+			logger.error("unknown protocol for url " + path);
 			throw new EsupSignatureFsException("unknown protocol for url " + path);
 		} catch (java.net.URISyntaxException e) {
+			logger.error("target Url error " + e.getMessage());
 			throw new EsupSignatureFsException("target Url error", e);
 		}
 	}
