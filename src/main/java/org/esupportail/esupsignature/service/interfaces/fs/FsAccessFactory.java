@@ -2,9 +2,12 @@ package org.esupportail.esupsignature.service.interfaces.fs;
 
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.interfaces.fs.opencmis.CmisAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.smb.SmbAccessImpl;
 import org.esupportail.esupsignature.service.interfaces.fs.vfs.VfsAccessImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import java.net.URI;
 @Service
 public class FsAccessFactory {
 
+	private static final Logger logger = LoggerFactory.getLogger(FsAccessFactory.class);
 
 	private SmbAccessImpl smbAccessImpl;
 
@@ -36,6 +40,7 @@ public class FsAccessFactory {
 	}
 
 	public FsAccessService getFsAccessService(String uri) throws EsupSignatureFsException {
+		logger.info("search type for " + uri);
 		DocumentIOType type = getPathIOType(uri);
 		switch (type) {
 			case smb:
