@@ -238,11 +238,16 @@ public class SignBookService {
     }
 
     public boolean checkUserManageRights(String userEppn, SignBook signBook) {
-        if (signBook.getCreateBy().getEppn().equals(userEppn) || signBook.getCreateBy().getEppn().equals("system")) {
-            return true;
-        } else {
-            return false;
+        if(signBook.getSignRequests().size() == 1) {
+            User user = userService.getUserByEppn(userEppn);
+            Data data = dataService.getBySignBook(signBook);
+            if(data != null) {
+                if (data.getForm().getManagers().contains(user.getEmail())) {
+                    return true;
+                }
+            }
         }
+        return signBook.getCreateBy().getEppn().equals(userEppn);
     }
 
     public void importWorkflow(SignBook signBook, Workflow workflow, List<JsonExternalUserInfo> externalUsersInfos) {
