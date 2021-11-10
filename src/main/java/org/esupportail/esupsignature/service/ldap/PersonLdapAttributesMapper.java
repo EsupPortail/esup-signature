@@ -11,26 +11,26 @@ public class PersonLdapAttributesMapper implements AttributesMapper<PersonLdap> 
 
     public PersonLdap mapFromAttributes(Attributes attrs) throws NamingException {
         PersonLdap person = new PersonLdap();
-        person.setCn((String)attrs.get("cn").get());
+        person.setCn(attrs.get("cn").get().toString());
         Attribute uid = attrs.get("uid");
         if (uid != null){
-            person.setUid((String) uid.get());
+            person.setUid(uid.get().toString());
         }
         Attribute sn = attrs.get("sn");
         if (sn != null){
-            person.setSn((String) sn.get());
+            person.setSn(sn.get().toString());
         }
         Attribute givenName = attrs.get("givenName");
         if (givenName != null){
-            person.setGivenName((String) givenName.get());
+            person.setGivenName(givenName.get().toString());
         }
         Attribute mail = attrs.get("mail");
         if (mail != null){
-            person.setMail((String) mail.get());
+            person.setMail(mail.get().toString());
         }
         Attribute eduPersonPrincipalName = attrs.get("eduPersonPrincipalName");
         if (eduPersonPrincipalName != null){
-            person.setEduPersonPrincipalName((String) eduPersonPrincipalName.get());
+            person.setEduPersonPrincipalName(eduPersonPrincipalName.get().toString());
         }
         return person;
     }

@@ -32,7 +32,7 @@ public class SecurityControllerAdvice {
         if (auth != null && !auth.getName().equals("anonymousUser")) {
             String eppn = tryGetEppnFromLdap(auth);
             if (httpSession.getAttribute("suEppn") != null) {
-                eppn = (String) httpSession.getAttribute("suEppn");
+                eppn = httpSession.getAttribute("suEppn").toString();
             }
             logger.debug("userEppn used is : " + eppn);
             return eppn;

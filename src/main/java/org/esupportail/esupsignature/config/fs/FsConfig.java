@@ -25,7 +25,7 @@ public class FsConfig {
 	}
 
 	@Bean
-	@ConditionalOnProperty({"fs.smb-test-uri"})
+	@ConditionalOnProperty({"fs.smb-login"})
 	public SmbAccessImpl smbAccessImpl(){
 		SmbAccessImpl smbAccessImpl = new SmbAccessImpl();
 		smbAccessImpl.setDriveName("CIFS");
@@ -48,7 +48,7 @@ public class FsConfig {
 	}
 	
 	@Bean
-	@ConditionalOnProperty("fs.vfs-uri")
+	@ConditionalOnProperty("fs.vfs-test-uri")
 	public VfsAccessImpl vfsAccessImpl(){
 		VfsAccessImpl vfsAccessImpl = new VfsAccessImpl();
 		vfsAccessImpl.setDriveName("VFS");
@@ -57,7 +57,7 @@ public class FsConfig {
 	}
 
 	@Bean
-	@ConditionalOnProperty("fs.cmis-uri")
+	@ConditionalOnProperty("fs.cmis-test-uri")
 	public CmisAccessImpl cmisAccessImpl(){
 		CmisAccessImpl cmisAccessImpl = new CmisAccessImpl();
 		cmisAccessImpl.setDriveName("CMIS");

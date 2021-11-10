@@ -165,7 +165,7 @@ public class ManagerWorkflowController {
     public String addStepRecipient(@ModelAttribute("authUserEppn") String authUserEppn,
                                    @PathVariable("id") Long id,
                                    @PathVariable("workflowStepId") Long workflowStepId,
-                                   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) {
+                                   @RequestParam String[] recipientsEmails, RedirectAttributes redirectAttributes) {
         WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientsEmails);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Participant ajouté"));
         return "redirect:/manager/workflows/" + id + "#" + workflowStep.getId();
