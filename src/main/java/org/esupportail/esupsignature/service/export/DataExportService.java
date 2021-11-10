@@ -101,6 +101,10 @@ public class DataExportService {
         for(Field field : data.getForm().getFields()) {
             toExportDatas.put("form_data_" + field.getName(), data.getDatas().get(field.getName()));
         }
+        if(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+            toExportDatas.put("current_step_id", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getId().toString());
+            toExportDatas.put("current_step_description", signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getDescription());
+        }
         int step = 1;
         List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
         for (Map.Entry<Recipient, Action> actions : actionsList) {
