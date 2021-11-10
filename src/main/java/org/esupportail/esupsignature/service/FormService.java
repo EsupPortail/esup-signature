@@ -30,10 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -102,8 +99,14 @@ public class FormService {
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
 		Workflow workflow = workflowService.getById(workflowId);
-		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		byte[] bytes = multipartFile.getInputStream().readAllBytes();
+		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
+		try {
+			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
+		} catch (EsupSignatureIOException e) {
+			logger.error(e.getMessage(), e);
+		}
 		return form;
 	}
 
