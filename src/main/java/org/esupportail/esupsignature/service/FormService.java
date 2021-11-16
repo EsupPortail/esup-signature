@@ -7,12 +7,10 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
 import org.esupportail.esupsignature.entity.*;
@@ -30,10 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -102,8 +97,14 @@ public class FormService {
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
 		Workflow workflow = workflowService.getById(workflowId);
-		Document document = documentService.createDocument(multipartFile.getInputStream(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
+		byte[] bytes = multipartFile.getInputStream().readAllBytes();
+		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
+		try {
+			updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
+		} catch (EsupSignatureIOException e) {
+			logger.error(e.getMessage(), e);
+		}
 		return form;
 	}
 
@@ -210,20 +211,6 @@ public class FormService {
 		}
 	}
 
-	private Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
-		Iterator<PDPage> pages = docCatalog.getPages().iterator();
-		Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-		int i = 0;
-		for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-			PDPage pdPage = it.next();
-			for (PDAnnotation annotation : pdPage.getAnnotations()) {
-				pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
-			}
-			i++;
-		}
-		return pageNrByAnnotDict;
-	}
-
 	@Transactional
 	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
 		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, true, true);
@@ -272,7 +259,7 @@ public class FormService {
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
 		if(pdFields != null) {
 			PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
-			Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
+			Map<COSDictionary, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
 			for (PDField pdField : pdFields) {
 				logger.info(pdField.getFullyQualifiedName());
 				List<PDAnnotationWidget> kids = pdField.getWidgets();
