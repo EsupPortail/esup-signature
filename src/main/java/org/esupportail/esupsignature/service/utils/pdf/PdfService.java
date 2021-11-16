@@ -2,10 +2,12 @@ package org.esupportail.esupsignature.service.utils.pdf;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -637,23 +639,48 @@ public class PdfService {
                                 }
                                 pdRadioButton.setValue(value);
                             } catch (NullPointerException e) {
-                                logger.debug("radio buton is null");
+                                logger.debug("radio button is null");
                             }
                         } else if (pdField instanceof PDListBox) {
+                            String value = datas.get(filedName);
                             PDListBox pdListBox = (PDListBox) pdField;
-                            pdField.getCOSObject().setNeedToBeUpdated(true);
-                            try {
-                                String value = datas.get(filedName);
-                                List<String> values = new ArrayList<>();
-                                values.add(value);
-                                if(isLastStep) {
-                                    pdListBox.setOptions(values);
-                                    pdListBox.getOptions().add(value);
+                            pdListBox.setValue(value);
+                            if(isLastStep) {
+                                PDTextField pdTextField = new PDTextField(pdAcroForm);
+                                pdTextField.setPartialName(pdListBox.getPartialName());
+                                PDAnnotationWidget pdAnnotationWidget = new PDAnnotationWidget();
+                                PDAnnotationWidget oldWidget = pdListBox.getWidgets().get(0);
+                                pdAnnotationWidget.setAppearance(oldWidget.getAppearance());
+                                pdAnnotationWidget.setPage(oldWidget.getPage());
+                                pdAnnotationWidget.setAppearanceCharacteristics(oldWidget.getAppearanceCharacteristics());
+                                pdAnnotationWidget.setRectangle(oldWidget.getRectangle());
+                                pdAnnotationWidget.setPrinted(true);
+                                pdTextField.setWidgets(Collections.singletonList(pdAnnotationWidget));
+                                pdTextField.getCOSObject().setNeedToBeUpdated(true);
+                                pdTextField.getCOSObject().removeItem(COSName.AA);
+                                pdTextField.getCOSObject().removeItem(COSName.AP);
+                                pdTextField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                                pdTextField.setValue(value);
+                                pdAcroForm.getFields().add(pdTextField);
+                                pdAcroForm.getFields().remove(pdListBox);
+                                Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument.getDocumentCatalog());
+                                int page = 1;
+                                List<PDAnnotationWidget> kids = pdField.getWidgets();
+                                if (kids != null) {
+                                    for (COSObjectable kid : kids) {
+                                        COSBase kidObject = kid.getCOSObject();
+                                        if (kidObject instanceof COSDictionary)
+                                            page = pageNrByAnnotDict.get(kidObject);
+                                    }
                                 }
-                                pdListBox.setDefaultValue(value);
-                                pdListBox.setValue(value);
-                            } catch (NullPointerException e) {
-                                logger.debug("listBox buton is null");
+                                int countPage = 1;
+                                for (PDPage pdPage : pdDocument.getPages()) {
+                                    pdPage.getAnnotations().removeAll(pdListBox.getWidgets());
+                                    if(countPage == page) {
+                                        pdPage.getAnnotations().add(pdAnnotationWidget);
+                                    }
+                                    countPage++;
+                                }
                             }
                         } else {
                             if (!(pdField instanceof PDSignatureField)) {
@@ -672,6 +699,9 @@ public class PdfService {
                         pdField.setReadOnly(false);
                         pdField.setRequired(true);
                     }
+                }
+                if(isLastStep) {
+                    pdAcroForm.flatten();
                 }
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -821,4 +851,17 @@ public class PdfService {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
+    public Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
+        Iterator<PDPage> pages = docCatalog.getPages().iterator();
+        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
+        int i = 0;
+        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
+            PDPage pdPage = it.next();
+            for (PDAnnotation annotation : pdPage.getAnnotations()) {
+                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+            }
+            i++;
+        }
+        return pageNrByAnnotDict;
+    }
 }
