@@ -445,6 +445,7 @@ input:checked + .slider:before {
 .ss-main .ss-single-selected .placeholder, .ss-main .ss-single-selected .placeholder * {
     color: #212529;
     overflow: visible;
+    opacity: initial;
 }
 
 .ss-content .ss-list .ss-option {

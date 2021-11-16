@@ -35,4 +35,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     SignRequest findSignRequestByCommentsContains(Comment comment);
     List<SignRequest> findByTitle(String title);
     List<SignRequest> findByParentSignBookTitle(String title);
+    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.workflow w where w.description = :workflowDescription")
+    List<SignRequest> findByWorkflowDescription(@Param("workflowDescription") String workflowDescription);
+    @Query("select s from SignRequest s where s.parentSignBook.liveWorkflow.workflow is null and s.parentSignBook.title = ''")
+    List<SignRequest> findByByParentSignBookTitleEmptyAndWorflowIsNull();
 }
+

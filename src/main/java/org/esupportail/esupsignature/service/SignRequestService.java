@@ -1056,7 +1056,13 @@ public class SignRequestService {
 			signRequests.retainAll(signRequestByRecipients);
 		}
 		if (workflowFilter != null && !workflowFilter.equals("") && !workflowFilter.equals("all")) {
-			List<SignRequest> signRequestByWorkflow = signRequestRepository.findByParentSignBookTitle(workflowFilter);
+			Set<SignRequest> signRequestByWorkflow = new HashSet<>();
+			if(workflowFilter.equals("Hors circuit")) {
+				signRequestByWorkflow.addAll(signRequestRepository.findByByParentSignBookTitleEmptyAndWorflowIsNull());
+			} else {
+				signRequestByWorkflow.addAll(signRequestRepository.findByWorkflowDescription(workflowFilter));
+				signRequestByWorkflow.addAll(signRequestRepository.findByParentSignBookTitle(workflowFilter));
+			}
 			signRequests.retainAll(signRequestByWorkflow);
 		}
 		if (docTitleFilter != null && !docTitleFilter.equals("") && !docTitleFilter.equals("all")) {
