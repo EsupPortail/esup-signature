@@ -96,9 +96,11 @@ export default class ListSignRequestUi {
 
     detectEndDiv(e) {
         if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
-            $("#listSignRequestTable").addClass("wait");
-            $("#loader").show();
-            this.addToPage();
+            if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
+                $("#listSignRequestTable").addClass("wait");
+                $("#loader").show();
+                this.addToPage();
+            }
         }
     }
 
@@ -143,22 +145,20 @@ export default class ListSignRequestUi {
     }
 
     addToPage() {
-        if(this.totalElementsToDisplay >= (this.page - 1) * 5 ) {
-            console.info("Add to page");
-            this.page++;
-            let self = this;
-            $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
-                self.signRequestTable.append(data);
-                let clickableRow = $(".clickable-row");
-                clickableRow.unbind();
-                clickableRow.on('click',  function() {
-                    window.location = $(this).closest('tr').attr('data-href');
-                });
-                $(document).trigger("refreshClickableTd");
-                $("#listSignRequestTable").removeClass("wait");
-                $("#loader").hide();
+        console.info("Add to page");
+        this.page++;
+        let self = this;
+        $.get("/user/signrequests/list-ws?statusFilter=" + this.statusFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page, function (data) {
+            self.signRequestTable.append(data);
+            let clickableRow = $(".clickable-row");
+            clickableRow.unbind();
+            clickableRow.on('click',  function() {
+                window.location = $(this).closest('tr').attr('data-href');
             });
-        }
+            $(document).trigger("refreshClickableTd");
+            $("#listSignRequestTable").removeClass("wait");
+            $("#loader").hide();
+        });
     }
 
     buildUrlFilter() {
