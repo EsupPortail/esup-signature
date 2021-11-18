@@ -176,7 +176,6 @@ td {
 }
 
 .footer {
-    z-index: 99999;
     width: 100%;
     height: 38px;
     line-height: 38px;
@@ -185,7 +184,7 @@ td {
 .mini-menu {
     width:300px;
     right: 10px;
-    z-index: 1000;
+    z-index: 1031;
 }
 
 .mini-menu-thead {
@@ -617,7 +616,7 @@ th .ss-content {
     top: 50px;
     padding-right: 5px;
     position: fixed;
-    z-index: 1039;
+    z-index: 1030;
     min-width: 260px;
     max-width: 260px;
     height: calc(100vh - 80px);

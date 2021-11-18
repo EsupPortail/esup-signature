@@ -42,16 +42,22 @@ export default class ListSignRequestUi {
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#downloadMultipleButton').on("click", e => this.downloadMultiple());
+        $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
+        $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
-        $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
+        this.refreshCheckboxesListener();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
             $(window).resize(e => this.scaleList());
         }
+    }
+
+    refreshCheckboxesListener() {
+        $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
     }
 
     scaleList() {
@@ -64,13 +70,17 @@ export default class ListSignRequestUi {
         if (idDom.length > 0) {
             $('#deleteMultipleButton').removeClass('d-none');
             $('#downloadMultipleButton').removeClass('d-none');
+            $('#downloadMultipleButtonWithReport').removeClass('d-none');
             $('#menuDeleteMultipleButton').removeClass('d-none');
             $('#menuDownloadMultipleButton').removeClass('d-none');
+            $('#menuDownloadMultipleButtonWithReport').removeClass('d-none');
         } else {
             $('#deleteMultipleButton').addClass('d-none');
             $('#downloadMultipleButton').addClass('d-none');
+            $('#downloadMultipleButtonWithReport').addClass('d-none');
             $('#menuDeleteMultipleButton').addClass('d-none');
             $('#menuDownloadMultipleButton').addClass('d-none');
+            $('#menuDownloadMultipleButtonWithReport').addClass('d-none');
         }
 
         if (idDom.length > 1 && this.massSignButtonHide) {
@@ -144,6 +154,19 @@ export default class ListSignRequestUi {
         }
     }
 
+    downloadMultipleWithReport() {
+        console.info("launch download multiple");
+        let ids = [];
+        let i = 0;
+        $("input[name='ids[]']:checked").each(function (e) {
+            ids[i] = $(this).attr("data-id-signbook");
+            i++;
+        });
+        if (ids.length > 0) {
+            window.open("/user/signrequests/download-multiple-with-report?ids=" + ids, "_blank");
+        }
+    }
+
     addToPage() {
         console.info("Add to page");
         this.page++;
@@ -158,6 +181,7 @@ export default class ListSignRequestUi {
             $(document).trigger("refreshClickableTd");
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
+            self.refreshCheckboxesListener();
         });
     }
 
