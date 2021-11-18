@@ -900,7 +900,7 @@ public class SignRequestService {
 		}
 	}
 
-	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException, EsupSignatureException {
+	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
@@ -1431,7 +1431,12 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		response.setContentType("application/zip; charset=utf-8");
 		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(signRequest.getTitle() + "-avec_rapport", StandardCharsets.UTF_8.toString()) + ".zip");
-		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+		response.getOutputStream().write(getZipWithDocAndReport(signRequest));
+	}
+
+	private byte[] getZipWithDocAndReport(SignRequest signRequest) throws Exception {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
 		String name = "";
 		InputStream inputStream = null;
 		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
@@ -1472,6 +1477,7 @@ public class SignRequestService {
 			reportFile.delete();
 		}
 		zipOutputStream.close();
+		return outputStream.toByteArray();
 	}
 
 	@Transactional
@@ -1582,6 +1588,30 @@ public class SignRequestService {
 			zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getFileName()));
 			IOUtils.copy(document.getInputStream(), zipOutputStream);
 			zipOutputStream.write(document.getInputStream().readAllBytes());
+			zipOutputStream.closeEntry();
+			i++;
+		}
+		zipOutputStream.close();
+	}
+
+	@Transactional
+	public void getMultipleSignedDocumentsWithReport(List<Long> ids, HttpServletResponse response) throws Exception {
+		response.setContentType("application/zip; charset=utf-8");
+		response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8.toString()) + ".zip");
+		Map<byte[], String> documents = new HashMap<>();
+		for(Long id : ids) {
+			SignBook signBook = signBookService.getById(id);
+			for (SignRequest signRequest : signBook.getSignRequests()) {
+				if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
+					documents.put(getZipWithDocAndReport(signRequest), signBook.getName());
+			}
+		}
+		ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+		int i = 0;
+		for(Map.Entry<byte[], String> document : documents.entrySet()) {
+			zipOutputStream.putNextEntry(new ZipEntry(i + "_" + document.getValue() + ".zip"));
+			IOUtils.copy(new ByteArrayInputStream(document.getKey()), zipOutputStream);
+			zipOutputStream.write(document.getKey());
 			zipOutputStream.closeEntry();
 			i++;
 		}

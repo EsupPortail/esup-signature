@@ -40,7 +40,7 @@
                     </table>
                     <div th:unless="${attachments.size() > 0}" class="alert alert-secondary">Aucune pièce jointe</div>
                     <hr/>
-                    <div class="form-group mb-3">
+                    <div th:if="${editable}" class="form-group mb-3">
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">
                             <input aria-describedby="inputGroupLabel03" class="form-control"

@@ -42,7 +42,9 @@ export default class ListSignRequestUi {
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
         $('#downloadMultipleButton').on("click", e => this.downloadMultiple());
+        $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
+        $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
@@ -64,13 +66,17 @@ export default class ListSignRequestUi {
         if (idDom.length > 0) {
             $('#deleteMultipleButton').removeClass('d-none');
             $('#downloadMultipleButton').removeClass('d-none');
+            $('#downloadMultipleButtonWithReport').removeClass('d-none');
             $('#menuDeleteMultipleButton').removeClass('d-none');
             $('#menuDownloadMultipleButton').removeClass('d-none');
+            $('#menuDownloadMultipleButtonWithReport').removeClass('d-none');
         } else {
             $('#deleteMultipleButton').addClass('d-none');
             $('#downloadMultipleButton').addClass('d-none');
+            $('#downloadMultipleButtonWithReport').addClass('d-none');
             $('#menuDeleteMultipleButton').addClass('d-none');
             $('#menuDownloadMultipleButton').addClass('d-none');
+            $('#menuDownloadMultipleButtonWithReport').addClass('d-none');
         }
 
         if (idDom.length > 1 && this.massSignButtonHide) {
@@ -141,6 +147,19 @@ export default class ListSignRequestUi {
         });
         if (ids.length > 0) {
             window.open("/user/signrequests/download-multiple?ids=" + ids, "_blank");
+        }
+    }
+
+    downloadMultipleWithReport() {
+        console.info("launch download multiple");
+        let ids = [];
+        let i = 0;
+        $("input[name='ids[]']:checked").each(function (e) {
+            ids[i] = $(this).attr("data-id-signbook");
+            i++;
+        });
+        if (ids.length > 0) {
+            window.open("/user/signrequests/download-multiple-with-report?ids=" + ids, "_blank");
         }
     }
 

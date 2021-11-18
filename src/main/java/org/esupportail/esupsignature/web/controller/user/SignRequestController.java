@@ -481,7 +481,25 @@ public class SignRequestController {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        try {
+            signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
+    @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signRequestService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         httpServletResponse.flushBuffer();
     }
 
