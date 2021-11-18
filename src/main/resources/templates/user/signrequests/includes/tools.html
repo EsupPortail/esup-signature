@@ -32,14 +32,14 @@
 			<button id="rotateright" class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block"><i
 					class="fas fa-redo"></i></button>
 			<div class="border ms-3 me-3 "></div>
-			<button class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter une pièce jointe"
+			<button th:if="${editable}" class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter une pièce jointe"
 					data-bs-target="#attachment">
 				<i class="fas fa-paperclip"></i> <span class="d-none d-xl-inline">Pièces jointes</span>
 				<div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
 					 th:text="${attachments.size() + signRequest.links.size()}"
 					 class="badge bg-primary"></div>
 			</button>
-			<button class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
+			<button th:if="${editable}" class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
 					data-bs-target="#addCommentModal">
 				<i class="fas fa-sticky-note"></i> Post-it</span>
 			</button>
