@@ -109,9 +109,9 @@
                                 </th:block>
                             </td>
                             <td>
-                                <select th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple slim-select-no-hack" multiple size="3" data-placeholder="Choisir des étapes">
-                                    <th:block th:each="workflow, iterator : ${workflow.workflowSteps}">
-                                        <option th:value="${workflow.id}" th:text="${iterator.index + 1}" th:selected="${field.workflowSteps.contains(workflow)}"></option>
+                                <select th:if="${workflow != null}" th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple slim-select-no-hack" multiple size="3" data-placeholder="Choisir des étapes">
+                                    <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                                        <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}" th:selected="${field.workflowSteps.contains(workflowStep)}"></option>
                                     </th:block>
                                 </select>
                             </td>

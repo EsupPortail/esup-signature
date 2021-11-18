@@ -37,7 +37,7 @@
                                     <tr th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" aria-expanded="false" th:aria-controls="'row_' + ${signBook.id}">
                                         <td class="text-break w-5 d-none d-md-table-cell"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fas fa-plus"></i></a></td>
                                         <td class="text-break w-5 d-none d-md-table-cell"><i class="fas fa-folder-open p-2"></i></td>
-                                        <td th:if="${signBook.liveWorkflow.workflow != null && signBook.title == ''}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.liveWorkflow.workflow.description}"></td>
+                                        <td th:if="${signBook.liveWorkflow.workflow != null}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.liveWorkflow.workflow.description}"></td>
                                         <td th:if="${signBook.liveWorkflow.workflow == null && signBook.title != ''}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="${signBook.title}"></td>
                                         <td th:if="${signBook.liveWorkflow.workflow == null && signBook.title == ''}" class="clickable-td text-break d-none d-xxl-table-cell" th:text="'Hors circuit'"></td>
                                         <td class="text-break w-30">

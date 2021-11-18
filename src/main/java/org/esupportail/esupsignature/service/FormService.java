@@ -139,6 +139,11 @@ public class FormService {
 		form.getRoles().clear();
 		form.getRoles().addAll(updateForm.getRoles());
 		form.setPreFillType(updateForm.getPreFillType());
+		if(updateForm.getWorkflow() == null) {
+			for(Field field : form.getFields()) {
+				field.getWorkflowSteps().clear();
+			}
+		}
 		form.setWorkflow(updateForm.getWorkflow());
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
@@ -213,25 +218,17 @@ public class FormService {
 
 	@Transactional
 	public Form createForm(Document document, String name, String title, Workflow workflow, String prefillType, List<String> roleNames, Boolean publicUsage, String... fieldNames) throws IOException, EsupSignatureException {
-		List<Form> testForms = formRepository.findFormByNameAndActiveVersionAndDeletedNot(name, true, true);
 		Form form = new Form();
 		form.setName(name);
 		form.setTitle(title);
 		form.setActiveVersion(true);
+		form.setVersion(1);
 		if (document == null && fieldNames.length > 0) {
 			for(String fieldName : fieldNames) {
 				form.getFields().add(fieldService.createField(fieldName, workflow));
 			}
 		} else {
-			if (testForms.size() == 1) {
-				testForms.get(0).setActiveVersion(false);
-				formRepository.save(testForms.get(0));
-				form.setVersion(testForms.get(0).getVersion() + 1);
-				form.getFields().addAll(testForms.get(0).getFields());
-			} else {
-				form.setVersion(1);
-				form.setFields(getFields(document.getInputStream(), workflow));
-			}
+			form.setFields(getFields(document.getInputStream(), workflow));
 		}
 		form.setDocument(document);
 		form.getRoles().clear();
@@ -242,12 +239,6 @@ public class FormService {
 		if(publicUsage == null) publicUsage = false;
 		form.setPublicUsage(publicUsage);
 		document.setParentId(form.getId());
-		if(testForms.size() == 1) {
-			List<UserShare> userShares = userShareService.getUserSharesByForm(testForms.get(0));
-			for (UserShare userShare : userShares) {
-				userShare.setForm(form);
-			}
-		}
 		formRepository.save(form);
 		return form;
 	}
