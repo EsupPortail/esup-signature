@@ -48,12 +48,16 @@ export default class ListSignRequestUi {
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
-        $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
+        this.refreshCheckboxesListener();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
             $(window).resize(e => this.scaleList());
         }
+    }
+
+    refreshCheckboxesListener() {
+        $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
     }
 
     scaleList() {
@@ -177,6 +181,7 @@ export default class ListSignRequestUi {
             $(document).trigger("refreshClickableTd");
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
+            self.refreshCheckboxesListener();
         });
     }
 
