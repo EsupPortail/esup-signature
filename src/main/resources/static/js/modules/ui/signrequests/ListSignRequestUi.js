@@ -68,6 +68,16 @@ export default class ListSignRequestUi {
                });
            }) ;
         });
+        $("div[id^='menu-']").each(function() {
+            $(this).on('shown.bs.collapse', function (e) {
+                let id = $(this).attr('id').split("-")[1];
+                let menu = $("#menu-toggle_" + id);
+                let div = $("#listSignRequestTable");
+                if(div.height() < menu.offset().top) {
+                    div.scrollTop(menu.offset().top + 200)
+                }
+            });
+        });
     }
 
     scaleList() {
