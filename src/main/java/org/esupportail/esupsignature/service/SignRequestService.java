@@ -1245,7 +1245,7 @@ public class SignRequestService {
 
 	@Transactional
 	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
-		SignRequest signRequest = getById(id);
+			SignRequest signRequest = getById(id);
 		if(spotStepNumber != null && spotStepNumber > 0) {
 			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 			int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
