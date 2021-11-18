@@ -90,7 +90,7 @@
                         <th:block th:each="form : ${forms}">
                             <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 formButton"
                                style="width: 150px; height: 200px;" data-bs-toggle="modal" th:data-bs-target="'#sendModal_' + ${form.id}"
-                               th:title="'Formulaire : ' + ${form.title} + ' v.' + ${form.version}">
+                               th:title="'Formulaire : ' + ${form.title}">
                                 <div class="crop">
                                     <i class="fas fa-file-alt fa-4x file-alt-color"></i>
     <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->

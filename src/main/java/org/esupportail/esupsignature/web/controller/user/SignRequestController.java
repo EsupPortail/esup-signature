@@ -134,7 +134,13 @@ public class SignRequestController {
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
-        model.addAttribute("signRequestWorkflow", new HashSet<>(signRequests.stream().map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList())));
+        LinkedHashSet<String> signRequestWorkflow = new LinkedHashSet<>();
+        if(workflowFilter == null || workflowFilter.equals("all") || workflowFilter.equals("Hors circuit")) {
+            signRequestWorkflow.add("Hors circuit");
+        }
+        signRequestWorkflow.addAll(signRequests.stream().filter(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow() != null).map(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription()).collect(Collectors.toList()));
+        signRequestWorkflow.addAll(signRequests.stream().filter(s -> (s.getParentSignBook().getLiveWorkflow().getWorkflow() == null || s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription() == null) && !s.getParentSignBook().getTitle().isEmpty()).map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList()));
+        model.addAttribute("signRequestWorkflow", signRequestWorkflow);
         return "user/signrequests/list";
     }
 
@@ -475,7 +481,25 @@ public class SignRequestController {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        try {
+            signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
+    @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signRequestService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         httpServletResponse.flushBuffer();
     }
 

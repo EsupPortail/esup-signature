@@ -39,7 +39,7 @@
 					 th:text="${attachments.size() + signRequest.links.size()}"
 					 class="badge bg-primary"></div>
 			</button>
-			<button class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
+			<button th:if="${editable}" class="btn btn-light btn-outline-dark ms-1" data-bs-toggle="modal" title="Ajouter un post-it"
 					data-bs-target="#addCommentModal">
 				<i class="fas fa-sticky-note"></i> Post-it</span>
 			</button>

@@ -25,6 +25,7 @@ public class SignBook {
 
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Temporal(TemporalType.TIMESTAMP)
