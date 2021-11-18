@@ -182,9 +182,10 @@ td {
 }
 
 .mini-menu {
-    width:300px;
+    position: relative !important;
+    width:200px;
     right: 10px;
-    z-index: 1031;
+    z-index: 0;
 }
 
 .mini-menu-thead {
