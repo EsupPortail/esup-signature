@@ -28,6 +28,7 @@ export default class ListSignRequestUi {
         this.page = 1;
         this.initListeners();
         this.massSignButtonHide = true;
+        this.rowHeight = null;
         if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
             this.scaleList();
         }
@@ -73,16 +74,29 @@ export default class ListSignRequestUi {
                 let id = $(this).attr('id').split("-")[1];
                 let menu = $("#menu-toggle_" + id);
                 let div = $("#listSignRequestTable");
-                if(div.height() < menu.offset().top) {
-                    div.scrollTop(menu.offset().top + 200)
+                let divHeight = div.height();
+                let menuTop = menu.offset().top;
+                if(divHeight < menuTop) {
+                    div.scrollTop(div.scrollTop() + 150);
                 }
             });
         });
     }
 
     scaleList() {
-        let height = parseInt(this.signRequestTable.css("height"))
-        this.signRequestTable.css("height", (height + ($(window ).height() - height)) + "px")
+        let tbodyRowCount = 10;
+        if(this.rowHeight == null) {
+            this.rowHeight = Math.round(parseInt(this.signRequestTable.css("height")) / tbodyRowCount)
+        } else {
+            tbodyRowCount = $('#signRequestTable tr').length - 10;
+        }
+        let tableHeight = this.rowHeight * tbodyRowCount;
+        let windowHeight = $(window).height();
+        let height = tableHeight
+        if(tableHeight <= windowHeight) {
+            height = tableHeight + (windowHeight - tableHeight);
+        }
+        this.signRequestTable.css("height", height  )
     }
 
     checkNbCheckboxes() {
@@ -205,6 +219,7 @@ export default class ListSignRequestUi {
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
             self.refreshListeners();
+            self.scaleList();
         });
     }
 
