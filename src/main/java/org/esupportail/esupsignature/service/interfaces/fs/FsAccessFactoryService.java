@@ -11,14 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class FsAccessFactory {
+public class FsAccessFactoryService {
 
-	private static final Logger logger = LoggerFactory.getLogger(FsAccessFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(FsAccessFactoryService.class);
 
 	private SmbAccessImpl smbAccessImpl;
 
@@ -119,5 +120,31 @@ public class FsAccessFactory {
 				return null;
 		}
 		return tree;
+	}
+
+	public void createPathIfNotExist(String path) throws EsupSignatureFsException {
+		FsAccessService fsAccessService = getFsAccessService(path);
+		List<String> tree = getTree(path);
+		String parent = "/";
+		try {
+			URI uri =new URI(path);
+			if(uri.getScheme() != null) {
+				DocumentIOType type = getPathIOType(path);
+				if(type.equals(DocumentIOType.cmis)) {
+					parent = uri.getScheme() + "://";
+				} else {
+					parent = uri.getScheme() + "://" + uri.getAuthority() + "/";
+				}
+			}
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		for(String folder : tree) {
+			if (!fsAccessService.checkFolder(path)) {
+				logger.info("create non existing folders : " + folder);
+				fsAccessService.createFile(parent, folder, "folder");
+				parent = parent + folder + "/";
+			}
+		}
 	}
 }
