@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -22,7 +23,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -131,7 +132,7 @@ public class SignRequestService {
 	private MailService mailService;
 
 	@Resource
-	private FsAccessFactory fsAccessFactory;
+	private FsAccessFactoryService fsAccessFactoryService;
 
 	@Resource
 	private DataService dataService;
@@ -269,7 +270,8 @@ public class SignRequestService {
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
-			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
+			PropertyComparator<SignRequest> propertyComparator = new PropertyComparator<>(sortDefinition);
+			signRequests.sort(propertyComparator);
 		}
 		return new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
 	}
@@ -409,7 +411,8 @@ public class SignRequestService {
 		List<String> toRemoveKeys = new ArrayList<>();
 		if(formData != null) {
 			try {
-				formDataMap = objectMapper.readValue(formData, Map.class);
+				TypeReference<Map<String, String>> type = new TypeReference<>(){};
+				formDataMap = objectMapper.readValue(formData, type);
 				formDataMap.remove("_csrf");
 				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null && data.getForm() != null) {
@@ -455,7 +458,8 @@ public class SignRequestService {
 	@Transactional
 	public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
 		String error = null;
-		List<String> idsString = objectMapper.readValue(ids, List.class);
+		TypeReference<List<String>> type = new TypeReference<>(){};
+		List<String> idsString = objectMapper.readValue(ids, type);
 		List<Long> idsLong = new ArrayList<>();
 		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
 		Object userShareString = httpSession.getAttribute("userShareId");
@@ -774,7 +778,7 @@ public class SignRequestService {
 		boolean allTargetsDone = true;
 		for(Target target : targets) {
 			if(!target.getTargetOk()) {
-				DocumentIOType documentIOType = fsAccessFactory.getPathIOType(target.getTargetUri());
+				DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
 				String targetUrl = target.getTargetUri();
 				if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 					if (documentIOType.equals(DocumentIOType.mail)) {
@@ -796,7 +800,7 @@ public class SignRequestService {
 						}
 					} else {
 						for (SignRequest signRequest : signRequests) {
-							if (fsAccessFactory.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
+							if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
 								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
@@ -903,7 +907,7 @@ public class SignRequestService {
 	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
+				FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
 				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
 		}
@@ -1072,7 +1076,8 @@ public class SignRequestService {
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
-			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
+			PropertyComparator<SignRequest> propertyComparator = new PropertyComparator<>(sortDefinition);
+			signRequests.sort(propertyComparator);
 		}
 		for(SignRequest signRequest : signRequests) {
 			if(signRequest.getEndDate() == null) {
@@ -1133,8 +1138,7 @@ public class SignRequestService {
 		}
 		User user = userService.getUserByEppn(userEppn);
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
-				&& signRequest.getOriginalDocuments().size() > 0) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+				&& (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn))) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			signRequest.setEditable(true);
 		}

@@ -226,7 +226,7 @@ public class UserService {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null) {
                 logger.info("Mise à jour des rôles de l'utilisateur " + eppn);
-                Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+                Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
                 if (authorities.size() > 0) {
                     user.getRoles().clear();
                     for (GrantedAuthority authority : authorities) {
