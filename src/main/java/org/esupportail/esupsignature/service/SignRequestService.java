@@ -1133,8 +1133,7 @@ public class SignRequestService {
 		}
 		User user = userService.getUserByEppn(userEppn);
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn))
-				&& signRequest.getOriginalDocuments().size() > 0) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+				&& (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn))) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			signRequest.setEditable(true);
 		}
