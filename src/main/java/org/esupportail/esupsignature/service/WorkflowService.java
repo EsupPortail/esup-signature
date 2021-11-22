@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
@@ -51,7 +51,7 @@ public class WorkflowService {
     private SignBookService signBookService;
 
     @Resource
-    private FsAccessFactory fsAccessFactory;
+    private FsAccessFactoryService fsAccessFactoryService;
 
     @Resource
     private SignRequestService signRequestService;
@@ -245,14 +245,13 @@ public class WorkflowService {
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
         if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
-            logger.debug("retrieve from " + workflow.getProtectedDocumentsSourceUri());
-            FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getDocumentsSourceUri());
+            logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
+            FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
                 fsAccessService.open();
-                if (fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
-                    logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
-                    fsAccessService.createFile("/", workflow.getDocumentsSourceUri(), "folder");
-                }
+
+//                fsAccessFactoryService.createPathIfNotExist(workflow.getDocumentsSourceUri());
+                fsAccessService.createURITree(workflow.getDocumentsSourceUri());
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
                     if (fsFiles.size() > 0) {
@@ -516,9 +515,7 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        if(!workflow.getDocumentsSourceUri().contains("********")) {
-            workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
-        }
+        workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
@@ -546,7 +543,7 @@ public class WorkflowService {
     @Transactional
     public boolean addTarget(Long id, String documentsTargetUri) throws EsupSignatureFsException {
         Workflow workflow = getById(id);
-        DocumentIOType targetType = fsAccessFactory.getPathIOType(documentsTargetUri);
+        DocumentIOType targetType = fsAccessFactoryService.getPathIOType(documentsTargetUri);
         if(!targetType.equals("mail") || workflow.getTargets().stream().map(Target::getTargetUri).noneMatch(tt -> tt.contains("mailto"))) {
             Target target = targetService.createTarget(documentsTargetUri);
             workflow.getTargets().add(target);

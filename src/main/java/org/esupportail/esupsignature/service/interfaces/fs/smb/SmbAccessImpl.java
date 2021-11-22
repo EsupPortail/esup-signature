@@ -350,7 +350,12 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		}
 		return success;
 	}
-	
+
+	@Override
+	public boolean checkFolder(String path) {
+		return cd(path) != null;
+	}
+
 
 	public List<FsFile> listFiles(String url) throws EsupSignatureFsException {
 		List<FsFile> fsFiles = new ArrayList<>();

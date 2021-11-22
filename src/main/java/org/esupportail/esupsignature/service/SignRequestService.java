@@ -22,7 +22,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
@@ -131,7 +131,7 @@ public class SignRequestService {
 	private MailService mailService;
 
 	@Resource
-	private FsAccessFactory fsAccessFactory;
+	private FsAccessFactoryService fsAccessFactoryService;
 
 	@Resource
 	private DataService dataService;
@@ -774,7 +774,7 @@ public class SignRequestService {
 		boolean allTargetsDone = true;
 		for(Target target : targets) {
 			if(!target.getTargetOk()) {
-				DocumentIOType documentIOType = fsAccessFactory.getPathIOType(target.getTargetUri());
+				DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
 				String targetUrl = target.getTargetUri();
 				if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
 					if (documentIOType.equals(DocumentIOType.mail)) {
@@ -796,7 +796,7 @@ public class SignRequestService {
 						}
 					} else {
 						for (SignRequest signRequest : signRequests) {
-							if (fsAccessFactory.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
+							if (fsAccessFactoryService.getPathIOType(target.getTargetUri()).equals(DocumentIOType.rest)) {
 								RestTemplate restTemplate = new RestTemplate();
 								SignRequestStatus status = SignRequestStatus.completed;
 								if (signRequest.getRecipientHasSigned().values().stream().anyMatch(action -> action.getActionType().equals(ActionType.refused))) {
@@ -903,7 +903,7 @@ public class SignRequestService {
 	public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
 		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-				FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(signRequest.getExportedDocumentURI());
+				FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
 				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
 			}
 		}
@@ -1133,7 +1133,7 @@ public class SignRequestService {
 		}
 		User user = userService.getUserByEppn(userEppn);
 		if ((signRequest.getStatus().equals(SignRequestStatus.pending)
-				&& checkUserSignRights(signRequest, userEppn, authUserEppn)
+				&& (isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn))
 				&& signRequest.getOriginalDocuments().size() > 0) || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
 		) {
 			signRequest.setEditable(true);

@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.DocumentRepository;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -42,7 +42,7 @@ public class DocumentService {
 	private BigFileService bigFileService;
 
 	@Resource
-	private FsAccessFactory fsAccessFactory;
+	private FsAccessFactoryService fsAccessFactoryService;
 
 	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
@@ -72,12 +72,12 @@ public class DocumentService {
 	}
 
 	public String archiveDocument(Document signedFile, String path, String subPath) throws EsupSignatureFsException, EsupSignatureException {
-		return exportDocument(fsAccessFactory.getPathIOType(path), path + subPath, signedFile);
+		return exportDocument(fsAccessFactoryService.getPathIOType(path), path + subPath, signedFile);
 	}
 
 	public String exportDocument(DocumentIOType documentIOType, String targetUrl, Document signedFile) throws EsupSignatureFsException {
 		String documentUri;
-		FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(targetUrl);
+		FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(targetUrl);
 		if(fsAccessService != null) {
 			try {
 				logger.info("send to " + documentIOType.name() + " in " + targetUrl + "/" + signedFile.getFileName());

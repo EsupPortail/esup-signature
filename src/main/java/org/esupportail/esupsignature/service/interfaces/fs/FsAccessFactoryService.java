@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 
 @Service
-public class FsAccessFactory {
+public class FsAccessFactoryService {
 
-	private static final Logger logger = LoggerFactory.getLogger(FsAccessFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(FsAccessFactoryService.class);
 
 	private SmbAccessImpl smbAccessImpl;
 
@@ -81,4 +81,5 @@ public class FsAccessFactory {
 			throw new EsupSignatureFsException("target Url error", e);
 		}
 	}
+
 }
