@@ -43,6 +43,12 @@
                         </a>
                     </li>
                     <li>
+                        <a type="button" id="downloadMultipleButtonWithReport"
+                           class="btn-floating btn-lg bg-primary wave-effect d-none">
+                            <i class="fas fa-file-archive"></i>
+                        </a>
+                    </li>
+                    <li>
                         <a data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                            class="btn-floating btn-lg bg-primary wave-effect">
                             <i class="fas fa-plus"></i>
@@ -56,7 +62,7 @@
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover">
                         <thead class="table-secondary">
-                        <tr>
+                        <tr style="z-index: 2;">
                             <th class="w-20 d-none d-lg-table-cell">
                                 <div class="position-relative">
                                     <button type="button" id="menu-toggle_multiple" class="btn toggle-mini-menu" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="collapse">
@@ -72,6 +78,7 @@
                                             </button>
                                             <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-trash-alt pr-2"></i> Supprimer la sélection</button>
                                             <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection</button>
+                                            <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fas fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
                                         </div>
                                     </div>
                                 </div>
@@ -107,7 +114,7 @@
                             </th>
                             <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date de signature/refus</a></th>
                             <th class="d-none d-md-table-cell"><a class="sorted" sd:pagination-sort="status">Statut</a></th>
-                            <th>Actions</th>
+                            <th >Actions</th>
                         </tr>
                         </thead>
                         <tbody id="signRequestTable">

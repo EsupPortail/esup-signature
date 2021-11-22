@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -134,7 +135,13 @@ public class SignRequestController {
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("docTitles", new HashSet<>(signRequests.stream().map(SignRequest::getTitle).collect(Collectors.toList())));
         model.addAttribute("workflowFilter", workflowFilter);
-        model.addAttribute("signRequestWorkflow", new HashSet<>(signRequests.stream().map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList())));
+        LinkedHashSet<String> signRequestWorkflow = new LinkedHashSet<>();
+        if(workflowFilter == null || workflowFilter.equals("all") || workflowFilter.equals("Hors circuit")) {
+            signRequestWorkflow.add("Hors circuit");
+        }
+        signRequestWorkflow.addAll(signRequests.stream().filter(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow() != null).map(s -> s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription()).collect(Collectors.toList()));
+        signRequestWorkflow.addAll(signRequests.stream().filter(s -> (s.getParentSignBook().getLiveWorkflow().getWorkflow() == null || s.getParentSignBook().getLiveWorkflow().getWorkflow().getDescription() == null) && !s.getParentSignBook().getTitle().isEmpty()).map(s -> s.getParentSignBook().getTitle()).collect(Collectors.toList()));
+        model.addAttribute("signRequestWorkflow", signRequestWorkflow);
         return "user/signrequests/list";
     }
 
@@ -475,11 +482,29 @@ public class SignRequestController {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
         httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
-        signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        try {
+            signRequestService.getMultipleSignedDocuments(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         httpServletResponse.flushBuffer();
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")
+    @ResponseBody
+    public void downloadMultipleWithReport(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+        httpServletResponse.setContentType("application/zip");
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
+        try {
+            signRequestService.getMultipleSignedDocumentsWithReport(ids, httpServletResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        httpServletResponse.flushBuffer();
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
@@ -662,7 +687,8 @@ public class SignRequestController {
                               @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
         SignRequest signRequest = signRequestService.getById(id);
         ObjectMapper objectMapper = new ObjectMapper();
-        List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
+        TypeReference<List<String>> type = new TypeReference<>(){};
+        List<String> recipientList = objectMapper.readValue(recipientEmails, type);
         return userService.getTempUsers(signRequest, recipientList);
     }
 

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Data;
@@ -88,7 +89,8 @@ public class DataController {
 		User user = (User) model.getAttribute("user");
 		User authUser = (User) model.getAttribute("authUser");
 		ObjectMapper objectMapper = new ObjectMapper();
-		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), Map.class);
+		TypeReference<Map<String, String>> type = new TypeReference<>(){};
+		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;
 		try {
 			dataLongId = Long.valueOf(dataId);

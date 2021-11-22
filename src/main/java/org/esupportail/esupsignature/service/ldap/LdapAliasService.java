@@ -9,7 +9,6 @@ import javax.annotation.Resource;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
-import java.util.Collections;
 
 @Service
 @ConditionalOnProperty({"spring.ldap.base", "ldap.list-search-base", "ldap.list-search-filter"})
@@ -22,7 +21,7 @@ public class LdapAliasService {
     private LdapTemplate ldapTemplate;
 
     public List<AliasLdap> searchAlias(String searchString) {
-        String formattedFilter = MessageFormat.format(ldapProperties.getListSearchFilter(), new String[] { searchString });
+        String formattedFilter = MessageFormat.format(ldapProperties.getListSearchFilter(), searchString);
         List<AliasLdap> aliasLdaps = ldapTemplate.search(ldapProperties.getListSearchBase(), formattedFilter, new AliasLdapAttributesMapper());
         aliasLdaps.removeAll(Collections.singleton(null));
         return  aliasLdaps;

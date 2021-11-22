@@ -10,11 +10,11 @@ public class FsProperties {
     private String smbPassword;
     private String smbDomain;
     private String vfsTestUri;
-    private String cmisUri;
+    private String cmisTestUri;
     private String cmisLogin;
     private String cmisPassword;
     private String cmisRespositoryId;
-    private String cmisRootPath;
+//    private String cmisRootPath;
 
     public String getSmbTestUri() {
         return smbTestUri;
@@ -56,12 +56,12 @@ public class FsProperties {
         this.vfsTestUri = vfsTestUri;
     }
 
-    public String getCmisUri() {
-        return cmisUri;
+    public String getCmisTestUri() {
+        return cmisTestUri;
     }
 
-    public void setCmisUri(String cmisUri) {
-        this.cmisUri = cmisUri;
+    public void setCmisTestUri(String cmisUri) {
+        this.cmisTestUri = cmisUri;
     }
 
     public String getCmisLogin() {
@@ -88,12 +88,12 @@ public class FsProperties {
         this.cmisRespositoryId = cmisRespositoryId;
     }
 
-    public String getCmisRootPath() {
-        return cmisRootPath;
-    }
-
-    public void setCmisRootPath(String cmisRootPath) {
-        this.cmisRootPath = cmisRootPath;
-    }
+//    public String getCmisRootPath() {
+//        return cmisRootPath;
+//    }
+//
+//    public void setCmisRootPath(String cmisRootPath) {
+//        this.cmisRootPath = cmisRootPath;
+//    }
 
 }

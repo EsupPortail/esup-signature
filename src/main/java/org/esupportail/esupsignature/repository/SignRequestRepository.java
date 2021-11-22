@@ -15,11 +15,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface SignRequestRepository extends CrudRepository<SignRequest, Long>, PagingAndSortingRepository<SignRequest, Long>, SignRequestRepositoryCustom {
-    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
+    @Query("select count(distinct  s) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn")
     Long countByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByIdIn(List<Long> ids);
     List<SignRequest> findByToken(String token);
-    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn and r.signed = false")
+    @Query("select distinct s from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = 'pending' and r.user.eppn = :recipientUserEppn")
     List<SignRequest> findByRecipientUserToSign(@Param("recipientUserEppn") String recipientUserEppn);
     List<SignRequest> findByCreateByEppn(String createByEppn);
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
@@ -35,4 +35,9 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     SignRequest findSignRequestByCommentsContains(Comment comment);
     List<SignRequest> findByTitle(String title);
     List<SignRequest> findByParentSignBookTitle(String title);
+    @Query("select s from SignRequest s join s.parentSignBook.liveWorkflow.workflow w where w.description = :workflowDescription")
+    List<SignRequest> findByWorkflowDescription(@Param("workflowDescription") String workflowDescription);
+    @Query("select s from SignRequest s where s.parentSignBook.liveWorkflow.workflow is null and s.parentSignBook.title = ''")
+    List<SignRequest> findByByParentSignBookTitleEmptyAndWorflowIsNull();
 }
+

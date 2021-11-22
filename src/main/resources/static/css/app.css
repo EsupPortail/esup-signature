@@ -176,22 +176,25 @@ td {
 }
 
 .footer {
-    z-index: 99999;
     width: 100%;
     height: 38px;
     line-height: 38px;
 }
 
 .mini-menu {
-    width:300px;
+    width:200px;
     right: 10px;
-    z-index: 1000;
+    z-index: 1;
 }
 
 .mini-menu-thead {
     width:250px;
     margin-top: 20px;
     z-index: 10000;
+}
+
+#listSignRequestTable th {
+    z-index: 2;
 }
 
 code {
@@ -445,6 +448,7 @@ input:checked + .slider:before {
 .ss-main .ss-single-selected .placeholder, .ss-main .ss-single-selected .placeholder * {
     color: #212529;
     overflow: visible;
+    opacity: initial;
 }
 
 .ss-content .ss-list .ss-option {
@@ -616,7 +620,7 @@ th .ss-content {
     top: 50px;
     padding-right: 5px;
     position: fixed;
-    z-index: 1039;
+    z-index: 1030;
     min-width: 260px;
     max-width: 260px;
     height: calc(100vh - 80px);
