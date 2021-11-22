@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.io.IOUtils;
@@ -686,7 +687,8 @@ public class SignRequestController {
                               @RequestParam(required = false) String recipientEmails) throws JsonProcessingException {
         SignRequest signRequest = signRequestService.getById(id);
         ObjectMapper objectMapper = new ObjectMapper();
-        List<String> recipientList = objectMapper.readValue(recipientEmails, List.class);
+        TypeReference<List<String>> type = new TypeReference<>(){};
+        List<String> recipientList = objectMapper.readValue(recipientEmails, type);
         return userService.getTempUsers(signRequest, recipientList);
     }
 

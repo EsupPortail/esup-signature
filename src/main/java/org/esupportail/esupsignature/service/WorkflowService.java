@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -289,7 +290,8 @@ public class WorkflowService {
                                     String[] keySplit = metadataKey.split("_");
                                     if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                         ObjectMapper mapper = new ObjectMapper();
-                                        List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), List.class);
+                                        TypeReference<List<String>> type = new TypeReference<>(){};
+                                        List<String> recipientList = mapper.readValue(metadatas.get(metadataKey), type);
                                         WorkflowStep workflowStep = null;
                                         if(workflow.getWorkflowSteps().size() > i) {
                                             workflowStep = workflow.getWorkflowSteps().get(i);

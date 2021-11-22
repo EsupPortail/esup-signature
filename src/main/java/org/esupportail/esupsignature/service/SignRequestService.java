@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.europa.esig.dss.AbstractSignatureParameters;
 import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
@@ -269,7 +270,8 @@ public class SignRequestService {
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
-			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
+			PropertyComparator<SignRequest> propertyComparator = new PropertyComparator<>(sortDefinition);
+			signRequests.sort(propertyComparator);
 		}
 		return new PageImpl<>(signRequests.stream().skip(pageable.getOffset()).limit(pageable.getPageSize()).collect(Collectors.toList()), pageable, signRequests.size());
 	}
@@ -409,7 +411,8 @@ public class SignRequestService {
 		List<String> toRemoveKeys = new ArrayList<>();
 		if(formData != null) {
 			try {
-				formDataMap = objectMapper.readValue(formData, Map.class);
+				TypeReference<Map<String, String>> type = new TypeReference<>(){};
+				formDataMap = objectMapper.readValue(formData, type);
 				formDataMap.remove("_csrf");
 				Data data = dataService.getBySignBook(signRequest.getParentSignBook());
 				if(data != null && data.getForm() != null) {
@@ -455,7 +458,8 @@ public class SignRequestService {
 	@Transactional
 	public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String certType) throws IOException, InterruptedException, EsupSignatureMailException, EsupSignatureException {
 		String error = null;
-		List<String> idsString = objectMapper.readValue(ids, List.class);
+		TypeReference<List<String>> type = new TypeReference<>(){};
+		List<String> idsString = objectMapper.readValue(ids, type);
 		List<Long> idsLong = new ArrayList<>();
 		idsString.forEach(s -> idsLong.add(Long.parseLong(s)));
 		Object userShareString = httpSession.getAttribute("userShareId");
@@ -1072,7 +1076,8 @@ public class SignRequestService {
 		if(pageable.getSort().iterator().hasNext()) {
 			Sort.Order order = pageable.getSort().iterator().next();
 			SortDefinition sortDefinition = new MutableSortDefinition(order.getProperty(), true, order.getDirection().isAscending());
-			Collections.sort(signRequests, new PropertyComparator(sortDefinition));
+			PropertyComparator<SignRequest> propertyComparator = new PropertyComparator<>(sortDefinition);
+			signRequests.sort(propertyComparator);
 		}
 		for(SignRequest signRequest : signRequests) {
 			if(signRequest.getEndDate() == null) {
