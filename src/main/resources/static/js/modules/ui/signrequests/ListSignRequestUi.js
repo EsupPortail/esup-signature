@@ -28,6 +28,7 @@ export default class ListSignRequestUi {
         this.page = 1;
         this.initListeners();
         this.massSignButtonHide = true;
+        this.rowHeight = null;
         if(signRequests.totalElements > 10 && signRequests.numberOfElements === 10) {
             this.scaleList();
         }
@@ -46,9 +47,12 @@ export default class ListSignRequestUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#listSignRequestTable').on('scroll', e => this.detectEndDiv(e));
+        $('#listSignRequestTable').bind('resize', function(){
+            console.log('resized');
+        });
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
-        this.refreshCheckboxesListener();
+        this.refreshListeners();
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         if(this.signRequests.totalElements > 10 && this.signRequests.numberOfElements === 10) {
@@ -56,13 +60,43 @@ export default class ListSignRequestUi {
         }
     }
 
-    refreshCheckboxesListener() {
+    refreshListeners() {
         $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
+        $("button[id^='menu-toggle']").each(function() {
+           $(this).on("click", function (){
+               $("div[id^='menu-']").each(function() {
+                   $(this).collapse('hide');
+               });
+           }) ;
+        });
+        $("div[id^='menu-']").each(function() {
+            $(this).on('shown.bs.collapse', function (e) {
+                let id = $(this).attr('id').split("-")[1];
+                let menu = $("#menu-toggle_" + id);
+                let div = $("#listSignRequestTable");
+                let divHeight = div.height();
+                let menuTop = menu.offset().top;
+                if(divHeight < menuTop) {
+                    div.scrollTop(div.scrollTop() + 150);
+                }
+            });
+        });
     }
 
     scaleList() {
-        let height = parseInt(this.signRequestTable.css("height"))
-        this.signRequestTable.css("height", (height + ($(window ).height() - height)) + "px")
+        let tbodyRowCount = 10;
+        if(this.rowHeight == null) {
+            this.rowHeight = Math.round(parseInt(this.signRequestTable.css("height")) / tbodyRowCount)
+        } else {
+            tbodyRowCount = $('#signRequestTable tr').length - 10;
+        }
+        let tableHeight = this.rowHeight * tbodyRowCount;
+        let windowHeight = $(window).height();
+        let height = tableHeight
+        if(tableHeight <= windowHeight) {
+            height = tableHeight + (windowHeight - tableHeight);
+        }
+        this.signRequestTable.css("height", height  )
     }
 
     checkNbCheckboxes() {
@@ -110,6 +144,9 @@ export default class ListSignRequestUi {
                 $("#listSignRequestTable").addClass("wait");
                 $("#loader").show();
                 this.addToPage();
+            } else {
+                let tfoot = this.signRequestTable.parent().children('tfoot').remove();
+                console.log(tfoot)
             }
         }
     }
@@ -181,7 +218,8 @@ export default class ListSignRequestUi {
             $(document).trigger("refreshClickableTd");
             $("#listSignRequestTable").removeClass("wait");
             $("#loader").hide();
-            self.refreshCheckboxesListener();
+            self.refreshListeners();
+            self.scaleList();
         });
     }
 

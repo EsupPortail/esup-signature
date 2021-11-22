@@ -113,6 +113,8 @@ public abstract class FsAccessService {
 	
 	public abstract boolean putFile(String dir, String filename,InputStream inputStream, UploadActionType uploadOption) throws EsupSignatureFsException;
 
+	public abstract boolean checkFolder(String path);
+
 	public boolean supportIntraCopyPast() {
 		return true;
 	}
@@ -127,7 +129,6 @@ public abstract class FsAccessService {
 	public boolean isSupportQuota(String path) {
 		return false;
 	}
-
 
 	protected String getProtectedUri(String uri) {
 		Pattern p = Pattern.compile("[^@]*:\\/\\/[^:]*:([^@]*)@.*?$");
