@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.security;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +58,13 @@ public class PreAuthorizeService {
     public boolean signRequestOwner(Long id, String userEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         return signRequest.getCreateBy().getEppn().equals(userEppn);
+    }
+
+    public boolean signRequestRecipent(Long id, String userEppn) {
+        SignRequest signRequest = signRequestService.getById(id);
+        return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
+                (signRequestService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
     }
 
     public boolean reportOwner(Long id, String userEppn) {
