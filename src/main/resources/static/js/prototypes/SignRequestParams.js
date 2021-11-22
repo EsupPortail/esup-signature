@@ -13,6 +13,7 @@ export class SignRequestParams  extends EventFactory {
         if(page != null) this.signPageNumber = page;
         this.userName = userName;
         this.authUserName = authUserName;
+        this.ready = null;
         this.isShare = userName != authUserName;
         this.restore = restore;
         this.isSign = isSign;

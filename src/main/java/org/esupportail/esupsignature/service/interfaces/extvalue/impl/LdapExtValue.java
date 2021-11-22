@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -78,12 +79,12 @@ public class LdapExtValue implements ExtValue {
 				for (PersonLdap personLdap : personLdaps) {
 					Map<String, Object> stringObjectMap = new HashMap<>();
 					try {
-						StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName, null).invoke(personLdap).toString());
+						StringBuilder result = new StringBuilder(PersonLdap.class.getMethod(methodName).invoke(personLdap).toString());
 						if (returnTypes.length > 1) {
 							for (int i = 1; i < returnTypes.length; i++) {
 								String methodNameNext = "get" + returnValues[i].substring(0, 1).toUpperCase() + returnValues[i].substring(1);
 								if (returnTypes[i].equals("person")) {
-									result.append(separator).append(PersonLdap.class.getMethod(methodNameNext, null).invoke(personLdap).toString());
+									result.append(separator).append(PersonLdap.class.getMethod(methodNameNext).invoke(personLdap).toString());
 								} else if (returnTypes[i].equals("organizationalUnit")) {
 									Object ou = PersonLdap.class.getMethod(methodNameNext).invoke(personLdap);
 									if (ou != null) {
@@ -117,7 +118,7 @@ public class LdapExtValue implements ExtValue {
 		for(OrganizationalUnitLdap organizationalUnitLdap : organizationalUnitLdaps) {
 			Map<String, Object> stringObjectMap = new HashMap<>();
 			try {
-				stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name, null).invoke(organizationalUnitLdap));
+				stringObjectMap.put("value", OrganizationalUnitLdap.class.getMethod(name).invoke(organizationalUnitLdap));
 			} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 				logger.error("error on get ldap search return attribut : " + name, e);
 			}
@@ -132,9 +133,10 @@ public class LdapExtValue implements ExtValue {
 		Map<String, Object> values = new HashMap<>();
 		if(user != null) {
 			PersonLdap personLdap = userService.findPersonLdapByUser(user);
-			if (personLdap != null && values.size() == 0) {
+			if (personLdap != null) {
 				ObjectMapper oMapper = new ObjectMapper();
-				values.putAll(oMapper.convertValue(personLdap, Map.class));
+				TypeReference<Map<String, Object>> type = new TypeReference<>(){};
+				values.putAll(oMapper.convertValue(personLdap, type));
 				if(values.containsKey("postalAddress") && values.get("postalAddress") != null) {
 					String postalAddress = values.get("postalAddress").toString();
 					if (postalAddress != null) {

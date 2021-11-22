@@ -299,7 +299,7 @@ public class SignService {
         return newImg;
 }
 	
-	private void fillCommonsParameters(AbstractSignatureParameters parameters, AbstractSignatureForm form) {
+	private void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 		//parameters.setEncryptionAlgorithm(form.getEncryptionAlgorithm()); retrieved from certificate
@@ -307,7 +307,7 @@ public class SignService {
 		parameters.setSignWithExpiredCertificate(form.isSignWithExpiredCertificate());
 
 		if (form.getContentTimestamp() != null) {
-			parameters.setContentTimestamps(Arrays.asList(DssUtils.toTimestampToken(form.getContentTimestamp())));
+			parameters.setContentTimestamps(List.of(DssUtils.toTimestampToken(form.getContentTimestamp())));
 		}
 
 		CertificateToken signingCertificate = DSSUtils.loadCertificateFromBase64EncodedString(form.getBase64Certificate());
