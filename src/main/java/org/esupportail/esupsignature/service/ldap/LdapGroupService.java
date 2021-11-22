@@ -84,7 +84,7 @@ public class LdapGroupService implements GroupService {
 
         if(!dns.isEmpty()) {
             String userDn = dns.get(0);
-            String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, new String[] { userDn, username });
+            String formattedGroupSearchFilter = MessageFormat.format(groupSearchFilter, userDn, username);
             LdapQuery groupSearchQuery = LdapQueryBuilder.query().attributes("cn").base(groupSearchBase).filter(formattedGroupSearchFilter);
             groups = ldapTemplate.search(groupSearchQuery, (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
@@ -93,7 +93,7 @@ public class LdapGroupService implements GroupService {
         }
 
         for(String ldapFilter: ldapFiltersGroups.keySet()) {
-            String hardcodedFilter = MessageFormat.format(memberSearchFilter, new String[] {username, ldapFilter});
+            String hardcodedFilter = MessageFormat.format(memberSearchFilter, username, ldapFilter);
             List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
                     (ContextMapper<String>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
@@ -124,7 +124,7 @@ public class LdapGroupService implements GroupService {
     @Override
     public List<String> getMembers(String groupName) {
 
-        String formattedFilter = MessageFormat.format(memberSearchFilter, new String[] {groupName});
+        String formattedFilter = MessageFormat.format(memberSearchFilter, groupName);
 
         List<String> eppns = ldapTemplate.search(
                 memberSearchBase, formattedFilter, (ContextMapper<String>) ctx -> {

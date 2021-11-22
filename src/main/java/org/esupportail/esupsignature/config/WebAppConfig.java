@@ -83,8 +83,8 @@ public class WebAppConfig implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public FilterRegistrationBean registerOpenEntityManagerInViewFilterBean() {
-		FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+	public FilterRegistrationBean<OpenEntityManagerInViewFilter> registerOpenEntityManagerInViewFilterBean() {
+		FilterRegistrationBean<OpenEntityManagerInViewFilter> registrationBean = new FilterRegistrationBean<>();
 		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
 		registrationBean.setFilter(filter);
 		registrationBean.setOrder(5);
