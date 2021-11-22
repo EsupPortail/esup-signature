@@ -249,7 +249,9 @@ public class WorkflowService {
             FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
                 fsAccessService.open();
-                fsAccessFactoryService.createPathIfNotExist(workflow.getDocumentsSourceUri());
+
+//                fsAccessFactoryService.createPathIfNotExist(workflow.getDocumentsSourceUri());
+                fsAccessService.createURITree(workflow.getDocumentsSourceUri());
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
                     if (fsFiles.size() > 0) {

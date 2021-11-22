@@ -32,6 +32,8 @@ import org.springframework.util.FileCopyUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,7 +220,24 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 
 	@Override
 	public void createURITree(String uri) {
+		String parent = "/";
+		try {
+			URI pathUri =new URI(uri);
+			if(pathUri.getScheme() != null) {
+				parent = pathUri.getScheme() + "://" + pathUri.getAuthority() + "/";
+			}
+			List<String> tree = List.of(pathUri.getPath().split("/"));
+			for(String folder : tree) {
+				if (!checkFolder(uri)) {
+					logger.info("create non existing folders : " + folder);
+					createFile(parent, folder, "folder");
+					parent = parent + folder + "/";
+				}
+			}
 
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
