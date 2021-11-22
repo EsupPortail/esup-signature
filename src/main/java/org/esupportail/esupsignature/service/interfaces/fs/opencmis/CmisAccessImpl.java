@@ -112,7 +112,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
 			return cmisObject;
 		} catch (Exception e){
-			logger.warn("unable to open path : " + path, e) ;
+			logger.warn("unable to open path : " + path) ;
 		}
 		return null;
 	}
@@ -200,7 +200,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public String createFile(String parentPath, String title, String type) {
     	if(cmisSession != null) {
-			title = constructPath(title);
+			title = constructPath(title).replaceFirst("/", "");
 			logger.info("try to create : " + title + " in " + parentPath);
 			Folder parent = (Folder) getCmisObject(parentPath);
 			CmisObject createdObject = null;
@@ -306,6 +306,11 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
         //m.put("cmis:createdBy","toto");
         document.updateProperties(m);
 		return true;
+	}
+
+	@Override
+	public boolean checkFolder(String path) {
+		return cd(path) != null;
 	}
 
 	@Override

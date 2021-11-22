@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class FsAccessFactory {
@@ -80,5 +83,41 @@ public class FsAccessFactory {
 			logger.error("target Url error " + e.getMessage());
 			throw new EsupSignatureFsException("target Url error", e);
 		}
+	}
+
+	public List<String> getTree(String path) throws EsupSignatureFsException {
+		List<String> tree = new ArrayList<>();
+		DocumentIOType type = getPathIOType(path);
+		String[] splitPath;
+		switch (type) {
+			case smb:
+				splitPath = path.split("//")[1].split("/");
+				int i = 0;
+				for (String elem : splitPath) {
+					if(i > 0) tree.add(elem);
+					i++;
+				}
+				break;
+			case vfs:
+				if(path.startsWith("/")) {
+					splitPath = path.split("/");
+					tree.addAll(Arrays.asList(splitPath));
+				} else {
+					splitPath = path.split("//")[1].split("/");
+					int j = 0;
+					for (String elem : splitPath) {
+						if(j > 0) tree.add(elem);
+						j++;
+					}
+				}
+				break;
+			case cmis:
+				splitPath = path.split("//")[1].split("/");
+				tree.addAll(Arrays.asList(splitPath));
+				break;
+			default:
+				return null;
+		}
+		return tree;
 	}
 }

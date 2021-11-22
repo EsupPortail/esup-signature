@@ -143,8 +143,6 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 			this.open();
 			if (path == null || path.length() == 0) {
 				returnValue = root; 
-			} else if (useStatefulFilesystem(path)) {
-				returnValue = root.resolveFile("/" + path);
 			} else {
 				returnValue = open(path);
 			}
@@ -338,6 +336,17 @@ public class VfsAccessImpl extends FsAccessService implements DisposableBean {
 		}
 		
 		return success;
+	}
+
+	@Override
+	public boolean checkFolder(String path) {
+		FileObject fileObject = cd(path);
+		try {
+			return fileObject.isFolder();
+		} catch (FileSystemException e) {
+			logger.warn("erorr on folder ", e);
+		}
+		return false;
 	}
 
 	@Override

@@ -249,9 +249,14 @@ public class WorkflowService {
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
                 fsAccessService.open();
-                if (fsAccessService.cd(workflow.getDocumentsSourceUri()) == null) {
-                    logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
-                    fsAccessService.createFile("/", workflow.getDocumentsSourceUri(), "folder");
+                List<String> tree = fsAccessFactory.getTree(workflow.getDocumentsSourceUri());
+                String path = "/";
+                for(String folder : tree) {
+                    if (!fsAccessService.checkFolder(workflow.getDocumentsSourceUri())) {
+                        logger.info("create non existing folders : " + workflow.getDocumentsSourceUri());
+                        fsAccessService.createFile(path, folder, "folder");
+                        path = path + folder + "/";
+                    }
                 }
                 try {
                     fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
