@@ -5,7 +5,7 @@ import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.repository.TargetRepository;
-import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactory;
+import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ public class TargetService {
     private TargetRepository targetRepository;
 
     @Resource
-    private FsAccessFactory fsAccessFactory;
+    private FsAccessFactoryService fsAccessFactoryService;
 
     public Target getById(Long id) {
         return targetRepository.findById(id).get();
@@ -37,7 +37,7 @@ public class TargetService {
     public void copyTargets(List<Target> targets, SignBook signBook, List<String> targetEmails) throws EsupSignatureFsException {
         signBook.getLiveWorkflow().getTargets().clear();
         for(Target target : targets) {
-            if(fsAccessFactory.getPathIOType(target.getTargetUri()) != DocumentIOType.mail && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
+            if(fsAccessFactoryService.getPathIOType(target.getTargetUri()) != DocumentIOType.mail && target.getTargetUri() != null && !target.getTargetUri().isEmpty()) {
                 signBook.getLiveWorkflow().getTargets().add(createTarget(target.getTargetUri()));
             }
         }
@@ -47,7 +47,7 @@ public class TargetService {
     public Target addTargetEmails(List<String> targetEmails, List<Target> targets) throws EsupSignatureFsException {
         StringBuilder targetEmailsToAdd = new StringBuilder();
         for(Target target1 : targets) {
-            if(fsAccessFactory.getPathIOType(target1.getTargetUri()).equals(DocumentIOType.mail)) {
+            if(fsAccessFactoryService.getPathIOType(target1.getTargetUri()).equals(DocumentIOType.mail)) {
                 for(String targetEmail : target1.getTargetUri().replace("mailto:", "").split(",")) {
                     if (!targetEmailsToAdd.toString().contains(targetEmail)) {
                         targetEmailsToAdd.append(targetEmail).append(",");

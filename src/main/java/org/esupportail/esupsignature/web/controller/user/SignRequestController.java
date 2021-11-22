@@ -503,7 +503,7 @@ public class SignRequestController {
         httpServletResponse.flushBuffer();
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
     public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,

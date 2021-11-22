@@ -15,24 +15,19 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
-import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.ResourceUtils;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.annotation.Resource;
 import java.io.InputStream;
 import java.util.*;
 
 public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 
 	private static final Logger logger = LoggerFactory.getLogger(CmisAccessImpl.class);
-	
-	@Resource
-	private FileService fileService;
-	
+
 	protected ResourceUtils resourceUtils;
 	
 	protected Session cmisSession;
@@ -106,7 +101,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 			else
 				path = cmisSession.getRootFolder().getId();
 		} else {
-			path = ("/" + path.replace(uri, "")).replaceAll("(?<!(http:|https:))//", "/");
+			path = path.replace("cmis://", "/");
 		}
 		return path;
 	}
@@ -114,9 +109,10 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	private CmisObject getCmisObject(String path) {
 		this.open();
 		try {
-			return cmisSession.getObjectByPath(constructPath(path));
+			CmisObject cmisObject = cmisSession.getObjectByPath(constructPath(path));
+			return cmisObject;
 		} catch (Exception e){
-			logger.warn("unable to open path : " + path, e.getMessage()) ;
+			logger.warn("unable to open path : " + path) ;
 		}
 		return null;
 	}
@@ -204,7 +200,7 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
 	@Override
 	public String createFile(String parentPath, String title, String type) {
     	if(cmisSession != null) {
-			title = constructPath(title);
+			title = constructPath(title).replaceFirst("/", "");
 			logger.info("try to create : " + title + " in " + parentPath);
 			Folder parent = (Folder) getCmisObject(parentPath);
 			CmisObject createdObject = null;
@@ -310,6 +306,11 @@ public class CmisAccessImpl extends FsAccessService implements DisposableBean {
         //m.put("cmis:createdBy","toto");
         document.updateProperties(m);
 		return true;
+	}
+
+	@Override
+	public boolean checkFolder(String path) {
+		return cd(path) != null;
 	}
 
 	@Override

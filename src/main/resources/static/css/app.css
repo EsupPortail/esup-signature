@@ -182,15 +182,19 @@ td {
 }
 
 .mini-menu {
-    width:300px;
+    width:200px;
     right: 10px;
-    z-index: 1031;
+    z-index: 1;
 }
 
 .mini-menu-thead {
     width:250px;
     margin-top: 20px;
     z-index: 10000;
+}
+
+#listSignRequestTable th {
+    z-index: 2;
 }
 
 code {
