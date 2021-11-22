@@ -61,7 +61,7 @@ public class FsConfig {
 	public CmisAccessImpl cmisAccessImpl(){
 		CmisAccessImpl cmisAccessImpl = new CmisAccessImpl();
 		cmisAccessImpl.setDriveName("CMIS");
-		cmisAccessImpl.setUri(fsProperties.getCmisUri());
+		cmisAccessImpl.setUri(fsProperties.getCmisTestUri());
 		cmisAccessImpl.setLogin(fsProperties.getCmisLogin());
 		cmisAccessImpl.setPassword(fsProperties.getCmisPassword());
 		cmisAccessImpl.setRespositoryId(fsProperties.getCmisRespositoryId());

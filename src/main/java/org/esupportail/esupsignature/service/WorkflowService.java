@@ -245,7 +245,7 @@ public class WorkflowService {
         List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
         if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
-            logger.debug("retrieve from " + workflow.getProtectedDocumentsSourceUri());
+            logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactory.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
                 fsAccessService.open();
