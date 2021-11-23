@@ -52,6 +52,9 @@ public class Form {
 
 	private Boolean deleted = false;
 
+	@Transient
+	private String messageToDisplay;
+
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
@@ -219,4 +222,11 @@ public class Form {
 		this.action = action;
 	}
 
+	public String getMessageToDisplay() {
+		return messageToDisplay;
+	}
+
+	public void setMessageToDisplay(String messageToDisplay) {
+		this.messageToDisplay = messageToDisplay;
+	}
 }

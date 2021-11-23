@@ -91,6 +91,9 @@ public class FormService {
 				}
 			}
 		}
+		for(Form form : forms) {
+			form.setMessageToDisplay(getHelpMessage(userEppn, form));
+		}
 		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
 

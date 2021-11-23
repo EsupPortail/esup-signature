@@ -253,11 +253,7 @@ public class SignRequestController {
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
-            String message = formService.getHelpMessage(userEppn, data.getForm());
-            if(message != null) {
-                model.addAttribute("form", data.getForm());
-                model.addAttribute("message", new JsonMessage("help", message));
-            }
+            model.addAttribute("form", data.getForm());
         }
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
