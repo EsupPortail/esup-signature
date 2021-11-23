@@ -211,7 +211,7 @@ public class FormService {
 				for (FieldPropertie fieldPropertie : fieldProperties) {
 					fieldPropertieService.delete(fieldPropertie.getId());
 				}
-				fieldService.deleteField(fieldId);
+				fieldService.deleteField(fieldId, formId);
 			}
 			formRepository.delete(form);
 		} else {
