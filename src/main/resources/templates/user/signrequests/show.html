@@ -662,11 +662,11 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                     <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
                         <button type="submit" id="refuseEnd" name="redirect" value="end"
-                                class="btn btn-danger me-1" title="Signer" autofocus>
+                                class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>
                         </button>
                         <button type="submit" id="refuseNext" th:if="${nextSignRequest != null}"  name="redirect" th:value="${nextSignRequest.id}"
-                                class="btn btn-danger" title="Signer" autofocus>
+                                class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                             <span>Refuser et aller à la suivante </span>
                             <i class="fas fa-arrow-alt-circle-right"></i>
                         </button>
