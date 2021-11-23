@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.FieldType;
@@ -21,6 +22,9 @@ public class FieldService {
 
 	@Resource
 	private WorkflowStepService workflowStepService;
+
+	@Resource
+	private FormService formService;
 
 	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
@@ -91,8 +95,11 @@ public class FieldService {
 		}
 	}
 
-	public void deleteField(Long fieldId) {
+	@Transactional
+	public void deleteField(Long fieldId, Long formId) {
+		Form form = formService.getById(formId);
 		Field field = getById(fieldId);
+		form.getFields().remove(field);
 		field.getWorkflowSteps().clear();
 		fieldRepository.delete(field);
 	}

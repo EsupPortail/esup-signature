@@ -278,6 +278,12 @@ public class FormAdminController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@DeleteMapping("{idForm}/fields/{id}/delete")
+	public String updateField(@PathVariable("idForm") Long idForm, @PathVariable("id") Long id) {
+		fieldService.deleteField(id, idForm);
+		return "redirect:/admin/forms/" + idForm + "/fields";
+	}
+
 	@GetMapping(value = "/get-file/{id}")
 	public void getFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
 		try {

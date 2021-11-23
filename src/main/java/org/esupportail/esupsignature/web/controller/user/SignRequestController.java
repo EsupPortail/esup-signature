@@ -253,11 +253,7 @@ public class SignRequestController {
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
-            String message = formService.getHelpMessage(userEppn, data.getForm());
-            if(message != null) {
-                model.addAttribute("form", data.getForm());
-                model.addAttribute("message", new JsonMessage("help", message));
-            }
+            model.addAttribute("form", data.getForm());
         }
         model.addAttribute("logs", logs);
         return "user/signrequests/show";
@@ -426,10 +422,14 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
         signRequestService.refuse(id, comment, userEppn, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes à bien été refusée");
-        return "redirect:/user/signrequests/" + id;
+        if(redirect.equals("end")) {
+            return "redirect:/user/signrequests/";
+        } else {
+            return "redirect:/user/signrequests/" + redirect;
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
