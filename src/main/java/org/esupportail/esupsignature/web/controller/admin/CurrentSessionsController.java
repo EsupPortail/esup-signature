@@ -58,7 +58,7 @@ public class CurrentSessionsController {
 	private EntityManager entityManager;
 
 	@GetMapping
-	public String getCurrentSessions(Model model) throws NoSuchMethodException {
+	public String getCurrentSessions(Model model) {
 		Map<String, List<Session>> allSessions = new HashMap<>();
 		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session").getResultList();
 		long sessionSize = 0;
@@ -73,9 +73,20 @@ public class CurrentSessionsController {
 				sessions.add(session);
 				if(sessionInformation != null) {
 					LdapUserDetailsImpl ldapUserDetails = (LdapUserDetailsImpl) sessionInformation.getPrincipal();
-					allSessions.put(ldapUserDetails.getUsername(), sessions);
+					if(!allSessions.containsKey(ldapUserDetails.getUsername())) {
+						allSessions.put(ldapUserDetails.getUsername(), sessions);
+					} else {
+						allSessions.get(ldapUserDetails.getUsername()).addAll(sessions);
+					}
 				} else {
-					allSessions.put(session.getId().toLowerCase(Locale.ROOT), sessions);
+					List<String> userNames = entityManager.createNativeQuery("select principal_name from spring_session where session_id = '" + sessionId + "'").getResultList();
+					if(userNames.get(0) != null) {
+						if(!allSessions.containsKey(userNames.get(0))) {
+							allSessions.put(userNames.get(0), sessions);
+						} else {
+							allSessions.get(userNames.get(0)).addAll(sessions);
+						}
+					}
 				}
 			}
 		}
