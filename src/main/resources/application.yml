@@ -111,9 +111,9 @@ ldap:
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
     mapping-filters-groups:
-        student : "eduPersonAffiliation:=student"
-        staff : "eduPersonAffiliation:=staff"
-        affiliate : "eduPersonAffiliation:=affiliate"
+        student : "(eduPersonAffiliation:=student)"
+        staff : "(eduPersonAffiliation:=staff)"
+        affiliate : "(eduPersonAffiliation:=affiliate)"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr

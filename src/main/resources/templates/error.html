@@ -25,7 +25,12 @@
     <title th:text="#{application.title}"></title>
 </head>
 <body>
-<nav th:replace="fragments/nav-empty"></nav>
+    <th:block th:if="${userEppn != null}">
+    <nav th:replace="fragments/nav"></nav>
+    </th:block>
+    <th:block th:unless="${userEppn != null}">
+    <nav th:replace="fragments/nav-empty"></nav>
+    </th:block>
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body">
             <h1>Une erreur s’est produite : <span th:text="${error}"></span></h1>

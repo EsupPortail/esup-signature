@@ -22,17 +22,16 @@ import org.esupportail.esupsignature.service.security.SessionService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.session.Session;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.*;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -55,27 +54,30 @@ public class CurrentSessionsController {
 	@Resource
 	private SessionService sessionService;
 
+	@PersistenceContext
+	private EntityManager entityManager;
+
 	@GetMapping
 	public String getCurrentSessions(Model model) throws NoSuchMethodException {
 		Map<String, List<Session>> allSessions = new HashMap<>();
-		List<Object> principals = sessionRegistry.getAllPrincipals();
+		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session").getResultList();
 		long sessionSize = 0;
-		for(Object principal: principals) {
+		for(String sessionId : sessionIds) {
 			List<Session> sessions = new ArrayList<>();
-			List<SessionInformation> sessionInformations =  sessionRegistry.getAllSessions(principal, true);
-			for(SessionInformation sessionInformation : sessionInformations) {
-				Session session = sessionService.getSessionById(sessionInformation.getSessionId());
-				if(session != null) {
-					for(String attr : session.getAttributeNames()) {
-						sessionSize += session.getAttribute(attr).toString().getBytes().length;
-					}
-					sessions.add(session);
+			Session session = sessionService.getSessionById(sessionId);
+			if(session != null) {
+				SessionInformation sessionInformation = sessionRegistry.getSessionInformation(sessionId);
+				for (String attr : session.getAttributeNames()) {
+					sessionSize += session.getAttribute(attr).toString().getBytes().length;
+				}
+				sessions.add(session);
+				if(sessionInformation != null) {
+					LdapUserDetailsImpl ldapUserDetails = (LdapUserDetailsImpl) sessionInformation.getPrincipal();
+					allSessions.put(ldapUserDetails.getUsername(), sessions);
+				} else {
+					allSessions.put(session.getId().toLowerCase(Locale.ROOT), sessions);
 				}
 			}
-			if(sessions.size() > 0) {
-				allSessions.put(((UserDetails) principal).getUsername(), sessions);
-			}
-
 		}
 		model.addAttribute("currentSessions", allSessions);
 		model.addAttribute("sessionSize", FileUtils.byteCountToDisplaySize(sessionSize));

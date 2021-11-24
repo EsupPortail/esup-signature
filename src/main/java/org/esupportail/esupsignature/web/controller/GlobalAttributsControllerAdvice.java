@@ -74,48 +74,50 @@ public class GlobalAttributsControllerAdvice {
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
-        this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
-        User user = userService.getUserByEppn(userEppn);
-        model.addAttribute("user", user);
-        parseRoles(user);
-        User authUser = userService.getByEppn(authUserEppn);
-        model.addAttribute("authUser", authUser);
-        model.addAttribute("keystoreFileName", user.getKeystoreFileName());
-        model.addAttribute("userImagesIds", user.getSignImagesIds());
-        model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
-        model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
-        model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
-        model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-        model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
-        model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
-        model.addAttribute("validationToolsEnabled", validationService != null);
-        if(this.myGlobalProperties.getVersion().isEmpty()) this.myGlobalProperties.setVersion("dev");
-        model.addAttribute("globalProperties", this.myGlobalProperties);
-        ObjectMapper objectMapper = new ObjectMapper();
-        model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(this.myGlobalProperties));
-        model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
-        model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
-        if(environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
-            model.addAttribute("profile", environment.getActiveProfiles()[0]);
-        }
-        if (buildProperties != null) {
-            model.addAttribute("version", buildProperties.getVersion());
-        } else {
-            model.addAttribute("version", "dev");
-        }
-        List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
-        if(userKeystoreService == null) {
-        	signTypes.remove(SignType.certSign);
-        	signTypes.remove(SignType.nexuSign);
-        }
-        model.addAttribute("signTypes", signTypes);
-        model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
-        model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
-        model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
-        try {
-            model.addAttribute("dssStatus", ojService.checkOjFreshness());
-        } catch (IOException e) {
-            logger.debug("enable to get dss status");
+        if(userEppn != null) {
+            this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
+            User user = userService.getUserByEppn(userEppn);
+            model.addAttribute("user", user);
+            parseRoles(user);
+            User authUser = userService.getByEppn(authUserEppn);
+            model.addAttribute("authUser", authUser);
+            model.addAttribute("keystoreFileName", user.getKeystoreFileName());
+            model.addAttribute("userImagesIds", user.getSignImagesIds());
+            model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
+            model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
+            model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
+            model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
+            model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
+            model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
+            model.addAttribute("validationToolsEnabled", validationService != null);
+            if (this.myGlobalProperties.getVersion().isEmpty()) this.myGlobalProperties.setVersion("dev");
+            model.addAttribute("globalProperties", this.myGlobalProperties);
+            ObjectMapper objectMapper = new ObjectMapper();
+            model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(this.myGlobalProperties));
+            model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
+            model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
+            if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
+                model.addAttribute("profile", environment.getActiveProfiles()[0]);
+            }
+            if (buildProperties != null) {
+                model.addAttribute("version", buildProperties.getVersion());
+            } else {
+                model.addAttribute("version", "dev");
+            }
+            List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
+            if (userKeystoreService == null) {
+                signTypes.remove(SignType.certSign);
+                signTypes.remove(SignType.nexuSign);
+            }
+            model.addAttribute("signTypes", signTypes);
+            model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
+            model.addAttribute("nbDraft", signRequestService.getNbDraftSignRequests(userEppn));
+            model.addAttribute("nbToSign", signRequestService.nbToSignSignRequests(userEppn));
+            try {
+                model.addAttribute("dssStatus", ojService.checkOjFreshness());
+            } catch (IOException e) {
+                logger.debug("enable to get dss status");
+            }
         }
     }
 
