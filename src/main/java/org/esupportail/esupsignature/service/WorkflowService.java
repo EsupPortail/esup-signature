@@ -78,6 +78,9 @@ public class WorkflowService {
     @Resource
     private TargetService targetService;
 
+    @Resource
+    private FieldService fieldService;
+
     @PostConstruct
     public void initCreatorWorkflow() {
         User creator= userService.getByEppn("creator");
@@ -243,18 +246,15 @@ public class WorkflowService {
     @Transactional
     public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureFsException {
         Workflow workflow = getById(workflowId);
-        List<FsFile> fsFiles = new ArrayList<>();
         int nbImportedFiles = 0;
         if (workflow.getDocumentsSourceUri() != null && !workflow.getDocumentsSourceUri().equals("")) {
             logger.info("retrieve from " + workflow.getProtectedDocumentsSourceUri());
             FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(workflow.getDocumentsSourceUri());
             if (fsAccessService != null) {
-                fsAccessService.open();
-
-//                fsAccessFactoryService.createPathIfNotExist(workflow.getDocumentsSourceUri());
-                fsAccessService.createURITree(workflow.getDocumentsSourceUri());
                 try {
-                    fsFiles.addAll(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
+                    fsAccessService.open();
+                    fsAccessService.createURITree(workflow.getDocumentsSourceUri());
+                    List<FsFile> fsFiles = new ArrayList<>(fsAccessService.listFiles(workflow.getDocumentsSourceUri() + "/"));
                     if (fsFiles.size() > 0) {
                         int j = 0;
                         for (FsFile fsFile : fsFiles) {
@@ -320,7 +320,7 @@ public class WorkflowService {
                         logger.info("aucun fichier à importer depuis : " + workflow.getProtectedDocumentsSourceUri());
                     }
                 } catch (Exception e) {
-                    logger.error("error on import from " + workflow.getProtectedDocumentsSourceUri(), e);
+                    logger.error("error on import from " + workflow.getProtectedDocumentsSourceUri(), e.getMessage());
                 }
                 fsAccessService.close();
             } else {
@@ -464,6 +464,12 @@ public class WorkflowService {
             for(LiveWorkflow liveWorkflow : liveWorkflows) {
                 liveWorkflow.setWorkflow(null);
                 liveWorkflow.getLiveWorkflowSteps().forEach(lws -> lws.setWorkflowStep(null));
+            }
+            for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+                List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
+                for(Field field : fields) {
+                    field.getWorkflowSteps().remove(workflowStep);
+                }
             }
             workflowRepository.delete(workflow);
         } else {
