@@ -119,6 +119,7 @@ public class GlobalAttributsControllerAdvice {
                 logger.debug("enable to get dss status");
             }
         }
+        model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
     public void parseRoles(User user) {
