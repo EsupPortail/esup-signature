@@ -524,7 +524,7 @@ public class SignBookService {
             template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
         }
         if(template.contains("[user.eppn]")) {
-            template = template.replace("[user.eppn]", user.getEppn());
+            template = template.replace("[user.eppn]", user.getEppn().replace("@", "_"));
         }
         if(template.contains("[user.name]")) {
             template = template.replace("[user.name]", user.getFirstname() + "-" + user.getName());
