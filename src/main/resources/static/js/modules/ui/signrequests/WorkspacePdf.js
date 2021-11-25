@@ -561,7 +561,7 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if(self.status === "draft" || self.status === "pending") {
+                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('title') !== undefined) {
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
                             bootbox.confirm("Supprimer cette annotation ?", function (result) {
