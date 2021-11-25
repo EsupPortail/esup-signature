@@ -471,7 +471,7 @@ export class GlobalUi {
                         break;
                 }
             } else {
-                if(event.which === 13) {
+                if(event.which === 13 && event.target.nodeName !== "TEXTAREA") {
                     let saveCommentButton = $("#saveCommentButton");
                     if(saveCommentButton.length && $("#postitComment").val() !== '') {
                         saveCommentButton.click();

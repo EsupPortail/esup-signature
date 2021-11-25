@@ -561,20 +561,22 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    postitDiv.on('mouseup', function (e) {
-                        e.stopPropagation();
-                        bootbox.confirm("Supprimer cette annotation ?", function (result) {
-                            if (result) {
-                                $.ajax({
-                                    method: 'DELETE',
-                                    url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
-                                    success: function () {
-                                        document.location.reload();
-                                    }
-                                });
-                            }
+                    if(self.status === "draft" || self.status === "pending") {
+                        postitDiv.on('mouseup', function (e) {
+                            e.stopPropagation();
+                            bootbox.confirm("Supprimer cette annotation ?", function (result) {
+                                if (result) {
+                                    $.ajax({
+                                        method: 'DELETE',
+                                        url: "/user/signrequests/delete-comment/" + self.signRequestId + "/" + comment.id + "/?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                        success: function () {
+                                            document.location.reload();
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
                 } else {
                     postitDiv.hide();
                     postitButton.css("background-color", "#EEE");
@@ -787,7 +789,9 @@ export class WorkspacePdf {
         $('#workspace').addClass('alert-warning');
         $('#commentModeButton').toggleClass('btn-outline-warning');
         $('#commentsTools').show();
-        this.changeModeSelector.set("comment");
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.set("comment");
+        }
         $('#commentsBar').show();
         $('#infos').show();
         this.pdfViewer.renderPage(1);
