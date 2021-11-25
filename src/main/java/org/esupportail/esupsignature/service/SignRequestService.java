@@ -826,10 +826,14 @@ public class SignRequestService {
 									if (signRequest.getAttachments().size() > 0) {
 										targetUrl += "/" + signRequest.getTitle();
 										for (Document attachment : signRequest.getAttachments()) {
-											documentService.exportDocument(documentIOType, targetUrl, attachment);
+											documentService.exportDocument(documentIOType, targetUrl, attachment, null);
 										}
 									}
-									documentService.exportDocument(documentIOType, targetUrl, signedFile);
+									String name = signRequest.getTitle();
+									if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
+										name = signBookService.generateName2(signRequest.getParentSignBook(), title, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
+									}
+									documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
 									target.setTargetOk(true);
 									updateStatus(signRequest, signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 								} catch (EsupSignatureFsException e) {
@@ -864,7 +868,11 @@ public class SignRequestService {
 				Document signedFile = signRequest.getLastSignedDocument();
 				String subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
-					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath);
+					String name = signRequest.getTitle();
+					if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
+						name = signBookService.generateName2(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
+					}
+					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, name);
 					signRequest.setExportedDocumentURI(documentUri);
 					updateStatus(signRequest, SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
 
