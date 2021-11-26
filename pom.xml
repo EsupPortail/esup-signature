@@ -17,10 +17,10 @@
 	<properties>
 		<start-class>org.esupportail.esupsignature.EsupSignatureApplication</start-class>
 		<bouncycastle.version>1.68</bouncycastle.version>
-		<java.version>13</java.version>
+		<java.version>14</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.30</slf4j.version>
-		<dss.framework.version>5.8</dss.framework.version>
+		<dss.framework.version>5.9</dss.framework.version>
 		<dss.framework.safeVersion>5.4.3</dss.framework.safeVersion>
 		<nexu.version>1.23</nexu.version>
 		<pdfbox.version>2.0.24</pdfbox.version>

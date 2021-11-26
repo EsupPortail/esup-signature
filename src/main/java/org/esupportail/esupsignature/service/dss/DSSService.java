@@ -29,7 +29,7 @@ public class DSSService {
         TLValidationJobSummary summary = trustedListsCertificateSource.getSummary();
         List<LOTLInfo> lotlInfos = summary.getLOTLInfos();
         for (LOTLInfo lotlInfo : lotlInfos) {
-            Identifier identifier = lotlInfo.getIdentifier();
+            Identifier identifier = lotlInfo.getDSSId();
             String xmlId = identifier.asXmlId();
             if (xmlId.equals(lotlId)) {
                 return lotlInfo;
@@ -57,7 +57,7 @@ public class DSSService {
 
     private TLInfo getTLInfoByIdFromList(String tlId, List<TLInfo> tlInfos) {
         for (TLInfo tlInfo: tlInfos) {
-            if (tlInfo.getIdentifier().asXmlId().equals(tlId)) {
+            if (tlInfo.getDSSId().asXmlId().equals(tlId)) {
                 return tlInfo;
             }
         }

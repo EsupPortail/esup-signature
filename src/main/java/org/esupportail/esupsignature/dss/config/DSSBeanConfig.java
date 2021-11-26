@@ -9,13 +9,17 @@ import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
-import eu.europa.esig.dss.service.http.commons.*;
+import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
+import eu.europa.esig.dss.service.http.commons.FileCacheDataLoader;
+import eu.europa.esig.dss.service.http.commons.OCSPDataLoader;
+import eu.europa.esig.dss.service.http.commons.TimestampDataLoader;
 import eu.europa.esig.dss.service.http.proxy.ProxyConfig;
 import eu.europa.esig.dss.service.ocsp.JdbcCacheOCSPSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
 import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
 import eu.europa.esig.dss.spi.client.http.DSSFileLoader;
 import eu.europa.esig.dss.spi.client.http.IgnoreDataLoader;
+import eu.europa.esig.dss.spi.client.jdbc.JdbcCacheConnector;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
@@ -123,7 +127,7 @@ public class DSSBeanConfig {
 	@Bean
 	public JdbcCacheCRLSource cachedCRLSource() {
 		JdbcCacheCRLSource jdbcCacheCRLSource = new JdbcCacheCRLSource();
-		jdbcCacheCRLSource.setDataSource(cacheDataSource());
+		jdbcCacheCRLSource.setJdbcCacheConnector(new JdbcCacheConnector(cacheDataSource()));
 		jdbcCacheCRLSource.setProxySource(onlineCRLSource());
 		jdbcCacheCRLSource.setDefaultNextUpdateDelay((long) (60 * 3)); // 3 minutes
 		return jdbcCacheCRLSource;
@@ -132,7 +136,7 @@ public class DSSBeanConfig {
 	@Bean
 	public JdbcCacheOCSPSource cachedOCSPSource() {
 		JdbcCacheOCSPSource jdbcCacheOCSPSource = new JdbcCacheOCSPSource();
-		jdbcCacheOCSPSource.setDataSource(cacheDataSource());
+		jdbcCacheOCSPSource.setJdbcCacheConnector(new JdbcCacheConnector(cacheDataSource()));
 		jdbcCacheOCSPSource.setProxySource(onlineOcspSource());
 		jdbcCacheOCSPSource.setDefaultNextUpdateDelay((long) (1000 * 60 * 3)); // 3 minutes
 		return jdbcCacheOCSPSource;
