@@ -64,7 +64,7 @@ public class CurrentSessionsController {
 	@SuppressWarnings("unchecked")
 	public String getCurrentSessions(Model model) {
 		Map<String, List<Session>> allSessions = new HashMap<>();
-		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session", String.class).getResultList();
+		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session").getResultList();
 		long sessionSize = 0;
 		for(String sessionId : sessionIds) {
 			List<Session> sessions = new ArrayList<>();
@@ -83,7 +83,7 @@ public class CurrentSessionsController {
 						allSessions.get(ldapUserDetails.getUsername()).addAll(sessions);
 					}
 				} else {
-					List<String> userNames = entityManager.createNativeQuery("select principal_name from spring_session where session_id = '" + sessionId + "'", String.class).getResultList();
+					List<String> userNames = entityManager.createNativeQuery("select principal_name from spring_session where session_id = '" + sessionId + "'").getResultList();
 					if(userNames.get(0) != null) {
 						if(!allSessions.containsKey(userNames.get(0))) {
 							allSessions.put(userNames.get(0), sessions);

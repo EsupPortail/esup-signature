@@ -224,6 +224,8 @@ public class SignRequestService {
 		Set<SignRequest> signRequests = new HashSet<>();
 		if (statusFilter != null && !statusFilter.isEmpty()) {
 			switch (statusFilter) {
+				case "hided":
+					return signRequestRepository.findByHidedByEppn(userEppn);
 				case "tosign":
 					signRequests.addAll(getToSignRequests(userEppn));
 					break;
@@ -255,8 +257,9 @@ public class SignRequestService {
 			signRequests.addAll(getSignRequestsRefusedByUser(userEppn));
 			signRequests.addAll(signBookService.getSignRequestByViewer(userEppn));
 			signRequests.addAll(getSharedSignedSignRequests(userEppn));
-			signRequests.removeAll(signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted));
+			signRequestRepository.findByCreateByEppnAndStatus(userEppn, SignRequestStatus.deleted).forEach(signRequests::remove);
 		}
+		signRequestRepository.findByHidedByEppn(userEppn).forEach(signRequests::remove);
 		return new ArrayList<>(signRequests);
 	}
 
@@ -1675,6 +1678,17 @@ public class SignRequestService {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
+	}
+
+	@Transactional
+	public void toggle(Long id, String userEpppn) {
+		SignRequest signRequest = getById(id);
+		User user = userService.getUserByEppn(userEpppn);
+		if(signRequest.getHidedBy().contains(user)) {
+			signRequest.getHidedBy().remove(user);
+		} else {
+			signRequest.getHidedBy().add(user);
+		}
 	}
 
 }
