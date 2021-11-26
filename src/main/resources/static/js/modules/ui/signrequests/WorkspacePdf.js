@@ -5,7 +5,7 @@ import {Message} from "../../../prototypes/Message.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentRequire, isOtp) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, signType, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp) {
         console.info("Starting workspace UI");
         this.isPdf = isPdf;
         this.isOtp = isOtp;
@@ -24,6 +24,7 @@ export class WorkspacePdf {
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.attachmentAlert = attachmentAlert;
         this.attachmentRequire = attachmentRequire;
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
@@ -363,50 +364,12 @@ export class WorkspacePdf {
                                 },
                                 callback: function (result) {
                                     if (result) {
-                                        if (self.attachmentRequire) {
-                                            bootbox.confirm({
-                                                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                                                buttons: {
-                                                    cancel: {
-                                                        label: '<i class="fa fa-times"></i> Annuler'
-                                                    },
-                                                    confirm: {
-                                                        label: '<i class="fa fa-check"></i> Continuer'
-                                                    }
-                                                },
-                                                callback: function (result) {
-                                                    if (result) {
-                                                        self.confirmLaunchSignModal();
-                                                    }
-                                                }
-                                            });
-                                        } else {
-                                            self.confirmLaunchSignModal();
-                                        }
+                                        self.checkAttachement();
                                     }
                                 }
                             });
                         } else {
-                            if (self.attachmentRequire) {
-                                bootbox.confirm({
-                                    message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                                    buttons: {
-                                        cancel: {
-                                            label: '<i class="fa fa-times"></i> Annuler'
-                                        },
-                                        confirm: {
-                                            label: '<i class="fa fa-check"></i> Continuer'
-                                        }
-                                    },
-                                    callback: function (result) {
-                                        if (result) {
-                                            self.confirmLaunchSignModal();
-                                        }
-                                    }
-                                });
-                            } else {
-                                self.confirmLaunchSignModal();
-                            }
+                            self.checkAttachement();
                         }
                     }
                 }
@@ -420,6 +383,41 @@ export class WorkspacePdf {
                 signModal = $("#signModal");
             }
             signModal.modal('show');
+        }
+    }
+
+    checkAttachement() {
+        let self = this;
+        if (this.attachmentRequire) {
+            bootbox.dialog({
+                message: "Vous devez joindre un document à cette étape avant de signer",
+                buttons: {
+                    close: {
+                        label: 'Fermer'
+                    }
+                },
+                callback: function (result) {
+                }
+            });
+        } else if (this.attachmentAlert) {
+            bootbox.confirm({
+                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
+                buttons: {
+                    cancel: {
+                        label: '<i class="fa fa-times"></i> Annuler'
+                    },
+                    confirm: {
+                        label: '<i class="fa fa-check"></i> Continuer'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        self.confirmLaunchSignModal();
+                    }
+                }
+            });
+        } else {
+            this.confirmLaunchSignModal();
         }
     }
 
