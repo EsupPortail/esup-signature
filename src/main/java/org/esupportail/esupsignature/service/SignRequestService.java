@@ -361,7 +361,7 @@ public class SignRequestService {
 
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
-								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignStepNumber()));
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
@@ -1264,7 +1264,7 @@ public class SignRequestService {
 	public void addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, String postit, Integer spotStepNumber, String authUserEppn) {
 			SignRequest signRequest = getById(id);
 		if(spotStepNumber != null && spotStepNumber > 0) {
-			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
+			SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY, spotStepNumber);
 			int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 			signRequestParams.setSignDocumentNumber(docNumber);
 			signRequest.getSignRequestParams().add(signRequestParams);
@@ -1562,6 +1562,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+			List<SignRequestParams> test = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
 				if(signRequest.getSignRequestParams().contains(signRequestParams) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
