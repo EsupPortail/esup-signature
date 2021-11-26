@@ -31,7 +31,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -58,9 +61,10 @@ public class CurrentSessionsController {
 	private EntityManager entityManager;
 
 	@GetMapping
+	@SuppressWarnings("unchecked")
 	public String getCurrentSessions(Model model) {
 		Map<String, List<Session>> allSessions = new HashMap<>();
-		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session").getResultList();
+		List<String> sessionIds = entityManager.createNativeQuery("select session_id from spring_session", String.class).getResultList();
 		long sessionSize = 0;
 		for(String sessionId : sessionIds) {
 			List<Session> sessions = new ArrayList<>();
@@ -79,7 +83,7 @@ public class CurrentSessionsController {
 						allSessions.get(ldapUserDetails.getUsername()).addAll(sessions);
 					}
 				} else {
-					List<String> userNames = entityManager.createNativeQuery("select principal_name from spring_session where session_id = '" + sessionId + "'").getResultList();
+					List<String> userNames = entityManager.createNativeQuery("select principal_name from spring_session where session_id = '" + sessionId + "'", String.class).getResultList();
 					if(userNames.get(0) != null) {
 						if(!allSessions.containsKey(userNames.get(0))) {
 							allSessions.put(userNames.get(0), sessions);
