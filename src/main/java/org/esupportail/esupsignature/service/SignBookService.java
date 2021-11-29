@@ -686,6 +686,19 @@ public class SignBookService {
 
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
+            int j = 0;
+            for (WorkflowStep workflowStep : signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
+                for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+                    for (SignRequestParams signRequestParams1 : signRequest.getSignRequestParams()) {
+                        if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                            signRequestParams.setSignStepNumber(j);
+                        }
+                    }
+                }
+                j++;
+            }
             int i = 0;
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
