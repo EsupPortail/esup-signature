@@ -21,8 +21,6 @@ public class SignRequestParams {
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signStepNumber = 0;
-
     private Integer signWidth = 150;
 
     private Integer signHeight = 75;
@@ -111,14 +109,6 @@ public class SignRequestParams {
 
     public void setSignDocumentNumber(Integer signDocumentNumber) {
         this.signDocumentNumber = signDocumentNumber;
-    }
-
-    public Integer getSignStepNumber() {
-        return signStepNumber;
-    }
-
-    public void setSignStepNumber(Integer signStepNumber) {
-        this.signStepNumber = signStepNumber;
     }
 
     public Integer getSignWidth() {
