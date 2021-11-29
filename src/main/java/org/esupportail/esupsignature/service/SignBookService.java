@@ -702,7 +702,7 @@ public class SignBookService {
 //            int i = 0;
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                    WorkflowStep workflowStep = liveWorkflowStep.getWorkflowStep();
+                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
                             for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
