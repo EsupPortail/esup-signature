@@ -686,19 +686,40 @@ public class SignBookService {
 
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            int i = 0;
+//            int j = 0;
+//            for (WorkflowStep workflowStep : signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
+//                for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+//                    for (SignRequestParams signRequestParams1 : signRequest.getSignRequestParams()) {
+//                        if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+//                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+//                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+//                            signRequestParams.setSignStepNumber(j);
+//                        }
+//                    }
+//                }
+//                j++;
+//            }
+//            int i = 0;
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    WorkflowStep workflowStep = liveWorkflowStep.getWorkflowStep();
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
-                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
-                            } else {
-                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
+                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                }
                             }
+//                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
+//                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+//                            } else {
+//                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
+//                            }
                         }
                     }
-                    i++;
+//                    i++;
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
