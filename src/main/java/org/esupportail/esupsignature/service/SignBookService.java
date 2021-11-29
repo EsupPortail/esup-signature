@@ -691,12 +691,14 @@ public class SignBookService {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                            if(signRequestParams.getSignStepNumber().equals(i)) {
+                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
                                 liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                            } else {
+                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
                             }
                         }
-                        i++;
                     }
+                    i++;
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
