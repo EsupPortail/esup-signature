@@ -124,7 +124,7 @@ public class SignRequestParamsService {
         List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
             if (liveWfSignRequestParams.size() < i + 1) {
-                SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos(), signRequestParamses.get(i).getSignStepNumber());
+                SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
                 signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
                 signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
                 signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
@@ -165,10 +165,9 @@ public class SignRequestParamsService {
         }
     }
 
-    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos, Integer setSignStepNumber) {
+    public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setSignStepNumber(setSignStepNumber);
         signRequestParams.setxPos(xPos);
         signRequestParams.setyPos(yPos);
         signRequestParamsRepository.save(signRequestParams);
