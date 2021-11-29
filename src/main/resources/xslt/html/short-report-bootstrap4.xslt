@@ -210,11 +210,10 @@
                         <xsl:attribute name="class">row mb-0</xsl:attribute>
                         <dt>
                             <xsl:attribute name="class">col-sm-5</xsl:attribute>
-                            Date de la signature:
+                            Date de la signature (GMT +00h00):
                         </dt>
                         <dd>
                             <xsl:attribute name="class">col-sm-7</xsl:attribute>
-
                             <xsl:value-of select="dss:SigningTime"/>
                         </dd>
                     </dl>

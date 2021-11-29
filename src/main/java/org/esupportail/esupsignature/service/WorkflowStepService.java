@@ -93,12 +93,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentRequire) {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire) {
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
         workflowStep.setDescription(description);
         workflowStep.setChangeable(Objects.requireNonNullElse(changeable, false));
         workflowStep.setRepeatable(Objects.requireNonNullElse(repeatable, false));
+        workflowStep.setAttachmentAlert(attachmentAlert);
         workflowStep.setAttachmentRequire(attachmentRequire);
         workflowStep.setMultiSign(Objects.requireNonNullElse(multiSign, false));
         workflowStep.setAllSignToComplete(Objects.requireNonNullElse(allSignToComplete, false));

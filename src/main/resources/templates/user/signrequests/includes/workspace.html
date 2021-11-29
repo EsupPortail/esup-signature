@@ -48,9 +48,16 @@
 <!--                </div>-->
 <!--            </th:block>-->
             <th:block th:each="comment : ${comments}">
-                <div class="circle" th:id="'inDocComment_' + ${comment.id}"
+                <div th:if="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                      th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Supprimer l'annotation">
+                    <i class="fas fa-comment fa-3x"></i>
+                </div>
+                <div th:unless="${signRequest.createBy.eppn == user.eppn && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                     class="circle" th:id="'inDocComment_' + ${comment.id}"
+                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
+                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
                     <i class="fas fa-comment fa-3x"></i>
                 </div>
             </th:block>

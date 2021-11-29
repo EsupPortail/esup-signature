@@ -24,6 +24,7 @@
         <div class="hr sidebar-label"><i class="fas fa-archive me-1"></i><span> Autres demandes</span></div>
         <a th:classappend="${statusFilter == 'followByMe'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signrequests/?statusFilter=followByMe">Demandes suivies</a>
         <a th:classappend="${statusFilter == 'sharedSign'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signrequests/?statusFilter=sharedSign">Demandes que j'ai signées lors d'une délégation</a>
+        <a th:classappend="${statusFilter == 'hided'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signrequests/?statusFilter=hided">Demandes masquées</a>
         <div class="hr sidebar-label"><i class="fab fa-firstdraft me-1 sidebar-label"></i><span> Brouillons</span></div>
         <a th:classappend="${statusFilter == 'draft'} ? 'btn-secondary' : 'btn-light'" class="btn col-3 col-md-12 mb-1 text-left sidebar-label" href="/user/signrequests/?statusFilter=draft">Brouillons
             <span title="Brouillons" th:if="${nbDraft > 0  && userEppn == authUserEppn}" class="badge bg-secondary d-none d-md-inline" th:text="${nbDraft}">

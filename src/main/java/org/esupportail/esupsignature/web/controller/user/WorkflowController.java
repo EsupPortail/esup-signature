@@ -69,9 +69,10 @@ public class WorkflowController {
                                      @RequestParam(name="multiSign", required = false) Boolean multiSign,
                                      @RequestParam(name="repeatable", required = false) Boolean repeatable,
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+                                     @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
                                      @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
         Workflow workflow = workflowService.getById(id);
-        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentRequire);
+        workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire);
         return "redirect:/user/workflows/" + id;
     }
 

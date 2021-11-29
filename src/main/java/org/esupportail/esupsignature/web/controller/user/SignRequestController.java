@@ -183,15 +183,12 @@ public class SignRequestController {
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("workflow", signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
         model.addAttribute("postits", signRequest.getComments().stream().filter(Comment::getPostit).collect(Collectors.toList()));
-        model.addAttribute("comments", signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList()));
+        List<Comment> comments = signRequest.getComments().stream().filter(comment -> !comment.getPostit() && comment.getStepNumber() == null).collect(Collectors.toList());
+        model.addAttribute("comments", comments);
         model.addAttribute("spots", signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList()));
-        boolean attachmentRequire = false;
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
-                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
-                && signRequest.getAttachments().size() == 0) {
-            attachmentRequire = true;
-        }
+        boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
+        model.addAttribute("attachmentAlert", attachmentAlert);
+        boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
         model.addAttribute("attachmentRequire", attachmentRequire);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
@@ -434,10 +431,18 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @GetMapping(value = "/restore/{id}", produces = "text/html")
-    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
+    public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         signRequestService.restore(id, authUserEppn);
         redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Restauration effectuée"));
         return "redirect:/user/signrequests/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #authUserEppn, #authUserEppn)")
+    @GetMapping(value = "/toggle/{id}", produces = "text/html")
+    public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
+                         @PathVariable("id") Long id, @RequestParam(value = "statusFilter", required = false) String statusFilter) {
+        signRequestService.toggle(id, authUserEppn);
+        return "redirect:/user/signrequests/?statusFilter=" + statusFilter;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
@@ -667,7 +672,7 @@ public class SignRequestController {
     }
 
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipent(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     public String comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "comment", required = false) String comment,
@@ -675,8 +680,14 @@ public class SignRequestController {
                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                          @RequestParam(value = "postit", required = false) String postit) {
-        signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
+                          @RequestParam(value = "postit", required = false) String postit, Model model) {
+        SignRequest signRequest = signRequestService.getById(id);
+        if(spotStepNumber == null || userEppn.equals(signRequest.getCreateBy().getEppn())) {
+            signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn);
+            model.addAttribute("message", new JsonMessage("success", "Annotation ajoutée"));
+        } else {
+            model.addAttribute("message", new JsonMessage("error", "Ajout d'emplacement non autorisé"));
+        }
         return "redirect:/user/signrequests/" + id;
     }
 
@@ -710,7 +721,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/replay-notif/{id}")
-    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,  RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
+    public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureMailException {
         signRequestService.replayNotif(id);
         redirectAttributes.addFlashAttribute("message", new JsonMessage ("success", "Votre relance a bien été envoyée"));
         return "redirect:/user/signrequests/" + id;

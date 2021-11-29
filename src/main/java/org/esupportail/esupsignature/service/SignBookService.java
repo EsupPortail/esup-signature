@@ -129,7 +129,7 @@ public class SignBookService {
         signBook.setExternal(external);
         signBook.setLiveWorkflow(liveWorkflowService.create());
         signBookRepository.save(signBook);
-        String name = generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate);
+        String name = generateName2(signBook, title, workflowName, order, user, namingTemplate);
         signBook.setName(name);
         return signBook;
     }
@@ -513,9 +513,9 @@ public class SignBookService {
         }
     }
 
-    public String generateName2(long id, String title, String worflowName, int order, User user, String template) {
+    public String generateName2(SignBook signBook, String title, String worflowName, int order, User user, String template) {
         if(template.contains("[id]")) {
-            template = template.replace("[id]", id + "");
+            template = template.replace("[id]", signBook.getId() + "");
         }
         if(template.contains("[title]")) {
             template = template.replace("[title]", title.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
@@ -524,7 +524,7 @@ public class SignBookService {
             template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
         }
         if(template.contains("[user.eppn]")) {
-            template = template.replace("[user.eppn]", user.getEppn());
+            template = template.replace("[user.eppn]", user.getEppn().replace("@", "_"));
         }
         if(template.contains("[user.name]")) {
             template = template.replace("[user.name]", user.getFirstname() + "-" + user.getName());
@@ -553,6 +553,17 @@ public class SignBookService {
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmm");
             String strDate = dateFormat.format(date);
             template = template.replace("[date-en]", strDate);
+        }
+        if(signBook.getSignRequests().size() == 1) {
+            Data data = dataService.getBySignRequest(signBook.getSignRequests().get(0));
+            if(data != null) {
+                for(Map.Entry<String, String> entry: data.getDatas().entrySet()) {
+                    if(template.contains("[form." + entry.getKey() + "]")) {
+                        template = template.replace("[form." + entry.getKey() + "]", entry.getValue());
+                    }
+                }
+
+            }
         }
         return template;
     }
@@ -679,10 +690,10 @@ public class SignBookService {
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                        if (signRequest.getSignRequestParams().size() >= i + 1) {
-                            liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                        } else {
-                            break;
+                        for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                            if(signRequestParams.getSignStepNumber().equals(i)) {
+                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                            }
                         }
                         i++;
                     }

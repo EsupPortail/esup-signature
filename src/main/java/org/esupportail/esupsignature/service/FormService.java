@@ -451,6 +451,7 @@ public class FormService {
 		}
 		for (Map.Entry<Long, Integer> entry : signRequestParamsSteps.entrySet()) {
 			SignRequestParams signRequestParams = signRequestParamsService.getById(entry.getKey());
+			signRequestParams.setSignStepNumber(entry.getValue() - 1);
 			form.getWorkflow().getWorkflowSteps().get(entry.getValue() - 1).getSignRequestParams().add(signRequestParams);
 		}
 	}
