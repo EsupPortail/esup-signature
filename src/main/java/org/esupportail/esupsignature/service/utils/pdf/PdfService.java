@@ -814,7 +814,11 @@ public class PdfService {
 
     public PdfParameters getPdfParameters(PDDocument pdDocument) {
         PDPage pdPage = pdDocument.getPage(0);
-        PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+        PdfParameters pdfParameters = new PdfParameters(
+                (int) pdPage.getMediaBox().getWidth(),
+                (int) pdPage.getMediaBox().getHeight(),
+                pdPage.getRotation(),
+                pdDocument.getNumberOfPages());
         return pdfParameters;
     }
 
