@@ -222,7 +222,7 @@ public class SignService {
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
 //			signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
+			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 //			if(signRequestParams.getAddExtra()) {
 //				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
 //			}

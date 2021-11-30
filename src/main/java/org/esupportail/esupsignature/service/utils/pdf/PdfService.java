@@ -99,7 +99,7 @@ public class PdfService {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
-            pdfParameters = getPdfParameters(pdDocument);
+            pdfParameters = getPdfParameters(pdDocument, signRequestParams.getSignPageNumber());
             
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages()) {
                 int i = 1;
@@ -793,11 +793,11 @@ public class PdfService {
         return null;
     }
 
-    public PdfParameters getPdfParameters(InputStream pdfFile) {
+    public PdfParameters getPdfParameters(InputStream pdfFile, int pageNumber) {
         PDDocument pdDocument = null;
         try {
             pdDocument = PDDocument.load(pdfFile);
-            return getPdfParameters(pdDocument);
+            return getPdfParameters(pdDocument, pageNumber);
         } catch (Exception e) {
             logger.error("error on get pdf parameters", e);
         } finally {
@@ -812,8 +812,8 @@ public class PdfService {
         return null;
     }
 
-    public PdfParameters getPdfParameters(PDDocument pdDocument) {
-        PDPage pdPage = pdDocument.getPage(0);
+    public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
+        PDPage pdPage = pdDocument.getPage(pageNumber - 1);
         PdfParameters pdfParameters = new PdfParameters(
                 (int) pdPage.getMediaBox().getWidth(),
                 (int) pdPage.getMediaBox().getHeight(),
