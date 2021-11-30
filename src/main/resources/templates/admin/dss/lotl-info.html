@@ -18,7 +18,7 @@
                     <div class="lotl"
                          th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
                         <h2>
-                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getIdentifier().asXmlId()}">
+                            <a th:href="@{/admin/dss/lotl/} + ${lotlInfo.getDSSId().asXmlId()}">
 							<span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
                                   th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
                                   th:title="${parsingResult.territory}"></span>

@@ -51,6 +51,7 @@ spring:
     session:
       jdbc:
           initialize-schema: always
+          save-mode: always
     data:
         ldap:
             repositories:
@@ -111,9 +112,9 @@ ldap:
     user-id-search-filter: (uid={0})
     member-search-filter: (&(uid={0})({1}))
     mapping-filters-groups:
-        student : "eduPersonAffiliation:=student"
-        staff : "eduPersonAffiliation:=staff"
-        affiliate : "eduPersonAffiliation:=affiliate"
+        student : "(eduPersonAffiliation:=student)"
+        staff : "(eduPersonAffiliation:=staff)"
+        affiliate : "(eduPersonAffiliation:=affiliate)"
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
@@ -141,14 +142,13 @@ dss:
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
     oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
-    trusted-certificat-url-list: 
 
 fs:
 #    smb-login: esup-signature
 #    smb-password: password
-#    smb-uri: smb://smb.univ-ville.fr
+#    smb-test-uri: smb://smb.univ-ville.fr
     vfs-test-uri: /tmp
-#    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
+    cmis-test-uri: https://esup-signature.univ-ville.fr/nuxeo
 #    cmis-login: Administrator
 #    cmis-password: Administrator
 #    cmis-respository-id: default

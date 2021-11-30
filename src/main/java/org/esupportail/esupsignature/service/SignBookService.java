@@ -129,7 +129,7 @@ public class SignBookService {
         signBook.setExternal(external);
         signBook.setLiveWorkflow(liveWorkflowService.create());
         signBookRepository.save(signBook);
-        String name = generateName2(signBook.getId(), title, workflowName, order, user, namingTemplate);
+        String name = generateName2(signBook, title, workflowName, order, user, namingTemplate);
         signBook.setName(name);
         return signBook;
     }
@@ -513,9 +513,9 @@ public class SignBookService {
         }
     }
 
-    public String generateName2(long id, String title, String worflowName, int order, User user, String template) {
+    public String generateName2(SignBook signBook, String title, String worflowName, int order, User user, String template) {
         if(template.contains("[id]")) {
-            template = template.replace("[id]", id + "");
+            template = template.replace("[id]", signBook.getId() + "");
         }
         if(template.contains("[title]")) {
             template = template.replace("[title]", title.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
@@ -524,7 +524,7 @@ public class SignBookService {
             template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
         }
         if(template.contains("[user.eppn]")) {
-            template = template.replace("[user.eppn]", user.getEppn());
+            template = template.replace("[user.eppn]", user.getEppn().replace("@", "_"));
         }
         if(template.contains("[user.name]")) {
             template = template.replace("[user.name]", user.getFirstname() + "-" + user.getName());
@@ -553,6 +553,17 @@ public class SignBookService {
             DateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmm");
             String strDate = dateFormat.format(date);
             template = template.replace("[date-en]", strDate);
+        }
+        if(signBook.getSignRequests().size() == 1) {
+            Data data = dataService.getBySignRequest(signBook.getSignRequests().get(0));
+            if(data != null) {
+                for(Map.Entry<String, String> entry: data.getDatas().entrySet()) {
+                    if(template.contains("[form." + entry.getKey() + "]")) {
+                        template = template.replace("[form." + entry.getKey() + "]", entry.getValue());
+                    }
+                }
+
+            }
         }
         return template;
     }
@@ -675,17 +686,40 @@ public class SignBookService {
 
     public void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            int i = 0;
+//            int j = 0;
+//            for (WorkflowStep workflowStep : signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps()) {
+//                for(SignRequestParams signRequestParams : workflowStep.getSignRequestParams()) {
+//                    for (SignRequestParams signRequestParams1 : signRequest.getSignRequestParams()) {
+//                        if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+//                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+//                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+//                            signRequestParams.setSignStepNumber(j);
+//                        }
+//                    }
+//                }
+//                j++;
+//            }
+//            int i = 0;
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                        if (signRequest.getSignRequestParams().size() >= i + 1) {
-                            liveWorkflowStep.getSignRequestParams().add(signRequest.getSignRequestParams().get(i));
-                        } else {
-                            break;
+                        for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                }
+                            }
+//                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
+//                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+//                            } else {
+//                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
+//                            }
                         }
-                        i++;
                     }
+//                    i++;
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {

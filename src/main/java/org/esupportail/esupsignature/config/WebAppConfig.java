@@ -90,6 +90,7 @@ public class WebAppConfig implements WebMvcConfigurer {
 		registrationBean.setOrder(5);
 		registrationBean.addUrlPatterns(
 				"/user/", "/user/*",
+				"/error",
 				"/ws-secure/", "/ws-secure/*",
 				"/admin/", "/admin/*",
 				"/manager/", "/manager/*",

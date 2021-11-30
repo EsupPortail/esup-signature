@@ -155,18 +155,19 @@ public class WorkflowAdminController {
 
 	@PostMapping(value = "/update-step/{id}/{step}")
 	public String updateStep(@ModelAttribute("authUserEppn") String authUserEppn,
-									 @PathVariable("id") Long id,
-									 @PathVariable("step") Integer step,
-									 @RequestParam(name="signType") SignType signType,
-									 @RequestParam(name="description") String description,
-									 @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
-									 @RequestParam(name="repeatable", required = false) Boolean repeatable,
-									 @RequestParam(name="multiSign", required = false) Boolean multiSign,
-									 @RequestParam(name="changeable", required = false) Boolean changeable,
-									 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
-									 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
+							 @PathVariable("id") Long id,
+							 @PathVariable("step") Integer step,
+							 @RequestParam(name="signType") SignType signType,
+							 @RequestParam(name="description") String description,
+							 @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
+							 @RequestParam(name="repeatable", required = false) Boolean repeatable,
+							 @RequestParam(name="multiSign", required = false) Boolean multiSign,
+							 @RequestParam(name="changeable", required = false) Boolean changeable,
+							 @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
+							 @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
+							 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentRequire);
+		workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire);
 		return "redirect:/admin/workflows/" + id;
 	}
 

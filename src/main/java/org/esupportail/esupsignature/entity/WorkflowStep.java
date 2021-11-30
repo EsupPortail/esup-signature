@@ -34,6 +34,8 @@ public class WorkflowStep {
 
     private Boolean allSignToComplete = false;
 
+    private Boolean attachmentAlert = false;
+
     private Boolean attachmentRequire = false;
 
     private Boolean multiSign = true;
@@ -87,6 +89,14 @@ public class WorkflowStep {
 
     public void setAllSignToComplete(Boolean allSignToComplete) {
         this.allSignToComplete = allSignToComplete;
+    }
+
+    public Boolean getAttachmentAlert() {
+        return attachmentAlert;
+    }
+
+    public void setAttachmentAlert(Boolean attachmentAlert) {
+        this.attachmentAlert = attachmentAlert;
     }
 
     public Boolean getAttachmentRequire() {

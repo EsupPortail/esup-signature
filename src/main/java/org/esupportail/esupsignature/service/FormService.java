@@ -261,8 +261,12 @@ public class FormService {
 				if (kids != null) {
 					for (COSObjectable kid : kids) {
 						COSBase kidObject = kid.getCOSObject();
-						if (kidObject instanceof COSDictionary)
-							page = pageNrByAnnotDict.get(kidObject);
+						if (kidObject instanceof COSDictionary) {
+							if (pageNrByAnnotDict.get(kidObject) != null) {
+								page = pageNrByAnnotDict.get(kidObject);
+								break;
+							}
+						}
 					}
 				}
 				if (pdField instanceof PDTextField) {

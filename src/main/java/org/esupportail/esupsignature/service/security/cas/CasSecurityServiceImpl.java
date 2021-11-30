@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.service.security.cas;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
+import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
+import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
@@ -54,7 +56,13 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Resource
 	private LdapContextSource ldapContextSource;
-	
+
+	@Resource
+	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
+
+	@Resource
+	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
+
 	@Override
 	public String getTitle() {
 		return casProperties.getTitle();
@@ -131,6 +139,8 @@ public class CasSecurityServiceImpl implements SecurityService {
 	public LdapUserDetailsService ldapUserDetailsService() {
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getUserIdSearchFilter(), ldapContextSource);
 		CasLdapAuthoritiesPopulator casLdapAuthoritiesPopulator = new CasLdapAuthoritiesPopulator(ldapContextSource, ldapProperties.getGroupSearchBase());
+		casLdapAuthoritiesPopulator.setMappingFiltersGroupsRepository(mappingFiltersGroupsRepository);
+		casLdapAuthoritiesPopulator.setMappingGroupsRolesRepository(mappingGroupsRolesRepository);
 		casLdapAuthoritiesPopulator.setRolePrefix("");
 		casLdapAuthoritiesPopulator.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		casLdapAuthoritiesPopulator.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
