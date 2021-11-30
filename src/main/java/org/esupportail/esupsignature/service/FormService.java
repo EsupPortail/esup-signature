@@ -1,13 +1,9 @@
 package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
@@ -252,23 +248,10 @@ public class FormService {
 		PDDocument pdDocument = PDDocument.load(inputStream);
 		PDFieldTree pdFields = pdfService.getFields(pdDocument);
 		if(pdFields != null) {
-			PDDocumentCatalog pdDocumentDocumentCatalog = pdDocument.getDocumentCatalog();
-			Map<COSDictionary, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocumentDocumentCatalog);
+			Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
 			for (PDField pdField : pdFields) {
-				logger.info(pdField.getFullyQualifiedName());
-				List<PDAnnotationWidget> kids = pdField.getWidgets();
-				int page = 1;
-				if (kids != null) {
-					for (COSObjectable kid : kids) {
-						COSBase kidObject = kid.getCOSObject();
-						if (kidObject instanceof COSDictionary) {
-							if (pageNrByAnnotDict.get(kidObject) != null) {
-								page = pageNrByAnnotDict.get(kidObject);
-								break;
-							}
-						}
-					}
-				}
+				logger.info(pdField.getFullyQualifiedName() + " finded");
+				int page = pageNrByAnnotDict.get(pdField.getPartialName());
 				if (pdField instanceof PDTextField) {
 					Field field = fieldService.createField(pdField.getPartialName(), workflow);
 					field.setLabel(pdField.getAlternateFieldName());
@@ -307,7 +290,7 @@ public class FormService {
 					}
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
-					logger.info("added");
+					logger.info(field.getName() + " added");
 				} else if (pdField instanceof PDCheckBox) {
 					Field field = fieldService.createField(pdField.getPartialName(), workflow);
 					field.setRequired(pdField.isRequired());
@@ -317,19 +300,22 @@ public class FormService {
 					PDAnnotationWidget pdAnnotationWidget = pdField.getWidgets().get(0);
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
-					logger.info("added");
+					logger.info(field.getName() + " added");
 				} else if (pdField instanceof PDRadioButton) {
-					List<PDAnnotationWidget> pdAnnotationWidgets = pdField.getWidgets();
-					for (PDAnnotationWidget pdAnnotationWidget : pdAnnotationWidgets) {
+					PDRadioButton pdRadioButton = (PDRadioButton) pdField;
+					for (PDAnnotationWidget pdAnnotationWidget : pdRadioButton.getWidgets()) {
+						if(pdAnnotationWidget.getRectangle() == null) {
+							continue;
+						}
 						Field field = fieldService.createField(pdField.getPartialName(), workflow);
 						field.setType(FieldType.radio);
 						field.setRequired(pdField.isRequired());
 						field.setReadOnly(pdField.isReadOnly());
-//					COSName labelCOSName = (COSName) pdAnnotationWidget.getAppearance().getNormalAppearance().getSubDictionary().keySet().toArray()[0];
 						field.setLabel(pdField.getAlternateFieldName());
 						parseField(field, pdField, pdAnnotationWidget, page);
 						fields.add(field);
-						logger.info("added");
+						logger.info(field.getName() + " added");
+						break;
 					}
 				} else if (pdField instanceof PDChoice) {
 					Field field = fieldService.createField(pdField.getPartialName(), workflow);
@@ -340,7 +326,7 @@ public class FormService {
 					field.setLabel(pdField.getAlternateFieldName());
 					parseField(field, pdField, pdAnnotationWidget, page);
 					fields.add(field);
-					logger.info("added");
+					logger.info(field.getName() + " added");
 				}
 			}
 			fields = fields.stream().sorted(Comparator.comparingInt(Field::getLeftPos)).sorted(Comparator.comparingInt(Field::getTopPos).reversed()).sorted(Comparator.comparingInt(Field::getPage)).collect(Collectors.toList());
