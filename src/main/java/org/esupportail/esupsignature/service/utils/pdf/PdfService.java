@@ -2,12 +2,10 @@ package org.esupportail.esupsignature.service.utils.pdf;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -692,16 +690,8 @@ public class PdfService {
                                 pdTextField.setValue(value);
                                 pdAcroForm.getFields().add(pdTextField);
                                 pdAcroForm.getFields().remove(pdListBox);
-                                Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument.getDocumentCatalog());
-                                int page = 1;
-                                List<PDAnnotationWidget> kids = pdField.getWidgets();
-                                if (kids != null) {
-                                    for (COSObjectable kid : kids) {
-                                        COSBase kidObject = kid.getCOSObject();
-                                        if (kidObject instanceof COSDictionary)
-                                            page = pageNrByAnnotDict.get(kidObject);
-                                    }
-                                }
+                                Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
+                                int page = pageNrByAnnotDict.get(pdField.getPartialName());
                                 int countPage = 1;
                                 for (PDPage pdPage : pdDocument.getPages()) {
                                     pdPage.getAnnotations().removeAll(pdListBox.getWidgets());
@@ -880,17 +870,51 @@ public class PdfService {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    public Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
-        Iterator<PDPage> pages = docCatalog.getPages().iterator();
-        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-        int i = 0;
-        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-            PDPage pdPage = it.next();
-            for (PDAnnotation annotation : pdPage.getAnnotations()) {
-                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+    int determineSafe(PDDocument document, PDAnnotationWidget widget) throws IOException {
+        COSDictionary widgetObject = widget.getCOSObject();
+        PDPageTree pages = document.getPages();
+        for (int i = 0; i < pages.getCount(); i++) {
+            for (PDAnnotation annotation : pages.get(i).getAnnotations()) {
+                COSDictionary annotationObject = annotation.getCOSObject();
+                if (annotationObject.equals(widgetObject)) {
+                    return i + 1;
+                }
             }
-            i++;
         }
+        return -1;
+    }
+
+    int determineFast(PDDocument document, PDAnnotationWidget widget)
+    {
+        PDPage page = widget.getPage();
+        return page != null ? document.getPages().indexOf(page) : -1;
+    }
+
+    public Map<String, Integer> getPageNumberByAnnotDict(PDDocument pdDocument) throws IOException {
+        Iterator<PDPage> pages = pdDocument.getDocumentCatalog().getPages().iterator();
+        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+        Map<String, Integer> pageNrByAnnotDict = new HashMap<>();
+        for (PDField field : pdAcroForm.getFieldTree()) {
+            for (PDAnnotationWidget widget : field.getWidgets()) {
+                int pageNb = determineFast(pdDocument, widget);
+                if(pageNb == -1) {
+                    pageNb = determineSafe(pdDocument, widget);
+                }
+                if(pageNb > -1) {
+                    pageNrByAnnotDict.put(field.getPartialName(), pageNb);
+                }
+            }
+        }
+//
+//        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
+//        int i = 0;
+//        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
+//            PDPage pdPage = it.next();
+//            for (PDAnnotation annotation : pdPage.getAnnotations()) {
+//                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+//            }
+//            i++;
+//        }
         return pageNrByAnnotDict;
     }
 }
