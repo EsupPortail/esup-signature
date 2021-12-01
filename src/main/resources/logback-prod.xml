@@ -4,7 +4,6 @@
     <!-- default configuration from springboot -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-
     <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
         <smtpHost>smtp.univ-ville.fr</smtpHost>
         <smtpPort>25</smtpPort>
@@ -21,29 +20,11 @@
     </appender>
 
     <logger name="org.esupportail.esupsignature" level="info" additivity="false">
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <logger name="org.verapdf" level="error" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="org.apache.pdfbox" level="error" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="eu.europa.esig.dss" level="warn" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="org.springframework.web.filter.CommonsRequestLoggingFilter" level="warn" additivity="false">
-        <appender-ref ref="FILE"/>
+        <appender-ref ref="EMAIL"/>
     </logger>
 
     <root level="info">
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="EMAIL"/>
     </root>
 
 </configuration>

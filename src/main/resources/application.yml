@@ -205,7 +205,16 @@ sign:
 
 logging:
     file:
-        name: logs/esup-signature.log
+        name: esup-signature.log
+        path: logs/
+    level:
+        root: info
+        org.esupportail.esupsignature: info
+        org.verapdf: error
+        org.apache.pdfbox: error
+        eu.europa.esig.dss: error
+        org.springframework.web.filter.CommonsRequestLoggingFilter: error
+#    config: classpath:logback-prod.xml
 
 springdoc:
     api-docs:
