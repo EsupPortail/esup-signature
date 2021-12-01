@@ -71,7 +71,7 @@ public class ScheduledTaskService {
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			workflowService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			signRequestService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
@@ -82,9 +82,9 @@ public class ScheduledTaskService {
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook, "scheduler");
+				signRequestService.exportFilesToTarget(signBook, "scheduler");
 				if(globalProperties.getArchiveUri() != null) {
-					signBookService.archivesFiles(signBook, "scheduler");
+					signRequestService.archivesFiles(signBook, "scheduler");
 				}
 			} catch (EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());
@@ -99,7 +99,7 @@ public class ScheduledTaskService {
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
-				signBookService.cleanFiles(signBook, "scheduler");
+				signRequestService.cleanFiles(signBook, "scheduler");
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");

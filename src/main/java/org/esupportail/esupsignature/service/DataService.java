@@ -54,9 +54,6 @@ public class DataService {
     private WorkflowService workflowService;
 
     @Resource
-    private UserShareService userShareService;
-
-    @Resource
     private UserService userService;
 
     @Resource
@@ -72,21 +69,11 @@ public class DataService {
         return dataRepository.findById(dataId).get();
     }
 
-    public List<Data> getDatasByForm(Long formId) {
-        return dataRepository.findByFormId(formId);
-    }
-
     public void delete(Long id, String userEppn) {
         Data data = getById(id);
         if (data.getSignBook() != null) {
             signBookService.delete(data.getSignBook().getId(), userEppn);
         }
-        data.setForm(null);
-        dataRepository.delete(data);
-    }
-
-    public void deleteOnlyData(Long id) {
-        Data data = getById(id);
         data.setForm(null);
         dataRepository.delete(data);
     }
@@ -126,7 +113,7 @@ public class DataService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
+        signRequestService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
@@ -198,14 +185,6 @@ public class DataService {
             }
         }
         return null;
-    }
-
-    public Data getBySignRequest(SignRequest signRequest) {
-        return getBySignBook(signRequest.getParentSignBook());
-    }
-
-    public Data getBySignBook(SignBook signBook) {
-        return dataRepository.findBySignBook(signBook);
     }
 
     public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
@@ -287,18 +266,6 @@ public class DataService {
         data.setCreateDate(new Date());
         dataRepository.save(data);
         return data;
-    }
-
-    public void nullifyForm(Form form) {
-        List<Data> datas = dataRepository.findByFormId(form.getId());
-        for(Data data : datas) {
-            data.setForm(null);
-        }
-    }
-
-    public void nullifySignBook(SignBook signBook) {
-        Data data = getBySignBook(signBook);
-        if(data != null) data.setSignBook(null);
     }
 
     public long getNbCreateByAndStatus(String userEppn) {

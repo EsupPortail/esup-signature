@@ -6,6 +6,8 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.repository.FieldRepository;
+import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +23,10 @@ public class FieldService {
 	private FieldRepository fieldRepository;
 
 	@Resource
-	private WorkflowStepService workflowStepService;
+	private WorkflowStepRepository workflowStepRepository;
 
 	@Resource
-	private FormService formService;
+	private FormRepository formRepository;
 
 	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
@@ -68,7 +70,7 @@ public class FieldService {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		if(workflowStepsIds != null) {
 			for (Long workflowStepId : workflowStepsIds) {
-				workflowSteps.add(workflowStepService.getById(workflowStepId));
+				workflowSteps.add(workflowStepRepository.findById(workflowStepId).get());
 			}
 		}
 		setFieldValues(description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
@@ -97,7 +99,7 @@ public class FieldService {
 
 	@Transactional
 	public void deleteField(Long fieldId, Long formId) {
-		Form form = formService.getById(formId);
+		Form form = formRepository.findById(formId).get();
 		Field field = getById(fieldId);
 		form.getFields().remove(field);
 		field.getWorkflowSteps().clear();

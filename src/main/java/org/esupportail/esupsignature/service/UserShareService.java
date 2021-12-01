@@ -4,7 +4,10 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.UserShareRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,18 +33,18 @@ public class UserShareService {
     private UserShareRepository userShareRepository;
 
     @Resource
-    private DataService dataService;
-
-    @Resource
-    private SignRequestService signRequestService;
-    
-    @Resource
-    private FormService formService;
-    
-    @Resource
-    private WorkflowService workflowService;
+    private RecipientService recipientService;
 
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
+
+    @Resource
+    private FormRepository formRepository;
+
+    @Resource
+    private WorkflowRepository workflowRepository;
+
+    @Resource
+    private DataRepository dataRepository;
 
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
@@ -77,7 +80,7 @@ public class UserShareService {
         }
         userShare.getShareTypes().addAll(shareTypes);
         for(Long formId : formsIds) {
-            Form form = formService.getById(formId);
+            Form form = formRepository.findById(formId).get();
             if(form.getAuthorizedShareTypes().containsAll(shareTypes)) {
                 userShare.setForm(form);
             } else {
@@ -85,7 +88,7 @@ public class UserShareService {
             }
         }
         for(Long workflowId : workflowsIds) {
-            Workflow workflow = workflowService.getById(workflowId);
+            Workflow workflow = workflowRepository.findById(workflowId).get();
             if(userShareRepository.findByUserEppnAndWorkflow(user.getEppn(), workflow).size() == 0) {
                 if (workflow.getAuthorizedShareTypes().containsAll(shareTypes)) {
                  userShare.setWorkflow(workflow);
@@ -173,7 +176,7 @@ public class UserShareService {
             userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndWorkflowAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), workflow, shareType));
 
         }
-        Data data = dataService.getBySignRequest(signRequest);
+        Data data = dataRepository.findBySignBook(signRequest.getParentSignBook());
         if(data != null && data.getForm() != null) {
             userShares.addAll(userShareRepository.findByUserEppnAndToUsersEppnInAndFormAndShareTypesContains(fromUserEppn, Arrays.asList(toUserEppn), data.getForm(), shareType));
         }
@@ -194,6 +197,16 @@ public class UserShareService {
         return false;
     }
 
+    public boolean checkUserViewRights(String userEppn, String authUserEppn, SignBook signBook) {
+        List<Recipient> recipients = new ArrayList<>();
+        for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            recipients.addAll(liveWorkflowStep.getRecipients());
+        }
+        if(checkAllShareTypesForSignRequest(userEppn, authUserEppn, signBook.getSignRequests().get(0)) || signBook.getViewers().stream().anyMatch(user -> user.getEppn().equals(authUserEppn)) || signBook.getCreateBy().getEppn().equals(authUserEppn) || recipientService.recipientsContainsUser(recipients, authUserEppn) > 0) {
+            return true;
+        }
+        return false;
+    }
 
     public Boolean isOneShareActive(String fromUserEppn, String toUserEppn) {
         List<UserShare> userShares = userShareRepository.findByUserEppnAndToUsersEppnIn(fromUserEppn, Collections.singletonList(toUserEppn));
@@ -277,28 +290,6 @@ public class UserShareService {
 
     public List<UserShare> getByToUsersInAndShareTypesContains(List<String> usersIds, ShareType shareType) {
         return userShareRepository.findByToUsersEppnInAndShareTypesContains(usersIds, shareType);
-    }
-
-    public User checkShareForSignRequest(SignRequest signRequest, String authUserEppn) {
-        SignBook signBook = signRequest.getParentSignBook();
-        if(signBook != null) {
-            List<UserShare> userShares = userShareRepository.findByToUsersEppnInAndShareTypesContains(Collections.singletonList(authUserEppn), ShareType.sign);
-            for (UserShare userShare : userShares) {
-                Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-                if(userShare.getWorkflow().equals(workflow) && signRequestService.checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
-                    return userShare.getUser();
-                }
-            }
-            Data data = dataService.getBySignBook(signBook);
-            if(data !=  null) {
-                for (UserShare userShare : userShares) {
-                    if (userShare.getForm().equals(data.getForm()) && signRequestService.checkUserSignRights(signRequest, userShare.getUser().getEppn(), authUserEppn)) {
-                        return userShare.getUser();
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public List<UserShare> getByUserAndToUsersInAndShareTypesContains(String userEppn, User authUser, ShareType shareType) {

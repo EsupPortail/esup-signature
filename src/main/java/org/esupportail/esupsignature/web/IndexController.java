@@ -22,9 +22,9 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
@@ -49,6 +49,9 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
+
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "home";
@@ -56,9 +59,6 @@ public class IndexController {
 
 	@Resource
 	private List<SecurityService> securityServices;
-
-	@Resource
-	private UserShareService userShareService;
 
 	@Resource
 	private UserService userService;
@@ -116,7 +116,7 @@ public class IndexController {
 				try {
 					SignRequest signRequest = signRequestService.getById(Long.parseLong(uriParams[3]));
 					if (signRequest != null) {
-						User suUser = userShareService.checkShareForSignRequest(signRequest, authUser.getEppn());
+						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
 							httpSession.setAttribute("suEppn", suUser);
 							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));
