@@ -214,7 +214,7 @@ logging:
         org.apache.pdfbox: error
         eu.europa.esig.dss: error
         org.springframework.web.filter.CommonsRequestLoggingFilter: error
-#    config: classpath:logback.xml
+#    config: classpath:logback-prod.xml
 
 springdoc:
     api-docs:

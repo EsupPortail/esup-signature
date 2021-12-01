@@ -4,12 +4,11 @@
     <!-- default configuration from springboot -->
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-
     <appender name="EMAIL" class="ch.qos.logback.classic.net.SMTPAppender">
-        <smtpHost>smtp.univ-rouen.fr</smtpHost>
+        <smtpHost>smtp.univ-ville.fr</smtpHost>
         <smtpPort>25</smtpPort>
-        <to>david.lemaignent@univ-rouen.fr</to>
-        <from>esup-signature@univ-rouen.fr</from>
+        <to>support@univ-ville.fr</to>
+        <from>esup-signature@univ-ville.fr</from>
         <subject>%-5level - esup-signature %date{dd/MM/yyyy HH:mm:ss}
         </subject>
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -20,8 +19,12 @@
         </filter>
     </appender>
 
-    <logger name="org.esupportail.esupsignature" level="info" additivity="true">
+    <logger name="org.esupportail.esupsignature" level="info" additivity="false">
         <appender-ref ref="EMAIL"/>
     </logger>
+
+    <root level="info">
+        <appender-ref ref="EMAIL"/>
+    </root>
 
 </configuration>
