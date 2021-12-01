@@ -1695,4 +1695,15 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional
+	public Reports validate(long signRequestId) throws IOException {
+		List<Document> documents = getToSignDocuments(signRequestId);
+		if(documents.size() > 0) {
+			byte[] bytes = getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
+			return validationService.validate(new ByteArrayInputStream(bytes), null);
+		} else {
+			return null;
+		}
+	}
+
 }

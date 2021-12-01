@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.config.security;
 
+import org.esupportail.esupsignature.config.security.cas.CasConfig;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
+import org.esupportail.esupsignature.config.security.shib.ShibConfig;
 import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
@@ -26,10 +28,7 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity(debug = false)
@@ -40,13 +39,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private WebSecurityProperties webSecurityProperties;
 
 	@Resource
-	private List<SecurityService> securityServices;
+	private CasConfig casConfig;
+
+	@Resource
+	private ShibConfig shibConfig;
+
+	private List<SecurityService> securityServices = new ArrayList<>();
 	
 	private List<DevSecurityFilter> devSecurityFilters;
 
 	@Autowired(required = false)
 	public void setDevSecurityFilters(List<DevSecurityFilter> devSecurityFilters) {
 		this.devSecurityFilters = devSecurityFilters;
+	}
+
+	public WebSecurityConfig() {
+		if(casConfig != null) {
+			securityServices.add(casConfig.casSecurityServiceImpl());
+		}
+
+		if(shibConfig != null) {
+			securityServices.add(shibConfig.shibSecurityServiceImpl());
+		}
 	}
 
 	@Override

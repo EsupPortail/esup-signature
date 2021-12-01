@@ -219,7 +219,7 @@ public class SignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = validationService.validate(id);
+        Reports reports = signRequestService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
         }

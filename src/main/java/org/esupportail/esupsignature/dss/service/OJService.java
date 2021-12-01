@@ -6,6 +6,7 @@ import eu.europa.esig.dss.spi.tsl.TLValidationJobSummary;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
+import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,7 @@ public class OJService {
 	private static final Logger logger = LoggerFactory.getLogger(OJService.class);
 
 	@Resource
-	private DSSBeanConfig dssBeanConfig;
+	private TLValidationJob job;
 
 	@Resource
 	@Qualifier("european-trusted-list-certificate-source")
@@ -37,15 +38,15 @@ public class OJService {
 
 	public void getCertificats() {
 		ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
-		dssBeanConfig.job().offlineRefresh();
-		dssBeanConfig.job().onlineRefresh();
+		job.offlineRefresh();
+		job.onlineRefresh();
 	}
 	
 	public void refresh() {
 		try {
 			if(checkOjFreshness()) {
 				logger.info("start online refreshing oj keystore");
-				dssBeanConfig.job().onlineRefresh();
+				job.onlineRefresh();
 			} else {
 				logger.info("no online refresh needed for trusted lists");
 			}

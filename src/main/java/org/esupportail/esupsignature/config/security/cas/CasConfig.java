@@ -25,7 +25,7 @@ public class CasConfig {
 	}
 
 	@Bean
-	public CasSecurityServiceImpl CasSecurityServiceImpl() {
+	public CasSecurityServiceImpl casSecurityServiceImpl() {
 		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
 			return new CasSecurityServiceImpl();
 		} else {
