@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,10 @@ public class LiveWorkflowStepService {
     private UserService userService;
 
     @Resource
-    private SignBookService signBookService;
+    private UserPropertieService userPropertieService;
 
     @Resource
-    private UserPropertieService userPropertieService;
+    private SignBookRepository signBookRepository;
 
     public LiveWorkflowStep createLiveWorkflowStep(WorkflowStep workflowStep, Boolean repeatable, Boolean multiSign, Boolean autoSign, Boolean allSignToComplete, SignType signType, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
@@ -94,7 +95,7 @@ public class LiveWorkflowStepService {
 
     @Transactional
     public void addNewStepToSignBook(Long signBookId, SignType signType, Boolean allSignToComplete, List<String> recipientsEmails, List<JsonExternalUserInfo> externalUsersInfos, String authUserEppn) {
-        SignBook signBook = signBookService.getById(signBookId);
+        SignBook signBook = signBookRepository.findById(signBookId).get();
         logger.info("add new workflow step to signBook " + signBook.getName() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = createLiveWorkflowStep(null,false, true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);

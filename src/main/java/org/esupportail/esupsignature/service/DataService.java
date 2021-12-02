@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -54,9 +53,6 @@ public class DataService {
     private WorkflowService workflowService;
 
     @Resource
-    private UserShareService userShareService;
-
-    @Resource
     private UserService userService;
 
     @Resource
@@ -72,21 +68,11 @@ public class DataService {
         return dataRepository.findById(dataId).get();
     }
 
-    public List<Data> getDatasByForm(Long formId) {
-        return dataRepository.findByFormId(formId);
-    }
-
     public void delete(Long id, String userEppn) {
         Data data = getById(id);
         if (data.getSignBook() != null) {
             signBookService.delete(data.getSignBook().getId(), userEppn);
         }
-        data.setForm(null);
-        dataRepository.delete(data);
-    }
-
-    public void deleteOnlyData(Long id) {
-        Data data = getById(id);
         data.setForm(null);
         dataRepository.delete(data);
     }
@@ -126,7 +112,7 @@ public class DataService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signBookService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
+        signRequestService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
@@ -200,14 +186,6 @@ public class DataService {
         return null;
     }
 
-    public Data getBySignRequest(SignRequest signRequest) {
-        return getBySignBook(signRequest.getParentSignBook());
-    }
-
-    public Data getBySignBook(SignBook signBook) {
-        return dataRepository.findBySignBook(signBook);
-    }
-
     public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
         List<Field> prefilledFields;
         if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
@@ -271,8 +249,7 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, String userEppn, String authUserEppn) {
-        User user = userService.getUserByEppn(userEppn);
+    public Data addData(Long id, String authUserEppn) {
         User authUser = userService.getUserByEppn(authUserEppn);
         Form form = formService.getById(id);
         Data data = new Data();
@@ -283,37 +260,9 @@ public class DataService {
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
         data.setCreateBy(authUser);
-//        data.setOwner(user);
         data.setCreateDate(new Date());
         dataRepository.save(data);
         return data;
-    }
-
-    public void nullifyForm(Form form) {
-        List<Data> datas = dataRepository.findByFormId(form.getId());
-        for(Data data : datas) {
-            data.setForm(null);
-        }
-    }
-
-    public void nullifySignBook(SignBook signBook) {
-        Data data = getBySignBook(signBook);
-        if(data != null) data.setSignBook(null);
-    }
-
-    public long getNbCreateByAndStatus(String userEppn) {
-        User user = userService.getByEppn(userEppn);
-        return dataRepository.countByCreateByAndStatus(user, SignRequestStatus.draft);
-    }
-
-    @Transactional
-    public Map<String, Object> getModelResponse(Long formId) throws SQLException, IOException {
-        Form form = formService.getById(formId);
-        Document model = form.getDocument();
-        if (model != null) {
-            return fileService.getFileResponse(model.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), model.getFileName(), model.getContentType());
-        }
-        return null;
     }
 
 }

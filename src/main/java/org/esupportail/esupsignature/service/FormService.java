@@ -14,7 +14,9 @@ import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
+import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
@@ -47,10 +49,7 @@ public class FormService {
 	private FieldService fieldService;
 
 	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private DataService dataService;
+	private WorkflowRepository workflowRepository;
 
 	@Resource
 	private DocumentService documentService;
@@ -66,6 +65,9 @@ public class FormService {
 
 	@Resource
 	private SignRequestParamsService signRequestParamsService;
+
+	@Resource
+	private DataRepository dataRepository;
 
 	public Form getById(Long formId) {
 		Form obj = formRepository.findById(formId).get();
@@ -95,7 +97,7 @@ public class FormService {
 
 	@Transactional
 	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureException {
-		Workflow workflow = workflowService.getById(workflowId);
+		Workflow workflow = workflowRepository.findById(workflowId).get();
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), multipartFile.getOriginalFilename(), multipartFile.getContentType());
 		Form form = createForm(document, name, title, workflow, prefillType, roleNames, publicUsage);
@@ -199,7 +201,7 @@ public class FormService {
 			for (UserShare userShare : userShares) {
 				userShareService.delete(userShare);
 			}
-			dataService.nullifyForm(form);
+			nullifyForm(form);
 			List<Long> fieldToDelete = form.getFields().stream().map(Field::getId).collect(Collectors.toList());
 			form.getFields().clear();
 			for (Long fieldId : fieldToDelete) {
@@ -471,5 +473,12 @@ public class FormService {
 		formSetup.setWorkflow(null);
 		updateForm(id, formSetup, formSetup.getManagers(), formSetup.getAuthorizedShareTypes().stream().map(Enum::name).collect(Collectors.toList()).toArray(String[]::new));
 		return;
+	}
+
+	public void nullifyForm(Form form) {
+		List<Data> datas = dataRepository.findByFormId(form.getId());
+		for(Data data : datas) {
+			data.setForm(null);
+		}
 	}
 }

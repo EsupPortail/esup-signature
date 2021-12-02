@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -8,9 +9,6 @@ import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.ldap.*;
-import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
@@ -55,14 +53,13 @@ public class UserService {
     }
 
     @Resource
+    private ShibProperties shibProperties;
+
+    @Resource
     private GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
-
-    @Resource
-    private List<SecurityService> securityServices;
-
 
     @Resource
     private FileService fileService;
@@ -369,19 +366,25 @@ public class UserService {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
             String domain = emailSplit[1];
-            for (SecurityService securityService : securityServices) {
-                if (securityService instanceof CasSecurityServiceImpl && domain.equals(globalProperties.getDomain())) {
-                    return UserType.ldap;
-                }
-                if (securityService instanceof ShibSecurityServiceImpl) {
-                    File whiteListFile = ((ShibSecurityServiceImpl) securityService).getDomainsWhiteList();
-                    if (fileService.isFileContainsText(whiteListFile, domain)) {
-                        return UserType.shib;
-                    }
-                }
+            if (domain.equals(globalProperties.getDomain())) {
+                return UserType.ldap;
+            }
+            File whiteListFile = getDomainsWhiteList();
+            if (fileService.isFileContainsText(whiteListFile, domain)) {
+                return UserType.shib;
             }
         }
         return UserType.external;
+    }
+
+
+    public File getDomainsWhiteList() {
+        try {
+        return fileService.getFileFromUrl(shibProperties.getDomainsWhiteListUrl());
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
+        return null;
     }
 
     public List<User> getTempUsersFromRecipientList(List<String> recipientsEmails) {

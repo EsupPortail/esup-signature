@@ -37,6 +37,9 @@ public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
 
+	@Resource
+	private SignRequestService signRequestService;
+
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
 		return "active";
@@ -202,7 +205,7 @@ public class WorkflowAdminController {
 	@GetMapping(value = "/get-files-from-source/{id}")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
 		User authUser = (User) model.getAttribute("authUser");
-		int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
+		int nbImportedFiles = signRequestService.importFilesFromSource(id, authUser, authUser);
 		if(nbImportedFiles == 0) {
 			redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
 		} else {

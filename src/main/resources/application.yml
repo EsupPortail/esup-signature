@@ -205,8 +205,7 @@ sign:
 
 logging:
     file:
-        name: esup-signature.log
-        path: logs/
+        name: logs/esup-signature.log
     level:
         root: info
         org.esupportail.esupsignature: info

@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -30,6 +31,9 @@ import java.util.List;
 public class WorkflowManagerController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @ModelAttribute("managerMenu")
     public String getAdminMenu() {
@@ -186,7 +190,7 @@ public class WorkflowManagerController {
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
         User authUser = (User) model.getAttribute("authUser");
-        int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
+        int nbImportedFiles = signRequestService.importFilesFromSource(id, authUser, authUser);
         if(nbImportedFiles == 0) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
         } else {

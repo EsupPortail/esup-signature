@@ -35,7 +35,7 @@ public class FormWsController {
                       @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                       @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls
     ) {
-        Data data = dataService.addData(id, eppn, eppn);
+        Data data = dataService.addData(id, eppn);
         try {
             SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, null, targetEmails, targetUrls, eppn, eppn, true);
             return signBook.getSignRequests().get(0).getId();
