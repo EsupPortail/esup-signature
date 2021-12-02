@@ -11,11 +11,6 @@ public class ShibProperties {
     private String credentialsRequestHeader;
     private String domainsWhiteListUrl;
 
-	/**
-	 * Properties to set for development/test purposes .
-	 */
-    private DevShibProperties dev;
-
     public String getTitle() {
         return title;
     }
@@ -56,12 +51,4 @@ public class ShibProperties {
         this.domainsWhiteListUrl = domainsWhiteListUrl;
     }
 
-	public DevShibProperties getDev() {
-		return dev;
-	}
-
-	public void setDev(DevShibProperties dev) {
-		this.dev = dev;
-	}
-  
 }

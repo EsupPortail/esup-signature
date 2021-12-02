@@ -20,7 +20,6 @@ import java.util.List;
 
 public class ShibSecurityServiceImpl implements SecurityService {
 
-
 	private LdapGroupService ldapGroupService;
 
 	private WebSecurityProperties webSecurityProperties;
