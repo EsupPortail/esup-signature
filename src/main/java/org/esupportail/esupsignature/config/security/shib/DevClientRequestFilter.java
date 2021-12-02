@@ -13,11 +13,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 
-@EnableConfigurationProperties(DevShibProperties.class)
 public class DevClientRequestFilter extends GenericFilterBean  implements DevSecurityFilter {
 	
 	@Resource
-	ShibProperties shibProperties;
+	private DevShibProperties devShibProperties;
 
 	@Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -26,16 +25,16 @@ public class DevClientRequestFilter extends GenericFilterBean  implements DevSec
 			@Override
 			public String getHeader(String name) {
 	            if ("REMOTE_USER".equals(name)) {
-	              return shibProperties.getDev().getEppn();
+	              return devShibProperties.getEppn();
 	            }
 	            if ("mail".equals(name)) {
-		              return shibProperties.getDev().getMail();
+		              return devShibProperties.getMail();
 		        }
 	            if ("sn".equals(name)) {
-		              return shibProperties.getDev().getSn();
+		              return devShibProperties.getSn();
 		        }
 	            if ("givenName".equals(name)) {
-		              return shibProperties.getDev().getGivenName();
+		              return devShibProperties.getGivenName();
 		         }
 	            return super.getHeader(name);
 			}		

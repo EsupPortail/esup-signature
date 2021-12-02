@@ -1,7 +1,10 @@
 package org.esupportail.esupsignature.config.security;
 
+import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevClientRequestFilter;
+import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
+import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
@@ -11,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,7 +40,7 @@ import java.util.*;
 
 @Configuration
 @EnableWebSecurity(debug = false)
-@EnableConfigurationProperties(WebSecurityProperties.class)
+@EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
@@ -53,6 +58,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final List<SecurityService> securityServices = new ArrayList<>();
 
 	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
+
+	@Bean
+	@Conditional(ClientsConfiguredCondition.class)
+	public OAuthSecurityServiceImpl oAuthSecurityService() {
+		OAuthSecurityServiceImpl oAuthSecurityService = new OAuthSecurityServiceImpl();
+		securityServices.add(oAuthSecurityService);
+		return oAuthSecurityService;
+	}
 
 	@Bean
 	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
