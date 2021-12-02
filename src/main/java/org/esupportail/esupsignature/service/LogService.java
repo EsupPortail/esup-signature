@@ -30,15 +30,15 @@ public class LogService {
     @Resource
     private UserService userService;
 
-    @Autowired(required = false)
     private HttpServletRequest request;
+
+    @Autowired(required = false)
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
 
     @Resource
     private SignRequestRepository signRequestRepository;
-
-    public List<Log> getByEppnAndSignRequestId(String eppn, Long id) {
-        return logRepository.findByEppnAndSignRequestId(eppn, id);
-    }
 
     public List<Log> getRefuseLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.refused.name());
@@ -65,11 +65,6 @@ public class LogService {
 
     public List<Log> getLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
-        return setUsers(logs);
-    }
-
-    public List<Log> getGlobalLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndStepNumberIsNotNullAndCommentIsNotNull(id);
         return setUsers(logs);
     }
 

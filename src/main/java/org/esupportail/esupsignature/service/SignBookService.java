@@ -48,9 +48,6 @@ public class SignBookService {
     @Resource
     private LiveWorkflowService liveWorkflowService;
 
-//    @Resource
-//    private DataService dataService;
-
     @Resource
     private LiveWorkflowStepService liveWorkflowStepService;
 

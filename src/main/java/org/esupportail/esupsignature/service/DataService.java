@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -250,8 +249,7 @@ public class DataService {
     }
 
     @Transactional
-    public Data addData(Long id, String userEppn, String authUserEppn) {
-        User user = userService.getUserByEppn(userEppn);
+    public Data addData(Long id, String authUserEppn) {
         User authUser = userService.getUserByEppn(authUserEppn);
         Form form = formService.getById(id);
         Data data = new Data();
@@ -262,25 +260,9 @@ public class DataService {
         data.setFormVersion(form.getVersion());
         data.setStatus(SignRequestStatus.draft);
         data.setCreateBy(authUser);
-//        data.setOwner(user);
         data.setCreateDate(new Date());
         dataRepository.save(data);
         return data;
-    }
-
-    public long getNbCreateByAndStatus(String userEppn) {
-        User user = userService.getByEppn(userEppn);
-        return dataRepository.countByCreateByAndStatus(user, SignRequestStatus.draft);
-    }
-
-    @Transactional
-    public Map<String, Object> getModelResponse(Long formId) throws SQLException, IOException {
-        Form form = formService.getById(formId);
-        Document model = form.getDocument();
-        if (model != null) {
-            return fileService.getFileResponse(model.getBigFile().getBinaryFile().getBinaryStream().readAllBytes(), model.getFileName(), model.getContentType());
-        }
-        return null;
     }
 
 }

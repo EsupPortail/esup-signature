@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -65,12 +64,6 @@ public class WorkflowService {
 
     @Resource
     private FileService fileService;
-
-    @Resource
-    private PdfService pdfService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
 
     @Resource
     private TargetService targetService;

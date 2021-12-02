@@ -69,7 +69,7 @@ public class DataController {
 						   @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureIOException, EsupSignatureException, EsupSignatureFsException {
 		List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			Data data = dataService.addData(id, userEppn, authUserEppn);
+			Data data = dataService.addData(id, userEppn);
 			SignBook signBook = dataService.sendForSign(data.getId(), recipientEmails, allSignToCompletes, externalUsersInfos, targetEmails, null, userEppn, authUserEppn, false);
 			return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
 		} else {

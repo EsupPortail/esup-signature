@@ -46,20 +46,11 @@ public class FieldService {
 		return field;
 	}
 
-	public Field createField(String description, FieldType fieldType, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
-							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep> workflowSteps) {
-		Field field = new Field();
-		setFieldValues(description, fieldType, false, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
-		fieldRepository.save(field);
-		return field;
-	}
-
 	public void updateField(Field field) {
 		if (field.getId() !=null) {
 			updateField(field.getId(), field.getDescription(), field.getType(), field.getFavorisable(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
 		}else {
-//			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps());
-			throw new RuntimeException("pas logique !!??");
+			throw new RuntimeException("error on update field");
 		}
 	}
 
