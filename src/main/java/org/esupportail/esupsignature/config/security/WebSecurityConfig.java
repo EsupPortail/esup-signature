@@ -1,17 +1,20 @@
 package org.esupportail.esupsignature.config.security;
 
-import org.esupportail.esupsignature.config.security.cas.CasConfig;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.config.security.shib.ShibConfig;
+import org.esupportail.esupsignature.config.security.shib.DevClientRequestFilter;
 import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,41 +38,56 @@ import java.util.*;
 @EnableConfigurationProperties(WebSecurityProperties.class)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+
+	private LdapContextSource ldapContextSource;
+
+	@Autowired(required = false)
+	public void setLdapContextSource(LdapContextSource ldapContextSource) {
+		this.ldapContextSource = ldapContextSource;
+	}
+
 	@Resource
 	private WebSecurityProperties webSecurityProperties;
 
-	@Resource
-	private CasConfig casConfig;
+	private final List<SecurityService> securityServices = new ArrayList<>();
 
-	@Resource
-	private ShibConfig shibConfig;
+	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
 
-	private List<SecurityService> securityServices = new ArrayList<>();
-	
-	private List<DevSecurityFilter> devSecurityFilters;
-
-	@Autowired(required = false)
-	public void setDevSecurityFilters(List<DevSecurityFilter> devSecurityFilters) {
-		this.devSecurityFilters = devSecurityFilters;
+	@Bean
+	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
+	public DevClientRequestFilter devClientRequestFilter() {
+		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
+		devSecurityFilters.add(devClientRequestFilter);
+		return devClientRequestFilter;
 	}
 
-	public WebSecurityConfig() {
-		if(casConfig != null) {
-			securityServices.add(casConfig.casSecurityServiceImpl());
+	@Bean
+	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+	public CasSecurityServiceImpl casSecurityServiceImpl() {
+		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
+			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl();
+			securityServices.add(casSecurityService);
+			return casSecurityService;
+		} else {
+			logger.error("cas config found without needed ldap config, cas security will be disabled");
+			return null;
 		}
+	}
 
-		if(shibConfig != null) {
-			securityServices.add(shibConfig.shibSecurityServiceImpl());
-		}
+	@Bean
+	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
+	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
+		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
+		securityServices.add(shibSecurityService);
+		return shibSecurityService;
 	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
-		if(devSecurityFilters != null) {
-			devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
-		}
+		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling().defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/"));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
@@ -87,12 +105,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.logoutSuccessUrl("/login").permitAll();
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf()
-			.ignoringAntMatchers("/ws/**")
-			.ignoringAntMatchers("/user/nexu-sign/**")
-			.ignoringAntMatchers("/otp/**")
-			.ignoringAntMatchers("/log/**")
-			.ignoringAntMatchers("/actuator/**")
-			.ignoringAntMatchers("/h2-console/**");
+				.ignoringAntMatchers("/ws/**")
+				.ignoringAntMatchers("/user/nexu-sign/**")
+				.ignoringAntMatchers("/otp/**")
+				.ignoringAntMatchers("/log/**")
+				.ignoringAntMatchers("/actuator/**")
+				.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
@@ -123,7 +141,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();
