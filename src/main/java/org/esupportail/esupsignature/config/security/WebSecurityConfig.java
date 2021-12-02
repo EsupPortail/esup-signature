@@ -187,11 +187,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@ConditionalOnExpression("${global.enable-su}")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		for(SecurityService securityService : securityServices) {
-			if(securityService instanceof CasSecurityServiceImpl) {
-				switchUserFilter.setUserDetailsService(securityService.getUserDetailsService());
-			}
-		}
+		switchUserFilter.setUserDetailsService(casSecurityServiceImpl().getUserDetailsService());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		//switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
