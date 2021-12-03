@@ -104,6 +104,8 @@ spring:
         cache: false
         encoding: UTF-8
         mode: HTML
+        servlet:
+            produce-partial-output-while-processing: false
 
 ldap:
     search-base: ou=people
