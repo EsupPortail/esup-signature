@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller;
+package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;

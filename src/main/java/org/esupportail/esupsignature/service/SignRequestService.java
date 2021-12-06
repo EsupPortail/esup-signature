@@ -322,8 +322,9 @@ public class SignRequestService {
 		return getSignRequestsFromLogs(logs);
 	}
 
-	public SignRequest createSignRequest(String name, SignBook signBook, String userEppn, String authUserEppn) {
+	public SignRequest createSignRequest(String name, Long signBookId, String userEppn, String authUserEppn) {
 		User user = userService.getUserByEppn(userEppn);
+		SignBook signBook = signBookService.getById(signBookId);
 		SignRequest signRequest = new SignRequest();
 		if(name == null || name.isEmpty()) {
 			if (signBook.getSignRequests().size() == 0) {
@@ -345,19 +346,18 @@ public class SignRequestService {
 		return signRequest;
 	}
 
-	@Transactional
 	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, int docNumber, List<SignRequestParams> signRequestParamses, MultipartFile... multipartFiles) throws EsupSignatureIOException {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
-				File file = fileService.inputStreamToTempFile(multipartFile.getInputStream(), multipartFile.getName());
+				byte[] bytes = multipartFile.getInputStream().readAllBytes();
 				String contentType = multipartFile.getContentType();
-				InputStream inputStream = new FileInputStream(file);
+				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && scanSignatureFields) {
-						file = fileService.inputStreamToTempFile(pdfService.normalizeGS(new FileInputStream(file)), multipartFile.getName());
+						bytes = pdfService.normalizeGS(new ByteArrayInputStream(bytes)).readAllBytes();
 						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.size() == 0) {
-							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new FileInputStream(file), docNumber);
+							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber);
 
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
@@ -365,23 +365,23 @@ public class SignRequestService {
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-						if(validationService.validate(new FileInputStream(file), null).getSimpleReport().getSignatureIdList().size() == 0) {
-							inputStream = pdfService.removeSignField(new FileInputStream(file));
+						if(validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
+							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
 					} else if(multipartFiles[0].getContentType() != null && multipartFiles[0].getContentType().contains("image")){
-						file.delete();
-						file = fileService.inputStreamToTempFile(pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()), multipartFile.getName() + ".pdf");
+						bytes = pdfService.jpegToPdf(multipartFile.getInputStream(), multipartFile.getName()).readAllBytes();
 						contentType = "application/pdf";
-						inputStream = new FileInputStream(file);
+						inputStream = new ByteArrayInputStream(bytes);
 					}
 				}
 				Document document = documentService.createDocument(inputStream, multipartFile.getOriginalFilename(), contentType);
 				signRequest.getOriginalDocuments().add(document);
 				document.setParentId(signRequest.getId());
-				file.delete();
 			} catch (IOException e) {
+				logger.error("error on adding files");
 				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
 			} catch (EsupSignatureException e) {
+				logger.error("error on converting files");
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
 		}
@@ -409,7 +409,9 @@ public class SignRequestService {
 		customMetricsService.incValue("esup-signature.signrequests", "new");
 	}
 
-	public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
+	@Transactional
+	public void pendingSignBook(Long signBookId, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureException {
+		SignBook signBook = signBookService.getById(signBookId);
 		LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
 		signBookService.updateStatus(signBook, SignRequestStatus.pending, "Circuit envoyé pour signature de l'étape " + signBook.getLiveWorkflow().getCurrentStepNumber(), "SUCCESS", signBook.getComment(), userEppn, authUserEppn);
 		boolean emailSended = false;
@@ -729,7 +731,7 @@ public class SignRequestService {
 					recipient.setSigned(!signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
 				}
 				if (signBookService.nextWorkFlowStep(signRequest.getParentSignBook())) {
-					pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false);
+					pendingSignBook(signRequest.getParentSignBook().getId(), null, userEppn, authUserEppn, false);
 				} else {
 					completeSignBook(signRequest.getParentSignBook().getId(), authUserEppn);
 				}
@@ -1566,7 +1568,6 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-			List<SignRequestParams> test = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).collect(Collectors.toList());
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
 				if(signRequest.getSignRequestParams().contains(signRequestParams) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
@@ -1701,26 +1702,32 @@ public class SignRequestService {
 	public Reports validate(long signRequestId) throws IOException {
 		List<Document> documents = signService.getToSignDocuments(signRequestId);
 		if(documents.size() > 0) {
-			byte[] bytes = signService.getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
+			byte[] bytes = documents.get(0).getInputStream().readAllBytes();
 			return validationService.validate(new ByteArrayInputStream(bytes), null);
 		} else {
 			return null;
 		}
 	}
 
-	public void addDocumentsToSignBook(SignBook signBook, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
+	@Transactional
+	public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
 		int i = 0;
 		for (MultipartFile multipartFile : multipartFiles) {
-			SignRequest signRequest = createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
-			addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
+			SignRequest signRequest = createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBookId, authUserEppn, authUserEppn);
+			try {
+				addDocsToSignRequest(signRequest, true, i, new ArrayList<>(), multipartFile);
+			} catch (EsupSignatureIOException e) {
+				logger.error("revert signbook creation due to error : " + e.getMessage());
+				signBookService.deleteDefinitive(signBookId);
+				throw new EsupSignatureIOException(e.getMessage(), e);
+			}
 			i++;
 		}
 	}
 
-	@Transactional
 	public SignBook addDocsInNewSignBookSeparated(String name, String prefix, MultipartFile[] multipartFiles, User authUser) throws EsupSignatureIOException {
 		SignBook signBook = signBookService.createSignBook(name, null, prefix, "", authUser, true);
-		addDocumentsToSignBook(signBook, multipartFiles, authUser.getEppn());
+		addDocumentsToSignBook(signBook.getId(), multipartFiles, authUser.getEppn());
 		return signBook;
 	}
 
@@ -1728,7 +1735,7 @@ public class SignRequestService {
 	public SignBook addDocsInNewSignBookGrouped(String name, MultipartFile[] multipartFiles, String authUserEppn) throws EsupSignatureIOException {
 		User authUser = userService.getByEppn(authUserEppn);
 		SignBook signBook = signBookService.createSignBook(name, null, "","", authUser, false);
-		SignRequest signRequest = createSignRequest(null, signBook, authUserEppn, authUserEppn);
+		SignRequest signRequest = createSignRequest(null, signBook.getId(), authUserEppn, authUserEppn);
 		addDocsToSignRequest(signRequest, true, 0, new ArrayList<>(), multipartFiles);
 		logger.info("signRequest : " + signRequest.getId() + " added to signBook" + signBook.getName() + " - " + signBook.getId());
 		return signBook;
@@ -1742,10 +1749,10 @@ public class SignRequestService {
 				signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, true, false, false, signType, Collections.singletonList(user.getEmail()), null));
 				signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
 				signBookService.dispatchSignRequestParams(signBook);
-				pendingSignBook(signBook, null, user.getEppn(), authUserEppn, false);
+				pendingSignBook(signBook.getId(), null, user.getEppn(), authUserEppn, false);
 				return signBook;
 			} catch (EsupSignatureIOException e) {
-				throw new EsupSignaturePdfException("Impossible de charger le document : documents corrompu", e);
+				throw new EsupSignaturePdfException("Impossible de charger le document suite à une erreur interne", e);
 			}
 		} else {
 			throw new EsupSignatureException("Impossible de demander une signature visuelle sur un document du type " + multipartFiles[0].getContentType());
@@ -1769,7 +1776,7 @@ public class SignRequestService {
 					}
 				}
 			}
-			pendingSignBook(signBook, null, userEppn, authUserEppn, false);
+			pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
 		}
 	}
 
@@ -1777,7 +1784,7 @@ public class SignRequestService {
 	public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) throws EsupSignatureException {
 		SignBook signBook = signBookService.getById(signBookId);
 		signBookService.nextWorkFlowStep(signBook);
-		pendingSignBook(signBook, data, userEppn, authUserEppn, true);
+		pendingSignBook(signBook.getId(), data, userEppn, authUserEppn, true);
 	}
 
 	@Transactional
@@ -1786,7 +1793,7 @@ public class SignRequestService {
 			signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
 			if(start != null && start) {
 				signBookService.dispatchSignRequestParams(signBook);
-				pendingSignBook(signBook, null, userEppn, authUserEppn, false);
+				pendingSignBook(signBook.getId(), null, userEppn, authUserEppn, false);
 			}
 			return true;
 		}else {
@@ -1806,7 +1813,7 @@ public class SignRequestService {
 		signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
 		signBookService.dispatchSignRequestParams(signBook);
 		if (pending != null && pending) {
-			pendingSignBook(signBook, null, user.getEppn(), authUser.getEppn(), forceSendEmail);
+			pendingSignBook(signBook.getId(), null, user.getEppn(), authUser.getEppn(), forceSendEmail);
 		} else {
 			message = "Après vérification/annotation, vous devez cliquer sur 'Démarrer le circuit' pour transmettre la demande aux participants";
 		}
@@ -1830,7 +1837,7 @@ public class SignRequestService {
 		Workflow workflow = workflowService.getById(workflowSignBookId);
 		signBookService.importWorkflow(signBook, workflow, null);
 		signBookService.nextWorkFlowStep(signBook);
-		pendingSignBook(signBook, null, authUserEppn, authUserEppn, false);
+		pendingSignBook(signBook.getId(), null, authUserEppn, authUserEppn, false);
 	}
 
 	@Transactional
@@ -1857,7 +1864,7 @@ public class SignRequestService {
 							}
 							SignBook signBook = signBookService.createSignBook(fileService.getNameOnly(documentName), workflow, "",null, user, false);
 							signBook.getLiveWorkflow().setWorkflow(workflow);
-							SignRequest signRequest = createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
+							SignRequest signRequest = createSignRequest(null, signBook.getId(), user.getEppn(), authUser.getEppn());
 							if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
 								user = userService.getByEppn(fsFile.getCreateBy());
 							}

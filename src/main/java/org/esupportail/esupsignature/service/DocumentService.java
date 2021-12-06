@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -44,7 +43,6 @@ public class DocumentService {
 	@Resource
 	private FsAccessFactoryService fsAccessFactoryService;
 
-	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
 		Document document = new Document();
 		document.setCreateDate(new Date());

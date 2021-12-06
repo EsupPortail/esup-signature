@@ -436,24 +436,26 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                        for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
-                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
-                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
-                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
-                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                    if (liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                for (SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                    if (signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                    }
                                 }
-                            }
 //                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
 //                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 //                            } else {
 //                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
 //                            }
+                            }
                         }
-                    }
 //                    i++;
+                    }
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {

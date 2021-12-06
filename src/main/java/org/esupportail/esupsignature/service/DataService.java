@@ -90,7 +90,7 @@ public class DataService {
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), recipientsEmails, allSignToCompletes, user.getEppn(), false);
         SignBook signBook = signBookService.createSignBook(form.getTitle(), modelWorkflow, "",null, user, false);
-        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
+        SignRequest signRequest = signRequestService.createSignRequest(null, signBook.getId(), user.getEppn(), authUser.getEppn());
         InputStream inputStream = generateFile(data);
         if(computedWorkflow.getWorkflowSteps().size() == 0) {
             try {
@@ -112,7 +112,7 @@ public class DataService {
         }
         data.setSignBook(signBook);
         dataRepository.save(data);
-        signRequestService.pendingSignBook(signBook, data, user.getEppn(), authUser.getEppn(), forceSendEmail);
+        signRequestService.pendingSignBook(signBook.getId(), data, user.getEppn(), authUser.getEppn(), forceSendEmail);
         data.setStatus(SignRequestStatus.pending);
         for (String recipientEmail : recipientsEmails) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUser.getEppn()), Collections.singletonList(recipientEmail.split("\\*")[1]));
