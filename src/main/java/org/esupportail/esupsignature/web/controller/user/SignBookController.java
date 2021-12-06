@@ -63,9 +63,14 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        signBookService.delete(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        boolean isDefinitive = signBookService.delete(id, authUserEppn);
+        if(isDefinitive) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+            return "redirect:/user/signrequests";
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

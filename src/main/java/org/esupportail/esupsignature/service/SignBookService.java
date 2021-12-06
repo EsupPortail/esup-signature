@@ -150,11 +150,11 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public void delete(Long signBookId, String userEppn) {
+    public boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
             deleteDefinitive(signBookId);
-            return;
+            return true;
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
@@ -169,6 +169,7 @@ public class SignBookService {
         signBook.setUpdateDate(new Date());
         signBook.setUpdateBy(userEppn);
         logger.info("delete signbook : " + signBookId);
+        return false;
     }
 
     @Transactional

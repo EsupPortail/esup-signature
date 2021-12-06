@@ -209,7 +209,7 @@ logging:
     file:
         name: logs/esup-signature.log
     level:
-        root: info
+        root: warn
         org.esupportail.esupsignature: info
         org.verapdf: error
         org.apache.pdfbox: error
