@@ -1,14 +1,12 @@
 package org.esupportail.esupsignature.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 @ConfigurationProperties(prefix="global")
-public class GlobalProperties implements Cloneable {
+public class GlobalProperties {
 
     /**
      * Chemin d'acces à l'application

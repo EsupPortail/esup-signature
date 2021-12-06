@@ -29,7 +29,6 @@ public class SignRequestParamsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestParamsService.class);
 
-
     @Resource
     private  SignRequestParamsRepository signRequestParamsRepository;
 
@@ -75,20 +74,19 @@ public class SignRequestParamsService {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 signRequestParamsRepository.save(signRequestParams);
             }
-
             return signRequestParamses;
         } catch (IOException e) {
             throw new EsupSignatureIOException("unable to open pdf document");
         }
     }
 
-    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument) throws EsupSignatureIOException {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
-            Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
             PDAcroForm acroForm = docCatalog.getAcroForm();
             if(acroForm != null) {
+                Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
                 for (PDField pdField : acroForm.getFields()) {
                     if (pdField instanceof PDSignatureField) {
                         PDSignatureField pdSignatureField = (PDSignatureField) pdField;
@@ -105,7 +103,8 @@ public class SignRequestParamsService {
             }
             pdDocument.close();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("error on get sign fields", e);
+            throw new EsupSignatureIOException(e.getMessage());
         }
         return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
     }

@@ -63,9 +63,14 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        signBookService.delete(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsonMessage("info", "Suppression effectuée"));
-        return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        boolean isDefinitive = signBookService.delete(id, authUserEppn);
+        if(isDefinitive) {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été supprimé définitivement"));
+            return "redirect:/user/signrequests";
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Le document a été placé dans la corbeille"));
+            return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -157,17 +162,15 @@ public class SignBookController {
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
-        SignBook signBook = signBookService.getById(id);
-        signRequestService.addDocumentsToSignBook(signBook, multipartFiles, authUserEppn);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "/?form";
+        signRequestService.addDocumentsToSignBook(id, multipartFiles, authUserEppn);
+        return "redirect:/user/signrequests/" + id + "/?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/pending/{id}")
     public String pending(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) throws EsupSignatureException {
-        SignBook signBook = signBookService.getById(id);
-        signRequestService.pendingSignBook(signBook, null, authUserEppn, authUserEppn, false);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId();
+        signRequestService.pendingSignBook(id, null, authUserEppn, authUserEppn, false);
+        return "redirect:/user/signrequests/" + id;
     }
 
     @ResponseBody

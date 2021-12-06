@@ -61,6 +61,6 @@
 	<script th:inline="javascript" type="module" th:if="${version != null}">
 		sessionStorage.setItem("globalProperties", [[${globalPropertiesJson}]]);
 		import {GlobalUi} from '/static/js/modules/ui/GlobalUi.js?version=[[${version}]]';
-		new GlobalUi([[${authUserEppn}]], [[${_csrf}]]);
+		new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]]);
 	</script>
 </html>

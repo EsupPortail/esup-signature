@@ -150,11 +150,11 @@ public class SignBookService {
 //    }
 
     @Transactional
-    public void delete(Long signBookId, String userEppn) {
+    public boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.deleted)) {
             deleteDefinitive(signBookId);
-            return;
+            return true;
         }
         List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).collect(Collectors.toList());
         for(Long signRequestId : signRequestsIds) {
@@ -169,6 +169,7 @@ public class SignBookService {
         signBook.setUpdateDate(new Date());
         signBook.setUpdateBy(userEppn);
         logger.info("delete signbook : " + signBookId);
+        return false;
     }
 
     @Transactional
@@ -436,24 +437,26 @@ public class SignBookService {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signRequest.getSignRequestParams().size() > 0) {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
-                        for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
-                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
-                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
-                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
-                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                    if (liveWorkflowStep.getWorkflowStep() != null) {
+                        WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
+                        if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                for (SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                    if (signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                    }
                                 }
-                            }
 //                            if(signRequestParams.getSignStepNumber() != null && signRequestParams.getSignStepNumber().equals(i)) {
 //                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 //                            } else {
 //                                logger.warn("no signrequestparams found for step " + i + " please update signrequestparams / steps relation");
 //                            }
+                            }
                         }
-                    }
 //                    i++;
+                    }
                 }
             } else {
                 for (LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
