@@ -569,32 +569,34 @@ export class PdfViewer extends EventFactory {
             }
 
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
-            if(inputField.length && dataField) {
-                inputField.attr('name', inputName);
-                inputField.attr('id', inputName);
+            if(inputField.length) {
                 inputField.removeAttr('size');
-                if(items[i].readOnly || dataField.readOnly) {
-                    inputField.addClass('disabled-field disable-selection');
-                    // inputField.prop('disabled', true);
-                }
-                if(this.isFieldEnable(dataField)) {
-                    inputField.val(dataField.defaultValue);
-                    if(dataField.readOnly) {
-                        inputField.prop('disabled', true);
+                if (dataField) {
+                    inputField.attr('name', inputName);
+                    inputField.attr('id', inputName);
+                    if (items[i].readOnly || dataField.readOnly) {
+                        inputField.addClass('disabled-field disable-selection');
+                        // inputField.prop('disabled', true);
+                    }
+                    if (this.isFieldEnable(dataField)) {
+                        inputField.val(dataField.defaultValue);
+                        if (dataField.readOnly) {
+                            inputField.prop('disabled', true);
+                        } else {
+                            inputField.prop('disabled', false);
+                        }
+                        inputField.removeClass('disabled-field disable-selection');
+                        if (dataField.required) {
+                            inputField.prop('required', true);
+                            inputField.addClass('required-field');
+                        }
+                        inputField.attr('title', dataField.description);
                     } else {
-                        inputField.prop('disabled', false);
+                        inputField.prop('required', false);
+                        inputField.addClass('disabled-field disable-selection');
+                        inputField.prop('disabled', true);
+                        inputField.parent().addClass('disable-div-selection');
                     }
-                    inputField.removeClass('disabled-field disable-selection');
-                    if (dataField.required) {
-                        inputField.prop('required', true);
-                        inputField.addClass('required-field');
-                    }
-                    inputField.attr('title', dataField.description);
-                } else {
-                    inputField.prop('required', false);
-                    inputField.addClass('disabled-field disable-selection');
-                    inputField.prop('disabled', true);
-                    inputField.parent().addClass('disable-div-selection');
                 }
             }
 
