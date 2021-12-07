@@ -31,9 +31,9 @@
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
-    import {Nexu} from '/static/js/modules/ui/signrequests/Nexu.js?version=[[${version}]]';
-    import {SignUi} from '/static/js/modules/ui/signrequests/SignUi.js?version=[[${version}]]';
-    import {SignRequestHelp} from '/static/js/modules/help/SignRequestHelp.js?version=[[${version}]]';
+    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
+    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
+    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
     let signable = [[${signable}]];
@@ -225,9 +225,9 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
-                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
+                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
+                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
                 </script>
             </div>
             <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
@@ -576,9 +576,9 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
-                                            <label for="name">Nom</label>
+                                            <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
-                                            <label for="firstname">Prénom</label>
+                                            <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
                                             <input id="phones" class="form-control  me-2" type="text" name="phones" value="" required>

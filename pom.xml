@@ -171,6 +171,12 @@
 		<!-- Webjars dependencies -->
 
 		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator</artifactId>
+			<version>0.42</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.webjars.bower</groupId>
 			<artifactId>google-code-prettify</artifactId>
 			<version>1.0.5</version>
@@ -239,6 +245,12 @@
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>bootbox</artifactId>
 			<version>5.5.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.webjars.npm</groupId>
+					<artifactId>bootstrap</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>

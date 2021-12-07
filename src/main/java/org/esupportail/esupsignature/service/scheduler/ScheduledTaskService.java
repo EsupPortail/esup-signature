@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.scheduler;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -10,6 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -57,6 +59,9 @@ public class ScheduledTaskService {
 
 	@Resource
 	private UserService userService;
+
+	@Resource
+	private SignRequestRepository signRequestRepository;
 
 	private OJService oJService;
 
@@ -142,6 +147,15 @@ public class ScheduledTaskService {
 	public void refreshOJKeystore() {
 		if(oJService != null) {
 			oJService.refresh();
+		}
+	}
+
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void cleanWarningReadedSignRequests() {
+		List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
+		for (SignRequest signRequest : signRequests) {
+			signBookService.delete(signRequest.getParentSignBook().getId(), userService.getSchedulerUser().getEppn());
 		}
 	}
 

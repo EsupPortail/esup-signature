@@ -61,6 +61,7 @@ main {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    padding-bottom: 70px;
 }
 
 pre {
@@ -568,7 +569,7 @@ th .ss-content {
 
 .div-extra-top {
     font-family: "LiberationSans-Regular", serif !important;
-    color: black !important;
+    color: black;
     vertical-align: top!important;
     width: 100% !important;
 }

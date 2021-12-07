@@ -182,7 +182,7 @@ public class PdfService {
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -562,8 +562,8 @@ public class PdfService {
             validator.close();
             parser.close();
         } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
-            logger.error("check error", e);
-//            throw new EsupSignatureException("check pdf error", e);
+            logger.warn("check error " + e.getMessage());
+            logger.debug("check error", e);
         }
         return result;
     }

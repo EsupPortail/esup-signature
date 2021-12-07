@@ -522,11 +522,12 @@ public class SignRequestService {
 		if (signRequest.getCurrentSignType().equals(SignType.nexuSign)) {
 			signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 			return false;
+		} else {
+			User user = userService.getByEppn(userEppn);
+			User authUser = userService.getByEppn(authUserEppn);
+			sign(signRequest, password, certType, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
+			return true;
 		}
-		User user = userService.getByEppn(userEppn);
-		User authUser = userService.getByEppn(authUserEppn);
-		sign(signRequest, password, certType, signRequestParamses, formDataMap, user, authUser, userShareId, comment);
-		return true;
 	}
 
 	@Transactional
@@ -1925,6 +1926,15 @@ public class SignRequestService {
 			}
 		}
 		return nbImportedFiles;
+	}
+
+	@Transactional
+	public void warningReaded(String authUserEppn) {
+		User authUser = userService.getUserByEppn(authUserEppn);
+		List<SignRequest> oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
+		for (SignRequest signRequest : oldSignRequests) {
+			signRequest.setWarningReaded(true);
+		}
 	}
 
 }

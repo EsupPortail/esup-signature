@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "spring.spring.mvc.static-path-pattern",
+      "type": "java.lang.String",
+      "description": "Description for spring.spring.mvc.static-path-pattern."
+  }
+] }
