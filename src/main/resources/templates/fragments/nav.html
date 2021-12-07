@@ -56,12 +56,12 @@
                         <i class="fas fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="navbarDropdown" >
-                        <a th:if="${managedForms.size() > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
+                        <a th:if="${managedFormsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary'"
                            title="Vue manager" href="/user/manage"
                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
                             <i class="fas fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
-                        <div th:if="${managedForms.size() > 0}" class="dropdown-divider"></div>
+                        <div th:if="${managedFormsSize > 0}" class="dropdown-divider"></div>
                         <a id="start-wizard-button" th:unless="${globalProperties.hideWizard}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
                            data-bs-target="#wizModal"
                            title="Créez un nouveau circuit à l'aide de l'assistant">
@@ -340,7 +340,7 @@
                         <label class="form-label" for="inputGroupFile02">Choix des fichiers à signer</label>
                         <input required="true" id="inputGroupFile02" name="multipartFiles" type="file" multiple="multiple">
                         <script th:inline="javascript" type="module">
-                            import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
+                            import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
                             new FilesInput($("#inputGroupFile02"));
                         </script>
                     </div>

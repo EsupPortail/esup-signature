@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.*;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.SedaExportService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -68,6 +69,9 @@ public class SignRequestController {
 
     @Resource
     private SignService signService;
+
+    @Resource
+    private SignRequestRepository signRequestRepository;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -379,7 +383,7 @@ public class SignRequestController {
                                   @RequestParam(value = "phones", required = false) List<String> phones,
                                   Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
         User user = (User) model.getAttribute("user");
-        User authUser = (User) model.getAttribute("authUser");
+        User authUser = userService.getUserByEppn(authUserEppn);
         recipientsEmails = recipientsEmails.stream().distinct().collect(Collectors.toList());
         logger.info(user.getEmail() + " envoi d'une demande de signature à " + recipientsEmails);
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
@@ -484,6 +488,12 @@ public class SignRequestController {
             e.printStackTrace();
         }
         httpServletResponse.flushBuffer();
+    }
+
+    @GetMapping(value = "/warning-readed")
+    @ResponseBody
+    public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
+        signRequestService.warningReaded(authUserEppn);
     }
 
     @GetMapping(value = "/download-multiple-with-report", produces = "application/zip")

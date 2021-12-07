@@ -78,20 +78,18 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
             User user = userService.getUserByEppn(userEppn);
-            model.addAttribute("user", user);
             parseRoles(user, myGlobalProperties);
-            User authUser = userService.getByEppn(authUserEppn);
-            model.addAttribute("authUser", authUser);
+            model.addAttribute("user", user);
+            model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-            model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
+            model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
-            //if (myGlobalProperties.getVersion().isEmpty()) myGlobalProperties.setVersion("dev");
             model.addAttribute("globalProperties", myGlobalProperties);
             ObjectMapper objectMapper = new ObjectMapper();
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
@@ -101,9 +99,9 @@ public class GlobalAttributsControllerAdvice {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
             }
             if (buildProperties != null) {
-                model.addAttribute("version", buildProperties.getVersion());
+                model.addAttribute("versionApp", buildProperties.getVersion());
             } else {
-                model.addAttribute("version", "dev");
+                model.addAttribute("versionApp", "dev");
             }
             List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
             if (userKeystoreService == null) {

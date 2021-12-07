@@ -4,10 +4,10 @@ export class HomeUi {
 
     constructor() {
         console.info("Starting home UI");
-        this.noFilterButton = $('#noFilterButton');
-        this.workflowFilterButton = $('#workflowFilterButton');
-        this.formFilterButton = $('#formFilterButton');
-        this.globalFilterButton = $('#globalFilterButton');
+        this.noFilterButton = $("#noFilterButton");
+        this.workflowFilterButton = $("#workflowFilterButton");
+        this.formFilterButton = $("#formFilterButton");
+        this.globalFilterButton = $("#globalFilterButton");
         this.workflowFilterStatus = true;
         this.formFilterStatus = true;
         this.globalFilterStatus = true;
@@ -17,6 +17,16 @@ export class HomeUi {
         if(localStorage.getItem('menuToggled') === "true") {
             this.toggleNewMenu();
         }
+        $(document).ready(function () {
+            let oldSignRequests = $("#oldSignRequests");
+            if(oldSignRequests.length) {
+                oldSignRequests.modal('show');
+                $("#warningReaded").on('click', function () {
+                    $.get("/user/signrequests/warning-readed");
+                });
+
+            }
+        })
     }
 
     initListeners() {

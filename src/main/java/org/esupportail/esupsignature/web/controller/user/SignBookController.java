@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
-import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.esupportail.esupsignature.web.ws.json.JsonWorkflowStep;
@@ -52,6 +49,9 @@ public class SignBookController {
 
     @Resource
     private SignService signService;
+
+    @Resource
+    private UserService userService;
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
@@ -190,7 +190,7 @@ public class SignBookController {
                                                     @PathVariable("name") String name,
                                                     @PathVariable("workflowName") String workflowName,
                                                     @RequestParam("multipartFiles") MultipartFile[] multipartFiles, Model model) throws EsupSignatureIOException {
-        User authUser = (User) model.getAttribute("authUser");
+        User authUser = userService.getUserByEppn(authUserEppn);
         logger.info("start add documents in " + name);
         SignBook signBook = signRequestService.addDocsInNewSignBookSeparated(name, workflowName, multipartFiles, authUser);
         return new String[]{"" + signBook.getId()};

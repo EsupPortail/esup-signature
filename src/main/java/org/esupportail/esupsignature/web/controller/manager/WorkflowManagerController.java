@@ -103,7 +103,7 @@ public class WorkflowManagerController {
                          @Valid Workflow workflow,
                          @RequestParam(value = "types", required = false) String[] types,
                          @RequestParam(required = false) List<String> managers, Model model) {
-        User authUser = (User) model.getAttribute("authUser");
+        User authUser = userService.getUserByEppn(authUserEppn);
         workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
         return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
@@ -189,7 +189,7 @@ public class WorkflowManagerController {
     @GetMapping(value = "/get-files-from-source/{id}")
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-        User authUser = (User) model.getAttribute("authUser");
+        User authUser = userService.getUserByEppn(authUserEppn);
         int nbImportedFiles = signRequestService.importFilesFromSource(id, authUser, authUser);
         if(nbImportedFiles == 0) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));

@@ -10,7 +10,7 @@
 <div id="toast-backdrop"></div>
 <div style="width: 100%; position: absolute; left: 0; top: 0; pointer-events: none;"  th:if="${version != null}">
 	<script th:inline="javascript" type="module">
-		import Toast from '../../static/js/modules/ui/Toast.js?version=[[${version}]]';
+		import Toast from '../../js/modules/ui/Toast.js?version=[[${versionApp}]]';
 		new Toast([[${message}]]);
 	</script>
 	<th:block th:each="messageNew : ${messageNews}">

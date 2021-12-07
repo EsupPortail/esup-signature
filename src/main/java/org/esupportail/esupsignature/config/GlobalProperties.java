@@ -130,6 +130,12 @@ public class GlobalProperties {
 
     private Boolean enableCaptcha = false;
 
+    private Integer maxUploadSize = 52428800;
+
+    private Integer nbDaysBeforeWarning = 9999;
+
+    private Integer nbDaysBeforeDeleting = 9999;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -338,4 +344,27 @@ public class GlobalProperties {
         this.enableCaptcha = enableCaptcha;
     }
 
+    public Integer getMaxUploadSize() {
+        return maxUploadSize;
+    }
+
+    public void setMaxUploadSize(Integer maxUploadSize) {
+        this.maxUploadSize = maxUploadSize;
+    }
+
+    public int getNbDaysBeforeWarning() {
+        return nbDaysBeforeWarning;
+    }
+
+    public void setNbDaysBeforeWarning(Integer nbDaysBeforeWarning) {
+        this.nbDaysBeforeWarning = nbDaysBeforeWarning;
+    }
+
+    public Integer getNbDaysBeforeDeleting() {
+        return nbDaysBeforeDeleting;
+    }
+
+    public void setNbDaysBeforeDeleting(Integer nbDaysBeforeDeleting) {
+        this.nbDaysBeforeDeleting = nbDaysBeforeDeleting;
+    }
 }

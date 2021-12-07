@@ -1928,4 +1928,13 @@ public class SignRequestService {
 		return nbImportedFiles;
 	}
 
+	@Transactional
+	public void warningReaded(String authUserEppn) {
+		User authUser = userService.getUserByEppn(authUserEppn);
+		List<SignRequest> oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
+		for (SignRequest signRequest : oldSignRequests) {
+			signRequest.setWarningReaded(true);
+		}
+	}
+
 }

@@ -562,8 +562,8 @@ public class PdfService {
             validator.close();
             parser.close();
         } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
-            logger.error("check error", e);
-//            throw new EsupSignatureException("check pdf error", e);
+            logger.warn("check error " + e.getMessage());
+            logger.debug("check error", e);
         }
         return result;
     }
