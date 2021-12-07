@@ -568,7 +568,7 @@ th .ss-content {
 
 .div-extra-top {
     font-family: "LiberationSans-Regular", serif !important;
-    color: black !important;
+    color: black;
     vertical-align: top!important;
     width: 100% !important;
 }

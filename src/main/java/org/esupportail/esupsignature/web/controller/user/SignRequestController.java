@@ -286,13 +286,6 @@ public class SignRequestController {
                                @RequestParam(value = "password", required = false) String password,
                                @RequestParam(value = "certType", required = false) String certType,
                                        HttpSession httpSession) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Object[] signRequestParamses = new Object[0];
-        try {
-            signRequestParamses = objectMapper.readValue(signRequestParamsJsonString, Object[].class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
