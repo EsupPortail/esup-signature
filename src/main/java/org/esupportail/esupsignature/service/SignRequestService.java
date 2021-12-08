@@ -900,11 +900,12 @@ public class SignRequestService {
 
 	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
+			logger.info("star archiving documents");
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
 				String subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
-					String name = signRequest.getTitle();
+					String name = signRequest.getTitle().replaceAll("\\W+", "");
 					if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
 						name = signBookService.generateName2(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
 					}
