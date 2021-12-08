@@ -77,7 +77,8 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
-	public void scanAllSignbooksSources() throws EsupSignatureFsException {
+	public void scanAllWorkflowsSources() throws EsupSignatureFsException {
+		logger.debug("scan workflows sources");
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
@@ -88,16 +89,35 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
-		logger.trace("scan all signRequest to export");
+		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signRequestService.exportFilesToTarget(signBook, "scheduler");
-				if(globalProperties.getArchiveUri() != null) {
-					signRequestService.archivesFiles(signBook, "scheduler");
+				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+					signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
 				}
 			} catch (EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());
+			}
+		}
+	}
+
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void scanAllSignbooksToArchive() {
+		if(globalProperties.getArchiveUri() != null) {
+			logger.debug("scan all signRequest to archive");
+			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
+			signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
+			for (SignBook signBook : signBooks) {
+				try {
+					if(signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+						continue;
+					}
+					signRequestService.archivesFiles(signBook, "scheduler");
+				} catch (EsupSignatureFsException | EsupSignatureException e) {
+					logger.error(e.getMessage());
+				}
 			}
 		}
 	}
@@ -160,7 +180,7 @@ public class ScheduledTaskService {
 	public void cleanWarningReadedSignRequests() {
 		List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
 		for (SignRequest signRequest : signRequests) {
-			signBookService.delete(signRequest.getParentSignBook().getId(), userService.getSchedulerUser().getEppn());
+			signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
 		}
 	}
 

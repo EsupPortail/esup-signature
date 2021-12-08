@@ -76,6 +76,9 @@ public class GlobalProperties {
      * Géré automatiquement, ne pas modifier!
      */
     private String version = "";
+    /**
+     * Adresse email du contact technique de l'application
+     */
     private String applicationEmail = "esup.signature@univ-ville.fr";
     /**
      * Nombre d'heure minimum entre deux relances manuelles
@@ -124,16 +127,24 @@ public class GlobalProperties {
      */
     private Integer shareMode = 0;
     /**
-     * Désactiver la possibilité de stocker des certificats utilisateurs
+     * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
-
+    /**
+     * Activer/Désactiver la detection de robot à la connexion
+     */
     private Boolean enableCaptcha = false;
-
+    /**
+     * Taille maximum des uploads de fichiers en bytes
+     */
     private Integer maxUploadSize = 52428800;
-
+    /**
+     * Nombre de jours avant alerte de suppresion pour les demandes en attente
+     */
     private Integer nbDaysBeforeWarning = 9999;
-
+    /**
+     * Nombre de jours après alerte pour suppression des demandes en attente
+     */
     private Integer nbDaysBeforeDeleting = 9999;
 
     public String getRootUrl() {
