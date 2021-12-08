@@ -747,20 +747,6 @@ public class SignRequestService {
 		}
 	}
 
-	public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
-		if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
-			archiveSignRequests(signBook.getSignRequests(), authUserEppn);
-			signBook.setStatus(SignRequestStatus.archived);
-		}
-	}
-
-	public void exportFilesToTarget(SignBook signBook, String authUserEppn) throws EsupSignatureException, EsupSignatureFsException {
-		if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
-			sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), authUserEppn);
-			signBook.setStatus(SignRequestStatus.exported);
-		}
-	}
-
 	public boolean isCurrentStepCompleted(SignRequest signRequest) {
 		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed) || sr.getStatus().equals(SignRequestStatus.refused));
 	}
@@ -861,7 +847,7 @@ public class SignRequestService {
 											documentService.exportDocument(documentIOType, targetUrl, attachment, null);
 										}
 									}
-									String name = signRequest.getTitle().replaceAll("\\W+", "");
+									String name = signRequest.getTitle().replaceAll("\\W+", "_");
 									if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
 										String template = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate();
 										if(template.isEmpty()) {
@@ -886,6 +872,7 @@ public class SignRequestService {
 			for (SignRequest signRequest : signRequests) {
 				updateStatus(signRequest.getId(), SignRequestStatus.exported, "Exporté vers toutes les destinations", "SUCCESS", authUserEppn, authUserEppn);
 			}
+			signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.exported);
 		} else {
 			throw new EsupSignatureException("unable to send to all targets");
 		}
@@ -900,21 +887,21 @@ public class SignRequestService {
 
 	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
-			logger.info("star archiving documents");
+			logger.info("start archiving documents");
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
-				String subPath = "/" + signRequest.getParentSignBook().getName().split("_")[0].replace(" ", "-") + "/";
+				String subPath = "/" + signRequest.getParentSignBook().getTitle().replaceAll("\\W+", "_") + "/";
 				if(signRequest.getExportedDocumentURI() == null) {
-					String name = signRequest.getTitle().replaceAll("\\W+", "");
+					String name = signRequest.getTitle().replaceAll("\\W+", "_");
 					if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
 						name = signBookService.generateName2(signRequest.getParentSignBook(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
 					}
 					String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, name);
 					signRequest.setExportedDocumentURI(documentUri);
 					updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
-
 				}
 			}
+			signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.archived);
 		} else {
 			logger.info("archive document was skipped");
 		}
@@ -942,8 +929,8 @@ public class SignRequestService {
 			nbDocOnDataBase += signRequest.getSignedDocuments().size();
 		}
 		if(nbDocOnDataBase == 0) {
+			logger.info(signBook.getName() + " cleaned");
 			signBook.setStatus(SignRequestStatus.cleaned);
-
 		}
 	}
 
