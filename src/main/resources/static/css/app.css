@@ -232,6 +232,10 @@ code {
     /*for javascript detection : new summernote()*/
 }
 
+.dropdown-divider {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+
 .hide-select {
     opacity: 0;
     position: absolute;

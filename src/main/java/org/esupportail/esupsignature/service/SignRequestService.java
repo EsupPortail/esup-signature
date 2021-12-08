@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.support.MutableSortDefinition;
 import org.springframework.beans.support.PropertyComparator;
 import org.springframework.beans.support.SortDefinition;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -64,6 +65,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
@@ -77,8 +79,7 @@ public class SignRequestService {
 	@Resource
 	private ActionService actionService;
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@Resource
 	private RecipientService recipientService;
@@ -163,6 +164,10 @@ public class SignRequestService {
 
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
+
+	public SignRequestService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@PostConstruct
 	public void initSignrequestMetrics() {
@@ -858,11 +863,15 @@ public class SignRequestService {
 									}
 									String name = signRequest.getTitle();
 									if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
-										name = signBookService.generateName2(signRequest.getParentSignBook(), title, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate());
+										String template = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate();
+										if(template.isEmpty()) {
+											template = globalProperties.getNamingTemplate();
+										}
+										name = signBookService.generateName2(signRequest.getParentSignBook(), signRequest.getTitle(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getName(), 0, userService.getSystemUser(), template);
 									}
 									documentService.exportDocument(documentIOType, targetUrl, signedFile, name);
 									target.setTargetOk(true);
-									updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
+//									updateStatus(signRequest.getId(), signRequest.getStatus(), "Exporté vers " + targetUrl, "SUCCESS", authUserEppn, authUserEppn);
 								} catch (EsupSignatureFsException e) {
 									logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
 									allTargetsDone = false;
