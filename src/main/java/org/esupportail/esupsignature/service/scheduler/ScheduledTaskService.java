@@ -114,7 +114,7 @@ public class ScheduledTaskService {
 					if(signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
 						continue;
 					}
-					signRequestService.archivesFiles(signBook, "scheduler");
+					signRequestService.archiveSignRequests(signBook.getSignRequests(), "scheduler");
 				} catch (EsupSignatureFsException | EsupSignatureException e) {
 					logger.error(e.getMessage());
 				}

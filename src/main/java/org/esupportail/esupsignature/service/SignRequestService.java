@@ -747,13 +747,6 @@ public class SignRequestService {
 		}
 	}
 
-	public void archivesFiles(SignBook signBook, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
-		if(!signBook.getStatus().equals(SignRequestStatus.archived)) {
-			archiveSignRequests(signBook.getSignRequests(), authUserEppn);
-			signBook.setStatus(SignRequestStatus.archived);
-		}
-	}
-
 	public boolean isCurrentStepCompleted(SignRequest signRequest) {
 		return signRequest.getParentSignBook().getSignRequests().stream().allMatch(sr -> sr.getStatus().equals(SignRequestStatus.completed) || sr.getStatus().equals(SignRequestStatus.refused));
 	}
@@ -894,7 +887,7 @@ public class SignRequestService {
 
 	public void archiveSignRequests(List<SignRequest> signRequests, String authUserEppn) throws EsupSignatureFsException, EsupSignatureException {
 		if(globalProperties.getArchiveUri() != null) {
-			logger.info("star archiving documents");
+			logger.info("start archiving documents");
 			for(SignRequest signRequest : signRequests) {
 				Document signedFile = signRequest.getLastSignedDocument();
 				String subPath = "/" + signRequest.getParentSignBook().getTitle().replaceAll("\\W+", "_") + "/";
@@ -908,6 +901,7 @@ public class SignRequestService {
 					updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", "SUCCESS", authUserEppn, authUserEppn);
 				}
 			}
+			signRequests.get(0).getParentSignBook().setStatus(SignRequestStatus.archived);
 		} else {
 			logger.info("archive document was skipped");
 		}
