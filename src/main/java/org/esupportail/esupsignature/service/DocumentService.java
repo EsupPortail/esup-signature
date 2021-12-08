@@ -86,7 +86,7 @@ public class DocumentService {
 				fsAccessService.createURITree(targetUrl);
 				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
+					name = signedFile.getFileName().replaceAll("\\W+", "");
 				} else {
 					name = name + "." + fileService.getExtension(signedFile.getFileName());
 				}

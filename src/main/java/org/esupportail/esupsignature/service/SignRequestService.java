@@ -861,7 +861,7 @@ public class SignRequestService {
 											documentService.exportDocument(documentIOType, targetUrl, attachment, null);
 										}
 									}
-									String name = signRequest.getTitle();
+									String name = signRequest.getTitle().replaceAll("\\W+", "");
 									if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate() != null) {
 										String template = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getTargetNamingTemplate();
 										if(template.isEmpty()) {

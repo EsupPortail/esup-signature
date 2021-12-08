@@ -385,7 +385,7 @@ public class SignBookService {
 
             }
         }
-        return template.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
+        return template.replaceAll("\\W+", "");
     }
 
 //    public String generateName(String prefix, String suffix) {
