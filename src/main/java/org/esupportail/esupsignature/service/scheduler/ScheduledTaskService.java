@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -38,12 +39,12 @@ import java.util.List;
 @ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
 @Component
+@EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@Resource
 	private SignBookRepository signBookRepository;
@@ -64,6 +65,10 @@ public class ScheduledTaskService {
 	private SignRequestRepository signRequestRepository;
 
 	private OJService oJService;
+
+	public ScheduledTaskService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@Autowired(required = false)
 	public void setoJService(OJService oJService) {

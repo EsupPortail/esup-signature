@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +20,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class UserShareService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserShareService.class);
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private UserService userService;
@@ -45,6 +46,10 @@ public class UserShareService {
 
     @Resource
     private DataRepository dataRepository;
+
+    public UserShareService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();

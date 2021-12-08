@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -36,15 +37,19 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private SignRequestRepository signRequestRepository;
+
+    public HomeController(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {

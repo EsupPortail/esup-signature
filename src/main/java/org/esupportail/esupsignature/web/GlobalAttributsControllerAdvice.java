@@ -31,8 +31,7 @@ public class GlobalAttributsControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private SignRequestService signRequestService;
@@ -63,10 +62,11 @@ public class GlobalAttributsControllerAdvice {
 
     private final UserKeystoreService userKeystoreService;
 
-    public GlobalAttributsControllerAdvice(@Autowired(required = false) BuildProperties buildProperties,
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, @Autowired(required = false) BuildProperties buildProperties,
                                            @Autowired(required = false) ValidationService validationService,
                                            @Autowired(required = false) UserKeystoreService userKeystoreService,
                                            @Autowired Environment environment) {
+        this.globalProperties = globalProperties;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
         this.userKeystoreService = userKeystoreService;

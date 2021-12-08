@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -20,6 +21,7 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
+@EnableConfigurationProperties(GlobalProperties.class)
 public class FsAccessServiceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(FsAccessServiceTest.class);
@@ -27,8 +29,11 @@ public class FsAccessServiceTest {
     @Resource
     private FsAccessFactoryService fsAccessFactoryService;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
+
+    public FsAccessServiceTest(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @Test
     public void testSmbAccessImpl() throws EsupSignatureFsException {

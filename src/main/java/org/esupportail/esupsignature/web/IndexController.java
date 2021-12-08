@@ -30,6 +30,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
@@ -45,12 +46,17 @@ import java.util.List;
 
 @RequestMapping("/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
 	@Resource
 	private PreAuthorizeService preAuthorizeService;
+
+	public IndexController(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -69,8 +75,7 @@ public class IndexController {
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {

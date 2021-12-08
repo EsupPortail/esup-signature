@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class SignBookService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
+
+    private final GlobalProperties globalProperties;
 
     @Resource
     private SignBookRepository signBookRepository;
@@ -41,9 +45,6 @@ public class SignBookService {
 
     @Resource
     private WorkflowStepService workflowStepService;
-
-    @Resource
-    private GlobalProperties globalProperties;
 
     @Resource
     private LiveWorkflowService liveWorkflowService;
@@ -74,6 +75,10 @@ public class SignBookService {
 
     @Resource
     private WorkflowRepository workflowRepository;
+
+    public SignBookService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     public List<SignBook> getAllSignBooks() {
         List<SignBook> list = new ArrayList<>();
@@ -333,10 +338,10 @@ public class SignBookService {
             template = template.replace("[id]", signBook.getId() + "");
         }
         if(template.contains("[title]")) {
-            template = template.replace("[title]", title.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
+            template = template.replace("[title]", title);
         }
         if(template.contains("[worflowName]")) {
-            template = template.replace("[worflowName]", worflowName.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", ""));
+            template = template.replace("[worflowName]", worflowName);
         }
         if(template.contains("[user.eppn]")) {
             template = template.replace("[user.eppn]", user.getEppn().replace("@", "_"));
@@ -380,7 +385,7 @@ public class SignBookService {
 
             }
         }
-        return template;
+        return template.replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "");
     }
 
 //    public String generateName(String prefix, String suffix) {

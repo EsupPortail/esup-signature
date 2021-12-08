@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.web.ws.json.JsonExternalUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -41,6 +43,10 @@ public class UserService {
     private LdapPersonService ldapPersonService;
 
     private LdapOrganizationalUnitService ldapOrganizationalUnitService;
+
+    public UserService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @Autowired(required = false)
     public void setLdapPersonService(LdapPersonService ldapPersonService) {
@@ -55,8 +61,7 @@ public class UserService {
     @Resource
     private ShibProperties shibProperties;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private UserRepository userRepository;
