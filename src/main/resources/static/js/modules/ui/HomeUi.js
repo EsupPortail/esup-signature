@@ -26,7 +26,11 @@ export class HomeUi {
                 });
 
             }
-        })
+            let recipientNotPresentSignRequests = $("#recipientNotPresentSignRequests");
+            if(recipientNotPresentSignRequests.length) {
+                recipientNotPresentSignRequests.modal('show');
+            }
+        });
     }
 
     initListeners() {

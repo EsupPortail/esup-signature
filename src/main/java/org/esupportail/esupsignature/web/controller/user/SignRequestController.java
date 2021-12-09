@@ -398,7 +398,7 @@ public class SignRequestController {
                     }
                 }
                 long signRequestId = signBookStringMap.keySet().iterator().next().getSignRequests().get(0).getId();
-                if(!signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
+                if(signRequestService.checkTempUsers(signRequestId, recipientsEmails, externalUsersInfos)) {
                     redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
                 }
                 return "redirect:/user/signrequests/" + signRequestId;
@@ -650,7 +650,7 @@ public class SignRequestController {
                           @RequestParam(value = "phones", required = false) List<String> phones,
                           RedirectAttributes redirectAttributes) throws MessagingException, EsupSignatureException, EsupSignatureFsException {
         List<JsonExternalUserInfo> externalUsersInfos = userService.getJsonExternalUserInfos(emails, names, firstnames, phones);
-        if(!signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
+        if(signRequestService.checkTempUsers(id, recipientEmails, externalUsersInfos)) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Merci de compléter tous les utilisateurs externes"));
             return "redirect:/user/signrequests/" + id;
         }

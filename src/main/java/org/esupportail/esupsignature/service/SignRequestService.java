@@ -1149,7 +1149,6 @@ public class SignRequestService {
 		mailService.sendSignRequestAlert(new ArrayList<>(toEmails), signRequest);
 	}
 
-
 	public void sendEmailAlertSummary(User recipientUser) throws EsupSignatureMailException {
 		Date date = new Date();
 		List<SignRequest> toSignSignRequests = getToSignRequests(recipientUser.getEppn());
@@ -1205,10 +1204,10 @@ public class SignRequestService {
 					}
 				}
 			} else {
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	@Transactional
@@ -1409,18 +1408,24 @@ public class SignRequestService {
 		return signImages;
 	}
 
-	public AbstractMap.SimpleEntry<List<User>, List<User>> checkUserResponse(SignRequest signRequest) {
+	public List<User> checkUserResponseSigned(SignRequest signRequest) {
 		List<User> usersHasSigned = new ArrayList<>();
-		List<User> usersHasRefused = new ArrayList<>();
 		for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
 			if (recipientActionEntry.getValue().getActionType().equals(ActionType.signed)) {
 				usersHasSigned.add(recipientActionEntry.getKey().getUser());
 			}
+		}
+		return usersHasSigned;
+	}
+
+	public List<User> checkUserResponseRefused(SignRequest signRequest) {
+		List<User> usersHasRefused = new ArrayList<>();
+		for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
 			if (recipientActionEntry.getValue().getActionType().equals(ActionType.refused)) {
 				usersHasRefused.add(recipientActionEntry.getKey().getUser());
 			}
 		}
-		return new AbstractMap.SimpleEntry<>(usersHasRefused, usersHasSigned);
+		return usersHasRefused;
 	}
 
 	public Long getNbPendingSignRequests(String userEppn) {
@@ -1540,10 +1545,30 @@ public class SignRequestService {
 	public void replayNotif(Long id) throws EsupSignatureMailException {
 		SignRequest signRequest = this.getById(id);
 		List<String> recipientEmails = new ArrayList<>();
-		signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList()).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
+		getCurrentRecipients(signRequest).forEach(r -> recipientEmails.add(r.getUser().getEmail()));
 		if(recipientEmails.size() > 0) {
 			mailService.sendSignRequestAlert(recipientEmails, signRequest);
 		}
+	}
+
+	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {
+		return signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> !r.getSigned()).collect(Collectors.toList());
+	}
+
+	@Transactional
+	public List<SignRequest> getRecipientNotPresentSignRequests(String eppn) {
+		List<SignRequest> signRequests = signRequestRepository.findByCreateByEppnAndStatus(eppn, SignRequestStatus.pending);
+		List<SignRequest> recipientNotPresentsignRequests = new ArrayList<>(signRequests);
+		for(SignRequest signRequest : signRequests) {
+			List<Recipient> recipients = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients();
+			for(Recipient recipient : recipients) {
+				User user = recipient.getUser();
+				if(userService.findPersonLdapByUser(user) != null) {
+					recipientNotPresentsignRequests.remove(signRequest);
+				}
+			}
+		}
+		return recipientNotPresentsignRequests;
 	}
 
 	public List<Recipient> getRecipientsNameFromSignRequests(List<SignRequest> signRequests) {

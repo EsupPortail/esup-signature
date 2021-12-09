@@ -138,5 +138,28 @@
         </div>
     </div>
 </div>
+<div id="recipientNotPresentSignRequests" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Demandes non affectées</h4>
+            </div>
+            <div class="modal-body">
+                <p>Les demandes suivantes sont en attentes auprès de personnes n'étant plus présente dans le référentiel de l'établissement</p>
+                <p>Ces demande sont à supprimer et à recréer si besoin en précisant un nouveau destinataire</p>
+                <ul>
+                    <th:block th:each="signRequest : ${recipientNotPresentSignRequests}">
+                        <li>
+                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.title}"></a>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
