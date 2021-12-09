@@ -96,7 +96,7 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(defaultSavedRequest != null) {
+				if(defaultSavedRequest != null && !defaultSavedRequest.getRequestURI().equals("/login/casentry")) {
 					return "redirect:" + defaultSavedRequest.getServletPath();
 				} else {
 					return "redirect:/user/";

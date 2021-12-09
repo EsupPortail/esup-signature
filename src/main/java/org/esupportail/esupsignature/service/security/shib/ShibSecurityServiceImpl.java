@@ -67,6 +67,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		return new LoginUrlAuthenticationEntryPoint("/");
 	}
 
+	@Resource
+	private DatabaseUserDetailsService databaseUserDetailsService;
+
 	@Override
 	public ShibRequestHeaderAuthenticationFilter getAuthenticationProcessingFilter() {
 		ShibRequestHeaderAuthenticationFilter authenticationFilter = new ShibRequestHeaderAuthenticationFilter();
@@ -82,7 +85,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public UserDetailsService getUserDetailsService() {
-		return (UserDetailsService) this.shibAuthenticatedUserDetailsService();
+		return databaseUserDetailsService;
 	}
 
 	public AuthenticationManager shibAuthenticationManager() {

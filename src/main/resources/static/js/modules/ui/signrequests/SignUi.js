@@ -92,6 +92,7 @@ export class SignUi {
 
     launchNoInfiniteSign() {
         this.signComment = $("#signCommentNoInfinite");
+        $("#password").val($("#passwordInfinite").val());
         this.launchSign(false);
     }
 
@@ -237,6 +238,7 @@ export class SignUi {
             $("#infiniteFormSubmit").click();
             return;
         }
+        let self = this;
         this.signComment = $("#signCommentInfinite");
         step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
@@ -249,7 +251,10 @@ export class SignUi {
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
-            success: response => this.launchSign()
+            success: function() {
+                $("#password").val($("#passwordInfinite").val());
+                self.launchSign();
+            }
         });
     }
 
