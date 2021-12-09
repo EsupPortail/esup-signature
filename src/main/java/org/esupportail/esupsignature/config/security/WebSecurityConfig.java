@@ -116,10 +116,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			}
 		}
 		for(SecurityService securityService : securityServices) {
-			if(securityService.getUserDetailsService() != null) {
+			if(securityService instanceof CasSecurityServiceImpl) {
 				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+			} else if(securityService instanceof ShibSecurityServiceImpl) {
+				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+				break;
 			}
-			break;
 		}
 		http.logout()
 				.logoutRequestMatcher(
@@ -200,7 +202,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
 		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
-		//switchUserFilter.setSwitchFailureUrl("/error");
+		switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
 		switchUserFilter.setTargetUrl("/");
 		return switchUserFilter;
