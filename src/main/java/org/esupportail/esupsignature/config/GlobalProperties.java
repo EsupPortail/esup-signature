@@ -53,15 +53,15 @@ public class GlobalProperties {
      */
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
     /**
-     * Les documents des demandes terminées seront arvhivées vers ce dossier
+     * Les documents des demandes terminées seront archivées vers ce dossier
      */
     private String archiveUri;
     /**
-     * Délai en nombre de jours avant que les documents ne soient effacé de la base (ne concerne que les documents à l'état archivé)
+     * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacé de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
     /**
-     * Délai de conservation dans la corbeille (en jours)
+     * Délai de conservation dans la corbeille en jours (-1 non actif)
      */
     private Integer trashKeepDelay = -1;
     /**
@@ -139,13 +139,13 @@ public class GlobalProperties {
      */
     private Integer maxUploadSize = 52428800;
     /**
-     * Nombre de jours avant alerte de suppresion pour les demandes en attente
+     * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */
-    private Integer nbDaysBeforeWarning = 9999;
+    private Integer nbDaysBeforeWarning = -1;
     /**
-     * Nombre de jours après alerte pour suppression des demandes en attente
+     * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
-    private Integer nbDaysBeforeDeleting = 9999;
+    private Integer nbDaysBeforeDeleting = -1;
 
     public String getRootUrl() {
         return rootUrl;
