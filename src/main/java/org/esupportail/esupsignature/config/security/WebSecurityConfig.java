@@ -19,6 +19,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -60,22 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
 
 	@Bean
-	@Conditional(ClientsConfiguredCondition.class)
-	public OAuthSecurityServiceImpl oAuthSecurityService() {
-		OAuthSecurityServiceImpl oAuthSecurityService = new OAuthSecurityServiceImpl();
-		securityServices.add(oAuthSecurityService);
-		return oAuthSecurityService;
-	}
-
-	@Bean
-	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
-	public DevClientRequestFilter devClientRequestFilter() {
-		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
-		devSecurityFilters.add(devClientRequestFilter);
-		return devClientRequestFilter;
-	}
-
-	@Bean
+	@Order(1)
 	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	public CasSecurityServiceImpl casSecurityServiceImpl() {
 		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
@@ -89,11 +75,30 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
+	@Order(2)
 	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
 	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
 		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
 		securityServices.add(shibSecurityService);
 		return shibSecurityService;
+	}
+
+	@Bean
+	@Order(3)
+	@Conditional(ClientsConfiguredCondition.class)
+	public OAuthSecurityServiceImpl oAuthSecurityService() {
+		OAuthSecurityServiceImpl oAuthSecurityService = new OAuthSecurityServiceImpl();
+		securityServices.add(oAuthSecurityService);
+		return oAuthSecurityService;
+	}
+
+	@Bean
+	@Order(4)
+	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
+	public DevClientRequestFilter devClientRequestFilter() {
+		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
+		devSecurityFilters.add(devClientRequestFilter);
+		return devClientRequestFilter;
 	}
 
 	@Override
@@ -109,6 +114,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
 				http.oauth2Client();
 			}
+		}
+		for(SecurityService securityService : securityServices) {
+			if(securityService.getUserDetailsService() != null) {
+				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+			}
+			break;
 		}
 		http.logout()
 				.logoutRequestMatcher(
@@ -183,11 +194,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+//	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnExpression("${global.enable-su}")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		switchUserFilter.setUserDetailsService(casSecurityServiceImpl().getUserDetailsService());
+		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
 		//switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
