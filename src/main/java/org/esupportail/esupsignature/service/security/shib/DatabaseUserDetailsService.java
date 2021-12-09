@@ -21,7 +21,7 @@ import java.util.List;
 @Transactional
 public class DatabaseUserDetailsService implements UserDetailsService {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseUserDetailsService.class);
 
     @Resource
     private UserService userService;
@@ -34,7 +34,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
             try {
                 userService.createUserWithEppn(eppn);
             } catch (EsupSignatureUserException e) {
-                log.warn("unable to create user " + eppn);
+                logger.warn("unable to create user " + eppn);
             }
         }
         return loadUserByUser(user);

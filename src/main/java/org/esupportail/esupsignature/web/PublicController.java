@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web;
 
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
-import java.util.AbstractMap;
 import java.util.List;
 
 @Controller
@@ -44,9 +42,8 @@ public class PublicController {
         if(signRequestOptional.size() > 0) {
             SignRequest signRequest = signRequestOptional.get(0);
             List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-            AbstractMap.SimpleEntry<List<User>, List<User>> userResponse = signRequestService.checkUserResponse(signRequest);
-            model.addAttribute("usersHasSigned", userResponse.getValue());
-            model.addAttribute("usersHasRefused", userResponse.getKey());
+            model.addAttribute("usersHasSigned", signRequestService.checkUserResponseSigned(signRequest));
+            model.addAttribute("usersHasRefused", signRequestService.checkUserResponseRefused(signRequest));
             model.addAttribute("signRequest", signRequest);
             model.addAttribute("signedDocument", signRequestService.getLastSignedFile(signRequest.getId()));
             model.addAttribute("logs", logs);
