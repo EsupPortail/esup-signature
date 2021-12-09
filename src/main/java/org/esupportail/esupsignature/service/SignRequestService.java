@@ -1300,7 +1300,7 @@ public class SignRequestService {
 
 	public void addStep(Long id, List<String> recipientsEmails, SignType signType, Boolean allSignToComplete, String authUserEppn) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, true, false, authUserEppn);
+		signBookService.addLiveStep(signRequest.getParentSignBook().getId(), recipientsEmails, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), allSignToComplete, signType, false, null, true, false, authUserEppn);
 	}
 
 	@Transactional
@@ -1744,7 +1744,7 @@ public class SignRequestService {
 		if (signService.checkSignTypeDocType(signType, multipartFiles[0])) {
 			try {
 				SignBook signBook = addDocsInNewSignBookSeparated(fileService.getNameOnly(multipartFiles[0].getOriginalFilename()), "Auto signature", multipartFiles, user);
-				signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, true, false, false, signType, Collections.singletonList(user.getEmail()), null));
+				signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, null,true, false, false, signType, Collections.singletonList(user.getEmail()), null));
 				signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
 				signBookService.dispatchSignRequestParams(signBook);
 				pendingSignBook(signBook.getId(), null, user.getEppn(), authUserEppn, false);
@@ -1805,9 +1805,9 @@ public class SignRequestService {
 			allSignToComplete = false;
 		}
 		if(userSignFirst != null && userSignFirst) {
-			signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, true, false,false, SignType.pdfImageStamp, Collections.singletonList(user.getEmail()), null));
+			signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, null, true, false,false, SignType.pdfImageStamp, Collections.singletonList(user.getEmail()), null));
 		}
-		signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos));
+		signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(null,false, null, true, false, allSignToComplete, signType, recipientsEmails, externalUsersInfos));
 		signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
 		signBookService.dispatchSignRequestParams(signBook);
 		if (pending != null && pending) {
@@ -1891,7 +1891,7 @@ public class SignRequestService {
 										if(workflow.getWorkflowSteps().size() > i) {
 											workflowStep = workflow.getWorkflowSteps().get(i);
 										}
-										LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, true, false, false, SignType.valueOf(signType), recipientList, null);
+										LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, false, null, true, false, false, SignType.valueOf(signType), recipientList, null);
 										signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
 										i++;
 									}

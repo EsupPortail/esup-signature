@@ -265,7 +265,7 @@ public class SignBookService {
                     recipientEmails.add(user.getEmail());
                 }
             }
-            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, workflowStep.getRepeatable(), workflowStep.getMultiSign(), workflowStep.getAutoSign(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails, externalUsersInfos);
+            LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(workflowStep, workflowStep.getRepeatable(), workflowStep.getRepeatableSignType(), workflowStep.getMultiSign(), workflowStep.getAutoSign(), workflowStep.getAllSignToComplete(), workflowStep.getSignType(), recipientEmails, externalUsersInfos);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
         }
         if(!(workflow instanceof DefaultWorkflow)) {
@@ -420,10 +420,10 @@ public class SignBookService {
     }
 
     @Transactional
-    public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, boolean multiSign, boolean autoSign, String authUserEppn) throws EsupSignatureException {
+    public void addLiveStep(Long id, List<String> recipientsEmails, int stepNumber, Boolean allSignToComplete, SignType signType, boolean repeatable, SignType repeatableSignType, boolean multiSign, boolean autoSign, String authUserEppn) throws EsupSignatureException {
         SignBook signBook = this.getById(id);
         int currentStepNumber = signBook.getLiveWorkflow().getCurrentStepNumber();
-        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, repeatable, multiSign, autoSign, allSignToComplete, signType, recipientsEmails, null);
+        LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(null, repeatable, repeatableSignType, multiSign, autoSign, allSignToComplete, signType, recipientsEmails, null);
         if (stepNumber == -1) {
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         } else {
