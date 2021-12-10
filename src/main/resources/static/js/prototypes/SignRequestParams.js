@@ -181,7 +181,9 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
-        this.restoreUserParams();
+        if(this.isSign) {
+            this.restoreUserParams();
+        }
     }
 
     restoreUserParams() {
