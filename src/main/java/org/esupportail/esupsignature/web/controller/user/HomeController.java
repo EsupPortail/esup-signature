@@ -22,9 +22,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -78,7 +76,10 @@ public class HomeController {
     private UserService userService;
 
     @GetMapping
-    public String home(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+    public String home(@ModelAttribute("userEppn") String userEppn,
+                       @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(required = false, name = "formId") Long formId,
+                       Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         User authUser = userService.getUserByEppn(authUserEppn);
         if(authUser != null) {
             List<SignRequest> oldSignRequests = new ArrayList<>();
@@ -109,10 +110,16 @@ public class HomeController {
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
             model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
+            model.addAttribute("startFormId", formId);
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");
         }
+    }
+
+    @GetMapping("/start-form/{formId}")
+    public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+        return "redirect:/user/?formId=" + formId;
     }
 
 }
