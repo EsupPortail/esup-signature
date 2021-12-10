@@ -14,7 +14,7 @@ export class SignRequestParams  extends EventFactory {
         this.userName = userName;
         this.authUserName = authUserName;
         this.ready = null;
-        this.isShare = userName != authUserName;
+        this.isShare = userName !== authUserName;
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;

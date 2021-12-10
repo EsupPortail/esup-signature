@@ -22,14 +22,15 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonService;
 import org.esupportail.esupsignature.service.ldap.PersonLdap;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.web.ws.json.JsonMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
@@ -45,9 +46,17 @@ import java.util.List;
 
 @RequestMapping("/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
+
+	@Resource
+	private PreAuthorizeService preAuthorizeService;
+
+	public IndexController(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -58,9 +67,6 @@ public class IndexController {
 	private List<SecurityService> securityServices;
 
 	@Resource
-	private UserShareService userShareService;
-
-	@Resource
 	private UserService userService;
 
 	@Resource
@@ -69,8 +75,7 @@ public class IndexController {
 	@Autowired(required = false)
 	private LdapPersonService ldapPersonService;
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {
@@ -91,7 +96,7 @@ public class IndexController {
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(defaultSavedRequest != null) {
+				if(defaultSavedRequest != null && !defaultSavedRequest.getRequestURI().equals("/login/casentry")) {
 					return "redirect:" + defaultSavedRequest.getServletPath();
 				} else {
 					return "redirect:/user/";
@@ -116,7 +121,7 @@ public class IndexController {
 				try {
 					SignRequest signRequest = signRequestService.getById(Long.parseLong(uriParams[3]));
 					if (signRequest != null) {
-						User suUser = userShareService.checkShareForSignRequest(signRequest, authUser.getEppn());
+						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
 							httpSession.setAttribute("suEppn", suUser);
 							redirectAttributes.addFlashAttribute("message", new JsonMessage("success", "Délégation activée : " + suUser.getEppn()));

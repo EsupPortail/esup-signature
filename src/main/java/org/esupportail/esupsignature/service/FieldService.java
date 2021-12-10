@@ -6,6 +6,8 @@ import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.repository.FieldRepository;
+import org.esupportail.esupsignature.repository.FormRepository;
+import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,10 +23,10 @@ public class FieldService {
 	private FieldRepository fieldRepository;
 
 	@Resource
-	private WorkflowStepService workflowStepService;
+	private WorkflowStepRepository workflowStepRepository;
 
 	@Resource
-	private FormService formService;
+	private FormRepository formRepository;
 
 	public Field getById(long fieldId) {
 		Field obj = fieldRepository.findById(fieldId).get();
@@ -44,20 +46,11 @@ public class FieldService {
 		return field;
 	}
 
-	public Field createField(String description, FieldType fieldType, Boolean required, Boolean readOnly, String extValueServiceName, String extValueType,
-							 String extValueReturn, String searchServiceName, String searchType, String searchReturn, Boolean stepZero, List<WorkflowStep> workflowSteps) {
-		Field field = new Field();
-		setFieldValues(description, fieldType, false, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
-		fieldRepository.save(field);
-		return field;
-	}
-
 	public void updateField(Field field) {
 		if (field.getId() !=null) {
 			updateField(field.getId(), field.getDescription(), field.getType(), field.getFavorisable(), field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps().stream().map(WorkflowStep::getId).collect(Collectors.toList()));
 		}else {
-//			createField(field.getRequired(), field.getReadOnly(), field.getExtValueServiceName(), field.getExtValueType(), field.getExtValueReturn(), field.getSearchServiceName(), field.getSearchType(), field.getSearchReturn(), field.getStepZero(), field.getWorkflowSteps());
-			throw new RuntimeException("pas logique !!??");
+			throw new RuntimeException("error on update field");
 		}
 	}
 
@@ -68,7 +61,7 @@ public class FieldService {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		if(workflowStepsIds != null) {
 			for (Long workflowStepId : workflowStepsIds) {
-				workflowSteps.add(workflowStepService.getById(workflowStepId));
+				workflowSteps.add(workflowStepRepository.findById(workflowStepId).get());
 			}
 		}
 		setFieldValues(description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowSteps, field);
@@ -97,7 +90,7 @@ public class FieldService {
 
 	@Transactional
 	public void deleteField(Long fieldId, Long formId) {
-		Form form = formService.getById(formId);
+		Form form = formRepository.findById(formId).get();
 		Field field = getById(fieldId);
 		form.getFields().remove(field);
 		field.getWorkflowSteps().clear();

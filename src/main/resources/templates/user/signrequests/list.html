@@ -6,9 +6,9 @@
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    // import {HomeUi} from '/static/js/modules/ui/HomeUi.js?version=[[${version}]]';
+    // import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
     // new HomeUi();
-    import ListSignRequestUi from '/static/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${version}]]';
+    import ListSignRequestUi from '/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${versionApp}]]';
     new ListSignRequestUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>

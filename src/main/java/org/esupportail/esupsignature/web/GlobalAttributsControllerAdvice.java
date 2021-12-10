@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller;
+package org.esupportail.esupsignature.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.ui.Model;
@@ -25,12 +26,12 @@ import java.util.Collections;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
+@EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private SignRequestService signRequestService;
@@ -53,8 +54,7 @@ public class GlobalAttributsControllerAdvice {
     @Resource
     private OJService ojService;
 
-    @Autowired
-    private Environment environment;
+    private final Environment environment;
 
     private final BuildProperties buildProperties;
 
@@ -62,47 +62,46 @@ public class GlobalAttributsControllerAdvice {
 
     private final UserKeystoreService userKeystoreService;
 
-    private GlobalProperties myGlobalProperties;
-
-    public GlobalAttributsControllerAdvice(@Autowired(required = false) BuildProperties buildProperties,
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, @Autowired(required = false) BuildProperties buildProperties,
                                            @Autowired(required = false) ValidationService validationService,
-                                           @Autowired(required = false) UserKeystoreService userKeystoreService) {
+                                           @Autowired(required = false) UserKeystoreService userKeystoreService,
+                                           @Autowired Environment environment) {
+        this.globalProperties = globalProperties;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
         this.userKeystoreService = userKeystoreService;
+        this.environment = environment;
     }
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, JsonProcessingException {
         if(userEppn != null) {
-            this.myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
+            GlobalProperties myGlobalProperties = (GlobalProperties) BeanUtils.cloneBean(globalProperties);
             User user = userService.getUserByEppn(userEppn);
+            parseRoles(user, myGlobalProperties);
             model.addAttribute("user", user);
-            parseRoles(user);
-            User authUser = userService.getByEppn(authUserEppn);
-            model.addAttribute("authUser", authUser);
+            model.addAttribute("authUser", userService.getUserByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());
             model.addAttribute("userImagesIds", user.getSignImagesIds());
             model.addAttribute("suUsers", userShareService.getSuUsers(authUserEppn));
             model.addAttribute("isOneCreateShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.create));
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
-            model.addAttribute("managedForms", formService.getFormByManagersContains(authUserEppn));
+            model.addAttribute("managedFormsSize", formService.getFormByManagersContains(authUserEppn).size());
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
-            if (this.myGlobalProperties.getVersion().isEmpty()) this.myGlobalProperties.setVersion("dev");
-            model.addAttribute("globalProperties", this.myGlobalProperties);
+            model.addAttribute("globalProperties", myGlobalProperties);
             ObjectMapper objectMapper = new ObjectMapper();
-            model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(this.myGlobalProperties));
+            model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
-            model.addAttribute("hoursBeforeRefreshNotif", this.myGlobalProperties.getHoursBeforeRefreshNotif());
+            model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
             if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
             }
             if (buildProperties != null) {
-                model.addAttribute("version", buildProperties.getVersion());
+                model.addAttribute("versionApp", buildProperties.getVersion());
             } else {
-                model.addAttribute("version", "dev");
+                model.addAttribute("versionApp", "dev");
             }
             List<SignType> signTypes = signTypeService.getAuthorizedSignTypes();
             if (userKeystoreService == null) {
@@ -122,7 +121,7 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
-    public void parseRoles(User user) {
+    public void parseRoles(User user, GlobalProperties myGlobalProperties) {
         List<String> roles = user.getRoles();
         if (!Collections.disjoint(roles, globalProperties.getHideSendSignExceptRoles()))
             myGlobalProperties.setHideSendSignRequest(!globalProperties.getHideSendSignRequest());

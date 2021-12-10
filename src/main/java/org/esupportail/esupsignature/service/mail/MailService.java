@@ -42,10 +42,13 @@ public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     private MailConfig mailConfig;
+
+    public MailService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @Autowired(required = false)
     public void setMailConfig(MailConfig mailConfig) {

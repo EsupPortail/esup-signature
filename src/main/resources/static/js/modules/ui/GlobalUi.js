@@ -3,10 +3,11 @@ import {WizUi} from "./WizUi.js";
 
 export class GlobalUi {
 
-    constructor(authUserEppn, csrf) {
+    constructor(authUserEppn, csrf, applicationEmail) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.csrf = csrf;
+        this.applicationEmail = applicationEmail;
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -26,8 +27,9 @@ export class GlobalUi {
     }
 
     initListeners() {
+        let applicationEmail = this.applicationEmail;
         window.onerror = function (msg, url, lineNo, columnNo, error) {
-            var clientSideError = {
+            let clientSideError = {
                 msg: msg,
                 url: url,
                 lineNumber: lineNo,
@@ -41,6 +43,14 @@ export class GlobalUi {
                 dataType: "json",
                 data: JSON.stringify(clientSideError)
             });
+            alert("Une erreur s'est produite au niveau de l'affichage.\n" +
+                "Merci de contacter le gestionnaire de cette application : \n" +
+                applicationEmail + "\n" +
+                "Détails : " +
+                "\n #url :" + url +
+                "\n #error : " + error +
+                "\n #ligne : " + lineNo +
+                "\n #colonne : " + columnNo);
             return false;
         };
 

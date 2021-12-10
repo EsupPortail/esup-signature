@@ -2,12 +2,12 @@ import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
-    constructor() {
+    constructor(startFormId) {
         console.info("Starting home UI");
-        this.noFilterButton = $('#noFilterButton');
-        this.workflowFilterButton = $('#workflowFilterButton');
-        this.formFilterButton = $('#formFilterButton');
-        this.globalFilterButton = $('#globalFilterButton');
+        this.noFilterButton = $("#noFilterButton");
+        this.workflowFilterButton = $("#workflowFilterButton");
+        this.formFilterButton = $("#formFilterButton");
+        this.globalFilterButton = $("#globalFilterButton");
         this.workflowFilterStatus = true;
         this.formFilterStatus = true;
         this.globalFilterStatus = true;
@@ -17,6 +17,23 @@ export class HomeUi {
         if(localStorage.getItem('menuToggled') === "true") {
             this.toggleNewMenu();
         }
+        $(document).ready(function () {
+            let oldSignRequests = $("#oldSignRequests");
+            if(oldSignRequests.length) {
+                oldSignRequests.modal('show');
+                $("#warningReaded").on('click', function () {
+                    $.get("/user/signrequests/warning-readed");
+                });
+
+            }
+            let recipientNotPresentSignRequests = $("#recipientNotPresentSignRequests");
+            if(recipientNotPresentSignRequests.length) {
+                recipientNotPresentSignRequests.modal('show');
+            }
+            if(startFormId != null) {
+                $("#sendModal_" + startFormId).modal('show');
+            }
+        });
     }
 
     initListeners() {

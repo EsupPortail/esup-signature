@@ -29,8 +29,7 @@ public class DocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileService.class);
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@Resource
 	private DocumentRepository documentRepository;
@@ -43,6 +42,10 @@ public class DocumentService {
 
 	@Resource
 	private FsAccessFactoryService fsAccessFactoryService;
+
+	public DocumentService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@Transactional
 	public Document createDocument(InputStream inputStream, String name, String contentType) throws IOException {
@@ -83,7 +86,7 @@ public class DocumentService {
 				fsAccessService.createURITree(targetUrl);
 				InputStream inputStream = signedFile.getInputStream();
 				if(name == null) {
-					name = signedFile.getFileName();
+					name = signedFile.getFileName().replaceAll("\\W+", "_");
 				} else {
 					name = name + "." + fileService.getExtension(signedFile.getFileName());
 				}

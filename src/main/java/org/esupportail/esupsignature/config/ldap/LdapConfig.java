@@ -14,18 +14,21 @@ import java.util.Map;
 
 @Configuration
 @ConditionalOnProperty({"spring.ldap.base", "ldap.search-base"})
-@EnableConfigurationProperties(LdapProperties.class)
+@EnableConfigurationProperties({GlobalProperties.class, LdapProperties.class})
 public class LdapConfig {
 
-    @Resource
-    private LdapProperties ldapProperties;
+    private final LdapProperties ldapProperties;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private LdapTemplate ldapTemplate;
-    
+
+    public LdapConfig(LdapProperties ldapProperties, GlobalProperties globalProperties) {
+        this.ldapProperties = ldapProperties;
+        this.globalProperties = globalProperties;
+    }
+
     @Bean
     public LdapGroupService ldapGroupService() {
         Map<String, String> ldapFiltersGroups = new HashMap<>();

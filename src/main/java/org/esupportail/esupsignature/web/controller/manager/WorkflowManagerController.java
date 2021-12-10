@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
@@ -30,6 +31,9 @@ import java.util.List;
 public class WorkflowManagerController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerController.class);
+
+    @Resource
+    private SignRequestService signRequestService;
 
     @ModelAttribute("managerMenu")
     public String getAdminMenu() {
@@ -99,7 +103,7 @@ public class WorkflowManagerController {
                          @Valid Workflow workflow,
                          @RequestParam(value = "types", required = false) String[] types,
                          @RequestParam(required = false) List<String> managers, Model model) {
-        User authUser = (User) model.getAttribute("authUser");
+        User authUser = userService.getUserByEppn(authUserEppn);
         workflow.setPublicUsage(false);
         Workflow updateWorkflow = workflowService.update(workflow, authUser, types, managers);
         return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
@@ -185,8 +189,8 @@ public class WorkflowManagerController {
     @GetMapping(value = "/get-files-from-source/{id}")
     @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn)")
     public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-        User authUser = (User) model.getAttribute("authUser");
-        int nbImportedFiles = workflowService.importFilesFromSource(id, authUser, authUser);
+        User authUser = userService.getUserByEppn(authUserEppn);
+        int nbImportedFiles = signRequestService.importFilesFromSource(id, authUser, authUser);
         if(nbImportedFiles == 0) {
             redirectAttributes.addFlashAttribute("message", new JsonMessage("error", "Aucun fichier à importer"));
         } else {

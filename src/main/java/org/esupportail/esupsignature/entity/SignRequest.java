@@ -294,26 +294,6 @@ public class SignRequest {
     }
 
     @JsonIgnore
-    public List<Document> getLiteOriginalDocuments() {
-        List<Document> liteDocuments = new ArrayList<>();
-        for (Document document : this.originalDocuments) {
-            document.setBigFile(null);
-            liteDocuments.add(document);
-        }
-        return liteDocuments;
-    }
-
-    @JsonIgnore
-    public List<Document> getLiteSignedDocuments() {
-        List<Document> liteDocuments = new ArrayList<>();
-        for (Document document : this.signedDocuments) {
-            document.setBigFile(null);
-            liteDocuments.add(document);
-        }
-        return liteDocuments;
-    }
-
-    @JsonIgnore
     public Document getLastSignedDocument() {
         if(this.getSignedDocuments().size() > 0) {
             return this.getSignedDocuments().get(this.getSignedDocuments().size() - 1);

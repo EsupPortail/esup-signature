@@ -42,7 +42,7 @@ public class Document {
 
     public InputStream getInputStream() {
         try {
-            if(this.bigFile != null) {
+            if(this.bigFile != null && this.bigFile.getBinaryFile() != null) {
                 InputStream inputStream = this.bigFile.getBinaryFile().getBinaryStream();
                 return inputStream;
             }

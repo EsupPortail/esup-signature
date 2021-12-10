@@ -163,6 +163,10 @@ export default class ListSignRequestUi {
             let self = this;
             bootbox.confirm("Attention, les demandes au statut 'Supprimé' seront définitivement perdues. Les autres seront placées dans la corbeille.<br/>Confirmez vous l'opération ?", function(result) {
                 if(result) {
+                    bootbox.dialog({
+                        closeButton : false,
+                        message : "<div id=\"loader\" class=\"loader\"></div> Suppression en cours"
+                    });
                     $.ajax({
                         url: "/user/signrequests/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                         type: 'POST',

@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
@@ -27,13 +27,13 @@ public class DataExportService {
     private DataRepository dataRepository;
 
     @Resource
-    private DataService dataService;
-
-    @Resource
     private SignRequestService signRequestService;
 
     @Resource
     private FileService fileService;
+
+    @Resource
+    private SignBookService signBookService;
 
     public InputStream getCsvDatasFromForms(List<Form> forms) throws IOException {
         return mapListToCSV(getDatasToExport(forms));
@@ -63,7 +63,7 @@ public class DataExportService {
     public LinkedHashMap<String, String> getJsonDatasFromSignRequest(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest != null && signRequest.getParentSignBook() != null) {
-            Data data = dataService.getBySignRequest(signRequest);
+            Data data = signBookService.getBySignRequest(signRequest);
             if(data != null) {
                 return getToExportDatas(data, signRequest.getParentSignBook());
             } else {

@@ -48,6 +48,7 @@ import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.verapdf.core.EncryptedPdfException;
@@ -73,6 +74,7 @@ import java.util.*;
 
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
@@ -83,14 +85,17 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private LogService logService;
 
     @Resource
     private ValidationService validationService;
+
+    public PdfService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
@@ -182,7 +187,7 @@ public class PdfService {
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -562,8 +567,8 @@ public class PdfService {
             validator.close();
             parser.close();
         } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
-            logger.error("check error", e);
-//            throw new EsupSignatureException("check pdf error", e);
+            logger.warn("check error " + e.getMessage());
+            logger.debug("check error", e);
         }
         return result;
     }

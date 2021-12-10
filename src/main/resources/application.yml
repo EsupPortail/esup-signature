@@ -104,6 +104,17 @@ spring:
         cache: false
         encoding: UTF-8
         mode: HTML
+        servlet:
+            produce-partial-output-while-processing: false
+    web:
+        resources:
+            cache:
+                cachecontrol:
+                    max-age: 1d
+                    cache-public: true
+            static-locations: classpath:/static
+    mvc:
+        static-path-pattern: /**
 
 ldap:
     search-base: ou=people
@@ -206,6 +217,14 @@ sign:
 logging:
     file:
         name: logs/esup-signature.log
+    level:
+        root: warn
+        org.esupportail.esupsignature: info
+        org.verapdf: error
+        org.apache.pdfbox: error
+        eu.europa.esig.dss: error
+        org.springframework.web.filter.CommonsRequestLoggingFilter: error
+#    config: classpath:logback-prod.xml
 
 springdoc:
     api-docs:

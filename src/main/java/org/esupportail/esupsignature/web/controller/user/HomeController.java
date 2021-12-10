@@ -9,9 +9,11 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,9 +22,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -35,12 +35,19 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user/")
 @Controller
+@EnableConfigurationProperties(GlobalProperties.class)
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
+    private final GlobalProperties globalProperties;
+
     @Resource
-    private GlobalProperties globalProperties;
+    private SignRequestRepository signRequestRepository;
+
+    public HomeController(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -69,9 +76,19 @@ public class HomeController {
     private UserService userService;
 
     @GetMapping
-    public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-        User authUser = (User) model.getAttribute("authUser");
+    public String home(@ModelAttribute("userEppn") String userEppn,
+                       @ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(required = false, name = "formId") Long formId,
+                       Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+        User authUser = userService.getUserByEppn(authUserEppn);
         if(authUser != null) {
+            List<SignRequest> oldSignRequests = new ArrayList<>();
+            if(globalProperties.getNbDaysBeforeWarning() > -1) {
+                oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
+            }
+            model.addAttribute("oldSignRequests", oldSignRequests);
+            List<SignRequest> recipientNotPresentSignRequests = signRequestService.getRecipientNotPresentSignRequests(userEppn);
+            model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
             List<Message> messages = new ArrayList<>();
             if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
                 Context ctx = new Context(Locale.FRENCH);
@@ -93,10 +110,16 @@ public class HomeController {
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
             model.addAttribute("uiParams", userService.getUiParams(authUserEppn));
+            model.addAttribute("startFormId", formId);
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");
         }
+    }
+
+    @GetMapping("/start-form/{formId}")
+    public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+        return "redirect:/user/?formId=" + formId;
     }
 
 }

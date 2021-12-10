@@ -31,9 +31,9 @@
     /*]]>*/
 </script>
 <script th:inline="javascript" type="module">
-    import {Nexu} from '/static/js/modules/ui/signrequests/Nexu.js?version=[[${version}]]';
-    import {SignUi} from '/static/js/modules/ui/signrequests/SignUi.js?version=[[${version}]]';
-    import {SignRequestHelp} from '/static/js/modules/help/SignRequestHelp.js?version=[[${version}]]';
+    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=[[${versionApp}]]';
+    import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=[[${versionApp}]]';
+    import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=[[${versionApp}]]';
     let help = new SignRequestHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]]);
     help.autoStart();
     let signable = [[${signable}]];
@@ -225,9 +225,9 @@
                     </div>
                 </div>
                 <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from '/static/js/modules/utils/FilesInput.js?version=[[${version}]]';
-                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.liteOriginalDocuments}]], true, [[${_csrf}]]);
-                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.liteSignedDocuments}]], true, [[${_csrf}]]);
+                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=[[${versionApp}]]';
+                    new FilesInput($("#multipartFiles"), "", "multipartFiles", [[${signRequest.originalDocuments}]], true, [[${_csrf}]]);
+                    new FilesInput($("#signedFiles"), "", "signedFiles", [[${signRequest.signedDocuments}]], true, [[${_csrf}]]);
                 </script>
             </div>
             <div th:if="${toSignDocument == null && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).deleted}" class="alert alert-danger">
@@ -388,11 +388,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="stepRepeatableModalLabel">Etape supplémentaire ?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <input th:classappend="${signRequest.parentSignBook.liveWorkflow.currentStep.signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
+                       class="form-control mt-2 mb-1" type="password" id="passwordInfinite" name="password" value=""
+                       placeholder="Mot de passe du keystore" />
                 <p>
                     Vous avez la possibilité de demander une validation intermédiaire avant l'étape suivante.
                 </p>
@@ -446,15 +447,16 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
-                    <div class="form-group mb-3">
-                    <label for="signTypeInfinite">Choisir un type de signature</label>
-                        <select name="signType" id="signTypeInfinite" class="form-control">
+                    <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
+                        <label for="signTypeInfinite">Choisir un type de signature</label>
+                        <select name="signType" id="signTypeInfinite" class="form-select">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType == 'pdfImageStamp'}"></option>
                             </th:block>
                         </select>
                     </div>
+                    <input th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType != null}" type="hidden" id="signTypeInfinite" name="signType" th:value="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType}">
                     <div class="form-group mb-3">
                         <textarea id="signCommentInfinite" class="form-control" name="comment" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible de tous les participants."></textarea>
                     </div>
@@ -462,7 +464,7 @@
                     <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <i class="fas fa-signature"></i> Confirmer la signature et l'ajout de l'étape
                     </span>
-                        <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <i class="fas fa-check"></i> Confirmer le visa et l'ajout de l'étape
                     </span>
                     </button>
@@ -576,9 +578,9 @@
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
                                         <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
                                         <div class="form-inline">
-                                            <label for="name">Nom</label>
+                                            <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
-                                            <label for="firstname">Prénom</label>
+                                            <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
                                             <input id="phones" class="form-control  me-2" type="text" name="phones" value="" required>
