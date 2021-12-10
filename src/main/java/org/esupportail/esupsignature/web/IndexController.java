@@ -31,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
@@ -80,6 +82,9 @@ public class IndexController {
 	@GetMapping
 	public String index(Model model, HttpServletRequest httpServletRequest) {
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+		if(defaultSavedRequest != null && defaultSavedRequest.getServletPath().startsWith("/ws")) {
+			return "redirect:/denied/ws";
+		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		User authUser = getAuthUser(auth);
 		if(authUser != null && !authUser.getEppn().equals("system")) {
@@ -108,6 +113,12 @@ public class IndexController {
 	@GetMapping("/login/**")
 	public String loginRedirection() {
 		return "redirect:/";
+	}
+
+	@RequestMapping(value = "/denied/ws/**", method = {RequestMethod.GET, RequestMethod.POST})
+	@ResponseBody
+	public ResponseEntity<String> deniedWs() {
+		return new ResponseEntity<> (HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/denied/**", method = {RequestMethod.GET, RequestMethod.POST})
