@@ -178,9 +178,11 @@ public class ScheduledTaskService {
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void cleanWarningReadedSignRequests() {
-		List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
-		for (SignRequest signRequest : signRequests) {
-			signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
+		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
+			List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
+			for (SignRequest signRequest : signRequests) {
+				signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
+			}
 		}
 	}
 

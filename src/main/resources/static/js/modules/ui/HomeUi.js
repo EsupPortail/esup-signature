@@ -2,7 +2,7 @@ import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
-    constructor() {
+    constructor(startFormId) {
         console.info("Starting home UI");
         this.noFilterButton = $("#noFilterButton");
         this.workflowFilterButton = $("#workflowFilterButton");
@@ -29,6 +29,9 @@ export class HomeUi {
             let recipientNotPresentSignRequests = $("#recipientNotPresentSignRequests");
             if(recipientNotPresentSignRequests.length) {
                 recipientNotPresentSignRequests.modal('show');
+            }
+            if(startFormId != null) {
+                $("#sendModal_" + startFormId).modal('show');
             }
         });
     }
