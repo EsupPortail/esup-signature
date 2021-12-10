@@ -6,7 +6,7 @@
 </th:block>
 <div id="footer">
 	<footer  class="footer bg-secondary fixed-bottom text-center text-white">
-		<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${version}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span>
+		<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${versionApp}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span>
 	</footer>
 </div>
 <!-- Matomo -->
