@@ -1,15 +1,26 @@
 package org.esupportail.esupsignature.config.security;
 
+import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
+import org.esupportail.esupsignature.config.security.shib.DevClientRequestFilter;
+import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
+import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,36 +37,75 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 @EnableWebSecurity(debug = false)
-@EnableConfigurationProperties(WebSecurityProperties.class)
+@EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+
+	private LdapContextSource ldapContextSource;
+
+	@Autowired(required = false)
+	public void setLdapContextSource(LdapContextSource ldapContextSource) {
+		this.ldapContextSource = ldapContextSource;
+	}
 
 	@Resource
 	private WebSecurityProperties webSecurityProperties;
 
-	@Resource
-	private List<SecurityService> securityServices;
-	
-	private List<DevSecurityFilter> devSecurityFilters;
+	private final List<SecurityService> securityServices = new ArrayList<>();
 
-	@Autowired(required = false)
-	public void setDevSecurityFilters(List<DevSecurityFilter> devSecurityFilters) {
-		this.devSecurityFilters = devSecurityFilters;
+	private final List<DevSecurityFilter> devSecurityFilters = new ArrayList<>();
+
+	@Bean
+	@Order(1)
+	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+	public CasSecurityServiceImpl casSecurityServiceImpl() {
+		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
+			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl();
+			securityServices.add(casSecurityService);
+			return casSecurityService;
+		} else {
+			logger.error("cas config found without needed ldap config, cas security will be disabled");
+			return null;
+		}
+	}
+
+	@Bean
+	@Order(2)
+	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
+	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
+		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
+		securityServices.add(shibSecurityService);
+		return shibSecurityService;
+	}
+
+	@Bean
+	@Order(3)
+	@Conditional(ClientsConfiguredCondition.class)
+	public OAuthSecurityServiceImpl oAuthSecurityService() {
+		OAuthSecurityServiceImpl oAuthSecurityService = new OAuthSecurityServiceImpl();
+		securityServices.add(oAuthSecurityService);
+		return oAuthSecurityService;
+	}
+
+	@Bean
+	@Order(4)
+	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
+	public DevClientRequestFilter devClientRequestFilter() {
+		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
+		devSecurityFilters.add(devClientRequestFilter);
+		return devClientRequestFilter;
 	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
-		if(devSecurityFilters != null) {
-			devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
-		}
+		devSecurityFilters.forEach(devSecurityFilter -> http.addFilterBefore(devSecurityFilter, OAuth2AuthorizationRequestRedirectFilter.class));
 		http.exceptionHandling().defaultAuthenticationEntryPointFor(new IndexEntryPoint("/"), new AntPathRequestMatcher("/"));
 		for(SecurityService securityService : securityServices) {
 			http.antMatcher("/**").authorizeRequests().antMatchers(securityService.getLoginUrl()).authenticated();
@@ -63,6 +113,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			http.addFilterAfter(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
 				http.oauth2Client();
+			}
+		}
+		for(SecurityService securityService : securityServices) {
+			if(securityService instanceof CasSecurityServiceImpl) {
+				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+			} else if(securityService instanceof ShibSecurityServiceImpl) {
+				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+				break;
 			}
 		}
 		http.logout()
@@ -73,12 +131,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.logoutSuccessUrl("/login").permitAll();
 		http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry());
 		http.csrf()
-			.ignoringAntMatchers("/ws/**")
-			.ignoringAntMatchers("/user/nexu-sign/**")
-			.ignoringAntMatchers("/otp/**")
-			.ignoringAntMatchers("/log/**")
-			.ignoringAntMatchers("/actuator/**")
-			.ignoringAntMatchers("/h2-console/**");
+				.ignoringAntMatchers("/ws/**")
+				.ignoringAntMatchers("/user/nexu-sign/**")
+				.ignoringAntMatchers("/otp/**")
+				.ignoringAntMatchers("/log/**")
+				.ignoringAntMatchers("/actuator/**")
+				.ignoringAntMatchers("/h2-console/**");
 		http.headers().frameOptions().sameOrigin();
 		http.headers().disable();
 	}
@@ -109,7 +167,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
-				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();
@@ -139,17 +196,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
+//	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
 	@ConditionalOnExpression("${global.enable-su}")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
-		for(SecurityService securityService : securityServices) {
-			if(securityService instanceof CasSecurityServiceImpl) {
-				switchUserFilter.setUserDetailsService(securityService.getUserDetailsService());
-			}
-		}
+		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
 		switchUserFilter.setSwitchUserUrl("/admin/su-login");
-		//switchUserFilter.setSwitchFailureUrl("/error");
+		switchUserFilter.setSwitchFailureUrl("/error");
 		switchUserFilter.setExitUserUrl("/su-logout");
 		switchUserFilter.setTargetUrl("/");
 		return switchUserFilter;

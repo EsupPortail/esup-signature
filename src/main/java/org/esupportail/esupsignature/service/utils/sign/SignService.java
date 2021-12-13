@@ -17,30 +17,28 @@ import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.signature.DocumentSignatureService;
 import eu.europa.esig.dss.signature.MultipleDocumentsSignatureService;
 import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.utils.Utils;
 import eu.europa.esig.dss.validation.timestamp.TimestampToken;
 import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.apache.commons.codec.binary.Base64;
 import org.esupportail.esupsignature.config.sign.SignConfig;
 import org.esupportail.esupsignature.dss.DssUtils;
 import org.esupportail.esupsignature.dss.model.*;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.service.DocumentService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.ValidationService;
+import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfParameters;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,8 +51,10 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
 
 @Service
 public class SignService {
@@ -92,13 +92,98 @@ public class SignService {
 	private UserService userService;
 
 	@Resource
-	private SignRequestService signRequestService;
+	private SignRequestRepository signRequestRepository;
+
+	@Resource
+	private Environment environment;
+
+	@Autowired(required=false)
+	private UserKeystoreService userKeystoreService;
+
+	@Resource
+	private CertificatService certificatService;
 
 	@Resource
 	private ValidationService validationService;
 
-	@Resource
-	private Environment environment;
+	@Transactional
+	public List<Document> getToSignDocuments(Long signRequestId) {
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+		List<Document> documents = new ArrayList<>();
+		if(signRequest.getSignedDocuments() != null && signRequest.getSignedDocuments().size() > 0 ) {
+			documents.add(signRequest.getLastSignedDocument());
+		} else {
+			documents.addAll(signRequest.getOriginalDocuments());
+		}
+		return documents;
+	}
+
+	public void certSign(SignRequest signRequest, User user, String password, String certType, boolean visual) throws EsupSignatureException, InterruptedException {
+		logger.info("start certSign for signRequest : " + signRequest.getId());
+		SignatureForm signatureForm;
+		List<Document> toSignDocuments = new ArrayList<>();
+		for(Document document : getToSignDocuments(signRequest.getId())) {
+			toSignDocuments.add(document);
+		}
+		Pkcs12SignatureToken pkcs12SignatureToken = null;
+		try {
+			if(user.getKeystore() != null && certType.equals("profil")) {
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
+			} else if(user.getKeystore() != null && certType.equals("auto")) {
+				Certificat certificat = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat();
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
+			} else {
+				Certificat certificat = certificatService.getCertificatByUser(user.getEppn()).get(0);
+				pkcs12SignatureToken = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
+
+			}
+			CertificateToken certificateToken = userKeystoreService.getCertificateToken(pkcs12SignatureToken);
+			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(pkcs12SignatureToken);
+			AbstractSignatureForm signatureDocumentForm = getSignatureDocumentForm(toSignDocuments, signRequest, visual, user);
+			signatureForm = signatureDocumentForm.getSignatureForm();
+			signatureDocumentForm.setEncryptionAlgorithm(EncryptionAlgorithm.RSA);
+			signatureDocumentForm.setBase64Certificate(Base64.encodeBase64String(certificateToken.getEncoded()));
+			List<String> base64CertificateChain = new ArrayList<>();
+			for (CertificateToken token : certificateTokenChain) {
+				base64CertificateChain.add(Base64.encodeBase64String(token.getEncoded()));
+			}
+			signatureDocumentForm.setBase64CertificateChain(base64CertificateChain);
+			AbstractSignatureParameters parameters;
+			if(signatureForm.equals(SignatureForm.CAdES)) {
+				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
+				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+				aSiCWithCAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
+				parameters = aSiCWithCAdESSignatureParameters;
+			} else if(signatureForm.equals(SignatureForm.XAdES)) {
+				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
+				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
+				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
+				parameters = aSiCWithXAdESSignatureParameters;
+			} else {
+				parameters = fillVisibleParameters((SignatureDocumentForm) signatureDocumentForm, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(0), new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign()), new Color(214, 0, 128), user, signatureDocumentForm.getSigningDate());
+			}
+			parameters.setSigningCertificate(certificateToken);
+			parameters.setCertificateChain(certificateTokenChain);
+			parameters.setSignatureLevel(signatureDocumentForm.getSignatureLevel());
+			parameters.bLevel().setSigningDate(signatureDocumentForm.getSigningDate());
+			DSSDocument dssDocument;
+			if(signatureDocumentForm instanceof SignatureMultipleDocumentsForm) {
+				dssDocument = certSignDocument((SignatureMultipleDocumentsForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
+			} else {
+				dssDocument = certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, pkcs12SignatureToken);
+			}
+			pkcs12SignatureToken.close();
+			documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())));
+			logger.info("certSign ok for signRequest : " + signRequest.getId());
+		} catch (EsupSignatureKeystoreException e) {
+			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
+			throw new EsupSignatureKeystoreException(e.getMessage(), e);
+		} catch (Exception e) {
+			if(pkcs12SignatureToken != null) pkcs12SignatureToken.close();
+			throw new EsupSignatureException(e.getMessage(), e);
+		}
+	}
+
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument extend(ExtensionForm extensionForm) {
@@ -126,7 +211,7 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
 	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm form) throws DSSException, IOException {
-		SignRequest signRequest = signRequestService.getById(id);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		logger.info("Start getDataToSign with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
 		DSSDocument toSignDocument = DssUtils.toDSSDocument(new ByteArrayInputStream(form.getDocumentToSign()));
@@ -222,7 +307,7 @@ public class SignService {
 			signatureFieldParameters.setPage(signRequestParams.getSignPageNumber());
 //			signatureFieldParameters.setFieldId(signRequestParams.getPdSignatureFieldName());
 			imageParameters.setRotation(VisualSignatureRotation.AUTOMATIC);
-			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile);
+			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
 //			if(signRequestParams.getAddExtra()) {
 //				signRequestParams.setSignWidth(signRequestParams.getSignWidth() + 200);
 //			}
@@ -324,6 +409,17 @@ public class SignService {
 
 	}
 
+	@Transactional
+	public boolean isNotSigned(SignRequest signRequest) throws IOException {
+		List<Document> documents = getToSignDocuments(signRequest.getId());
+		if(documents.size() > 0 && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.certSign) || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.nexuSign))) {
+			byte[] bytes = getToSignDocuments(signRequest.getId()).get(0).getInputStream().readAllBytes();
+			return signRequest.getSignedDocuments().size() == 0 && validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0;
+		} else {
+			return true;
+		}
+	}
+
 	public AbstractSignatureForm getSignatureDocumentForm(List<Document> documents, SignRequest signRequest, boolean visual, User user) throws IOException, EsupSignatureException {
 		SignatureForm signatureForm;
 		AbstractSignatureForm abstractSignatureForm;
@@ -348,7 +444,7 @@ public class SignService {
 					inputStream = toSignFile.getInputStream();
 				}
 				byte[] bytes = inputStream.readAllBytes();
-				if(signRequestService.isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
+				if(isNotSigned(signRequest) && !pdfService.isPdfAComplient(new ByteArrayInputStream(bytes))) {
 					int i = 0;
 					for(SignRequestParams signRequestParams : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams()) {
 						bytes = pdfService.stampImage(new ByteArrayInputStream(bytes), signRequest, signRequestParams, i, user).readAllBytes();
@@ -417,8 +513,7 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
 	public DSSDocument nexuSignDocument(Long id, String userEppn, SignatureDocumentForm form) throws IOException {
-		SignRequest signRequest = signRequestService.getById(id);
-		Document toSignDocument = signRequestService.getToSignDocuments(id).get(0);
+		SignRequest signRequest = signRequestRepository.findById(id).get();
 		AbstractSignatureParameters parameters = getSignatureParameters(signRequest, userEppn, form);
 		logger.info("Start signDocument with one document");
 		DocumentSignatureService service = getSignatureService(form.getContainerType(), form.getSignatureForm());
@@ -537,9 +632,9 @@ public class SignService {
 	@Transactional
 	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId, String userEppn) throws IOException, EsupSignatureException {
 		User user = userService.getUserByEppn(userEppn);
-		SignRequest signRequest = signRequestService.getById(signRequestId);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		List<SignRequestParams> liveWfSignRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-		return getSignatureDocumentForm(signRequestService.getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user);
+		return getSignatureDocumentForm(getToSignDocuments(signRequest.getId()), signRequest, liveWfSignRequestParams.get(0).getVisual(), user);
 	}
 
 	@Transactional
@@ -561,7 +656,7 @@ public class SignService {
 
 	@Transactional
 	public SignDocumentResponse getSignDocumentResponse(Long signRequestId, SignatureValueAsString signatureValue, AbstractSignatureForm abstractSignatureForm, String userEppn, String authUserEppn) throws EsupSignatureException {
-		SignRequest signRequest = signRequestService.getById(signRequestId);
+		SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
 		SignDocumentResponse signedDocumentResponse;
 		abstractSignatureForm.setBase64SignatureValue(signatureValue.getSignatureValue());
 		try {
@@ -569,8 +664,6 @@ public class SignService {
 			if(signedFile != null) {
 				signedDocumentResponse = new SignDocumentResponse();
 				signedDocumentResponse.setUrlToDownload("download");
-				signRequestService.updateStatus(signRequest, SignRequestStatus.signed, "Signature", "SUCCESS", userEppn, authUserEppn);
-				signRequestService.applyEndOfSignRules(signRequest, userEppn, authUserEppn, SignType.nexuSign, "");
 				return signedDocumentResponse;
 			}
 		} catch (IOException e) {

@@ -4,7 +4,7 @@ import {Step} from "../../../prototypes/Step.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentRequire, isOtp) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp) {
         console.info("Starting sign UI");
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.signRequestId = id;
@@ -15,7 +15,7 @@ export class SignUi {
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.isPdf = isPdf;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentRequire, isOtp);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepId, currentStepMultiSign, workflow, signImages, userName, authUserName, currentSignType, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -92,6 +92,7 @@ export class SignUi {
 
     launchNoInfiniteSign() {
         this.signComment = $("#signCommentNoInfinite");
+        $("#password").val($("#passwordInfinite").val());
         this.launchSign(false);
     }
 
@@ -237,6 +238,7 @@ export class SignUi {
             $("#infiniteFormSubmit").click();
             return;
         }
+        let self = this;
         this.signComment = $("#signCommentInfinite");
         step.recipientsEmails = selectedRecipients;
         step.stepNumber = this.currentStepNumber;
@@ -249,7 +251,10 @@ export class SignUi {
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
-            success: response => this.launchSign()
+            success: function() {
+                $("#password").val($("#passwordInfinite").val());
+                self.launchSign();
+            }
         });
     }
 

@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.LogRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,15 @@ public class LogService {
     @Resource
     private UserService userService;
 
-    @Autowired(required = false)
     private HttpServletRequest request;
 
-    public List<Log> getByEppnAndSignRequestId(String eppn, Long id) {
-        return logRepository.findByEppnAndSignRequestId(eppn, id);
+    @Autowired(required = false)
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
     }
+
+    @Resource
+    private SignRequestRepository signRequestRepository;
 
     public List<Log> getRefuseLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndFinalStatus(id, SignRequestStatus.refused.name());
@@ -61,11 +65,6 @@ public class LogService {
 
     public List<Log> getLogs(Long id) {
         List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
-        return setUsers(logs);
-    }
-
-    public List<Log> getGlobalLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndStepNumberIsNotNullAndCommentIsNotNull(id);
         return setUsers(logs);
     }
 
@@ -118,7 +117,8 @@ public class LogService {
     }
 
     @Transactional
-    public Log create(SignRequest signRequest, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+    public Log create(Long signRequestId, SignRequestStatus signRequestStatus, String action, String comment, String returnCode, Integer pageNumber, Integer posX, Integer posY, Integer stepNumber, String userEppn, String authUserEppn) {
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
         Log log = new Log();
         log.setSignRequestId(signRequest.getId());
         log.setSignRequestToken(signRequest.getToken());

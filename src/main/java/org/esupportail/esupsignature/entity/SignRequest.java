@@ -72,6 +72,16 @@ public class SignRequest {
     @OrderColumn
     private List<Comment> comments = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> hidedBy = new ArrayList<>();
+
+    private Boolean warningReaded = false;
+
+    private Date lastNotifDate;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
+
     @JsonIgnore
     @Transient
     transient Boolean signable = false;
@@ -83,11 +93,6 @@ public class SignRequest {
     @JsonIgnore
     @Transient
     transient Data data;
-
-    private Date lastNotifDate;
-    
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private Map<Recipient, Action> recipientHasSigned = new HashMap<>();
 
     public Long getId() {
         return id;
@@ -205,6 +210,22 @@ public class SignRequest {
         return comments;
     }
 
+    public List<User> getHidedBy() {
+        return hidedBy;
+    }
+
+    public void setHidedBy(List<User> hidedBy) {
+        this.hidedBy = hidedBy;
+    }
+
+    public Boolean getWarningReaded() {
+        return warningReaded;
+    }
+
+    public void setWarningReaded(Boolean warningReaded) {
+        this.warningReaded = warningReaded;
+    }
+
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
@@ -245,6 +266,15 @@ public class SignRequest {
         return recipientHasSigned;
     }
 
+    public Date getLastNotifDate() {
+        return lastNotifDate;
+    }
+
+    public void setLastNotifDate(Date lastNotifDate) {
+        this.lastNotifDate = lastNotifDate;
+    }
+
+
     @JsonIgnore
     public Map<Recipient, Action> getOrderedRecipientHasSigned() {
         if(recipientHasSigned.size() > 0) {
@@ -261,26 +291,6 @@ public class SignRequest {
 
     public void setRecipientHasSigned(Map<Recipient, Action> recipientHasSigned) {
         this.recipientHasSigned = recipientHasSigned;
-    }
-
-    @JsonIgnore
-    public List<Document> getLiteOriginalDocuments() {
-        List<Document> liteDocuments = new ArrayList<>();
-        for (Document document : this.originalDocuments) {
-            document.setBigFile(null);
-            liteDocuments.add(document);
-        }
-        return liteDocuments;
-    }
-
-    @JsonIgnore
-    public List<Document> getLiteSignedDocuments() {
-        List<Document> liteDocuments = new ArrayList<>();
-        for (Document document : this.signedDocuments) {
-            document.setBigFile(null);
-            liteDocuments.add(document);
-        }
-        return liteDocuments;
     }
 
     @JsonIgnore
@@ -309,14 +319,5 @@ public class SignRequest {
             return null;
         }
     }
-
-    public Date getLastNotifDate() {
-        return lastNotifDate;
-    }
-
-    public void setLastNotifDate(Date lastNotifDate) {
-        this.lastNotifDate = lastNotifDate;
-    }
-
 
 }

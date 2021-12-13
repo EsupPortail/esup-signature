@@ -2,12 +2,10 @@ package org.esupportail.esupsignature.service.utils.pdf;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -22,6 +20,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDNamedDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -49,6 +48,7 @@ import org.esupportail.esupsignature.service.ValidationService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.verapdf.core.EncryptedPdfException;
@@ -74,6 +74,7 @@ import java.util.*;
 
 
 @Service
+@EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
@@ -84,14 +85,17 @@ public class PdfService {
     @Resource
     private FileService fileService;
 
-    @Resource
-    private GlobalProperties globalProperties;
+    private final GlobalProperties globalProperties;
 
     @Resource
     private LogService logService;
 
     @Resource
     private ValidationService validationService;
+
+    public PdfService(GlobalProperties globalProperties) {
+        this.globalProperties = globalProperties;
+    }
 
     public InputStream stampImage(InputStream inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user) {
         double fixFactor = .75;
@@ -100,7 +104,7 @@ public class PdfService {
         try {
             PDDocument pdDocument = PDDocument.load(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
-            pdfParameters = getPdfParameters(pdDocument);
+            pdfParameters = getPdfParameters(pdDocument, signRequestParams.getSignPageNumber());
             
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages()) {
                 int i = 1;
@@ -183,7 +187,7 @@ public class PdfService {
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
@@ -246,6 +250,34 @@ public class PdfService {
         pdOutlineItem.setTitle(signatureInfos);
         pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
     }
+
+    public InputStream addOutLine(SignRequest signRequest, InputStream inputStream, User user, Date newDate, DateFormat dateFormat) throws IOException {
+        PDDocument pdDocument = PDDocument.load(inputStream);
+        if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
+            PDDocumentOutline outline = new PDDocumentOutline();
+            pdDocument.getDocumentCatalog().setDocumentOutline(outline);
+        }
+        PDFTextStripper pdfTextStripper = new PDFTextStripper();
+        String signatureInfos =
+                "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
+                        "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
+                        "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
+                        "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
+                        "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+        PDOutlineItem pdOutlineItem = new PDOutlineItem();
+        pdOutlineItem.setTitle(signatureInfos);
+        PDNamedDestination dest = new PDNamedDestination();
+        dest.setNamedDestination(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
+        pdOutlineItem.setDestination(dest);
+        pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        pdDocument.save(out);
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        pdDocument.close();
+        return in;
+    }
+
 
     public Map<String, String> readMetadatas(InputStream inputStream) {
         Map<String, String> metadatas = new HashMap<>();
@@ -535,8 +567,8 @@ public class PdfService {
             validator.close();
             parser.close();
         } catch (ValidationException | ModelParsingException | EncryptedPdfException | IOException e) {
-            logger.error("check error", e);
-//            throw new EsupSignatureException("check pdf error", e);
+            logger.warn("check error " + e.getMessage());
+            logger.debug("check error", e);
         }
         return result;
     }
@@ -663,16 +695,8 @@ public class PdfService {
                                 pdTextField.setValue(value);
                                 pdAcroForm.getFields().add(pdTextField);
                                 pdAcroForm.getFields().remove(pdListBox);
-                                Map<COSDictionary, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument.getDocumentCatalog());
-                                int page = 1;
-                                List<PDAnnotationWidget> kids = pdField.getWidgets();
-                                if (kids != null) {
-                                    for (COSObjectable kid : kids) {
-                                        COSBase kidObject = kid.getCOSObject();
-                                        if (kidObject instanceof COSDictionary)
-                                            page = pageNrByAnnotDict.get(kidObject);
-                                    }
-                                }
+                                Map<String, Integer> pageNrByAnnotDict = getPageNumberByAnnotDict(pdDocument);
+                                int page = pageNrByAnnotDict.get(pdField.getPartialName());
                                 int countPage = 1;
                                 for (PDPage pdPage : pdDocument.getPages()) {
                                     pdPage.getAnnotations().removeAll(pdListBox.getWidgets());
@@ -774,11 +798,11 @@ public class PdfService {
         return null;
     }
 
-    public PdfParameters getPdfParameters(InputStream pdfFile) {
+    public PdfParameters getPdfParameters(InputStream pdfFile, int pageNumber) {
         PDDocument pdDocument = null;
         try {
             pdDocument = PDDocument.load(pdfFile);
-            return getPdfParameters(pdDocument);
+            return getPdfParameters(pdDocument, pageNumber);
         } catch (Exception e) {
             logger.error("error on get pdf parameters", e);
         } finally {
@@ -793,9 +817,13 @@ public class PdfService {
         return null;
     }
 
-    public PdfParameters getPdfParameters(PDDocument pdDocument) {
-        PDPage pdPage = pdDocument.getPage(0);
-        PdfParameters pdfParameters = new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+    public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
+        PDPage pdPage = pdDocument.getPage(pageNumber - 1);
+        PdfParameters pdfParameters = new PdfParameters(
+                (int) pdPage.getMediaBox().getWidth(),
+                (int) pdPage.getMediaBox().getHeight(),
+                pdPage.getRotation(),
+                pdDocument.getNumberOfPages());
         return pdfParameters;
     }
 
@@ -851,17 +879,51 @@ public class PdfService {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    public Map<COSDictionary, Integer> getPageNumberByAnnotDict(PDDocumentCatalog docCatalog) throws IOException {
-        Iterator<PDPage> pages = docCatalog.getPages().iterator();
-        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
-        int i = 0;
-        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
-            PDPage pdPage = it.next();
-            for (PDAnnotation annotation : pdPage.getAnnotations()) {
-                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+    int determineSafe(PDDocument document, PDAnnotationWidget widget) throws IOException {
+        COSDictionary widgetObject = widget.getCOSObject();
+        PDPageTree pages = document.getPages();
+        for (int i = 0; i < pages.getCount(); i++) {
+            for (PDAnnotation annotation : pages.get(i).getAnnotations()) {
+                COSDictionary annotationObject = annotation.getCOSObject();
+                if (annotationObject.equals(widgetObject)) {
+                    return i + 1;
+                }
             }
-            i++;
         }
+        return -1;
+    }
+
+    int determineFast(PDDocument document, PDAnnotationWidget widget)
+    {
+        PDPage page = widget.getPage();
+        return page != null ? document.getPages().indexOf(page) : -1;
+    }
+
+    public Map<String, Integer> getPageNumberByAnnotDict(PDDocument pdDocument) throws IOException {
+        Iterator<PDPage> pages = pdDocument.getDocumentCatalog().getPages().iterator();
+        PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+        Map<String, Integer> pageNrByAnnotDict = new HashMap<>();
+        for (PDField field : pdAcroForm.getFieldTree()) {
+            for (PDAnnotationWidget widget : field.getWidgets()) {
+                int pageNb = determineFast(pdDocument, widget);
+                if(pageNb == -1) {
+                    pageNb = determineSafe(pdDocument, widget);
+                }
+                if(pageNb > -1) {
+                    pageNrByAnnotDict.put(field.getPartialName(), pageNb);
+                }
+            }
+        }
+//
+//        Map<COSDictionary, Integer> pageNrByAnnotDict = new HashMap<>();
+//        int i = 0;
+//        for (Iterator<PDPage> it = pages; it.hasNext(); ) {
+//            PDPage pdPage = it.next();
+//            for (PDAnnotation annotation : pdPage.getAnnotations()) {
+//                pageNrByAnnotDict.put(annotation.getCOSObject(), i + 1);
+//            }
+//            i++;
+//        }
         return pageNrByAnnotDict;
     }
 }

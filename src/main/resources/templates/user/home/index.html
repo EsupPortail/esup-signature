@@ -5,12 +5,11 @@
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    import {HomeUi} from '/static/js/modules/ui/HomeUi.js?version=[[${version}]]';
-    import {HomeHelp} from '/static/js/modules/help/HomeHelp.js?version=[[${version}]]';
-    new HomeUi();
+    import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
+    import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=[[${versionApp}]]';
+    new HomeUi([[${startFormId}]]);
     let help = new HomeHelp([[${uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
     help.autoStart();
-
 </script>
 <body>
 <header th:replace="fragments/nav"></header>
@@ -109,12 +108,57 @@
 <!--                                </tbody>-->
 <!--                            </table>-->
 <!--                        </div>-->
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
 <footer th:replace="fragments/footer"></footer>
+<div id="oldSignRequests" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Demandes en retard</h4>
+            </div>
+            <div class="modal-body">
+                <p>Les demandes suivante sont en attente depuis plus de -- jours.</p>
+                <p>Ces demandes seront <b>mises à la corbeille</b> automatiquement dans -- jours</p>
+                <ul>
+                    <th:block th:each="signRequest : ${oldSignRequests}">
+                        <li>
+                        <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.title}"></a>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button id="warningReaded" type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-eye-slash"></i> Marquer comme lu</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="recipientNotPresentSignRequests" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Demandes non affectées</h4>
+            </div>
+            <div class="modal-body">
+                <p>Les demandes suivantes sont en attentes auprès de personnes n'étant plus présente dans le référentiel de l'établissement</p>
+                <p>Ces demande sont à supprimer et à recréer si besoin en précisant un nouveau destinataire</p>
+                <ul>
+                    <th:block th:each="signRequest : ${recipientNotPresentSignRequests}">
+                        <li>
+                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.title}"></a>
+                        </li>
+                    </th:block>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

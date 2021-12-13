@@ -63,6 +63,12 @@
                         <a th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-eye pr-2"></i> Consulter
                         </a>
+                        <a th:if="${!signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                            <i class="fas fa-eye-slash pr-2"></i> Masquer
+                        </a>
+                        <a th:if="${signRequest.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/toggle/' + ${signRequest.id} + '/?statusFilter=' + ${statusFilter}">
+                            <i class="fas fa-eye-slash pr-2"></i> Afficher dans la liste
+                        </a>
                         <a th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'tosign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
                             <i class="fas fa-signature pr-2"></i> Signer
                         </a>

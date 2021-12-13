@@ -22,12 +22,9 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.sql.Blob;
-import java.util.List;
 
 @Entity
 public class BigFile {
-
-    public static final List<String> fieldNames4OrderClauseFilter = java.util.Arrays.asList("binaryFile");
 
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)

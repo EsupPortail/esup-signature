@@ -24,6 +24,8 @@ public class JsonWorkflowStep {
 
 	private String signType = "visa";
 
+	private String repeatableSignType = "visa";
+
 	private Boolean allSignToComplete = false;
 
 	private Boolean multiSign = true;

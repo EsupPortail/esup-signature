@@ -68,12 +68,21 @@
                                         <input type="checkbox" class="form-check-input" name="allSignToComplete"
                                                    th:checked="${workflowStep.allSignToComplete}"/>
                                     </div>
-                                    <div class="form-check form-switch form-switch-md">
-                                        <label class="form-check-label">
-                                            Une piece jointe doit-être insérée lors de cette étape
-                                        </label>
-                                        <input type="checkbox" class="form-check-input" name="attachmentRequire"
-                                               th:checked="${workflowStep.attachmentRequire}"/>
+                                    <div class="row">
+                                        <div class="form-check form-switch form-switch-md col-6">
+                                            <label class="form-check-label" title="Alerte pièce jointe">
+                                                Alerte PJ
+                                            </label>
+                                            <input type="checkbox" class="form-check-input" name="attachmentAlert"
+                                                   th:checked="${workflowStep.attachmentAlert}"/>
+                                        </div>
+                                        <div class="form-check form-switch form-switch-md col-6">
+                                            <label class="form-check-label" title="Pièce jointe obligatoire">
+                                                PJ obligatoire
+                                            </label>
+                                            <input type="checkbox" class="form-check-input" name="attachmentRequire"
+                                                   th:checked="${workflowStep.attachmentRequire}"/>
+                                        </div>
                                     </div>
                                 </th:block>
                                 <button type="submit" class="btn btn-success float-end ms-2 mb-2">

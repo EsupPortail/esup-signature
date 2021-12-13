@@ -73,6 +73,8 @@ public class Workflow {
 
     private String namingTemplate;
 
+    private String targetNamingTemplate;
+
     public Long getId() {
         return id;
     }
@@ -264,5 +266,13 @@ public class Workflow {
 
     public void setNamingTemplate(String namingTemplate) {
         this.namingTemplate = namingTemplate;
+    }
+
+    public String getTargetNamingTemplate() {
+        return targetNamingTemplate;
+    }
+
+    public void setTargetNamingTemplate(String targetNamingTemplate) {
+        this.targetNamingTemplate = targetNamingTemplate;
     }
 }

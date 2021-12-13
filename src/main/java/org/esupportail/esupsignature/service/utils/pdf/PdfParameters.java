@@ -41,10 +41,10 @@ public class PdfParameters {
 	}
 
 	public boolean isLandScape() {
-		if((this.rotation == 90 || this.rotation == 270)) {
-			return this.width < this.height;
+		if((this.rotation == 0 || this.rotation == 180) && this.width > this.height) {
+			return true;
 		} else {
-			return this.width > this.height;
+			return false;
 		}
 	}
 	

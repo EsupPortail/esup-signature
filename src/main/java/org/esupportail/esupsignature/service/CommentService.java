@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.repository.CommentRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,7 @@ public class CommentService {
     private CommentRepository commentRepository;
 
     @Resource
-    private SignRequestService signRequestService;
+    private SignRequestRepository signRequestRepository;
 
     @Resource
     private UserService userService;
@@ -26,7 +27,7 @@ public class CommentService {
     @Transactional
     public Comment create(Long signRequestId, String text, Integer posX, Integer posY, Integer pageNumer, Integer stepNumber, Boolean postit, String postitColor, String userEppn) {
         User user = userService.getUserByEppn(userEppn);
-        SignRequest signRequest = signRequestService.getById(signRequestId);
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
         Comment comment = new Comment();
         comment.setText(text);
         comment.setCreateBy(user);
@@ -48,7 +49,7 @@ public class CommentService {
     public void deleteComment(Long commentId) {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if(comment.isPresent()) {
-            SignRequest signRequest = signRequestService.getSignRequestByComment(comment.get());
+            SignRequest signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
             if (comment.get().getStepNumber() != null) {
                 signRequest.getSignRequestParams().remove(comment.get().getStepNumber() - 1);
                 if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber()) {

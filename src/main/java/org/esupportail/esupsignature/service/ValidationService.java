@@ -34,21 +34,7 @@ public class ValidationService {
     private CertificateVerifier certificateVerifier;
 
     @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
     private org.springframework.core.io.Resource defaultPolicy;
-
-    @Transactional
-    public Reports validate(long signRequestId) throws IOException {
-        List<Document> documents = signRequestService.getToSignDocuments(signRequestId);
-        if(documents.size() > 0) {
-            byte[] bytes = signRequestService.getToSignDocuments(signRequestId).get(0).getInputStream().readAllBytes();
-            return validate(new ByteArrayInputStream(bytes), null);
-        } else {
-            return null;
-        }
-    }
 
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {

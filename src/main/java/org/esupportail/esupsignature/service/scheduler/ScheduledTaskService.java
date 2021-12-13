@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.scheduler;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.OJService;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -10,6 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -36,12 +39,12 @@ import java.util.List;
 @ConditionalOnProperty(value = "app.scheduling.enable", havingValue = "true", matchIfMissing = true)
 @EnableScheduling
 @Component
+@EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
 
-	@Resource
-	private GlobalProperties globalProperties;
+	private final GlobalProperties globalProperties;
 
 	@Resource
 	private SignBookRepository signBookRepository;
@@ -58,7 +61,14 @@ public class ScheduledTaskService {
 	@Resource
 	private UserService userService;
 
+	@Resource
+	private SignRequestRepository signRequestRepository;
+
 	private OJService oJService;
+
+	public ScheduledTaskService(GlobalProperties globalProperties) {
+		this.globalProperties = globalProperties;
+	}
 
 	@Autowired(required = false)
 	public void setoJService(OJService oJService) {
@@ -67,27 +77,47 @@ public class ScheduledTaskService {
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
-	public void scanAllSignbooksSources() throws EsupSignatureFsException {
+	public void scanAllWorkflowsSources() throws EsupSignatureFsException {
+		logger.debug("scan workflows sources");
 		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
-			workflowService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
+			signRequestService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
 		}
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void scanAllSignbooksTargets() {
-		logger.trace("scan all signRequest to export");
+		logger.debug("scan all signRequest to export");
 		List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
 		for(SignBook signBook : signBooks) {
 			try {
-				signBookService.exportFilesToTarget(signBook, "scheduler");
-				if(globalProperties.getArchiveUri() != null) {
-					signBookService.archivesFiles(signBook, "scheduler");
+				if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+					signRequestService.sendSignRequestsToTarget(signBook.getSignRequests(), signBook.getName(), signBook.getLiveWorkflow().getTargets(), "scheduler");
 				}
 			} catch (EsupSignatureFsException | EsupSignatureException e) {
 				logger.error(e.getMessage());
+			}
+		}
+	}
+
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void scanAllSignbooksToArchive() {
+		if(globalProperties.getArchiveUri() != null) {
+			logger.debug("scan all signRequest to archive");
+			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
+			signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
+			for (SignBook signBook : signBooks) {
+				try {
+					if(signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getTargets().size() > 0) {
+						continue;
+					}
+					signRequestService.archiveSignRequests(signBook.getSignRequests(), "scheduler");
+				} catch (EsupSignatureFsException | EsupSignatureException e) {
+					logger.error(e.getMessage());
+				}
 			}
 		}
 	}
@@ -99,7 +129,7 @@ public class ScheduledTaskService {
 		if(globalProperties.getDelayBeforeCleaning() > -1) {
 			List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
 			for (SignBook signBook : signBooks) {
-				signBookService.cleanFiles(signBook, "scheduler");
+				signRequestService.cleanFiles(signBook, "scheduler");
 			}
 		} else {
 			logger.debug("cleaning documents was skipped because neg value");
@@ -142,6 +172,17 @@ public class ScheduledTaskService {
 	public void refreshOJKeystore() {
 		if(oJService != null) {
 			oJService.refresh();
+		}
+	}
+
+	@Scheduled(initialDelay = 12000, fixedRate = 300000)
+	@Transactional
+	public void cleanWarningReadedSignRequests() {
+		if(globalProperties.getNbDaysBeforeDeleting() > -1) {
+			List<SignRequest> signRequests = signRequestRepository.findByOlderPendingAndWarningReaded(globalProperties.getNbDaysBeforeDeleting());
+			for (SignRequest signRequest : signRequests) {
+				signBookService.delete(signRequest.getParentSignBook().getId(), "scheduler");
+			}
 		}
 	}
 

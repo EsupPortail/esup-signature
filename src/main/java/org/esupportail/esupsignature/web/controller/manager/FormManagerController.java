@@ -36,9 +36,9 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/manager/forms")
-public class ManagerFormController {
+public class FormManagerController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ManagerFormController.class);
+    private static final Logger logger = LoggerFactory.getLogger(FormManagerController.class);
 
     @ModelAttribute("managerMenu")
     public String getmanagersMenu() {
