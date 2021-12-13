@@ -183,9 +183,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
-			hasIpAddresses = "	denyAll";
-		} else {
+		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses += "hasIpAddress('"+ ip +"')";
@@ -193,16 +191,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 					hasIpAddresses += " or ";
 				}
 			}
+			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
+			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
+//			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
 		}
-		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
-//		http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
-		http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
 		http.authorizeRequests().antMatchers("/otp/**").permitAll();
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
+				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/webjars/**").permitAll();
