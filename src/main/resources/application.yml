@@ -192,6 +192,10 @@ security:
 #            for.esup-signature.user: "true"	
 
 server:
+    servlet:
+        session:
+            persistent: true
+            tracking-modes: COOKIE
     error:
         include-stacktrace: always
     port: 8080
