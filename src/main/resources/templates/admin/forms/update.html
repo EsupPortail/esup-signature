@@ -2,10 +2,6 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="fragments/head"></head>
-<script th:inline="javascript" type="module">
-    import {default as FormUi} from '/js/modules/ui/forms/FormFieldsUi.js?version=[[${versionApp}]]';
-    new FormUi("managers", [[${form.id}]], [[${preFillTypes}]]);
-</script>
 <body>
 <header th:replace="fragments/nav"></header>
 <main role="main">

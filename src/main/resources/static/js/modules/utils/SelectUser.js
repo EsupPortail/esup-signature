@@ -49,7 +49,7 @@ export default class SelectUser {
                 callback('Recherche en cours');
                 controller.abort();
                 controller = new AbortController()
-                signal = controller.signal
+                signal = controller.signal;
                 if (search.length < 3) {
                     callback('Merci de saisir au moins 3 caractères');
                 } else {
