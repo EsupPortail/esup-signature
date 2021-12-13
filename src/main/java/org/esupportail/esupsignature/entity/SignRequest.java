@@ -66,6 +66,7 @@ public class SignRequest {
     @OrderColumn
     private List<SignRequestParams> signRequestParams = new LinkedList<>();
 
+    @Transient
     private Date endDate;
 
     @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)

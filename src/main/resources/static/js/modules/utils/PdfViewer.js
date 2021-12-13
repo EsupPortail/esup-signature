@@ -54,17 +54,24 @@ export class PdfViewer extends EventFactory {
    }
 
     listenToSearchCompletion() {
+        let controller = new AbortController();
+        let signal = controller.signal;
         console.info("listen to search autocompletion");
         $(".search-completion").each(function () {
             let serviceName = $(this).attr("search-completion-service-name");
             let searchType = $(this).attr("search-completion-type");
             let searchReturn = $(this).attr("search-completion-return");
             $(this).autocomplete({
+                delay: 500,
                 source: function( request, response ) {
                     if(request.term.length > 2) {
+                        controller.abort();
+                        controller = new AbortController()
+                        signal = controller.signal;
                         $.ajax({
                             url: "/ws-secure/users/search-extvalue/?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
+                            signal: signal,
                             data: {
                                 q: request.term
                             },
@@ -782,6 +789,7 @@ export class PdfViewer extends EventFactory {
         let div = "<div class='custom-autocompletion' id='div_" + id +"'></div>";
         $(div).insertAfter(inputField);
         inputField.autocomplete({
+            delay: 500,
             source: response,
             appendTo: "#div_" + id,
             minLength:0
