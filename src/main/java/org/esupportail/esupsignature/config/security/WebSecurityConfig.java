@@ -26,6 +26,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -107,6 +108,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		DevClientRequestFilter devClientRequestFilter = new DevClientRequestFilter();
 		devSecurityFilters.add(devClientRequestFilter);
 		return devClientRequestFilter;
+	}
+
+	@Override
+	public void configure(WebSecurity web) throws Exception {
+		web.ignoring().antMatchers("/resources/**", "/webjars/**");
 	}
 
 	@Override
