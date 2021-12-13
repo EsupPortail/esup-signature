@@ -115,7 +115,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		super.configure(web);
-		web.ignoring().antMatchers("/resources/**", "/webjars/**").and().httpFirewall(allowSemicolonHttpFirewall());
+//		web.ignoring().antMatchers("/resources/**", "/webjars/**").and().httpFirewall(allowSemicolonHttpFirewall());
+		web.ignoring().mvcMatchers("/resources/**", "/webjars/**");
 	}
 
 
@@ -224,7 +225,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
 				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/webjars/**").permitAll();
+				.antMatchers("/webjars/**").permitAll()
+				.antMatchers("/resources/**").permitAll();
 
 	}
 
