@@ -145,10 +145,6 @@
 			<artifactId>HikariCP</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 		</dependency>
@@ -224,6 +220,12 @@
 		    <groupId>org.webjars.bower</groupId>
 		    <artifactId>bootstrap-fileinput</artifactId>
 		    <version>5.2.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.webjars.bower</groupId>
+					<artifactId>bootstrap</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.bowergithub.ajaxorg</groupId>
@@ -234,6 +236,12 @@
 			<groupId>org.webjars</groupId>
 			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
 			<version>4.17.47</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.webjars</groupId>
+					<artifactId>bootstrap</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
