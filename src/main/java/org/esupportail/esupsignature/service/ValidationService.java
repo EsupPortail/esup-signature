@@ -59,7 +59,6 @@ public class ValidationService {
             documentValidator.setLocale(Locale.FRENCH);
             documentValidator.setValidationLevel(ValidationLevel.LONG_TERM_DATA);
             Reports reports = null;
-            logger.warn("check default policy " + defaultPolicy);
             try (InputStream is = defaultPolicy.getInputStream()) {
                 reports = documentValidator.validateDocument(is);
             } catch (IOException e) {
