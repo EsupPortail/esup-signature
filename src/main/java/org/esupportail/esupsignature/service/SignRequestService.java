@@ -370,6 +370,7 @@ public class SignRequestService {
 							}
 						}
 						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+						logger.warn("check validation service " + validationService);
 						if(validationService.validate(new ByteArrayInputStream(bytes), null).getSimpleReport().getSignatureIdList().size() == 0) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes));
 						}
