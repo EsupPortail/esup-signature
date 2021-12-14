@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,13 +46,13 @@ public class CustomErrorController implements ErrorController {
     }
 
     @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
+    public String errorHtml(HttpServletRequest request, HttpServletResponse response, Model model) {
         HttpStatus status = getStatus(request);
-        Map<String, Object> model = Collections
+        Map<String, Object> errors = Collections
                 .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
         response.setStatus(status.value());
-        ModelAndView modelAndView = resolveErrorView(request, response, status, model);
-        return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+        model.addAllAttributes(errors);
+        return "error";
     }
 
     @RequestMapping
