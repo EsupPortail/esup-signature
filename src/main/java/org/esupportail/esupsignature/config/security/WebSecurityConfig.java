@@ -22,10 +22,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -45,6 +50,10 @@ import java.util.*;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
+
+	private static final String API_KEY_HEADER = "x-api-key";
+
+	private String apiKey = "SomeKey1234567890";
 
 	private LdapContextSource ldapContextSource;
 
@@ -102,6 +111,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Override
+	public void configure(WebSecurity web) throws Exception {
+		super.configure(web);
+		web.ignoring().mvcMatchers("/resources/**", "/webjars/**");
+	}
+
+
+	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		setAuthorizeRequests(http);
 		http.antMatcher("/**").authorizeRequests().antMatchers("/").permitAll();
@@ -141,6 +157,33 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.headers().disable();
 	}
 
+	@Bean
+	public APIKeyFilter apiKeyFilter() {
+		APIKeyFilter filter = new APIKeyFilter();
+		filter.setAuthenticationManager(authentication -> {
+			if(authentication.getPrincipal() == null) {
+				throw new BadCredentialsException("Access Denied.");
+			}
+			String apiKey = (String) authentication.getPrincipal();
+			if (authentication.getPrincipal() != null && this.apiKey.equals(apiKey)) {
+				Collection<SimpleGrantedAuthority> oldAuthorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+				SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_WS");
+				List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<>();
+				updatedAuthorities.add(authority);
+				updatedAuthorities.addAll(oldAuthorities);
+				SecurityContextHolder.getContext().setAuthentication(
+						new UsernamePasswordAuthenticationToken(
+								SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+								SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+								updatedAuthorities));
+				return SecurityContextHolder.getContext().getAuthentication();
+			} else {
+				throw new BadCredentialsException("Access Denied.");
+			}
+		});
+		return filter;
+	}
+
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.logout().logoutSuccessUrl("/").permitAll();
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
@@ -148,9 +191,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().accessDeniedHandler(accessDeniedHandlerImpl);
 		String hasIpAddresses = "";
 		int nbIps = 0;
-		if(webSecurityProperties.getWsAccessAuthorizeIps() == null) {
-			hasIpAddresses = "	denyAll";
-		} else {
+		if(webSecurityProperties.getWsAccessAuthorizeIps() != null) {
 			for (String ip : webSecurityProperties.getWsAccessAuthorizeIps()) {
 				nbIps++;
 				hasIpAddresses += "hasIpAddress('"+ ip +"')";
@@ -158,18 +199,22 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 					hasIpAddresses += " or ";
 				}
 			}
+			http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
+			http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
+//			http.authorizeRequests().antMatchers("/ws/**").access("hasRole('ROLE_WS')").and().addFilter(apiKeyFilter());
+		} else {
+			http.authorizeRequests().antMatchers("/ws/**").denyAll();
+			http.authorizeRequests().antMatchers("/actuator/**").denyAll();
 		}
-		http.authorizeRequests().antMatchers("/ws/**").access(hasIpAddresses);
-		http.authorizeRequests().antMatchers("/actuator/**").access(hasIpAddresses);
 		http.authorizeRequests().antMatchers("/otp/**").permitAll();
 		http.authorizeRequests().antMatchers("/error").permitAll();
 		http.authorizeRequests()
 				.antMatchers("/").permitAll()
 				.antMatchers("/admin/", "/admin/**").access("hasRole('ROLE_ADMIN')")
 				.antMatchers("/user/", "/user/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
+				.antMatchers("/ws-secure/", "/ws-secure/**").access("hasAnyRole('ROLE_USER', 'ROLE_OTP')")
 				.antMatchers("/public/", "/public/**").permitAll()
-				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')")
-				.antMatchers("/webjars/**").permitAll();
+				.antMatchers("/h2-console/**").access("hasRole('ROLE_ADMIN')");
 
 	}
 
@@ -185,14 +230,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public ConcurrentSessionFilter concurrencyFilter() {
-		ConcurrentSessionFilter concurrentSessionFilter = new ConcurrentSessionFilter(sessionRegistry());
-		return concurrentSessionFilter;
+		return new ConcurrentSessionFilter(sessionRegistry());
 	}
 
 	@Bean
 	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
-		RegisterSessionAuthenticationStrategy authenticationStrategy = new RegisterSessionAuthenticationStrategy(sessionRegistry());
-		return authenticationStrategy;
+		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
 	}
 
 	@Bean
@@ -211,13 +254,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() {
-		return new ProviderManager(Arrays.asList(new OtpAuthenticationProvider()));
+		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
 	}
 
 	@Bean
 	public UserDetailsService userDetailsService() {
-		InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-		return manager;
+		return new InMemoryUserDetailsManager();
 	}
 
 	@Bean

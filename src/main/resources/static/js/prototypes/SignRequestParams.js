@@ -181,7 +181,9 @@ export class SignRequestParams  extends EventFactory {
             this.refreshExtraDiv();
             this.updateSize();
         }
-        this.restoreUserParams();
+        if(this.isSign) {
+            this.restoreUserParams();
+        }
     }
 
     restoreUserParams() {
@@ -203,33 +205,35 @@ export class SignRequestParams  extends EventFactory {
                 this.refreshExtraDiv();
             }
         }
-        if (localStorage.getItem('extraType') != null) {
-            if (localStorage.getItem('extraType') === "true") {
-                if(this.divExtra != null) {
-                    this.extraType = false;
-                    this.toggleType();
+        if(this.addExtra) {
+            if (localStorage.getItem('extraType') != null) {
+                if (localStorage.getItem('extraType') === "true") {
+                    if (this.divExtra != null) {
+                        this.extraType = false;
+                        this.toggleType();
+                    }
                 }
             }
-        }
-        if (localStorage.getItem('extraName') != null) {
-            if (localStorage.getItem('extraName') === "true") {
-                this.extraName = false;
-                this.toggleName();
-            }
-        }
-        if (localStorage.getItem('extraText') != null) {
-            if (localStorage.getItem('extraText') === "true") {
-                if(this.divExtra != null) {
-                    this.extraText = false;
-                    this.toggleText();
+            if (localStorage.getItem('extraName') != null) {
+                if (localStorage.getItem('extraName') === "true") {
+                    this.extraName = false;
+                    this.toggleName();
                 }
             }
-        }
-        if (localStorage.getItem('extraDate') != null) {
-            if (localStorage.getItem('extraDate') === "false") {
-                if(this.divExtra != null) {
-                    this.extraDate = true;
-                    this.toggleDate();
+            if (localStorage.getItem('extraText') != null) {
+                if (localStorage.getItem('extraText') === "true") {
+                    if (this.divExtra != null) {
+                        this.extraText = false;
+                        this.toggleText();
+                    }
+                }
+            }
+            if (localStorage.getItem('extraDate') != null) {
+                if (localStorage.getItem('extraDate') === "false") {
+                    if (this.divExtra != null) {
+                        this.extraDate = true;
+                        this.toggleDate();
+                    }
                 }
             }
         }
@@ -621,6 +625,7 @@ export class SignRequestParams  extends EventFactory {
     updateSize() {
         if(this.extraOnTop) {
             this.signHeight -= this.extraHeight;
+            this.extraHeight = 0;
             this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
             this.signHeight += this.extraHeight;
             this.cross.css("height", this.signHeight * this.currentScale + "px");
