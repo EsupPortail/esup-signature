@@ -992,6 +992,12 @@ public class SignRequestService {
 					recipient.setSigned(true);
 				}
 			}
+			List<SignRequest> signRequests = new ArrayList<>(signBook.getSignRequests());
+			signRequests.remove(signRequest);
+			boolean test = signRequests.stream().noneMatch(signRequest1 -> signRequest1.getStatus().equals(SignRequestStatus.pending));
+			if(test) {
+				signBookService.updateStatus(signBook, SignRequestStatus.completed, "La demande est terminée un des documents à été refusé", "WARN", comment, userEppn, authUserEppn);
+			}
 		} else {
 			refuseSignBook(signRequest.getParentSignBook(), comment, userEppn, authUserEppn);
 		}
