@@ -18,7 +18,7 @@ build2:
 
 build3:
   variables:
-  script: mvn spring-boot:run
+  script: mvn clean package
   only:
     - prod2
   tags:
