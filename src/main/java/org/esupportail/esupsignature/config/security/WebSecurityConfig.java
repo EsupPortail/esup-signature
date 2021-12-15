@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config.security;
 
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevClientRequestFilter;
@@ -12,7 +13,6 @@ import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceIm
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -59,6 +59,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public void setLdapContextSource(LdapContextSource ldapContextSource) {
 		this.ldapContextSource = ldapContextSource;
 	}
+
+	@Resource
+	private GlobalProperties globalProperties;
 
 	@Resource
 	private WebSecurityProperties webSecurityProperties;
@@ -129,12 +132,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				http.oauth2Client();
 			}
 		}
-		for(SecurityService securityService : securityServices) {
-			if(securityService instanceof CasSecurityServiceImpl) {
-				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
-			} else if(securityService instanceof ShibSecurityServiceImpl) {
-				switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
-				break;
+		if(globalProperties.getEnableSu()) {
+			for (SecurityService securityService : securityServices) {
+				if (securityService instanceof CasSecurityServiceImpl) {
+					switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+				} else if (securityService instanceof ShibSecurityServiceImpl) {
+					switchUserFilter().setUserDetailsService(securityService.getUserDetailsService());
+					break;
+				}
 			}
 		}
 		http.logout()
@@ -238,7 +243,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 //	@ConditionalOnProperty({"spring.ldap.base", "ldap.search-base", "security.cas.service"})
-	@ConditionalOnExpression("${global.enable-su}")
+	@ConditionalOnProperty(value="global.enable-su",havingValue = "true")
 	public SwitchUserFilter switchUserFilter() {
 		SwitchUserFilter switchUserFilter = new SwitchUserFilter();
 		switchUserFilter.setUserDetailsService(new InMemoryUserDetailsManager());
