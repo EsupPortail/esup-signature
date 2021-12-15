@@ -18,7 +18,7 @@ build2:
 
 build3:
   variables:
-  script: mvn clean package
+  script: mvn clean package && cp ./ /opt/esup-signature
   only:
     - prod2
   tags:
