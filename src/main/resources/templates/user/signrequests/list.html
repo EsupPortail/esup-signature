@@ -1,14 +1,13 @@
-<!doctype html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml"lang="fr" >
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
+<!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="fragments/head"></head>
 <script th:inline="javascript" type="module">
-    // import {HomeUi} from '/js/modules/ui/HomeUi.js?version=[[${versionApp}]]';
-    // new HomeUi();
-    import ListSignRequestUi from '/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${versionApp}]]';
+    import {ListSignRequestUi} from '/js/modules/ui/signrequests/ListSignRequestUi.js?version=[[${versionApp}]]';
     new ListSignRequestUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]]);
 </script>
 <body>
@@ -118,13 +117,13 @@
                         </tr>
                         </thead>
                         <tbody id="signRequestTable">
-                        <th:block th:replace="user/signrequests/includes/list-elem"></th:block>
+                        <tr th:replace="user/signrequests/includes/list-elem"></tr>
                         </tbody>
                         <tfoot>
                         <tr>
                             <td colspan="100%">
                                 <span th:if="${infiniteScrolling}">Faire défiler la page pour afficher plus d'éléments</span>
-                                <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination :: pagination"></nav>
+                                <nav  th:unless="${infiniteScrolling}" th:include="fragments/pagination"></nav>
                             </td>
                         </tr>
                         </tfoot>
