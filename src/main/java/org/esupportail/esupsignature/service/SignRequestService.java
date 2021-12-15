@@ -1697,20 +1697,22 @@ public class SignRequestService {
 
 	public boolean isAttachmentAlert(SignRequest signRequest) {
 		boolean attachmentAlert = false;
-		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert()
-				&& signRequest.getAttachments().size() == 0) {
+		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
+			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert() != null
+			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentAlert()
+			&& signRequest.getAttachments().size() == 0) {
 			attachmentAlert = true;
 		}
 		return attachmentAlert;
 	}
 	public boolean isAttachmentRequire(SignRequest signRequest) {
 		boolean attachmentRequire = false;
-		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
-				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
-				&& signRequest.getAttachments().size() == 0) {
+		if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
+			&&signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null
+			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire() != null
+			&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getAttachmentRequire()
+			&& signRequest.getAttachments().size() == 0) {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;
