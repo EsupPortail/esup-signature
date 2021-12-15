@@ -695,6 +695,10 @@
 					<artifactId>jaxb-impl</artifactId>
 					<groupId>com.sun.xml.bind</groupId>
 				</exclusion>
+				<exclusion>
+					<artifactId>jaxb-core</artifactId>
+					<groupId>com.sun.xml.bind</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
