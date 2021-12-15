@@ -17,6 +17,8 @@ build2:
     - prod
 
 build3:
+  variables:
+    GIT_CLONE_PATH: /opt/esup-signature
   script: mvn spring-boot:run -Dspring.config.location=/opt/application.yml
   only:
     - prod2
