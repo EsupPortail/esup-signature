@@ -484,6 +484,7 @@
 			<groupId>com.github.jai-imageio</groupId>
 			<artifactId>jai-imageio-core</artifactId>
 			<version>1.4.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 		    <groupId>org.imgscalr</groupId>
@@ -493,7 +494,7 @@
 		<dependency>
 			<groupId>io.github.jpenren</groupId>
 			<artifactId>thymeleaf-spring-data-dialect</artifactId>
-			<version>3.4.0</version>
+			<version>3.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>

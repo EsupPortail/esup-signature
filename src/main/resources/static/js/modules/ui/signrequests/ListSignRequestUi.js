@@ -1,6 +1,6 @@
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 
-export default class ListSignRequestUi {
+export class ListSignRequestUi {
 
     constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, infiniteScrolling, csrf) {
         console.info("Starting list sign UI");

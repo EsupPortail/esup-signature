@@ -51,9 +51,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);
 
-	private static final String API_KEY_HEADER = "x-api-key";
-
-	private String apiKey = "SomeKey1234567890";
+	private final String apiKey = "SomeKey1234567890";
 
 	private LdapContextSource ldapContextSource;
 
