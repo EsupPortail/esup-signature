@@ -115,7 +115,7 @@
                                     <ul class="list-unstyled">
                                         <li th:each="rd : ${allRevocationData}">
                                             <span th:text="${rd.getName()}"></span>
-                                            <div th:replace="fragment/fields::field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/user/validation/download-revocation?id=${rd.getId()}|)" th:remove="tag"></div>
+<!--                                            <div th:replace="fragment/fields::field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/user/validation/download-revocation?id=${rd.getId()}|)" th:remove="tag"></div>-->
                                         </li>
                                     </ul>
                                 </div>
@@ -128,7 +128,7 @@
                                     <ul class="list-unstyled">
                                         <li th:each="tst : ${allTimestamps}">
                                             <span th:text="${tst.getName()}"></span>
-                                            <div th:replace="fragment/fields::field-der-pem(true, |/user/validation/download-timestamp?id=${tst.getId()}|)" th:remove="tag"></div>
+<!--                                            <div th:replace="fragment/fields::field-der-pem(true, |/user/validation/download-timestamp?id=${tst.getId()}|)" th:remove="tag"></div>-->
                                         </li>
                                     </ul>
                                 </div>
@@ -149,7 +149,7 @@
                             <div class="form-group row">
                                 <label for="select-visualrepresentation" class="col-sm-3 col-form-label">Display :</label>
                                 <div class="col-sm-9">
-                                    <select  class="form-control" id="select-visualrepresentation">
+                                    <select class="form-select" id="select-visualrepresentation">
                                         <optgroup th:label="#{label.signatures.and.timestamps}" id="select-visualrepresentation-sigs">
 
                                         </optgroup>
