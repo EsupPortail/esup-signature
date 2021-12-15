@@ -15,3 +15,10 @@ build2:
     - master
   tags:
     - prod
+
+build3:
+  script: mvn spring-boot:run -Dspring.config.location=/opt/application.yml
+  only:
+    - prod2
+  tags:
+    - prod2
