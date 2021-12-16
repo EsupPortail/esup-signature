@@ -146,7 +146,7 @@ public class DSSBeanConfig {
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
 		try {
-			return new KeyStoreCertificateSource(new ClassPathResource("keystore.p12").getInputStream(), "PKCS12", "dss-password");
+			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password");
 		} catch (IOException e) {
 			throw new DSSException("Unable to load the file " + "keystore.p12", e);
 		}

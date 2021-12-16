@@ -37,12 +37,12 @@ public class PdfConfig {
             Path iccPath ;
             Path pdfADefPath;
             if(pdfProperties.getIccPath() == null ) {
-                iccPath = Path.of(new ClassPathResource("srgb.icc").getPath());
+                iccPath = Path.of(new ClassPathResource("/srgb.icc").getPath());
             } else {
                 iccPath = new File(pdfProperties.getIccPath()).toPath();
             }
             if(pdfProperties.getPdfADefPath() == null ) {
-                pdfADefPath = Path.of(new ClassPathResource("PDFA_def.ps").getPath());
+                pdfADefPath = Path.of(new ClassPathResource("/PDFA_def.ps").getPath());
             } else {
                 pdfADefPath = new File(pdfProperties.getPdfADefPath()).toPath();
             }

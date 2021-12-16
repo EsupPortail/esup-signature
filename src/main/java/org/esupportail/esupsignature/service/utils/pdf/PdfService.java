@@ -438,7 +438,7 @@ public class PdfService {
             File targetFile = fileService.getTempFile("afterconvert_tmp.pdf");
             Path pdfADefPath;
             if(pdfConfig.getPdfProperties().getPdfADefPath() == null ) {
-                pdfADefPath = Path.of(new ClassPathResource("PDFA_def.ps").getPath());
+                pdfADefPath = Path.of(new ClassPathResource("/PDFA_def.ps").getPath());
             } else {
                 pdfADefPath = new File(pdfConfig.getPdfProperties().getPdfADefPath()).toPath();
             }
