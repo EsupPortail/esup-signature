@@ -5,6 +5,7 @@ import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
+import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
@@ -51,6 +52,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.sql.DataSource;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 @Component
@@ -143,7 +145,11 @@ public class DSSBeanConfig {
 
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
-		return new KeyStoreCertificateSource(DSSBeanConfig.class.getResourceAsStream("keystore.p12"), "PKCS12", "dss-password");
+		try {
+			return new KeyStoreCertificateSource(new ClassPathResource("keystore.p12").getInputStream(), "PKCS12", "dss-password");
+		} catch (IOException e) {
+			throw new DSSException("Unable to load the file " + "keystore.p12", e);
+		}
 	}
 
 	@Bean

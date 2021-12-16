@@ -6,12 +6,11 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.FileInputStream;
 
 import static org.junit.Assert.fail;
 
@@ -27,10 +26,8 @@ public class PdfServiceTest {
 
     @Test
     public void testPdtAConversion() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource("dummy.pdf").getFile());
         try {
-            pdfService.convertGS(new FileInputStream(file), "1");
+            pdfService.convertGS(new ClassPathResource("dummy.pdf").getInputStream(), "1");
         } catch (Exception e) {
             logger.error("GhostScript convert not working, please check gs install or PDFA_def.ps and srgb.icc locations", e);
             fail();

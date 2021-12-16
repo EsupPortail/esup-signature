@@ -20,6 +20,7 @@ import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -138,20 +139,19 @@ public class DdDocService {
     }
 
     private PrivateKey getPrivateKey() throws Exception {
-        File keyFile = fileService.inputStreamToTempFile(DdDocService.class.getResourceAsStream("/2ddoc.key"), "2ddoc.key");
+        File keyFile = fileService.inputStreamToTempFile(new ClassPathResource("2ddoc.key").getInputStream(), "2ddoc.key");
         BufferedReader br = new BufferedReader(new FileReader(keyFile));
         PEMParser pp = new PEMParser(br);
         PEMKeyPair pemKeyPair = (PEMKeyPair) pp.readObject();
         JcaPEMKeyConverter jcaPEMKeyConverter = new JcaPEMKeyConverter();
         jcaPEMKeyConverter.setProvider(new BouncyCastleProvider());
-        ECPrivateKey privateKey = (ECPrivateKey) jcaPEMKeyConverter.getPrivateKey(pemKeyPair.getPrivateKeyInfo());
-        return privateKey;
+        return jcaPEMKeyConverter.getPrivateKey(pemKeyPair.getPrivateKeyInfo());
 
     }
 
     private PublicKey getPublicKey() throws Exception {
         CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        X509Certificate cer = (X509Certificate) fact.generateCertificate(DdDocService.class.getResourceAsStream("/2ddoc.cert"));
+        X509Certificate cer = (X509Certificate) fact.generateCertificate(new ClassPathResource("2ddoc.cert").getInputStream());
         return cer.getPublicKey();
     }
 
