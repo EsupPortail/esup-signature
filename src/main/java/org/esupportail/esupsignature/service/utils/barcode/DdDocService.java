@@ -139,7 +139,7 @@ public class DdDocService {
     }
 
     private PrivateKey getPrivateKey() throws Exception {
-        File keyFile = fileService.inputStreamToTempFile(new ClassPathResource("2ddoc.key").getInputStream(), "2ddoc.key");
+        File keyFile = fileService.inputStreamToTempFile(new ClassPathResource("/2ddoc.key").getInputStream(), "2ddoc.key");
         BufferedReader br = new BufferedReader(new FileReader(keyFile));
         PEMParser pp = new PEMParser(br);
         PEMKeyPair pemKeyPair = (PEMKeyPair) pp.readObject();
@@ -151,7 +151,7 @@ public class DdDocService {
 
     private PublicKey getPublicKey() throws Exception {
         CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        X509Certificate cer = (X509Certificate) fact.generateCertificate(new ClassPathResource("2ddoc.cert").getInputStream());
+        X509Certificate cer = (X509Certificate) fact.generateCertificate(new ClassPathResource("/2ddoc.cert").getInputStream());
         return cer.getPublicKey();
     }
 
