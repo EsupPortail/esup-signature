@@ -9,6 +9,8 @@ public class PdfProperties {
     private String pathToGS = "/usr/bin/gs";
     private boolean convertToPdfA = true;
     private int pdfALevel = 2;
+    private String iccPath;
+    private String pdfADefPath;
 
     public int getPdfToImageDpi() {
         return pdfToImageDpi;
@@ -40,5 +42,21 @@ public class PdfProperties {
 
     public void setPdfALevel(int pdfALevel) {
         this.pdfALevel = pdfALevel;
+    }
+
+    public String getIccPath() {
+        return iccPath;
+    }
+
+    public void setIccPath(String iccPath) {
+        this.iccPath = iccPath;
+    }
+
+    public String getPdfADefPath() {
+        return pdfADefPath;
+    }
+
+    public void setPdfADefPath(String pdfADefPath) {
+        this.pdfADefPath = pdfADefPath;
     }
 }

@@ -267,8 +267,7 @@ public class SignRequestService {
 	}
 
 	public Long nbToSignSignRequests(String userEppn) {
-		Long nbTosign = signRequestRepository.countByRecipientUserToSign(userEppn);
-		return nbTosign;
+		return signRequestRepository.countByRecipientUserToSign(userEppn);
 	}
 
 	public List<SignRequest> getToSignRequests(String userEppn) {
