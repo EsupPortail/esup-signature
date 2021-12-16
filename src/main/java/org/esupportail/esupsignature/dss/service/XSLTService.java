@@ -6,6 +6,7 @@ import eu.europa.esig.dss.diagnostic.DiagnosticDataFacade;
 import eu.europa.esig.dss.diagnostic.jaxb.XmlDiagnosticData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,15 +31,15 @@ public class XSLTService {
 	public void init() throws TransformerConfigurationException, IOException {
 		TransformerFactory transformerFactory = DomUtils.getSecureTransformerFactory();
 
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/short-report-bootstrap4.xslt")) {
+		try (InputStream is = new ClassPathResource("/xslt/html/short-report-bootstrap4.xslt").getInputStream()) {
 			templateShortReport = transformerFactory.newTemplates(new StreamSource(is));
 		}
 
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/simple-report-bootstrap4.xslt")) {
+		try (InputStream is = new ClassPathResource("/xslt/html/simple-report-bootstrap4.xslt").getInputStream()) {
 			templateSimpleReport = transformerFactory.newTemplates(new StreamSource(is));
 		}
 
-		try (InputStream is = XSLTService.class.getResourceAsStream("/xslt/html/detailed-report-bootstrap4.xslt")) {
+		try (InputStream is = new ClassPathResource("/xslt/html/detailed-report-bootstrap4.xslt").getInputStream()) {
 			templateDetailedReport = transformerFactory.newTemplates(new StreamSource(is));
 		}
 	}

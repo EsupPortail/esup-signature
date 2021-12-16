@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -289,12 +290,12 @@ public class SignService {
 			if(user.getSignImages().size() > signRequestParams.getSignImageNumber()) {
 				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
 			} else {
-				inputStream = SignService.class.getResourceAsStream("/static/images/empty-sign.png");
+				inputStream = new ClassPathResource("/static/images/empty-sign.png").getInputStream();
 			}
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, fixFactor);
 			if(signRequestParams.getAddWatermark()) {
 				File fileWithWatermark = fileService.getTempFile("sign_with_mark.png");
-				fileService.addImageWatermark(SignService.class.getResourceAsStream("/static/images/watermark.png"), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
+				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, fileWithWatermark, color, signRequestParams.getExtraOnTop());
 				signImage = new FileInputStream(fileWithWatermark);
 			}
 			BufferedImage bufferedSignImage = ImageIO.read(signImage);

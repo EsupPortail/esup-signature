@@ -66,7 +66,7 @@
 <!--                                </th>-->
                                 <th class="w-20 d-none d-xxl-table-cell text-center">Circuit</th>
                                 <th class="w-20 text-center">Titre</th>
-                                <th class="d-none d-lg-table-cell">Crée par</th>
+                                <th><a class="sorted" sd:pagination-sort="createBy">Crée par</a></th>
                                 <th><a class="sorted" sd:pagination-sort="createDate">Date de création</a></th>
                                 <th class="d-none d-lg-table-cell">Participants</th>
                                 <th class="d-none d-xxl-table-cell">Date de signature/refus</th>
@@ -172,7 +172,7 @@
                             <tfoot>
                             <tr>
                                 <td colspan="100%">
-                                    <nav th:replace="fragments/pagination :: pagination"></nav>
+                                    <nav th:replace="fragments/pagination"></nav>
                                 </td>
                             </tr>
                             </tfoot>
