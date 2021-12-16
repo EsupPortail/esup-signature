@@ -9,7 +9,9 @@ import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,23 +36,19 @@ public class PdfConfig {
     @PostConstruct
     public void setPdfColorProfileUrl() {
         try {
-            Path iccPath ;
-            Path pdfADefPath;
-            if(pdfProperties.getIccPath() == null ) {
-                iccPath = Path.of(new ClassPathResource("/srgb.icc").getPath());
-            } else {
-                iccPath = new File(pdfProperties.getIccPath()).toPath();
-            }
-            if(pdfProperties.getPdfADefPath() == null ) {
-                pdfADefPath = Path.of(new ClassPathResource("/PDFA_def.ps").getPath());
-            } else {
-                pdfADefPath = new File(pdfProperties.getPdfADefPath()).toPath();
-            }
-            logger.info("iccPath : " + iccPath);
-            logger.info("pdfADefPath : " + pdfADefPath);
-            List<String> lines = Files.readAllLines(pdfADefPath, StandardCharsets.UTF_8);
-            lines.set(7, "/ICCProfile (" + iccPath + ") % Customise");
-            Files.write(pdfADefPath, lines, StandardCharsets.UTF_8);
+            File pdfAFile = new File("PDFA_def.ps");
+            OutputStream pdfAoutStream = new FileOutputStream(pdfAFile);
+            pdfAoutStream.write(new ClassPathResource("/PDFA_def.ps").getInputStream().readAllBytes());
+
+            File iccFile = new File("srgb.icc");
+            OutputStream iccOutStream = new FileOutputStream(iccFile);
+            iccOutStream.write(new ClassPathResource("/srgb.icc").getInputStream().readAllBytes());
+
+            logger.info("iccPath : " + iccFile.getAbsolutePath());
+            logger.info("pdfADefPath : " + pdfAFile.getAbsolutePath());
+            List<String> lines = Files.readAllLines(Path.of(pdfAFile.getAbsolutePath()), StandardCharsets.UTF_8);
+            lines.set(7, "/ICCProfile (" + iccFile.getAbsolutePath() + ") % Customise");
+            Files.write(Path.of(pdfAFile.getAbsolutePath()), lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new EsupSignatureRuntimeException("unable to modify PDFA_def.ps");
         }
